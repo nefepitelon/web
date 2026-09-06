@@ -278,6 +278,8 @@ function formatScaled(i, scale) {
 export function toHex(v) { return '0x' + v.toString(16); }
 
 // ---- self test (official Extended python SDK vector) ----
+// Public fixture: https://github.com/x10xchange/python_sdk/blob/starknet/tests/fixtures/account.py
+// These offline self-test constants are not user credentials.
 /** Throws if the implementation doesn't reproduce the official SDK signature. */
 export function selfTest() {
   const priv = 0x7a7ff6fd3cab02ccdcd4a572563f5976f8976899b03a39773795a3c486d4986n;

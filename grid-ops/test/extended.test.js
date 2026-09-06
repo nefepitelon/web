@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ExtendedExchange } from '../src/exchange/ex/extended.js';
 
+// Public offline test vector, verified against Extended's official SDK fixture:
+// https://github.com/x10xchange/python_sdk/blob/starknet/tests/fixtures/account.py
+// This is not a user credential. All exchange requests in these tests are mocked.
+
 const PRIVATE_KEY = '0x7a7ff6fd3cab02ccdcd4a572563f5976f8976899b03a39773795a3c486d4986';
 const PUBLIC_KEY = '0x61c5e7e8339b7d56f197f54ea91b776776690e3232313de0f2ecbd0ef76f466';
 
