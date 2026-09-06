@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>X 主页面桥接多场景验证</title>
+<style>body{font:16px system-ui;padding:32px}[contenteditable]{white-space:pre-wrap;border:1px solid #888;padding:12px;min-height:140px}#summary[data-status=passed]{color:green}#summary[data-status=failed]{color:red}</style>
+<h1>X 主页面桥接多场景验证</h1>
+<div id="editor" data-testid="tweetTextarea_0" contenteditable="true" role="textbox"></div>
+<p id="summary">等待主页面脚本…</p>
+<script>
+  const editor = document.querySelector("#editor");
+  const scenarios = [
+    "标题\n\n第一段正文\n\n末尾一行",
+    "行情观察 🚀\n\n#BTC #AI_运营\nhttps://welinkbtc-onchainmain.xyz",
+    "首行\r\n\r\n中间空行\r\n末行",
+    "中英文 mixed；标点，。！？\n\n标签 #AI获客"
+  ];
+  const normalize = (value) => String(value || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
+  let publishState = ""; let scenarioIndex = 0; let requested = false; let pasteCount = 0;
+  editor.addEventListener("paste", (event) => {
+    event.preventDefault();
+    publishState = event.clipboardData.getData("text/plain");
+    pasteCount += 1;
+    editor.textContent = publishState;
+  });
+  const runScenario = () => {
+    const text = scenarios[scenarioIndex];
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      window.postMessage({ source: "welinkbtc-x-isolated", type: "COMMIT_X_TEXT", requestId: `bridge-${scenarioIndex}`, text }, location.origin);
+    }
+  };
+  window.addEventListener("message", (event) => {
+    if (event.source !== window || event.data?.source !== "welinkbtc-x-main") return;
+    if (event.data.type === "X_MAIN_READY" && !requested) { requested = true; runScenario(); }
+    if (event.data.type === "COMMIT_X_RESULT" && event.data.requestId === `bridge-${scenarioIndex}`) {
+      const expected = normalize(scenarios[scenarioIndex]);
+      const ok = event.data.ok && event.data.result?.exact && event.data.result?.stable && event.data.result?.stateAccepted && normalize(editor.innerText) === expected && normalize(publishState) === expected && pasteCount === scenarioIndex + 1;
+      const summary = document.querySelector("#summary");
+      if (!ok) { summary.dataset.status = "failed"; summary.textContent = `场景 ${scenarioIndex + 1} 失败：${event.data.error || "发布状态不一致"}`; return; }
+      scenarioIndex += 1;
+      if (scenarioIndex < scenarios.length) { setTimeout(runScenario, 30); return; }
+      summary.dataset.status = "passed";
+      summary.textContent = `${scenarios.length}/${scenarios.length} 场景通过：正文与发布状态一致，每个场景只粘贴一次`;
+    }
+  });
+</script>
+<script src="../chrome-extension/x-main-world.js"></script>
+</html>

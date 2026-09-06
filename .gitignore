@@ -1,0 +1,56 @@
+.vercel
+.env
+.env.local
+.env.*.local
+.next
+dist
+coverage
+*.log
+.env*
+/.swc
+
+# Local dependencies, builds and deployment metadata
+node_modules/
+.next*/
+.vercel/
+*.tsbuildinfo
+.agents/
+.codex/
+artifacts/
+
+# Personal environment, credentials and trading runtime data
+env.local
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+secrets/
+.state.json*
+.runtime/
+grid-ops/data/
+classic-grid/data/
+startup_log.txt
+启动日志.txt
+.npmrc
+.netrc
+.ssh/
+id_rsa*
+id_ed25519*
+*keypair*.json
+credentials*.json
+*.sqlite*
+*.db
+*.har
+
+# Local verification screenshots and scratch files
+/.codex-*
+/*.png
+/([{]*
+/[{]const
+*.bak
+*.bak-*
+
+# Download bundles are generated during the build
+/public/downloads/*.zip
+/chrome-extension.zip

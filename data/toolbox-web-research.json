@@ -1,0 +1,4623 @@
+{
+  "generatedAt": "2026-08-11T09:46:41.949Z",
+  "sourceItems": 162,
+  "fetchedItems": 101,
+  "xResolved": 54,
+  "descriptionResolved": 83,
+  "items": [
+    {
+      "id": "toolbox-firefly",
+      "sourceRow": 2,
+      "name": "Firefly",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://firefly.social/following/posts",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Vercel Security Checkpoint",
+      "pages": [
+        {
+          "url": "https://firefly.social/following/posts",
+          "finalUrl": "https://firefly.social/following/posts",
+          "status": 429,
+          "error": null
+        },
+        {
+          "url": "https://firefly.social",
+          "finalUrl": "https://firefly.social/",
+          "status": 429,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-tako",
+      "sourceRow": 3,
+      "name": "tako",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.tako.so/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "很抱歉，您所在地区无法访问",
+      "pageTitle": "403 - 禁止访问",
+      "pages": [
+        {
+          "url": "https://app.tako.so/",
+          "finalUrl": "https://403.tako.so/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-farcaster",
+      "sourceRow": 4,
+      "name": "farcaster",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://farcaster.xyz/clanker",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Farcaster",
+      "pages": [
+        {
+          "url": "https://farcaster.xyz/clanker",
+          "finalUrl": "https://farcaster.xyz/clanker",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://farcaster.xyz",
+          "finalUrl": "https://farcaster.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-giverep",
+      "sourceRow": 5,
+      "name": "giverep",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://giverep.com/",
+      "suggestedX": "@GiveRepApp",
+      "xCandidates": [
+        {
+          "handle": "GiveRepApp",
+          "score": 15
+        }
+      ],
+      "metaDescription": "Track and build your crypto reputation through social influence, trading activity, and community engagement. Join the future of decentralized reputation systems.",
+      "pageTitle": "GiveRep - Crypto Reputation & Influence Platform",
+      "pages": [
+        {
+          "url": "https://giverep.com/",
+          "finalUrl": "https://giverep.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-reddit",
+      "sourceRow": 6,
+      "name": "reddit",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://www.reddit.com/user/welinkBTC/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://www.reddit.com/user/welinkBTC/",
+          "finalUrl": "https://www.reddit.com/user/welinkBTC/",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.reddit.com",
+          "finalUrl": "https://www.reddit.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-virtuals",
+      "sourceRow": 7,
+      "name": "virtuals",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.virtuals.io/referral?code=0G7PYA",
+      "suggestedX": "@virtuals_io",
+      "xCandidates": [
+        {
+          "handle": "virtuals_io",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Virtuals Protocol is a society of productive AI agents, each designed to generate services or products and autonomously engage in onchain commerce, with humans or other agents. These agents are tokenized through Agent Tokens, enabling capital formation, permissionless participation, and incentive alignment between creators, investors, and agents.",
+      "pageTitle": "Virtuals Protocol | Society of AI Agents",
+      "pages": [
+        {
+          "url": "https://app.virtuals.io/referral?code=0G7PYA",
+          "finalUrl": "https://app.virtuals.io/referral?code=0G7PYA",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.virtuals.io",
+          "finalUrl": "https://app.virtuals.io/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-soul",
+      "sourceRow": 8,
+      "name": "soul",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.soul.io/?referredBy=KAITO",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Attention Required! | Cloudflare",
+      "pages": [
+        {
+          "url": "https://app.soul.io/?referredBy=KAITO",
+          "finalUrl": "https://app.soul.io/?referredBy=KAITO",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://app.soul.io",
+          "finalUrl": "https://app.soul.io/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-glider",
+      "sourceRow": 9,
+      "name": "glider",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://glider.fi/user/0xeaA58075f2C1f4A4c99900529c834cEE838B35d4",
+      "suggestedX": "@glider_fi",
+      "xCandidates": [
+        {
+          "handle": "glider_fi",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Automate your onchain portfolio. Gas-free, non-custodial, and fully yours. Investing that finally feels effortless.",
+      "pageTitle": "Glider | Automated Onchain Portfolios",
+      "pages": [
+        {
+          "url": "https://glider.fi/user/0xeaA58075f2C1f4A4c99900529c834cEE838B35d4",
+          "finalUrl": "https://glider.fi/user/0xeaA58075f2C1f4A4c99900529c834cEE838B35d4",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://glider.fi",
+          "finalUrl": "https://glider.fi/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-river",
+      "sourceRow": 10,
+      "name": "river",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.river.inc/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Vercel Security Checkpoint",
+      "pages": [
+        {
+          "url": "https://app.river.inc/",
+          "finalUrl": "https://app.river.inc/",
+          "status": 429,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-wallchain",
+      "sourceRow": 11,
+      "name": "wallchain",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.wallchain.xyz/heyelsa",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://app.wallchain.xyz/heyelsa",
+          "finalUrl": "https://app.wallchain.xyz/heyelsa",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://app.wallchain.xyz",
+          "finalUrl": "https://app.wallchain.xyz/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-ethos",
+      "sourceRow": 12,
+      "name": "ethos",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.ethos.network/",
+      "suggestedX": "@ethos_network",
+      "xCandidates": [
+        {
+          "handle": "ethos_network",
+          "score": 9
+        }
+      ],
+      "metaDescription": "Reputation & credibility for crypto, driven by peer-to-peer reviews & secured by staked Ethereum. What’s your crypto credibility score?",
+      "pageTitle": "Ethos",
+      "pages": [
+        {
+          "url": "https://app.ethos.network/",
+          "finalUrl": "https://app.ethos.network/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-x",
+      "sourceRow": 13,
+      "name": "推特",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://x.com/welinkBTC",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://x.com/welinkBTC",
+          "finalUrl": "https://x.com/welinkBTC",
+          "status": 0,
+          "error": "This operation was aborted"
+        },
+        {
+          "url": "https://x.com",
+          "finalUrl": "https://x.com",
+          "status": 0,
+          "error": "This operation was aborted"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-binance-square",
+      "sourceRow": 14,
+      "name": "币安广场",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://www.binance.com/zh-CN/square/profile/welinkbtc",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://www.binance.com/zh-CN/square/profile/welinkbtc",
+          "finalUrl": "https://www.binance.com/zh-CN/square/profile/welinkbtc",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.binance.com",
+          "finalUrl": "https://www.binance.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r15",
+      "sourceRow": 15,
+      "name": "Billionlive",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://billion.live/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Watch. Trade. Predict. All in one app.",
+      "pageTitle": "Billion",
+      "pages": [
+        {
+          "url": "https://billion.live/",
+          "finalUrl": "https://billion.live/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r16",
+      "sourceRow": 16,
+      "name": "highlight",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://highlight.xyz/user/@welinkbtc.eth",
+      "suggestedX": "@highlight_xyz",
+      "xCandidates": [
+        {
+          "handle": "highlight_xyz",
+          "score": 15
+        }
+      ],
+      "metaDescription": "The toolkit for web3 creators.",
+      "pageTitle": "Highlight",
+      "pages": [
+        {
+          "url": "https://highlight.xyz/user/@welinkbtc.eth",
+          "finalUrl": "https://highlight.xyz/user/%40welinkbtc.eth",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://highlight.xyz",
+          "finalUrl": "https://highlight.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r17",
+      "sourceRow": 17,
+      "name": "rodeo",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://rodeo.club/@welinkbtc/posts",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Foundation Labs is a technology company building software for creativity, culture and commerce.",
+      "pageTitle": "404: NOT_FOUND",
+      "pages": [
+        {
+          "url": "https://rodeo.club/@welinkbtc/posts",
+          "finalUrl": "https://www.foundation-labs.xyz/@welinkbtc/posts",
+          "status": 404,
+          "error": null
+        },
+        {
+          "url": "https://rodeo.club",
+          "finalUrl": "https://www.foundation-labs.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r18",
+      "sourceRow": 18,
+      "name": "推特pro",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://pro.x.com/i/decks/2002067593981800522",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://pro.x.com/i/decks/2002067593981800522",
+          "finalUrl": "https://pro.x.com/i/decks/2002067593981800522",
+          "status": 0,
+          "error": "This operation was aborted"
+        },
+        {
+          "url": "https://pro.x.com",
+          "finalUrl": "https://pro.x.com",
+          "status": 0,
+          "error": "This operation was aborted"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-kaito",
+      "sourceRow": 19,
+      "name": "kaito",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://yaps.kaito.ai/openmind",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://yaps.kaito.ai/openmind",
+          "finalUrl": "https://kaito.ai/openmind",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://yaps.kaito.ai",
+          "finalUrl": "https://kaito.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r20",
+      "sourceRow": 20,
+      "name": "Polarise",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://app.polarise.org/?code=JCKGxG",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "polarise.org | 521: Web server is down",
+      "pages": [
+        {
+          "url": "https://app.polarise.org/?code=JCKGxG",
+          "finalUrl": "https://app.polarise.org/?code=JCKGxG",
+          "status": 521,
+          "error": null
+        },
+        {
+          "url": "https://app.polarise.org",
+          "finalUrl": "https://app.polarise.org/",
+          "status": 521,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-base",
+      "sourceRow": 21,
+      "name": "base钱包",
+      "categoryId": "toolbox-cat-socialfi",
+      "officialUrl": "https://base.app/invite/welinkai/79XQ48KK",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Get the Base app to accept this invite.",
+      "pageTitle": "Join Base",
+      "pages": [
+        {
+          "url": "https://base.app/invite/welinkai/79XQ48KK",
+          "finalUrl": "https://base.app/invite/welinkai/79XQ48KK",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://base.app",
+          "finalUrl": "https://base.app/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-matrica",
+      "sourceRow": 23,
+      "name": "matrica",
+      "categoryId": "toolbox-cat-identity",
+      "officialUrl": "https://matrica.io/login",
+      "suggestedX": "@MatricaLabs",
+      "xCandidates": [
+        {
+          "handle": "MatricaLabs",
+          "score": 15
+        }
+      ],
+      "metaDescription": "Unleashing the full potential of NFT communities. Our comprehensive suite of tools is trusted by the world&#x27;s top NFT communities for efficient and seamless token gating.",
+      "pageTitle": "Matrica",
+      "pages": [
+        {
+          "url": "https://matrica.io/login",
+          "finalUrl": "https://matrica.io/login",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://matrica.io",
+          "finalUrl": "https://matrica.io/",
+          "status": 502,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-cmc",
+      "sourceRow": 26,
+      "name": "coinmarketcap",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://coinmarketcap.com/account/rewards/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://coinmarketcap.com/account/rewards/",
+          "finalUrl": "https://coinmarketcap.com/account/rewards/",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://coinmarketcap.com",
+          "finalUrl": "https://coinmarketcap.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-coingecko",
+      "sourceRow": 27,
+      "name": "coingecko",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://www.coingecko.com/zh",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://www.coingecko.com/zh",
+          "finalUrl": "https://www.coingecko.com/zh",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.coingecko.com",
+          "finalUrl": "https://www.coingecko.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-livecoinwatch",
+      "sourceRow": 28,
+      "name": "livecoinwatch",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://www.livecoinwatch.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://www.livecoinwatch.com/",
+          "finalUrl": "https://www.livecoinwatch.com/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-arkm",
+      "sourceRow": 29,
+      "name": "arkm",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://arkm.com/zh/token",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://arkm.com/zh/token",
+          "finalUrl": "https://arkm.com/zh/token",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://arkm.com",
+          "finalUrl": "https://arkm.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-dune",
+      "sourceRow": 30,
+      "name": "dune",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://dune.com/discover/content/trending",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://dune.com/discover/content/trending",
+          "finalUrl": "https://dune.com/discover/content/trending",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://dune.com",
+          "finalUrl": "https://dune.com/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-nansen",
+      "sourceRow": 31,
+      "name": "nansen",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://app.nansen.ai/releases",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Attention Required! | Cloudflare",
+      "pages": [
+        {
+          "url": "https://app.nansen.ai/releases",
+          "finalUrl": "https://app.nansen.ai/releases",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://app.nansen.ai",
+          "finalUrl": "https://app.nansen.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-dlnews",
+      "sourceRow": 32,
+      "name": "dlnews",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://www.dlnews.com/articles/",
+      "suggestedX": "@dlnews",
+      "xCandidates": [
+        {
+          "handle": "dlnews",
+          "score": 14
+        },
+        {
+          "handle": "DLNews",
+          "score": 14
+        },
+        {
+          "handle": "DriftProtocol",
+          "score": 1
+        },
+        {
+          "handle": "0xVKTR",
+          "score": 0
+        },
+        {
+          "handle": "Balancer",
+          "score": 0
+        },
+        {
+          "handle": "brian_armstrong",
+          "score": 0
+        },
+        {
+          "handle": "defillama",
+          "score": 0
+        },
+        {
+          "handle": "DefiLlama",
+          "score": 0
+        },
+        {
+          "handle": "ethereumfndn",
+          "score": 0
+        },
+        {
+          "handle": "Gudtrip",
+          "score": 0
+        },
+        {
+          "handle": "intangiblecoins",
+          "score": 0
+        },
+        {
+          "handle": "nic_carter",
+          "score": 0
+        },
+        {
+          "handle": "phongle",
+          "score": 0
+        },
+        {
+          "handle": "PixieChess",
+          "score": 0
+        },
+        {
+          "handle": "puffpaw",
+          "score": 0
+        },
+        {
+          "handle": "saylor",
+          "score": 0
+        },
+        {
+          "handle": "SecScottBessent",
+          "score": 0
+        },
+        {
+          "handle": "SenatorTimScott",
+          "score": 0
+        },
+        {
+          "handle": "SGJohnsson",
+          "score": 0
+        },
+        {
+          "handle": "SpecterAnalyst",
+          "score": 0
+        },
+        {
+          "handle": "StaniKulechov",
+          "score": 0
+        }
+      ],
+      "metaDescription": "All the latest news and updates by DL News",
+      "pageTitle": "All news and updates - DL News",
+      "pages": [
+        {
+          "url": "https://www.dlnews.com/articles/",
+          "finalUrl": "https://www.dlnews.com/articles/",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.dlnews.com",
+          "finalUrl": "https://www.dlnews.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-glassnode",
+      "sourceRow": 33,
+      "name": "glassnode",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://studio.glassnode.com/charts/addresses.ActiveCount?a=BTC",
+      "suggestedX": "@glassnode",
+      "xCandidates": [
+        {
+          "handle": "glassnode",
+          "score": 8
+        }
+      ],
+      "metaDescription": "**Definition.** The number of unique addresses active in the network as a sender or receiver. **Technical.** Only addresses active in successful transactions are counted.",
+      "pageTitle": "BTC Active Addresses Chart - Glassnode",
+      "pages": [
+        {
+          "url": "https://studio.glassnode.com/charts/addresses.ActiveCount?a=BTC",
+          "finalUrl": "https://studio.glassnode.com/charts/addresses.ActiveCount?a=BTC",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://studio.glassnode.com",
+          "finalUrl": "https://studio.glassnode.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-treeofalpha",
+      "sourceRow": 34,
+      "name": "treeofalpha",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://news.treeofalpha.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Tree News - Home",
+      "pages": [
+        {
+          "url": "https://news.treeofalpha.com/",
+          "finalUrl": "https://news.treeofalpha.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-panewslab",
+      "sourceRow": 35,
+      "name": "panewslab财经日历",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://www.panewslab.com/zh/calendar",
+      "suggestedX": "@PANews",
+      "xCandidates": [
+        {
+          "handle": "PANews",
+          "score": 14
+        },
+        {
+          "handle": "fortuneglobal_",
+          "score": 0
+        },
+        {
+          "handle": "Magne_Ai",
+          "score": 0
+        },
+        {
+          "handle": "panewscn",
+          "score": 0
+        }
+      ],
+      "metaDescription": "PANews 是聚焦科技与金融前沿的专业资讯平台，持续追踪加密资产、区块链技术、AI、机器人、股票及全球市场动态，提供即时新闻、深度分析与趋势洞察。是Web3和AI领域最有影响力的中文媒体之一。",
+      "pageTitle": "事件日历 | PANews",
+      "pages": [
+        {
+          "url": "https://www.panewslab.com/zh/calendar",
+          "finalUrl": "https://www.panewslab.com/zh/calendar",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.panewslab.com",
+          "finalUrl": "https://www.panewslab.com/zh",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-chainalert",
+      "sourceRow": 36,
+      "name": "chainalert币链快报",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://app.chainalert.me/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "ChainAlert",
+      "pages": [
+        {
+          "url": "https://app.chainalert.me/",
+          "finalUrl": "https://app.chainalert.me/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-foresight",
+      "sourceRow": 37,
+      "name": "foresightnews财经日历",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://foresightnews.pro/calendar?date=20251222",
+      "suggestedX": "@Bybit_Official",
+      "xCandidates": [
+        {
+          "handle": "Bybit_Official",
+          "score": 1
+        },
+        {
+          "handle": "CodexProtocol",
+          "score": 1
+        },
+        {
+          "handle": "ethena_labs",
+          "score": 1
+        },
+        {
+          "handle": "FrontierDotXYZ",
+          "score": 1
+        },
+        {
+          "handle": "Gateway_xyz",
+          "score": 1
+        },
+        {
+          "handle": "irys_xyz",
+          "score": 1
+        },
+        {
+          "handle": "LayerZero_Labs",
+          "score": 1
+        },
+        {
+          "handle": "lidofinance",
+          "score": 1
+        },
+        {
+          "handle": "llmctoofficial",
+          "score": 1
+        },
+        {
+          "handle": "morpholabs",
+          "score": 1
+        },
+        {
+          "handle": "oceanprotocol",
+          "score": 1
+        },
+        {
+          "handle": "phi_xyz",
+          "score": 1
+        },
+        {
+          "handle": "robinhoodapp",
+          "score": 1
+        },
+        {
+          "handle": "StrikeFinance",
+          "score": 1
+        },
+        {
+          "handle": "teaxyz_",
+          "score": 1
+        },
+        {
+          "handle": "0xintuition",
+          "score": 0
+        },
+        {
+          "handle": "0xPolygon",
+          "score": 0
+        },
+        {
+          "handle": "42space",
+          "score": 0
+        },
+        {
+          "handle": "AaveAave",
+          "score": 0
+        },
+        {
+          "handle": "AIWayfinder",
+          "score": 0
+        },
+        {
+          "handle": "Alibaba_Qwen",
+          "score": 0
+        },
+        {
+          "handle": "AnthropicAI",
+          "score": 0
+        },
+        {
+          "handle": "apecoin",
+          "score": 0
+        },
+        {
+          "handle": "Aster_DEX",
+          "score": 0
+        },
+        {
+          "handle": "avalancheavax",
+          "score": 0
+        },
+        {
+          "handle": "AvgJoesCrypto",
+          "score": 0
+        },
+        {
+          "handle": "base",
+          "score": 0
+        },
+        {
+          "handle": "binance",
+          "score": 0
+        },
+        {
+          "handle": "bitgetglobal",
+          "score": 0
+        },
+        {
+          "handle": "BitMartExchange",
+          "score": 0
+        },
+        {
+          "handle": "BitMEX",
+          "score": 0
+        },
+        {
+          "handle": "BitwiseInvest",
+          "score": 0
+        },
+        {
+          "handle": "Blockstream",
+          "score": 0
+        },
+        {
+          "handle": "Blockworks_",
+          "score": 0
+        },
+        {
+          "handle": "BNPParibas",
+          "score": 0
+        },
+        {
+          "handle": "breakoutprop",
+          "score": 0
+        },
+        {
+          "handle": "circlepay",
+          "score": 0
+        },
+        {
+          "handle": "ClutchMarkets",
+          "score": 0
+        },
+        {
+          "handle": "coinbase",
+          "score": 0
+        },
+        {
+          "handle": "COLDCARDwallet",
+          "score": 0
+        },
+        {
+          "handle": "context",
+          "score": 0
+        },
+        {
+          "handle": "Core_Scientific",
+          "score": 0
+        },
+        {
+          "handle": "CORE_Vault",
+          "score": 0
+        },
+        {
+          "handle": "cryptocom",
+          "score": 0
+        },
+        {
+          "handle": "delphi_digital",
+          "score": 0
+        },
+        {
+          "handle": "discord",
+          "score": 0
+        },
+        {
+          "handle": "DistributedG",
+          "score": 0
+        },
+        {
+          "handle": "ethdotorg",
+          "score": 0
+        },
+        {
+          "handle": "ethereum",
+          "score": 0
+        },
+        {
+          "handle": "FalconStable",
+          "score": 0
+        },
+        {
+          "handle": "FantomFDN",
+          "score": 0
+        },
+        {
+          "handle": "Foresight_News",
+          "score": 0
+        },
+        {
+          "handle": "ForTubeFi",
+          "score": 0
+        },
+        {
+          "handle": "GalaxyBlitzGame",
+          "score": 0
+        },
+        {
+          "handle": "galaxyhq",
+          "score": 0
+        },
+        {
+          "handle": "GensynFND",
+          "score": 0
+        },
+        {
+          "handle": "gerovich",
+          "score": 0
+        },
+        {
+          "handle": "haydenzadams",
+          "score": 0
+        },
+        {
+          "handle": "IMCtrading",
+          "score": 0
+        },
+        {
+          "handle": "jpmorgan",
+          "score": 0
+        },
+        {
+          "handle": "Kalshi",
+          "score": 0
+        },
+        {
+          "handle": "keep_project",
+          "score": 0
+        },
+        {
+          "handle": "krakenfx",
+          "score": 0
+        },
+        {
+          "handle": "Ledger",
+          "score": 0
+        },
+        {
+          "handle": "lookonchain",
+          "score": 0
+        },
+        {
+          "handle": "Nasdaq",
+          "score": 0
+        },
+        {
+          "handle": "OpenAI",
+          "score": 0
+        },
+        {
+          "handle": "opus_genesis",
+          "score": 0
+        },
+        {
+          "handle": "pendle_fi",
+          "score": 0
+        },
+        {
+          "handle": "PolymarketHQ",
+          "score": 0
+        },
+        {
+          "handle": "PowerPrtcl",
+          "score": 0
+        },
+        {
+          "handle": "Ravencoin",
+          "score": 0
+        },
+        {
+          "handle": "RiverdotInc",
+          "score": 0
+        },
+        {
+          "handle": "RobinhoodCrypto",
+          "score": 0
+        },
+        {
+          "handle": "sanctumso",
+          "score": 0
+        },
+        {
+          "handle": "solana",
+          "score": 0
+        },
+        {
+          "handle": "SonicSVM",
+          "score": 0
+        },
+        {
+          "handle": "Special",
+          "score": 0
+        },
+        {
+          "handle": "starpowerworld",
+          "score": 0
+        },
+        {
+          "handle": "SushiSwap",
+          "score": 0
+        },
+        {
+          "handle": "telegram",
+          "score": 0
+        },
+        {
+          "handle": "tencentglobal",
+          "score": 0
+        },
+        {
+          "handle": "TeraWulfInc",
+          "score": 0
+        },
+        {
+          "handle": "Tether_to",
+          "score": 0
+        },
+        {
+          "handle": "TheMARAverse",
+          "score": 0
+        },
+        {
+          "handle": "ton_blockchain",
+          "score": 0
+        },
+        {
+          "handle": "tradeparadigm",
+          "score": 0
+        },
+        {
+          "handle": "Trezor",
+          "score": 0
+        },
+        {
+          "handle": "Tronfoundation",
+          "score": 0
+        },
+        {
+          "handle": "Uniswap",
+          "score": 0
+        },
+        {
+          "handle": "upbitglobal",
+          "score": 0
+        },
+        {
+          "handle": "VitalikButerin",
+          "score": 0
+        },
+        {
+          "handle": "WhiteStarCap",
+          "score": 0
+        },
+        {
+          "handle": "zksync",
+          "score": 0
+        }
+      ],
+      "metaDescription": "",
+      "pageTitle": "区块链日历 - Foresight News",
+      "pages": [
+        {
+          "url": "https://foresightnews.pro/calendar?date=20251222",
+          "finalUrl": "https://foresightnews.pro/calendar/?date=20251222",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://foresightnews.pro",
+          "finalUrl": "https://foresightnews.pro/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r38",
+      "sourceRow": 38,
+      "name": "coinglass",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://www.coinglass.com/zh/today",
+      "suggestedX": "@coinglass_com",
+      "xCandidates": [
+        {
+          "handle": "coinglass_com",
+          "score": 14
+        }
+      ],
+      "metaDescription": "我们提供比特币回报率的历史数据统计和分析，包括日收益率、周收益率和月收益率等多个时间段，帮助您了解比特币市场的历史表现和趋势，并辅助您做出更明智的投资决策。我们的数据来自各大交易所和市场，保证数据准确性和及时性。",
+      "pageTitle": "比特币回报率统计与分析 | CoinGlass",
+      "pages": [
+        {
+          "url": "https://www.coinglass.com/zh/today",
+          "finalUrl": "https://www.coinglass.com/zh/today",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.coinglass.com",
+          "finalUrl": "https://www.coinglass.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r39",
+      "sourceRow": 39,
+      "name": "链捕手",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://www.chaincatcher.com/",
+      "suggestedX": "@ChainCatcher_",
+      "xCandidates": [
+        {
+          "handle": "ChainCatcher_",
+          "score": 6
+        }
+      ],
+      "metaDescription": "ChainCatcher 致力于成为更懂 Crypto 的 Crypto 研究与资讯枢纽，连结全球金融科技（Fintech）与原生加密生态。我们专注于 AI+Crypto 融合、RWA（真实世界资产）、链上新基建以及全球加密政策，提供原创深度、精准快讯与数据研报，助你理性把握下一代全球数字金融与加密科技浪潮。",
+      "pageTitle": "链捕手 ChainCatcher｜专业的 Crypto 与 Fintech 资讯与研究平台",
+      "pages": [
+        {
+          "url": "https://www.chaincatcher.com/",
+          "finalUrl": "https://www.chaincatcher.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r40",
+      "sourceRow": 40,
+      "name": "checkonchain数据分析",
+      "categoryId": "toolbox-cat-analytics",
+      "officialUrl": "https://newsletter.checkonchain.com/p/system-stress",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "The overall Bitcoin market is currently experiencing the highest degree of stress in the cycle so far. Investors are holding losses, hashrate is declining, and price is struggling to gain a foothold.",
+      "pageTitle": "System Stress - by James Check (Checkmatey)",
+      "pages": [
+        {
+          "url": "https://newsletter.checkonchain.com/p/system-stress",
+          "finalUrl": "https://newsletter.checkonchain.com/p/system-stress",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://newsletter.checkonchain.com",
+          "finalUrl": "https://newsletter.checkonchain.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r42",
+      "sourceRow": 42,
+      "name": "polymarket",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://polymarket.com/rewards",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://polymarket.com/rewards",
+          "finalUrl": "https://polymarket.com/rewards",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://polymarket.com",
+          "finalUrl": "https://polymarket.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r43",
+      "sourceRow": 43,
+      "name": "kalshi",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://kalshi.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://kalshi.com/",
+          "finalUrl": "https://kalshi.com/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r44",
+      "sourceRow": 44,
+      "name": "opinion",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://app.opinion.trade/macro",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "OPINION — Not available in your region",
+      "pages": [
+        {
+          "url": "https://app.opinion.trade/macro",
+          "finalUrl": "https://app.opinion.trade/region-restricted",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.opinion.trade",
+          "finalUrl": "https://app.opinion.trade/region-restricted",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r45",
+      "sourceRow": 45,
+      "name": "predict",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://predict.fun/portfolio/0xe9A81bde9AeBF820d4e19D42057d197197c06535",
+      "suggestedX": "@predictdotfun",
+      "xCandidates": [
+        {
+          "handle": "predictdotfun",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Track your positions and orders, update your profile information and claim your USDT yield.",
+      "pageTitle": "Portfolio | Predict",
+      "pages": [
+        {
+          "url": "https://predict.fun/portfolio/0xe9A81bde9AeBF820d4e19D42057d197197c06535",
+          "finalUrl": "https://predict.fun/portfolio/0xe9A81bde9AeBF820d4e19D42057d197197c06535",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://predict.fun",
+          "finalUrl": "https://predict.fun/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r46",
+      "sourceRow": 46,
+      "name": "probable",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://probable.markets/events/trending",
+      "suggestedX": "@0xProbable",
+      "xCandidates": [
+        {
+          "handle": "0xProbable",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Explore trending prediction markets across every category on Probable.",
+      "pageTitle": "Trending Prediction Markets | Probable | Probable",
+      "pages": [
+        {
+          "url": "https://probable.markets/events/trending",
+          "finalUrl": "https://probable.markets/events/trending",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://probable.markets",
+          "finalUrl": "https://probable.markets/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r47",
+      "sourceRow": 47,
+      "name": "klout",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://klout.gg/results",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://klout.gg/results",
+          "finalUrl": "https://klout.gg/results",
+          "status": 503,
+          "error": "unsupported text/plain; charset=utf-8"
+        },
+        {
+          "url": "https://klout.gg",
+          "finalUrl": "https://klout.gg/",
+          "status": 503,
+          "error": "unsupported text/plain; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r48",
+      "sourceRow": 48,
+      "name": "fireplace",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://pro.fireplace.gg/?code=LKO6VE",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Attention Required! | Cloudflare",
+      "pages": [
+        {
+          "url": "https://pro.fireplace.gg/?code=LKO6VE",
+          "finalUrl": "https://pro.fireplace.gg/?code=LKO6VE",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://pro.fireplace.gg",
+          "finalUrl": "https://pro.fireplace.gg/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r49",
+      "sourceRow": 49,
+      "name": "Upshot",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://upshot.cards/claim",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Vercel Security Checkpoint",
+      "pages": [
+        {
+          "url": "https://upshot.cards/claim",
+          "finalUrl": "https://upshot.cards/claim",
+          "status": 429,
+          "error": null
+        },
+        {
+          "url": "https://upshot.cards",
+          "finalUrl": "https://upshot.cards/",
+          "status": 429,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r50",
+      "sourceRow": 50,
+      "name": "Converge",
+      "categoryId": "toolbox-cat-sheet-04",
+      "officialUrl": "https://tally.so/r/31jLA1",
+      "suggestedX": "@ConvergeMarkets",
+      "xCandidates": [
+        {
+          "handle": "ConvergeMarkets",
+          "score": 8
+        },
+        {
+          "handle": "TallyForms",
+          "score": 6
+        }
+      ],
+      "metaDescription": "Made with Tally, the simplest way to create forms.",
+      "pageTitle": "Join the Waitlist",
+      "pages": [
+        {
+          "url": "https://tally.so/r/31jLA1",
+          "finalUrl": "https://tally.so/r/31jLA1",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://tally.so",
+          "finalUrl": "https://tally.so/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r52",
+      "sourceRow": 52,
+      "name": "surf",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://asksurf.ai/",
+      "suggestedX": "@surf_ai",
+      "xCandidates": [
+        {
+          "handle": "surf_ai",
+          "score": 8
+        },
+        {
+          "handle": "SurfAI",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Catch the next wave of crypto insight before everyone else. Advanced AI-powered cryptocurrency research, market analysis, and trading insights platform.",
+      "pageTitle": "Surf - Crypto&#x27;s Ultimate AI",
+      "pages": [
+        {
+          "url": "https://asksurf.ai/",
+          "finalUrl": "https://asksurf.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r53",
+      "sourceRow": 53,
+      "name": "gemini",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://gemini.google.com/app",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://gemini.google.com/app",
+          "finalUrl": "https://gemini.google.com/app",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://gemini.google.com",
+          "finalUrl": "https://gemini.google.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r54",
+      "sourceRow": 54,
+      "name": "edgen",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://www.edgen.tech/zh/chat",
+      "suggestedX": "@ask_edgen",
+      "xCandidates": [
+        {
+          "handle": "ask_edgen",
+          "score": 14
+        },
+        {
+          "handle": "Edgen",
+          "score": 14
+        },
+        {
+          "handle": "EdgenTech",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Ed by Edgen — 美股、港股及加密货币的 AI 选股。入场价、止损价、完整逻辑。Ed 了解你的投资组合,只告诉你重要的信息。",
+      "pageTitle": "Edgen Search - AI 交易信号与实时市场洞察",
+      "pages": [
+        {
+          "url": "https://www.edgen.tech/zh/chat",
+          "finalUrl": "https://www.edgen.tech/zh/chat",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.edgen.tech",
+          "finalUrl": "https://www.edgen.tech/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r55",
+      "sourceRow": 55,
+      "name": "yupp",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://yupp.ai/join/ambitious-quick-generation",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "403: Forbidden",
+      "pages": [
+        {
+          "url": "https://yupp.ai/join/ambitious-quick-generation",
+          "finalUrl": "https://yupp.ai/join/ambitious-quick-generation",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://yupp.ai",
+          "finalUrl": "https://yupp.ai/",
+          "status": 429,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r56",
+      "sourceRow": 56,
+      "name": "minara",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://minara.ai/zh/app/chat/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Document",
+      "pages": [
+        {
+          "url": "https://minara.ai/zh/app/chat/",
+          "finalUrl": "https://minara.ai/zh/app/chat/",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://minara.ai",
+          "finalUrl": "https://minara.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r57",
+      "sourceRow": 57,
+      "name": "gonka",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://chat.gonka.ai/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://chat.gonka.ai/",
+          "finalUrl": "https://chat.gonka.ai/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r58",
+      "sourceRow": 58,
+      "name": "myshell",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://app.myshell.ai/explore",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://app.myshell.ai/explore",
+          "finalUrl": "https://app.myshell.ai/explore",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://app.myshell.ai",
+          "finalUrl": "https://app.myshell.ai",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r59",
+      "sourceRow": 59,
+      "name": "qwen",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://chat.qwen.ai/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Qwen Studio",
+      "pages": [
+        {
+          "url": "https://chat.qwen.ai/",
+          "finalUrl": "https://chat.qwen.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r60",
+      "sourceRow": 60,
+      "name": "chatgpt",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://chatgpt.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://chatgpt.com/",
+          "finalUrl": "https://chatgpt.com/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r61",
+      "sourceRow": 61,
+      "name": "bananaimg",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://bananaimg.ai/image/nano-banana-pro/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Create high-quality images with Nano Banana Pro AI. Better accuracy than Nano Banana. Try Nano Banana Pro free on BananaImg — fast, realistic, and easy.",
+      "pageTitle": "Nano Banana Pro: The Latest AI Image Model | Nimg AI",
+      "pages": [
+        {
+          "url": "https://bananaimg.ai/image/nano-banana-pro/",
+          "finalUrl": "https://nimg.ai/image/nano-banana-pro/",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://bananaimg.ai",
+          "finalUrl": "https://nimg.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r62",
+      "sourceRow": 62,
+      "name": "imagine",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://www.imagine.art/flow",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://www.imagine.art/flow",
+          "finalUrl": "https://www.imagine.art/flow",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.imagine.art",
+          "finalUrl": "https://www.imagine.art",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r63",
+      "sourceRow": 63,
+      "name": "nousresearch",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://chat.nousresearch.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Hermes Agent — the open-source agent that grows with you. Native app for macOS, Windows, and Linux. By Nous Research.",
+      "pageTitle": "Hermes Agent | Nous Research",
+      "pages": [
+        {
+          "url": "https://chat.nousresearch.com/",
+          "finalUrl": "https://hermes-agent.nousresearch.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r64",
+      "sourceRow": 64,
+      "name": "wayfinder",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://app.wayfinder.ai/chat/perpetual",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Wayfinder",
+      "pageTitle": "Wayfinder | Login",
+      "pages": [
+        {
+          "url": "https://app.wayfinder.ai/chat/perpetual",
+          "finalUrl": "https://app.wayfinder.ai/login",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.wayfinder.ai",
+          "finalUrl": "https://app.wayfinder.ai/login",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r65",
+      "sourceRow": 65,
+      "name": "agentlisa",
+      "categoryId": "toolbox-cat-sheet-05",
+      "officialUrl": "https://agentlisa.ai/secure-agi",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Attention Required! | Cloudflare",
+      "pages": [
+        {
+          "url": "https://agentlisa.ai/secure-agi",
+          "finalUrl": "https://agentlisa.ai/secure-agi",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://agentlisa.ai",
+          "finalUrl": "https://agentlisa.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r68",
+      "sourceRow": 68,
+      "name": "universalx交易所",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://universalx.app/grow",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Trade any token on any chain at the first chain-agnostic trading platform. No need to consider chains. 100% decentralized and self-custodial.",
+      "pageTitle": "UniversalX丨Trade any token, on any chain",
+      "pages": [
+        {
+          "url": "https://universalx.app/grow",
+          "finalUrl": "https://universalx.app/grow",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://universalx.app",
+          "finalUrl": "https://universalx.app/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r69",
+      "sourceRow": 69,
+      "name": "backpack交易所",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://backpack.exchange/leaderboard",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://backpack.exchange/leaderboard",
+          "finalUrl": "https://backpack.exchange/leaderboard",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://backpack.exchange",
+          "finalUrl": "https://backpack.exchange",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r70",
+      "sourceRow": 70,
+      "name": "grvt交易所",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://grvt.io/exchange/reward-portal/referral-hub",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Attention Required! | Cloudflare",
+      "pages": [
+        {
+          "url": "https://grvt.io/exchange/reward-portal/referral-hub",
+          "finalUrl": "https://grvt.io/exchange/reward-portal/referral-hub",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://grvt.io",
+          "finalUrl": "https://grvt.io/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r71",
+      "sourceRow": 71,
+      "name": "asterdex",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://www.asterdex.com/zh-CN/campaigns/human-vs-ai",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://www.asterdex.com/zh-CN/campaigns/human-vs-ai",
+          "finalUrl": "https://www.asterdex.com/zh-CN/campaigns/human-vs-ai",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.asterdex.com",
+          "finalUrl": "https://www.asterdex.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r72",
+      "sourceRow": 72,
+      "name": "standx交易平台",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://standx.com/dashboard",
+      "suggestedX": "@standx_official",
+      "xCandidates": [
+        {
+          "handle": "standx_official",
+          "score": 15
+        }
+      ],
+      "metaDescription": "Universal Markets. Universal Yield. StandX is a Perps DEX on BNB and Solana, powered by yield-bearing $DUSD. Trade perpetuals with margin that automatically earns yield without staking. With SIP-5, any asset becomes a permissionless market that anyone can list, market-make, and earn long-term fees on.",
+      "pageTitle": "Dashboard | StandX: Universal Markets. Universal Yield.",
+      "pages": [
+        {
+          "url": "https://standx.com/dashboard",
+          "finalUrl": "https://standx.com/dashboard",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://standx.com",
+          "finalUrl": "https://standx.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r73",
+      "sourceRow": 73,
+      "name": "edgex",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://pro.edgex.exchange/rewards",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Invite friends, earn trading rebates, and track referral rewards on edgeX. Participate in the referral program and grow your earnings on a leading perp DEX.",
+      "pageTitle": "Referral Rewards & Trading Rebates | edgeX",
+      "pages": [
+        {
+          "url": "https://pro.edgex.exchange/rewards",
+          "finalUrl": "https://pro.edgex.exchange/rewards",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://pro.edgex.exchange",
+          "finalUrl": "https://pro.edgex.exchange/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r74",
+      "sourceRow": 74,
+      "name": "paradex",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.paradex.trade/trade/SOL-USD-PERP",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Trade perpetuals on a high-performance DEX with deep liquidity, capital efficiency and low fees.",
+      "pageTitle": "Paradex",
+      "pages": [
+        {
+          "url": "https://app.paradex.trade/trade/SOL-USD-PERP",
+          "finalUrl": "https://app.paradex.trade/trade/SOL-USD-PERP",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.paradex.trade",
+          "finalUrl": "https://app.paradex.trade/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r75",
+      "sourceRow": 75,
+      "name": "extended",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.extended.exchange/perp",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Extended",
+      "pages": [
+        {
+          "url": "https://app.extended.exchange/perp",
+          "finalUrl": "https://app.extended.exchange/perp",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.extended.exchange",
+          "finalUrl": "https://app.extended.exchange/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r76",
+      "sourceRow": 76,
+      "name": "apex",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://omni.apex.exchange/trade/BTCUSDT",
+      "suggestedX": "@OfficialApeXdex",
+      "xCandidates": [
+        {
+          "handle": "OfficialApeXdex",
+          "score": 9
+        }
+      ],
+      "metaDescription": "",
+      "pageTitle": "ApeX Omni",
+      "pages": [
+        {
+          "url": "https://omni.apex.exchange/trade/BTCUSDT",
+          "finalUrl": "https://omni.apex.exchange/trade/BTCUSDT",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://omni.apex.exchange",
+          "finalUrl": "https://omni.apex.exchange/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r77",
+      "sourceRow": 77,
+      "name": "hyperliquid",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.hyperliquid.xyz/referrals",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://app.hyperliquid.xyz/referrals",
+          "finalUrl": "https://app.hyperliquid.xyz/referrals",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://app.hyperliquid.xyz",
+          "finalUrl": "https://app.hyperliquid.xyz",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r78",
+      "sourceRow": 78,
+      "name": "infinex",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.infinex.xyz/",
+      "suggestedX": "@infinex",
+      "xCandidates": [
+        {
+          "handle": "infinex",
+          "score": 8
+        }
+      ],
+      "metaDescription": "A new kind of crypto app, designed to defrag your crypto life.",
+      "pageTitle": "Infinex",
+      "pages": [
+        {
+          "url": "https://app.infinex.xyz/",
+          "finalUrl": "https://app.infinex.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r79",
+      "sourceRow": 79,
+      "name": "o1",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://o1.exchange/solana/rewards",
+      "suggestedX": "@o1_exchange",
+      "xCandidates": [
+        {
+          "handle": "o1_exchange",
+          "score": 14
+        }
+      ],
+      "metaDescription": "1st fully fledged Trading Terminal on Base/Solana. 45% Cashback - best rate on the market.",
+      "pageTitle": "o1.exchange",
+      "pages": [
+        {
+          "url": "https://o1.exchange/solana/rewards",
+          "finalUrl": "https://o1.exchange/solana/rewards",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://o1.exchange",
+          "finalUrl": "https://o1.exchange/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r80",
+      "sourceRow": 80,
+      "name": "defiapp",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.defi.app/login?mode=email",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Securely manage your DeFi portfolio, swaps and bridges in one place.",
+      "pageTitle": "Defi App",
+      "pages": [
+        {
+          "url": "https://app.defi.app/login?mode=email",
+          "finalUrl": "https://app.defi.app/login?mode=email",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.defi.app",
+          "finalUrl": "https://app.defi.app/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r81",
+      "sourceRow": 81,
+      "name": "titan",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://titan.exchange/profile",
+      "suggestedX": "@Titan_Exchange",
+      "xCandidates": [
+        {
+          "handle": "Titan_Exchange",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Titan finds every way possible to lower fees and maximize your gains.",
+      "pageTitle": "Titan",
+      "pages": [
+        {
+          "url": "https://titan.exchange/profile",
+          "finalUrl": "https://titan.exchange/profile",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://titan.exchange",
+          "finalUrl": "https://titan.exchange/swap",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r82",
+      "sourceRow": 82,
+      "name": "lighter",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.lighter.xyz/trade/SOL/?locale=zh",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://app.lighter.xyz/trade/SOL/?locale=zh",
+          "finalUrl": "https://app.lighter.xyz/trade/SOL/?locale=zh",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://app.lighter.xyz",
+          "finalUrl": "https://app.lighter.xyz",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r83",
+      "sourceRow": 83,
+      "name": "arkm",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://arkm.com/zh",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://arkm.com/zh",
+          "finalUrl": "https://arkm.com/zh",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://arkm.com",
+          "finalUrl": "https://arkm.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r84",
+      "sourceRow": 84,
+      "name": "variational",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://omni.variational.io/rewards",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://omni.variational.io/rewards",
+          "finalUrl": "https://omni.variational.io/rewards",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://omni.variational.io",
+          "finalUrl": "https://omni.variational.io/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r85",
+      "sourceRow": 85,
+      "name": "vanish",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://www.vanish.trade/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Vanish - Enabling Compliant Private Trading on Solana Protect your Alpha. Trade with Vanish.",
+      "pageTitle": "Vanish",
+      "pages": [
+        {
+          "url": "https://www.vanish.trade/",
+          "finalUrl": "https://www.vanish.trade/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r86",
+      "sourceRow": 86,
+      "name": "based",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.based.one/portfolio",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Track your Hyperliquid portfolio. View your balances, transactions, and more.",
+      "pageTitle": "Portfolio | Based",
+      "pages": [
+        {
+          "url": "https://app.based.one/portfolio",
+          "finalUrl": "https://app.based.one/portfolio",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.based.one",
+          "finalUrl": "https://app.based.one/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r87",
+      "sourceRow": 87,
+      "name": "blockstreet",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://blockstreet.money/dashboard?invite_code=EsFQGz",
+      "suggestedX": "@BlockSt_HQ",
+      "xCandidates": [
+        {
+          "handle": "BlockSt_HQ",
+          "score": 0
+        }
+      ],
+      "metaDescription": "",
+      "pageTitle": "BlockStreet",
+      "pages": [
+        {
+          "url": "https://blockstreet.money/dashboard?invite_code=EsFQGz",
+          "finalUrl": "https://blockstreet.money/dashboard?invite_code=EsFQGz",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://blockstreet.money",
+          "finalUrl": "https://blockstreet.money/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r88",
+      "sourceRow": 88,
+      "name": "flipster",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://flipster.io/zh-CN/trade/perpetual/SOLUSDT.PERP",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://flipster.io/zh-CN/trade/perpetual/SOLUSDT.PERP",
+          "finalUrl": "https://flipster.io/zh-CN/trade/perpetual/SOLUSDT.PERP",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://flipster.io",
+          "finalUrl": "https://flipster.io",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r89",
+      "sourceRow": 89,
+      "name": "ostium",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.ostium.com/trade?from=SOL&to=USD",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Trade US500 and other real-world assets on-chain with Ostium. Access deep liquidity, low fees, and up to 200x leverage from your wallet.",
+      "pageTitle": "Trade | Ostium",
+      "pages": [
+        {
+          "url": "https://app.ostium.com/trade?from=SOL&to=USD",
+          "finalUrl": "https://app.ostium.com/trade?from=SOL&to=USD",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.ostium.com",
+          "finalUrl": "https://app.ostium.com/trade",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r90",
+      "sourceRow": 90,
+      "name": "nado",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://app.nado.xyz/perpetuals?market=SOLUSDT0",
+      "suggestedX": "@nadohq",
+      "xCandidates": [
+        {
+          "handle": "nadohq",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Nado DEX: Orderbook on Ink L2 fusing CEX speed (5-15ms latency) & DeFi security. Trade spot & perps via a unified cross-margin system with deep liquidity and self-custody of funds. Built by the team that brought you Kraken; harness the perfect storm.",
+      "pageTitle": "Perpetuals | Nado",
+      "pages": [
+        {
+          "url": "https://app.nado.xyz/perpetuals?market=SOLUSDT0",
+          "finalUrl": "https://app.nado.xyz/perpetuals?market=SOLUSDT0",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.nado.xyz",
+          "finalUrl": "https://app.nado.xyz/perpetuals",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r91",
+      "sourceRow": 91,
+      "name": "byreal By的dex交易所",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://www.byreal.io/en/swap",
+      "suggestedX": "@byreal_io",
+      "xCandidates": [
+        {
+          "handle": "byreal_io",
+          "score": 6
+        }
+      ],
+      "metaDescription": "Trade Solana spot with CEX-grade depth, powered by Byreal CLMM",
+      "pageTitle": "Swap on Byreal — Zero gas, zero impact",
+      "pages": [
+        {
+          "url": "https://www.byreal.io/en/swap",
+          "finalUrl": "https://www.byreal.io/en/swap",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.byreal.io",
+          "finalUrl": "https://www.byreal.io/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r92",
+      "sourceRow": 92,
+      "name": "trycoinpilot",
+      "categoryId": "toolbox-cat-sheet-06",
+      "officialUrl": "https://refer.trycoinpilot.com/242f6d",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Copy top traders on Coinpilot and get 10% off fees!",
+      "pageTitle": "Copy top traders on Coinpilot",
+      "pages": [
+        {
+          "url": "https://refer.trycoinpilot.com/242f6d",
+          "finalUrl": "https://refer.coinpilot.com/242f6d",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://refer.trycoinpilot.com",
+          "finalUrl": "https://refer.coinpilot.com/",
+          "status": 404,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r95",
+      "sourceRow": 95,
+      "name": "xhunt",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://kol.xhunt.ai/rank?tab=kol&group=all",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "XHunt is a premier Web3 AI agent offering cryptocurrency market analysis, token valuation, trading tools, and real-time insights.",
+      "pageTitle": "XHunt: AI-Driven Web3 Investment and Research Platform",
+      "pages": [
+        {
+          "url": "https://kol.xhunt.ai/rank?tab=kol&group=all",
+          "finalUrl": "https://kol.xhunt.ai/rank?tab=kol&group=all",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://kol.xhunt.ai",
+          "finalUrl": "https://kol.xhunt.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r96",
+      "sourceRow": 96,
+      "name": "cryptobubbles",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://cryptobubbles.net/",
+      "suggestedX": "@CryptoBubbles",
+      "xCandidates": [
+        {
+          "handle": "CryptoBubbles",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Explore the dynamic world of cryptocurrencies with Crypto Bubbles, an interactive visualization tool presenting the cryptocurrency market in a customizable bubble chart. Dive into the latest market trends and gain valuable insights effortlessly. Crypto Bubbles serves as an independent data aggregator, offering a comprehensive view of the crypto landscape. Accessible for free, without ads, and available as both a website and app, Crypto Bubbles empowers you to make informed decisions in the ever-evolving realm of digital assets.",
+      "pageTitle": "Crypto Bubbles",
+      "pages": [
+        {
+          "url": "https://cryptobubbles.net/",
+          "finalUrl": "https://cryptobubbles.net/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r97",
+      "sourceRow": 97,
+      "name": "bubblemaps",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://v2.bubblemaps.io/map",
+      "suggestedX": "@bubblemaps",
+      "xCandidates": [
+        {
+          "handle": "bubblemaps",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Explore wallets, reveal connections, and see through the noise of blockchain data with interactive bubble maps. Visualize token holder distribution across Ethereum, Solana, Base, and more.",
+      "pageTitle": "Bubblemaps | The Onchain Intelligence Layer",
+      "pages": [
+        {
+          "url": "https://v2.bubblemaps.io/map",
+          "finalUrl": "https://v2.bubblemaps.io/map",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://v2.bubblemaps.io",
+          "finalUrl": "https://v2.bubblemaps.io/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r98",
+      "sourceRow": 98,
+      "name": "debank",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://debank.com/profile/0xeaa58075f2c1f4a4c99900529c834cee838b35d4",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Debank",
+      "pages": [
+        {
+          "url": "https://debank.com/profile/0xeaa58075f2c1f4a4c99900529c834cee838b35d4",
+          "finalUrl": "https://debank.com/profile/0xeaa58075f2c1f4a4c99900529c834cee838b35d4",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://debank.com",
+          "finalUrl": "https://debank.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r99",
+      "sourceRow": 99,
+      "name": "arkham",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "http://platform.arkhamintelligence.com",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Attention Required! | Cloudflare",
+      "pages": [
+        {
+          "url": "http://platform.arkhamintelligence.com",
+          "finalUrl": "http://platform.arkhamintelligence.com/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r100",
+      "sourceRow": 100,
+      "name": "zapper",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://zapper.xyz/zh",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://zapper.xyz/zh",
+          "finalUrl": "https://zapper.xyz/zh",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://zapper.xyz",
+          "finalUrl": "https://zapper.xyz/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r101",
+      "sourceRow": 101,
+      "name": "rabby",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "chrome-extension://acmacodkjbdgmoleebolmdjonilkdbch/desktop.html#/desktop/profile/difi",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "chrome-extension://acmacodkjbdgmoleebolmdjonilkdbch/desktop.html#/desktop/profile/difi",
+          "finalUrl": "chrome-extension://acmacodkjbdgmoleebolmdjonilkdbch/desktop.html#/desktop/profile/difi",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "null",
+          "finalUrl": "null",
+          "status": 0,
+          "error": "Failed to parse URL from null"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r102",
+      "sourceRow": 102,
+      "name": "rootdata数据平台",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://cn.rootdata.com/Investors/detail/Polychain?k=MTQ2",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Access Restricted",
+      "pages": [
+        {
+          "url": "https://cn.rootdata.com/Investors/detail/Polychain?k=MTQ2",
+          "finalUrl": "https://cn.rootdata.com/Investors/detail/Polychain?k=MTQ2",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://cn.rootdata.com",
+          "finalUrl": "https://cn.rootdata.com/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r103",
+      "sourceRow": 103,
+      "name": "superteam工作",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://earn.superteam.fun/listing/blockbet-referral-thread",
+      "suggestedX": "@SuperteamEarn",
+      "xCandidates": [
+        {
+          "handle": "SuperteamEarn",
+          "score": 14
+        },
+        {
+          "handle": "BlockBetGG",
+          "score": 0
+        }
+      ],
+      "metaDescription": "Bounty on Superteam Earn | BlockBet is seeking freelancers and builders to work on Twitter Thread on BlockBet&#x27;s Referral Program | BlockBet Creator Campaign",
+      "pageTitle": "Twitter Thread on BlockBet&#x27;s Referral Program | BlockBet Creator Campaign by BlockBet | Superteam Earn Listing",
+      "pages": [
+        {
+          "url": "https://earn.superteam.fun/listing/blockbet-referral-thread",
+          "finalUrl": "https://superteam.fun/earn/listing/blockbet-referral-thread",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://earn.superteam.fun",
+          "finalUrl": "https://superteam.fun/earn/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r104",
+      "sourceRow": 104,
+      "name": "watchoor空投",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://watchoor.xyz/airdrops",
+      "suggestedX": "@GoWatchoor",
+      "xCandidates": [
+        {
+          "handle": "GoWatchoor",
+          "score": 14
+        },
+        {
+          "handle": "watchoor",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Discover and track the latest crypto airdrops. Browse active DeFi airdrops, token distributions, and farming opportunities. Stay updated with real-time airdrop notifications.",
+      "pageTitle": "Active Crypto Airdrops | Watchoor",
+      "pages": [
+        {
+          "url": "https://watchoor.xyz/airdrops",
+          "finalUrl": "https://watchoor.xyz/guides",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://watchoor.xyz",
+          "finalUrl": "https://watchoor.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r105",
+      "sourceRow": 105,
+      "name": "aicoin",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://www.aicoin.com/zh-Hans/drop-radar?lang=cn",
+      "suggestedX": "@AiCoinzh",
+      "xCandidates": [
+        {
+          "handle": "AiCoinzh",
+          "score": 14
+        }
+      ],
+      "metaDescription": "",
+      "pageTitle": "AiCoin - 领先的数据行情、智能工具平台",
+      "pages": [
+        {
+          "url": "https://www.aicoin.com/zh-Hans/drop-radar?lang=cn",
+          "finalUrl": "https://www.aicoin.com/zh-Hans/drop-radar?lang=cn",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.aicoin.com",
+          "finalUrl": "https://www.aicoin.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r106",
+      "sourceRow": 106,
+      "name": "debridge跨链桥",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://app.debridge.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Swap any tokens instantly cross-chain with deepest liquidity, low fees, and guaranteed rates.",
+      "pageTitle": "deBridge | Instant Cross-Chain Swaps & Transfers",
+      "pages": [
+        {
+          "url": "https://app.debridge.com/",
+          "finalUrl": "https://app.debridge.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r107",
+      "sourceRow": 107,
+      "name": "gridy网格交易机器人",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://www.gridy.ai/login",
+      "suggestedX": "@gridyai888",
+      "xCandidates": [
+        {
+          "handle": "gridyai888",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Gridy.ai — automated grid bot, lending bot, and AI trading bot for Bitfinex, Hyperliquid, Binance, Bybit and major perp DEXs. Safety-first crypto trading automation.",
+      "pageTitle": "Log in",
+      "pages": [
+        {
+          "url": "https://www.gridy.ai/login",
+          "finalUrl": "https://www.gridy.ai/login",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.gridy.ai",
+          "finalUrl": "https://www.gridy.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r108",
+      "sourceRow": 108,
+      "name": "guild公会",
+      "categoryId": "toolbox-cat-sheet-07",
+      "officialUrl": "https://guild.xyz/citrea-community-journey/home",
+      "suggestedX": "@guildxyz",
+      "xCandidates": [
+        {
+          "handle": "guildxyz",
+          "score": 15
+        },
+        {
+          "handle": "citrea_xyz",
+          "score": 1
+        }
+      ],
+      "metaDescription": "Home page for \"Citrea Community Journey\" guild",
+      "pageTitle": "Citrea Community Journey | Guild",
+      "pages": [
+        {
+          "url": "https://guild.xyz/citrea-community-journey/home",
+          "finalUrl": "https://guild.xyz/citrea-community-journey/home",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://guild.xyz",
+          "finalUrl": "https://guild.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r110",
+      "sourceRow": 110,
+      "name": "谷歌邮箱",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://mail.google.com/mail/u/0/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://mail.google.com/mail/u/0/",
+          "finalUrl": "https://mail.google.com/mail/u/0/",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://mail.google.com",
+          "finalUrl": "https://mail.google.com",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r111",
+      "sourceRow": 111,
+      "name": "proton邮箱",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://mail.proton.me/u/3/inbox",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://mail.proton.me/u/3/inbox",
+          "finalUrl": "https://mail.proton.me/u/3/inbox",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://mail.proton.me",
+          "finalUrl": "https://mail.proton.me",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r112",
+      "sourceRow": 112,
+      "name": "outlook邮箱",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://outlook.live.com/mail/0/?deeplink=mail%2F0%2F%3Fnlp%3D0",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Outlook",
+      "pages": [
+        {
+          "url": "https://outlook.live.com/mail/0/?deeplink=mail%2F0%2F%3Fnlp%3D0",
+          "finalUrl": "https://outlook.live.com/mail/0/?deeplink=mail%2F0%2F%3Fnlp%3D0",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://outlook.live.com",
+          "finalUrl": "https://outlook.live.com/mail/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r113",
+      "sourceRow": 113,
+      "name": "gmx邮箱",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://www.gmx.com/",
+      "suggestedX": "@gmxmail",
+      "xCandidates": [
+        {
+          "handle": "gmxmail",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Personal & professional email ➤ 100% free ➤ spam filter ➤ Convenient mail collector ➤ Mobile app ➤ Register with GMX today.",
+      "pageTitle": "Free Email Accounts @GMX.com: Secure & easy to use",
+      "pages": [
+        {
+          "url": "https://www.gmx.com/",
+          "finalUrl": "https://www.gmx.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r114",
+      "sourceRow": 114,
+      "name": "web3chirou邮箱",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://mail.web3chirou.cyou/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://mail.web3chirou.cyou/",
+          "finalUrl": "https://mail.web3chirou.cyou/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r115",
+      "sourceRow": 115,
+      "name": "box集成页面",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://web3.bio/welinkbtc.eth",
+      "suggestedX": "@web3bio",
+      "xCandidates": [
+        {
+          "handle": "web3bio",
+          "score": 6
+        },
+        {
+          "handle": "0xcryplonely",
+          "score": 0
+        },
+        {
+          "handle": "ofcyocryp",
+          "score": 0
+        }
+      ],
+      "metaDescription": "welinkBTC｜16年入圈｜4年社区运营经验｜擅长#socialfi领域｜#binance 广场创作者：万联welinkBTC｜专注分享#Web3#链游#AI#AirDrop投资机会，一起穿越牛熊｜2.5亿人在用你值得拥有 https://welinkbtc.eth.box 生态树 https://vlink.cc/welink | Explore welinkbtc.eth ENS on Web3.bio",
+      "pageTitle": "万联welinkBTC(🦄,🦄) (welinkbtc.eth) ENS Profile - Web3.bio",
+      "pages": [
+        {
+          "url": "https://web3.bio/welinkbtc.eth",
+          "finalUrl": "https://web3.bio/welinkbtc.eth",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://web3.bio",
+          "finalUrl": "https://web3.bio/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r116",
+      "sourceRow": 116,
+      "name": "linktr主页",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://linktr.ee/welinkbtc",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://linktr.ee/welinkbtc",
+          "finalUrl": "https://linktr.ee/welinkbtc",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://linktr.ee",
+          "finalUrl": "https://linktr.ee",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r117",
+      "sourceRow": 117,
+      "name": "safepal营销联盟",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://safepal.tapfiliate.com/p/new/dashboard/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Sign In | Safepal",
+      "pages": [
+        {
+          "url": "https://safepal.tapfiliate.com/p/new/dashboard/",
+          "finalUrl": "https://safepal.tapfiliate.com/login?_target_path=%2Fp%2Fnew%2Fdashboard%2F",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://safepal.tapfiliate.com",
+          "finalUrl": "https://safepal.tapfiliate.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r118",
+      "sourceRow": 118,
+      "name": "web3serve",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://web3serve.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "WEB3 Serve 提供 Twitter、Discord、Gmail、Steam 等海外账号资源服务，支持自动发货、订单查询和售后服务，适用于营销测试、账号管理和跨境业务等合规场景。",
+      "pageTitle": "WEB3 Serve - Twitter、Discord、Gmail 海外账号资源服务平台",
+      "pages": [
+        {
+          "url": "https://web3serve.com/",
+          "finalUrl": "https://web3serve.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r119",
+      "sourceRow": 119,
+      "name": "wgetcloud梯子",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://egjplmujirj2tbj9wuzy.wgetcloud.org/user/subscribe",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://egjplmujirj2tbj9wuzy.wgetcloud.org/user/subscribe",
+          "finalUrl": "https://egjplmujirj2tbj9wuzy.wgetcloud.org/user/subscribe",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://egjplmujirj2tbj9wuzy.wgetcloud.org",
+          "finalUrl": "https://egjplmujirj2tbj9wuzy.wgetcloud.org/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r120",
+      "sourceRow": 120,
+      "name": "privy集成页面",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://home.privy.io/apps",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "View balances, fund accounts, and manage account details in one place. Secure wallet infrastructure for all your embedded wallets.",
+      "pageTitle": "Privy Home",
+      "pages": [
+        {
+          "url": "https://home.privy.io/apps",
+          "finalUrl": "https://home.privy.io/apps",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://home.privy.io",
+          "finalUrl": "https://home.privy.io/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r121",
+      "sourceRow": 121,
+      "name": "proxyline代理IP",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://panel.proxyline.net/all/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Войти",
+      "pages": [
+        {
+          "url": "https://panel.proxyline.net/all/",
+          "finalUrl": "https://panel.proxyline.net/login/",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://panel.proxyline.net",
+          "finalUrl": "https://panel.proxyline.net/login/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r122",
+      "sourceRow": 122,
+      "name": "sms短信",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://sms-activate.io/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://sms-activate.io/",
+          "finalUrl": "https://sms-activate.io/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r123",
+      "sourceRow": 123,
+      "name": "国外社交软件 粉丝增长",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://crazysmm.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "社交媒体营销推广平台,twitter粉丝,推特粉丝,facebook粉丝,youtube订阅者,tiktok粉丝,粉丝购买",
+      "pageTitle": "国外社交媒体推广服务｜社交媒体粉丝点赞｜24小时自助充值购买｜推特粉丝twitter粉丝",
+      "pages": [
+        {
+          "url": "https://crazysmm.com/",
+          "finalUrl": "https://crazysmm.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r124",
+      "sourceRow": 124,
+      "name": "web3chirou代理",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://web3chirou.com/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "蔚莱云Ai出海跨境账号，性价比稳定全球海外IP推特谷歌DC电报AI充值订阅API中转账号资源",
+      "pageTitle": "购物 - 蔚莱云Ai出海跨境账号",
+      "pages": [
+        {
+          "url": "https://web3chirou.com/",
+          "finalUrl": "https://web3chirou.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r125",
+      "sourceRow": 125,
+      "name": "nxonearth 梯子",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://nxonearth.com/signupbyemail.aspx?MemberCode=24b79d17fd6d46deaf5509ea14d375fe20260317235421",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://nxonearth.com/signupbyemail.aspx?MemberCode=24b79d17fd6d46deaf5509ea14d375fe20260317235421",
+          "finalUrl": "https://nxonearth.com/signupbyemail.aspx?MemberCode=24b79d17fd6d46deaf5509ea14d375fe20260317235421",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://nxonearth.com",
+          "finalUrl": "https://nxonearth.com/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r126",
+      "sourceRow": 126,
+      "name": "sms短信",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://hero-sms.com/cn/services",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://hero-sms.com/cn/services",
+          "finalUrl": "https://hero-sms.com/cn/services",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://hero-sms.com",
+          "finalUrl": "https://hero-sms.com/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r127",
+      "sourceRow": 127,
+      "name": "跑路云 梯子",
+      "categoryId": "toolbox-cat-sheet-08",
+      "officialUrl": "https://paoluz.link/?code=Vvxy",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "安全验证",
+      "pages": [
+        {
+          "url": "https://paoluz.link/?code=Vvxy",
+          "finalUrl": "https://paoluz.link/?code=Vvxy",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://paoluz.link",
+          "finalUrl": "https://paoluz.link/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r130",
+      "sourceRow": 130,
+      "name": "billions身份验证",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://signup.billions.network/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Billions is the human and AI network, built on mobile-first verification to scale the internet of value.",
+      "pageTitle": "Billions Network",
+      "pages": [
+        {
+          "url": "https://signup.billions.network/",
+          "finalUrl": "https://signup.billions.network/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r131",
+      "sourceRow": 131,
+      "name": "brevis ZK认证",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://proving-grounds.brevis.network/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://proving-grounds.brevis.network/",
+          "finalUrl": "https://proving-grounds.brevis.network/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r132",
+      "sourceRow": 132,
+      "name": "nebulai挂机挖矿",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://nebulai.network/final-test",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://nebulai.network/final-test",
+          "finalUrl": "https://nebulai.network/final-test",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://nebulai.network",
+          "finalUrl": "https://nebulai.network/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r133",
+      "sourceRow": 133,
+      "name": "nexus挂机挖矿",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.nexus.xyz/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Visualise the global distribution of Nexus compute nodes in real time.",
+      "pageTitle": "Nexus Compute Network | Nexus",
+      "pages": [
+        {
+          "url": "https://app.nexus.xyz/",
+          "finalUrl": "https://nexus.xyz/compute",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r134",
+      "sourceRow": 134,
+      "name": "wardenprotocol挖矿AI交易",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.wardenprotocol.org/auth",
+      "suggestedX": "@wardenprotocol",
+      "xCandidates": [
+        {
+          "handle": "wardenprotocol",
+          "score": 9
+        }
+      ],
+      "metaDescription": "Warden - The Network for the Agent Economy",
+      "pageTitle": "Warden App",
+      "pages": [
+        {
+          "url": "https://app.wardenprotocol.org/auth",
+          "finalUrl": "https://app.wardenprotocol.org/auth",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.wardenprotocol.org",
+          "finalUrl": "https://app.wardenprotocol.org/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r135",
+      "sourceRow": 135,
+      "name": "astranova",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://blackpass.astranova.world/dashboard",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "The Black Pass is a free NFT platform for quests and earning $RVV tokens in Astra Nova",
+      "pageTitle": "Black Pass | Astra Nova",
+      "pages": [
+        {
+          "url": "https://blackpass.astranova.world/dashboard",
+          "finalUrl": "https://blackpass.astranova.world/dashboard",
+          "status": 404,
+          "error": null
+        },
+        {
+          "url": "https://blackpass.astranova.world",
+          "finalUrl": "https://blackpass.astranova.world/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r136",
+      "sourceRow": 136,
+      "name": "dawn挂机挖矿",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://dashboard.dawninternet.com/dashboard",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Dashboard | DAWN",
+      "pages": [
+        {
+          "url": "https://dashboard.dawninternet.com/dashboard",
+          "finalUrl": "https://dashboard.dawninternet.com/dashboard",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://dashboard.dawninternet.com",
+          "finalUrl": "https://dashboard.dawninternet.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r137",
+      "sourceRow": 137,
+      "name": "yarm嘴撸ai",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://yarm.ai/my-referrals",
+      "suggestedX": "@Yarm_AI",
+      "xCandidates": [
+        {
+          "handle": "Yarm_AI",
+          "score": 6
+        }
+      ],
+      "metaDescription": "Yarm is a socially driven liquidity platform powered by Kaito AI, utilizing yapping to enhance liquidity opportunities.",
+      "pageTitle": "Yarm | Your Voice becomes Your Yield",
+      "pages": [
+        {
+          "url": "https://yarm.ai/my-referrals",
+          "finalUrl": "https://yarm.ai/my-referrals",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://yarm.ai",
+          "finalUrl": "https://yarm.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r138",
+      "sourceRow": 138,
+      "name": "trex",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://www.trex.xyz/portal/persona/connect_x?personaType=influence",
+      "suggestedX": "@TREX_chain",
+      "xCandidates": [
+        {
+          "handle": "TREX_chain",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Access the T-Rex Portal. Connect your social accounts and wallets to activate your 5D Persona. Secure login via Web2 & Web3.",
+      "pageTitle": "Login or Sign Up - The Gateway to Your Persona | T-Rex",
+      "pages": [
+        {
+          "url": "https://www.trex.xyz/portal/persona/connect_x?personaType=influence",
+          "finalUrl": "https://www.trex.xyz/auth/portal-login",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.trex.xyz",
+          "finalUrl": "https://www.trex.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r139",
+      "sourceRow": 139,
+      "name": "ferra",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://ferra.ag/portfolio",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Built for Liquidity Providers, Yield Farmers, Traders, Buidlers & Degens.",
+      "pageTitle": "The Liquidity Layer & Social DEX on Sui",
+      "pages": [
+        {
+          "url": "https://ferra.ag/portfolio",
+          "finalUrl": "https://ferra.ag/portfolio",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://ferra.ag",
+          "finalUrl": "https://ferra.ag/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r140",
+      "sourceRow": 140,
+      "name": "rift跨链桥",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.rift.trade/swap/8db10cc8-b9eb-4406-873f-531560741c99",
+      "suggestedX": "@rifthq",
+      "xCandidates": [
+        {
+          "handle": "rifthq",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Zero-Fee Aggregator. Any Asset. Best Price. One Click.",
+      "pageTitle": "404: This page could not be found",
+      "pages": [
+        {
+          "url": "https://app.rift.trade/swap/8db10cc8-b9eb-4406-873f-531560741c99",
+          "finalUrl": "https://www.rift.trade/swap/8db10cc8-b9eb-4406-873f-531560741c99",
+          "status": 404,
+          "error": null
+        },
+        {
+          "url": "https://app.rift.trade",
+          "finalUrl": "https://www.rift.trade/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r141",
+      "sourceRow": 141,
+      "name": "rails",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://trade.rails.xyz/trade/BTC-USD",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "High performance trading infrastructure + intuitive self custody.",
+      "pageTitle": "Rails Pro Exchange",
+      "pages": [
+        {
+          "url": "https://trade.rails.xyz/trade/BTC-USD",
+          "finalUrl": "https://trade.rails.xyz/trade/BTC-USD",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://trade.rails.xyz",
+          "finalUrl": "https://trade.rails.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r142",
+      "sourceRow": 142,
+      "name": "rumi流媒体挖矿",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.rumi.io/onboarding?step=start_watching",
+      "suggestedX": "@rumilabs_io",
+      "xCandidates": [
+        {
+          "handle": "rumilabs_io",
+          "score": 9
+        },
+        {
+          "handle": "RumiLabs_io",
+          "score": 9
+        }
+      ],
+      "metaDescription": "Watch with Rumi and let on‑device AI infer context in real time. Private by design. Transparent about how stories shape behavior.",
+      "pageTitle": "Rumi, the AI streaming interface with a cultural intelligence layer",
+      "pages": [
+        {
+          "url": "https://app.rumi.io/onboarding?step=start_watching",
+          "finalUrl": "https://app.rumi.io/onboarding?step=start_watching",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.rumi.io",
+          "finalUrl": "https://rumi.io/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r143",
+      "sourceRow": 143,
+      "name": "re跨链桥",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.re.xyz/reusde",
+      "suggestedX": "@re",
+      "xCandidates": [
+        {
+          "handle": "re",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Deposit into reUSDe, Re&#x27;s mezzanine tranche token: higher yield potential from collateralized reinsurance, with quarterly redemption windows and live APY and NAV.",
+      "pageTitle": "reUSDe | Re",
+      "pages": [
+        {
+          "url": "https://app.re.xyz/reusde",
+          "finalUrl": "https://app.re.xyz/reusde",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.re.xyz",
+          "finalUrl": "https://app.re.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r144",
+      "sourceRow": 144,
+      "name": "tria支付u卡",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.tria.so/cards",
+      "suggestedX": "@useTria",
+      "xCandidates": [
+        {
+          "handle": "useTria",
+          "score": 0
+        }
+      ],
+      "metaDescription": "Join Tria Beta – trade across any chain, earn yields up to 15%, and spend crypto in the real world with a seedless, self-custodial and gasless platform.",
+      "pageTitle": "Tria Wallet: Trade, Earn Yield and Spend Crypto in the real world",
+      "pages": [
+        {
+          "url": "https://app.tria.so/cards",
+          "finalUrl": "https://app.tria.so/cards",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.tria.so",
+          "finalUrl": "https://app.tria.so/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r145",
+      "sourceRow": 145,
+      "name": "fuseenergy能源",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://www.fuseenergy.com/app/menu/spinning-game",
+      "suggestedX": "@fuseenergy",
+      "xCandidates": [
+        {
+          "handle": "fuseenergy",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Fuse Energy is building the future of energy with cheaper tariffs, better service, and greener goals. Switch to Fuse Energy today",
+      "pageTitle": "Fuse Energy",
+      "pages": [
+        {
+          "url": "https://www.fuseenergy.com/app/menu/spinning-game",
+          "finalUrl": "https://www.fuseenergy.com/app/menu/spinning-game",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.fuseenergy.com",
+          "finalUrl": "https://www.fuseenergy.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r146",
+      "sourceRow": 146,
+      "name": "ethgas",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://www.ethgas.com/community/dashboard/",
+      "suggestedX": "@ETHGasOfficial",
+      "xCandidates": [
+        {
+          "handle": "ETHGasOfficial",
+          "score": 15
+        },
+        {
+          "handle": "ETHGASofficial",
+          "score": 15
+        },
+        {
+          "handle": "boxmining",
+          "score": 0
+        },
+        {
+          "handle": "drakefjustin",
+          "score": 0
+        },
+        {
+          "handle": "DrewVdW",
+          "score": 0
+        },
+        {
+          "handle": "sreeramkannan",
+          "score": 0
+        },
+        {
+          "handle": "VitalikButerin",
+          "score": 0
+        }
+      ],
+      "metaDescription": "Access ETHGas Community Dashboard: View quests and timelines for the Gasless Future, track Beans toward future rewards with Gassy Jack",
+      "pageTitle": "Dashboard | ETHGas",
+      "pages": [
+        {
+          "url": "https://www.ethgas.com/community/dashboard/",
+          "finalUrl": "https://www.ethgas.com/community/dashboard/",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://www.ethgas.com",
+          "finalUrl": "https://www.ethgas.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r147",
+      "sourceRow": 147,
+      "name": "senpi交易ai代理",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://senpi.ai/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://senpi.ai/",
+          "finalUrl": "https://senpi.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r148",
+      "sourceRow": 148,
+      "name": "unitas",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.unitas.so/points",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Decentralized Stablecoin Protocol on Solana",
+      "pageTitle": "Unitas Solana",
+      "pages": [
+        {
+          "url": "https://app.unitas.so/points",
+          "finalUrl": "https://sol.unitas.so/points",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.unitas.so",
+          "finalUrl": "https://sol.unitas.so/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r149",
+      "sourceRow": 149,
+      "name": "katana L1",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://katana.rubyscore.io/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://katana.rubyscore.io/",
+          "finalUrl": "https://katana.rubyscore.io/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r150",
+      "sourceRow": 150,
+      "name": "katana 生态",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://app.katana.network/ecosystem",
+      "suggestedX": "@katana",
+      "xCandidates": [
+        {
+          "handle": "katana",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Discover apps, protocols, and partners building in the Katana DeFi ecosystem.",
+      "pageTitle": "Ecosystem — Katana",
+      "pages": [
+        {
+          "url": "https://app.katana.network/ecosystem",
+          "finalUrl": "https://app.katana.network/ecosystem",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.katana.network",
+          "finalUrl": "https://app.katana.network/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r151",
+      "sourceRow": 151,
+      "name": "pip代理ai",
+      "categoryId": "toolbox-cat-sheet-09",
+      "officialUrl": "https://mm.pip.world/agents?lang=zh",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://mm.pip.world/agents?lang=zh",
+          "finalUrl": "https://mm.pip.world/agents?lang=zh",
+          "status": 0,
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://mm.pip.world",
+          "finalUrl": "https://mm.pip.world",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r153",
+      "sourceRow": 153,
+      "name": "openmind",
+      "categoryId": "toolbox-cat-sheet-10",
+      "officialUrl": "https://fabric.openmind.org/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "",
+      "pages": [
+        {
+          "url": "https://fabric.openmind.org/",
+          "finalUrl": "https://fabric.openmind.org/",
+          "status": 0,
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r154",
+      "sourceRow": 154,
+      "name": "prismax",
+      "categoryId": "toolbox-cat-sheet-10",
+      "officialUrl": "https://app.prismax.ai/",
+      "suggestedX": "@PrismaX",
+      "xCandidates": [
+        {
+          "handle": "PrismaX",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Building the bridge between robotics and mainstream adoption",
+      "pageTitle": "PrismaX | Building the bridge between robotics and mainstream adoption",
+      "pages": [
+        {
+          "url": "https://app.prismax.ai/",
+          "finalUrl": "https://app.prismax.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r155",
+      "sourceRow": 155,
+      "name": "perle",
+      "categoryId": "toolbox-cat-sheet-10",
+      "officialUrl": "https://app.perle.xyz/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Perle Labs",
+      "pages": [
+        {
+          "url": "https://app.perle.xyz/",
+          "finalUrl": "https://app.perle.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r156",
+      "sourceRow": 156,
+      "name": "gensyn",
+      "categoryId": "toolbox-cat-sheet-10",
+      "officialUrl": "https://dashboard.gensyn.ai/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "The Gensyn Public Testnet brings persistent identity to decentralised AI systems and provides a location to track participation, maintain attribution, make payments, coordinate remote execution, verify untrusted operations, log decentralised training runs, crowd-fund large-scale training efforts, and more.",
+      "pageTitle": "Gensyn | Testnet",
+      "pages": [
+        {
+          "url": "https://dashboard.gensyn.ai/",
+          "finalUrl": "https://dashboard.gensyn.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r157",
+      "sourceRow": 157,
+      "name": "primeintellect",
+      "categoryId": "toolbox-cat-sheet-10",
+      "officialUrl": "https://app.primeintellect.ai/dashboard/home",
+      "suggestedX": "@PrimeIntellect",
+      "xCandidates": [
+        {
+          "handle": "PrimeIntellect",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Compute, frameworks, and infrastructure for you to train, fine-tune and deploy your own agentic models.",
+      "pageTitle": "Prime Intellect | The Open Superintelligence Stack",
+      "pages": [
+        {
+          "url": "https://app.primeintellect.ai/dashboard/home",
+          "finalUrl": "https://app.primeintellect.ai/dashboard/home",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.primeintellect.ai",
+          "finalUrl": "https://app.primeintellect.ai/dashboard/home",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r158",
+      "sourceRow": 158,
+      "name": "june",
+      "categoryId": "toolbox-cat-sheet-10",
+      "officialUrl": "https://askjune.ai/app/chat",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://askjune.ai/app/chat",
+          "finalUrl": "https://askjune.ai/app/chat",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://askjune.ai",
+          "finalUrl": "https://askjune.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r161",
+      "sourceRow": 161,
+      "name": "solstice质押sol链",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://app.solstice.finance/earn-flares",
+      "suggestedX": "@solsticefi",
+      "xCandidates": [
+        {
+          "handle": "solsticefi",
+          "score": 0
+        }
+      ],
+      "metaDescription": "Wall-street level gains on Solana, for everyone.",
+      "pageTitle": "Solstice",
+      "pages": [
+        {
+          "url": "https://app.solstice.finance/earn-flares",
+          "finalUrl": "https://app.solstice.finance/earn-flares",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.solstice.finance",
+          "finalUrl": "https://app.solstice.finance/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r162",
+      "sourceRow": 162,
+      "name": "abs消费链",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://portal.abs.xyz/login?redirect=%2Frewards",
+      "suggestedX": "@AbstractChain",
+      "xCandidates": [
+        {
+          "handle": "AbstractChain",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Abstract is the blockchain leading the next generation of consumer crypto.",
+      "pageTitle": "Login | Abstract",
+      "pages": [
+        {
+          "url": "https://portal.abs.xyz/login?redirect=%2Frewards",
+          "finalUrl": "https://portal.abs.xyz/login?redirect=%2Frewards",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://portal.abs.xyz",
+          "finalUrl": "https://portal.abs.xyz/login",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r163",
+      "sourceRow": 163,
+      "name": "hylo",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://hylo.so/leverage",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Vercel Security Checkpoint",
+      "pages": [
+        {
+          "url": "https://hylo.so/leverage",
+          "finalUrl": "https://hylo.so/leverage",
+          "status": 429,
+          "error": null
+        },
+        {
+          "url": "https://hylo.so",
+          "finalUrl": "https://hylo.so/",
+          "status": 429,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r164",
+      "sourceRow": 164,
+      "name": "sign质押",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://stake.sign.global/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Stake $SIGN",
+      "pages": [
+        {
+          "url": "https://stake.sign.global/",
+          "finalUrl": "https://stake.sign.global/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r165",
+      "sourceRow": 165,
+      "name": "huma质押",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://app.huma.finance/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "The First PayFi Network",
+      "pageTitle": "Huma Finance",
+      "pages": [
+        {
+          "url": "https://app.huma.finance/",
+          "finalUrl": "https://app.huma.finance/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r166",
+      "sourceRow": 166,
+      "name": "spark质押",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://app.spark.fi/",
+      "suggestedX": "@sparkdotfi",
+      "xCandidates": [
+        {
+          "handle": "sparkdotfi",
+          "score": 8
+        }
+      ],
+      "metaDescription": "Maximize your DeFi experience with transparent rates",
+      "pageTitle": "Spark: Earn on your stablecoins",
+      "pages": [
+        {
+          "url": "https://app.spark.fi/",
+          "finalUrl": "https://app.spark.fi/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r167",
+      "sourceRow": 167,
+      "name": "lava比特币质押",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://app.lava.xyz/",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Fast and secure bitcoin-backed loans. Access dollars without selling your bitcoin, borrow at the lowest rates, and spend globally.",
+      "pageTitle": "Lava",
+      "pages": [
+        {
+          "url": "https://app.lava.xyz/",
+          "finalUrl": "https://app.lava.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r168",
+      "sourceRow": 168,
+      "name": "r2稳定币质押挖矿",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://www.r2.money/portfolio",
+      "suggestedX": "@r2yield",
+      "xCandidates": [
+        {
+          "handle": "r2yield",
+          "score": 14
+        }
+      ],
+      "metaDescription": "R2 Protocol allocates capital across cash-like and long-term strategies through R2 Reserve and R2 Prime, delivering institutional-grade real-world yield. Access transparent, risk-managed on-chain products backed by T-bills and private credit.",
+      "pageTitle": "404 - Page not found: &#x2F;portfolio | Nuxt | R2 Protocol",
+      "pages": [
+        {
+          "url": "https://www.r2.money/portfolio",
+          "finalUrl": "https://www.r2.money/portfolio",
+          "status": 404,
+          "error": null
+        },
+        {
+          "url": "https://www.r2.money",
+          "finalUrl": "https://www.r2.money/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r169",
+      "sourceRow": 169,
+      "name": "usd稳定币质押挖矿",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://app.usd.ai/dashboard",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "The yield-bearing synthetic dollar backed by AI infrastructure.",
+      "pageTitle": "Dashboard | USD AI",
+      "pages": [
+        {
+          "url": "https://app.usd.ai/dashboard",
+          "finalUrl": "https://app.usd.ai/dashboard",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://app.usd.ai",
+          "finalUrl": "https://app.usd.ai/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r170",
+      "sourceRow": 170,
+      "name": "cascade",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://cascade.xyz/network",
+      "suggestedX": "@cascade_xyz",
+      "xCandidates": [
+        {
+          "handle": "cascade_xyz",
+          "score": 15
+        }
+      ],
+      "metaDescription": "Trade crypto, U.S. equities, private markets 24/7. Fully accessible in the U.S. Onboard with wire, ACH or stablecoin.",
+      "pageTitle": "Cascade",
+      "pages": [
+        {
+          "url": "https://cascade.xyz/network",
+          "finalUrl": "https://cascade.xyz/login?callbackUrl=%2Fnetwork",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://cascade.xyz",
+          "finalUrl": "https://cascade.xyz/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r171",
+      "sourceRow": 171,
+      "name": "flyingtulip",
+      "categoryId": "toolbox-cat-sheet-11",
+      "officialUrl": "https://flyingtulip.com/allocation/",
+      "suggestedX": "@flyingtulip_",
+      "xCandidates": [
+        {
+          "handle": "flyingtulip_",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Allocate capital and manage your PUT positions on Flying Tulip: create, hold, or exit protected positions in one place.",
+      "pageTitle": "Capital Allocation & PUT Positions | Flying Tulip",
+      "pages": [
+        {
+          "url": "https://flyingtulip.com/allocation/",
+          "finalUrl": "https://flyingtulip.com/allocation/",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://flyingtulip.com",
+          "finalUrl": "https://flyingtulip.com/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r173",
+      "sourceRow": 173,
+      "name": "legion",
+      "categoryId": "toolbox-cat-sheet-12",
+      "officialUrl": "https://app.legion.cc/app/score/overview",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Access Restricted - Legion",
+      "pages": [
+        {
+          "url": "https://app.legion.cc/app/score/overview",
+          "finalUrl": "https://app.legion.cc/app/score/overview",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://app.legion.cc",
+          "finalUrl": "https://app.legion.cc/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r177",
+      "sourceRow": 177,
+      "name": "alph",
+      "categoryId": "toolbox-cat-sheet-13",
+      "officialUrl": "https://alph.ai/zh/bsc/referral?ref=XDPXVF34",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "ERROR: The request could not be satisfied",
+      "pages": [
+        {
+          "url": "https://alph.ai/zh/bsc/referral?ref=XDPXVF34",
+          "finalUrl": "https://alph.ai/zh/bsc/referral?ref=XDPXVF34",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://alph.ai",
+          "finalUrl": "https://alph.ai/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r178",
+      "sourceRow": 178,
+      "name": "tradegenius",
+      "categoryId": "toolbox-cat-sheet-13",
+      "officialUrl": "http://www.tradegenius.com/ref/YJT2UR",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "http://www.tradegenius.com/ref/YJT2UR",
+          "finalUrl": "https://tradegenius.com/ref/YJT2UR",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "http://www.tradegenius.com",
+          "finalUrl": "https://tradegenius.com/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r179",
+      "sourceRow": 179,
+      "name": "o1_exchange",
+      "categoryId": "toolbox-cat-sheet-13",
+      "officialUrl": "https://o1.exchange/@welinkbtc",
+      "suggestedX": "@o1_exchange",
+      "xCandidates": [
+        {
+          "handle": "o1_exchange",
+          "score": 6
+        }
+      ],
+      "metaDescription": "1st fully fledged Trading Terminal on Base/Solana. 45% Cashback - best rate on the market.",
+      "pageTitle": "o1.exchange",
+      "pages": [
+        {
+          "url": "https://o1.exchange/@welinkbtc",
+          "finalUrl": "https://o1.exchange/@welinkbtc",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://o1.exchange",
+          "finalUrl": "https://o1.exchange/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r180",
+      "sourceRow": 180,
+      "name": "axiom",
+      "categoryId": "toolbox-cat-sheet-13",
+      "officialUrl": "https://axiom.trade/@welinkbtc",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "",
+      "pageTitle": "Just a moment...",
+      "pages": [
+        {
+          "url": "https://axiom.trade/@welinkbtc",
+          "finalUrl": "https://axiom.trade/@welinkbtc",
+          "status": 403,
+          "error": null
+        },
+        {
+          "url": "https://axiom.trade",
+          "finalUrl": "https://axiom.trade/",
+          "status": 403,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r181",
+      "sourceRow": 181,
+      "name": "universalx交易所",
+      "categoryId": "toolbox-cat-sheet-13",
+      "officialUrl": "https://universalx.app/grow",
+      "suggestedX": null,
+      "xCandidates": [],
+      "metaDescription": "Trade any token on any chain at the first chain-agnostic trading platform. No need to consider chains. 100% decentralized and self-custodial.",
+      "pageTitle": "UniversalX丨Trade any token, on any chain",
+      "pages": [
+        {
+          "url": "https://universalx.app/grow",
+          "finalUrl": "https://universalx.app/grow",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://universalx.app",
+          "finalUrl": "https://universalx.app/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "toolbox-sheet-r182",
+      "sourceRow": 182,
+      "name": "fomo",
+      "categoryId": "toolbox-cat-sheet-13",
+      "officialUrl": "https://fomo.family/r/welinkBTC",
+      "suggestedX": "@fomo",
+      "xCandidates": [
+        {
+          "handle": "fomo",
+          "score": 14
+        }
+      ],
+      "metaDescription": "Trade memecoins, altcoins, and stablecoins on the only social-first crypto platform. Follow traders, copy trades, and swap on web and mobile (fomo app). Never miss out again.",
+      "pageTitle": "fomo | Social Crypto Trading App & Web Platform",
+      "pages": [
+        {
+          "url": "https://fomo.family/r/welinkBTC",
+          "finalUrl": "https://fomo.family/r/welinkBTC",
+          "status": 200,
+          "error": null
+        },
+        {
+          "url": "https://fomo.family",
+          "finalUrl": "https://fomo.family/",
+          "status": 200,
+          "error": null
+        }
+      ]
+    }
+  ]
+}

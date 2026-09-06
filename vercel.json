@@ -1,0 +1,64 @@
+{
+  "regions": ["sin1"],
+  "functions": {
+    "api/alpha-scan.js": {
+      "maxDuration": 60
+    },
+    "api/ai-ops-generate.js": {
+      "maxDuration": 60
+    },
+    "api/ai-ops-adapt.js": {
+      "maxDuration": 60
+    },
+    "api/ai-ops-publish.js": {
+      "maxDuration": 60
+    },
+    "api/ai-ops-image.js": {
+      "maxDuration": 60
+    },
+    "api/ai-ops-library.js": {
+      "maxDuration": 60
+    },
+    "api/ai-ops-polish.js": {
+      "maxDuration": 60
+    },
+    "api/telegram-signal-collector.js": {
+      "maxDuration": 60,
+      "regions": ["iad1"]
+    },
+    "api/surf-pulse.js": {
+      "maxDuration": 60
+    },
+    "api/surf-research.js": {
+      "maxDuration": 300
+    },
+    "api/cost-basis.js": {
+      "maxDuration": 60
+    },
+    "api/lth-sth-ratio.js": {
+      "maxDuration": 60
+    },
+    "api/lth-market-cap-loss.js": {
+      "maxDuration": 60
+    },
+    "api/supply-profit-loss-ratio.js": {
+      "maxDuration": 60
+    },
+    "api/risk-engine.js": {
+      "maxDuration": 10
+    }
+  },
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ]
+}

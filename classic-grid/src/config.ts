@@ -1,0 +1,376 @@
+import type { GridParams, VenueId } from "./types";
+import { loadEnv } from "./loadEnv";
+
+/**
+ * 以各所启动瞬间 mid 为锚点。
+ * - Extended：80 格、30x，带宽约 ±4.6%；800U 是上限，实盘按实时可交易资金缩放
+ * - Phoenix / Nado：80 格、30x，带宽 ±4.5%（同 Ext 资金模板）
+ * - PopDEX：80 格、20x、±4.5%（同 Ext/Phx 带宽；权益默认 800，可 POPDEX_EQUITY_USD 覆盖）
+ * - Decibel / N1：80 格、30x、带宽 ±5%（费率偏贵，略加半幅；下单 post-only/maker）
+ * - RISEx：46 格、25x、半幅约 ±3%
+ * 保证金占用统一 70%（MARGIN_FRAC）；默认权益预算 800U
+ */
+export const REF_MID = 65_000;
+export const HALF_BAND = 3000;
+/** RISEx：±3% → 参考半幅 = 0.03 * REF_MID */
+export const RISEX_HALF_BAND = Math.round(REF_MID * 0.03);
+/** Phoenix：±4.5% */
+export const PHOENIX_HALF_BAND = Math.round(REF_MID * 0.045);
+/** Decibel / N1：±5%（相对 Ext ±4.6% 略加宽，改善费率边） */
+export const DECIBEL_HALF_BAND = Math.round(REF_MID * 0.05);
+export const N1_HALF_BAND = Math.round(REF_MID * 0.05);
+const EQUITY = 800;
+const MARGIN_FRAC = 0.7;
+const LEVERAGE = 30;
+/** RISEx 所上杠杆上限按 25 处理 */
+const RISEX_LEVERAGE = 25;
+/** Phoenix：与 Ext 对齐 30x（不再默认 40） */
+const PHOENIX_LEVERAGE = 30;
+
+const SHARED = {
+  halfBand: HALF_BAND,
+  leverage: LEVERAGE,
+  feeRate: 0.0005,
+  equityUsd: EQUITY,
+  marginFraction: MARGIN_FRAC,
+  maxWritesPerTick: 10,
+  mode: "neutral" as const,
+  /**
+   * 近价跳过带宽（×spacing）。过小则 mid 在格线上微抖时，
+   * 同一档会买完又被 seed 成卖 → 同价开平只亏手续费。
+   */
+  skipBand: 0.5,
+};
+
+/** Ext 模板（兼容旧引用） */
+export const GRID: GridParams = {
+  ...SHARED,
+  lower: 0,
+  upper: 0,
+  gridCount: 80,
+  sizeBase: 0,
+};
+
+const VENUE_GRID_COUNT: Record<VenueId, number> = {
+  extended: 80,
+  phoenix: 80,
+  phoenix2: 80,
+  nado: 80,
+  popdex: 80,
+  n1: 80,
+  risex: 46,
+  decibel: 80,
+};
+
+const VENUE_HALF_BAND: Partial<Record<VenueId, number>> = {
+  risex: RISEX_HALF_BAND,
+  phoenix: PHOENIX_HALF_BAND,
+  phoenix2: PHOENIX_HALF_BAND,
+  nado: PHOENIX_HALF_BAND,
+  popdex: PHOENIX_HALF_BAND,
+  decibel: DECIBEL_HALF_BAND,
+  n1: N1_HALF_BAND,
+};
+
+const VENUE_MAX_OPEN: Partial<Record<VenueId, number>> = {
+  extended: 82,
+  phoenix: 82,
+  phoenix2: 82,
+  nado: 82,
+  popdex: 82,
+  n1: 82,
+  risex: 50,
+  decibel: 82,
+};
+
+/** 分所默认杠杆（可被 env 覆盖） */
+const VENUE_LEVERAGE: Record<VenueId, number> = {
+  extended: 30,
+  phoenix: PHOENIX_LEVERAGE,
+  phoenix2: PHOENIX_LEVERAGE,
+  nado: 30,
+  popdex: 30,
+  n1: 30,
+  decibel: 30,
+  risex: RISEX_LEVERAGE,
+};
+
+const ALL_VENUES: VenueId[] = [
+  "extended",
+  "risex",
+  "decibel",
+  "n1",
+  "phoenix",
+  "phoenix2",
+  "nado",
+  "popdex",
+];
+
+function truthy(v: string | undefined): boolean {
+  return ["1", "true", "yes", "YES"].includes(String(v || "").trim());
+}
+
+export type RuntimeConfig = {
+  dryRun: boolean;
+  liveConfirm: boolean;
+  venues: VenueId[];
+  markets: string[];
+  tickMs: number;
+  dashboardPort: number;
+  grids: Record<VenueId, GridParams>;
+};
+
+export function gridFor(cfg: RuntimeConfig, venue: VenueId): GridParams {
+  return cfg.grids[venue];
+}
+
+export function anchorGrid(
+  base: GridParams,
+  mid: number,
+  market?: {
+    sizeIncrement?: number;
+    minOrderSize?: number;
+    minOrderNotionalUsd?: number;
+  }
+): GridParams {
+  if (!(mid > 0)) throw new Error(`无效 mid=${mid}`);
+  const refHalf = base.halfBand || HALF_BAND;
+  const half = mid * (refHalf / REF_MID);
+  const lower = mid - half;
+  const upper = mid + half;
+  const notional = base.equityUsd * base.marginFraction * base.leverage;
+  const increment = Number(market?.sizeIncrement);
+  const minimum = Number(market?.minOrderSize);
+  const minimumNotional = Number(market?.minOrderNotionalUsd);
+  const roundDownToIncrement = (value: number): number => {
+    if (!(Number.isFinite(increment) && increment > 0)) return value;
+    return Number(
+      (Math.floor(value / increment + 1e-10) * increment).toFixed(12)
+    );
+  };
+  const roundUpToIncrement = (value: number): number => {
+    if (!(Number.isFinite(increment) && increment > 0)) return value;
+    return Number(
+      (Math.ceil(value / increment - 1e-10) * increment).toFixed(12)
+    );
+  };
+
+  // 有些交易所（例如 Nado）把 min_size 定义为报价币名义价值，不能当成
+  // BTC 数量直接比较。若原档数会让单档低于门槛，应减少档数并重算单量，
+  // 而不是把 80 档全部强行放大，后者会突破既定保证金预算。
+  let gridCount = base.gridCount;
+  let requiredSize =
+    Number.isFinite(minimum) && minimum > 0 ? minimum : 0;
+  if (Number.isFinite(minimumNotional) && minimumNotional > 0) {
+    requiredSize = Math.max(requiredSize, minimumNotional / lower);
+  }
+  requiredSize = roundUpToIncrement(requiredSize);
+  if (requiredSize > 0) {
+    gridCount = Math.min(
+      gridCount,
+      Math.floor(notional / (requiredSize * mid) + 1e-10)
+    );
+    // 中性网格必须保持买卖两侧对称。
+    if (base.mode === "neutral" && gridCount % 2 !== 0) gridCount -= 1;
+    if (gridCount < 2) {
+      throw new Error(
+        `实时可用资金不足：预算名义价值 ${notional.toFixed(2)}U 无法满足交易所单笔最小名义价值/数量要求`
+      );
+    }
+  }
+
+  let sizeBase =
+    Math.floor((notional / (gridCount * mid)) * 1e8) / 1e8;
+  sizeBase = roundDownToIncrement(sizeBase);
+  if (Number.isFinite(minimum) && minimum > 0 && sizeBase + 1e-12 < minimum) {
+    throw new Error(
+      `实时可用资金不足：计算单量 ${sizeBase} < 交易所最小下单量 ${minimum}`
+    );
+  }
+  if (
+    Number.isFinite(minimumNotional) &&
+    minimumNotional > 0 &&
+    sizeBase * lower + 1e-9 < minimumNotional
+  ) {
+    throw new Error(
+      `实时可用资金不足：最低档名义价值 ${(sizeBase * lower).toFixed(2)}U < 交易所最小值 ${minimumNotional}U`
+    );
+  }
+  return { ...base, halfBand: half, lower, upper, gridCount, sizeBase };
+}
+
+function leverageFor(venue: VenueId, fallbackGridLev: number): number {
+  if (venue === "risex") {
+    return Math.max(
+      1,
+      Number(process.env.RISEX_LEVERAGE || process.env.RISE_LEVERAGE || RISEX_LEVERAGE) ||
+        RISEX_LEVERAGE
+    );
+  }
+  if (venue === "phoenix" || venue === "phoenix2") {
+    const envLev =
+      venue === "phoenix2"
+        ? process.env.PHOENIX2_LEVERAGE || process.env.PHOENIX_LEVERAGE
+        : process.env.PHOENIX_LEVERAGE;
+    return Math.max(1, Number(envLev || PHOENIX_LEVERAGE) || PHOENIX_LEVERAGE);
+  }
+  if (venue === "nado") {
+    return Math.max(1, Number(process.env.NADO_LEVERAGE || 30) || 30);
+  }
+  if (venue === "popdex") {
+    return Math.max(1, Number(process.env.POPDEX_LEVERAGE || 30) || 30);
+  }
+  const envKey =
+    venue === "extended"
+      ? process.env.EXTENDED_LEVERAGE
+      : venue === "decibel"
+        ? process.env.DECIBEL_LEVERAGE
+        : process.env.N1_LEVERAGE;
+  // 分所默认优先于 GRID_LEVERAGE，避免本机 GRID_LEVERAGE 误覆盖定档
+  return Math.max(
+    1,
+    Number(
+      envKey ||
+        VENUE_LEVERAGE[venue] ||
+        process.env.GRID_LEVERAGE ||
+        fallbackGridLev
+    ) ||
+      VENUE_LEVERAGE[venue] ||
+      fallbackGridLev
+  );
+}
+
+function equityFor(venue: VenueId): number {
+  if (venue === "popdex") {
+    const n = Number(process.env.POPDEX_EQUITY_USD);
+    if (Number.isFinite(n) && n > 0) return n;
+    return EQUITY;
+  }
+  const envKey =
+    venue === "decibel"
+      ? process.env.DECIBEL_EQUITY_USD
+      : venue === "n1"
+        ? process.env.N1_EQUITY_USD
+        : "";
+  const n = Number(envKey);
+  if (Number.isFinite(n) && n >= 50) return n;
+  return EQUITY;
+}
+
+export function loadRuntimeConfig(): RuntimeConfig {
+  loadEnv();
+  const dryRun = process.env.DRY_RUN == null ? true : truthy(process.env.DRY_RUN);
+  const liveConfirm = truthy(process.env.LIVE_CONFIRM);
+  const venues = String(process.env.VENUES || "extended,risex,decibel,n1")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .filter((v): v is VenueId => (ALL_VENUES as string[]).includes(v));
+  const markets = String(process.env.MARKETS || "BTC")
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+  const tickMs = Math.max(1000, Number(process.env.TICK_MS || 15_000) || 15_000);
+  const leverage = Math.max(
+    1,
+    Number(process.env.GRID_LEVERAGE || LEVERAGE) || LEVERAGE
+  );
+  const marginFraction = Math.min(
+    1,
+    Math.max(
+      0.05,
+      Number(process.env.GRID_MARGIN_FRAC || MARGIN_FRAC) || MARGIN_FRAC
+    )
+  );
+  const halfBand = Math.max(
+    100,
+    Number(process.env.GRID_HALF_BAND || HALF_BAND) || HALF_BAND
+  );
+  const dashboardPort = Math.max(
+    0,
+    Number(process.env.DASHBOARD_PORT || 8088) || 8088
+  );
+
+  const grids = {} as Record<VenueId, GridParams>;
+  for (const v of ALL_VENUES) {
+    const gridCount =
+      v === "popdex"
+        ? Math.max(
+            2,
+            Number(process.env.POPDEX_GRID_COUNT || VENUE_GRID_COUNT.popdex) ||
+              VENUE_GRID_COUNT.popdex
+          )
+        : VENUE_GRID_COUNT[v];
+    const venueLev = leverageFor(v, leverage);
+    const venueHalf =
+      v === "risex"
+        ? Math.max(
+            100,
+            Number(process.env.RISEX_HALF_BAND || VENUE_HALF_BAND.risex || RISEX_HALF_BAND) ||
+              RISEX_HALF_BAND
+          )
+        : v === "phoenix" || v === "phoenix2" || v === "nado" || v === "popdex"
+          ? Math.max(
+              100,
+              Number(
+                (v === "nado"
+                  ? process.env.NADO_HALF_BAND
+                  : v === "popdex"
+                    ? process.env.POPDEX_HALF_BAND || process.env.PHOENIX_HALF_BAND
+                    : v === "phoenix2"
+                      ? process.env.PHOENIX2_HALF_BAND || process.env.PHOENIX_HALF_BAND
+                      : process.env.PHOENIX_HALF_BAND) ||
+                  VENUE_HALF_BAND[v] ||
+                  PHOENIX_HALF_BAND
+              ) || PHOENIX_HALF_BAND
+            )
+          : v === "decibel" || v === "n1"
+            ? Math.max(
+                100,
+                Number(
+                  (v === "n1"
+                    ? process.env.N1_HALF_BAND || process.env.DECIBEL_HALF_BAND
+                    : process.env.DECIBEL_HALF_BAND || process.env.N1_HALF_BAND) ||
+                    VENUE_HALF_BAND[v] ||
+                    DECIBEL_HALF_BAND
+                ) || DECIBEL_HALF_BAND
+              )
+            : halfBand;
+    grids[v] = {
+      ...SHARED,
+      equityUsd: equityFor(v),
+      marginFraction,
+      halfBand: venueHalf,
+      leverage: venueLev,
+      // Phoenix maker 更低；Nado / N1 / Decibel / PopDEX 按所 maker 档
+      ...(v === "phoenix" || v === "phoenix2" ? { feeRate: 0.00005 } : {}),
+      ...(v === "nado" || v === "n1" ? { feeRate: 0.0001 } : {}),
+      ...(v === "popdex" ? { feeRate: 0.00012 } : {}),
+      ...(v === "decibel" ? { feeRate: 0.00011 } : {}),
+      // 换带宽时加快撤挂收敛（仓位不动，只改单）
+      ...(v === "decibel" || v === "n1" ? { maxWritesPerTick: 40 } : {}),
+      lower: 0,
+      upper: 0,
+      gridCount,
+      sizeBase: 0,
+      ...(VENUE_MAX_OPEN[v] != null ? { maxOpenOrders: VENUE_MAX_OPEN[v] } : {}),
+    };
+  }
+
+  return {
+    dryRun,
+    liveConfirm,
+    venues: venues.length ? venues : [...ALL_VENUES],
+    markets: markets.length ? markets : ["BTC"],
+    tickMs,
+    dashboardPort,
+    grids,
+  };
+}
+
+export function assertLiveAllowed(cfg: RuntimeConfig): void {
+  if (cfg.dryRun) return;
+  if (!cfg.liveConfirm) {
+    throw new Error("拒绝实盘：需要 LIVE_CONFIRM=YES（且 DRY_RUN=0）");
+  }
+}

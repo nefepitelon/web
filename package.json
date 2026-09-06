@@ -1,0 +1,73 @@
+{
+  "name": "welinkbtc-main",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/run-with-grid.mjs dev",
+    "build": "npm run grid:package && prisma generate && node scripts/migrate-on-vercel.mjs && next build",
+    "start": "node scripts/run-with-grid.mjs start",
+    "postinstall": "npm install --prefix grid-ops --omit=dev && npm install --prefix classic-grid --omit=dev",
+    "grid:install": "npm install --prefix grid-ops --omit=dev",
+    "grid:package": "node scripts/package-grid-ops-engine.mjs",
+    "grid:start": "npm --prefix grid-ops start",
+    "grid:smoke": "node scripts/smoke-grid-ops.mjs",
+    "grid:test": "npm --prefix grid-ops test",
+    "classic-grid:test": "npm --prefix classic-grid test",
+    "test": "node --test tests/*.test.js",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@bnb-chain/b402": "0.2.1",
+    "@pancakeswap/sdk": "^5.9.0",
+    "@pancakeswap/smart-router": "^7.6.0",
+    "@prisma/client": "6.19.3",
+    "@supabase/ssr": "0.10.0",
+    "@supabase/supabase-js": "2.100.1",
+    "@vercel/blob": "latest",
+    "@x402/core": "^2.24.0",
+    "@x402/evm": "^2.24.0",
+    "cheerio": "^1.1.2",
+    "exceljs": "4.4.0",
+    "graphql-request": "^5.0.0",
+    "jose": "6.1.0",
+    "lucide-react": "0.468.0",
+    "next": "16.3.0",
+    "qrcode": "1.5.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "server-only": "0.0.1",
+    "stripe": "20.4.1",
+    "undici": "^6.28.0",
+    "viem": "2.55.11",
+    "workflow": "^4.8.3",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/qrcode": "1.5.5",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "archiver": "5.3.2",
+    "prisma": "6.19.3",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "uuid": "11.1.1",
+    "postcss": {
+      "nanoid": "3.3.18"
+    },
+    "@workflow/core": {
+      "nanoid": "5.1.16"
+    },
+    "@workflow/world-local": {
+      "undici": "7.29.0"
+    },
+    "@workflow/world-vercel": {
+      "undici": "7.29.0"
+    }
+  }
+}

@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>全平台自动 AI 运营台 | welinkBTC</title>
+    <meta name="description" content="welinkBTC AI 内容助手与人工审核发布台：生成、出图、审核、填框，最后由真人发送。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="dashboard.css?v=20260824-readable-v1" />
+    <link rel="stylesheet" href="platform-actions.css" />
+    <link rel="stylesheet" href="ai-ops.css?v=20260824-readable-v1" />
+    <link rel="stylesheet" href="surf-assistant.css" />
+  </head>
+  <body data-theme="dark">
+    <header class="site-header">
+      <a class="brand dashboard-brand" href="index.html#top" aria-label="welinkBTC home">
+        <span class="chain-pulse-mark" aria-hidden="true">
+          <span class="chain-pulse-ring ring-one"></span><span class="chain-pulse-ring ring-two"></span>
+          <span class="chain-pulse-sweep"></span><span class="chain-pulse-core">B</span>
+        </span>
+        <strong>welinkBTC</strong>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="index.html#network">网络</a><a href="index.html#products">产品</a><a href="/research" target="_top">研究</a>
+        <a href="alphaops.html">AlphaOps</a><a href="alpha-radar.html">Alpha Radar</a><a href="bstock-alpha.html">bStockAlpha</a><a href="dashboard.html">链上看板</a>
+        <a class="active" href="ai-ops.html">AI 运营台</a><a href="index.html#contact">联系</a>
+      </nav>
+      <div class="header-tools global-tools" aria-label="Site tools">
+        <button class="theme-toggle global-tool" type="button">浅色</button>
+        <button class="lang-toggle global-tool" type="button">EN</button>
+        <a class="social-link global-tool" href="https://x.com/fly_welinkBTC" target="_blank" rel="noopener noreferrer" aria-label="welinkBTC X">X</a>
+        <a class="social-link global-tool" href="https://t.me/+lr6ZZscid4o0ZDhl" target="_blank" rel="noopener noreferrer" aria-label="welinkBTC Telegram">TG</a>
+        <a class="social-link global-tool global-tool--chat" href="https://www.binance.com/groupList?chatId=v1.00.QzJDSWRDcnlwdEZpeGRJVoyW1RmbQWciia4jSYxam7s&amp;source=squareProfile" target="_blank" rel="noopener noreferrer">币安聊天室</a>
+        <a class="social-link global-tool global-tool--support" href="https://linktr.ee/welinkBTC" target="_blank" rel="noopener noreferrer">支持</a>
+      </div>
+      <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button>
+    </header>
+
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="index.html#network">网络</a><a href="index.html#products">产品</a><a href="/research" target="_top">研究</a>
+      <a href="alphaops.html">AlphaOps</a><a href="alpha-radar.html">Alpha Radar</a><a href="bstock-alpha.html">bStockAlpha</a><a href="dashboard.html">链上看板</a>
+      <a class="active" href="ai-ops.html">AI 运营台</a><a href="index.html#contact">联系</a>
+      <div class="mobile-tools global-tools">
+        <button class="theme-toggle global-tool" type="button">浅色</button><button class="lang-toggle global-tool" type="button">EN</button>
+        <a class="social-link global-tool" href="https://x.com/fly_welinkBTC" target="_blank" rel="noopener noreferrer" aria-label="welinkBTC X">X</a>
+        <a class="social-link global-tool" href="https://t.me/+lr6ZZscid4o0ZDhl" target="_blank" rel="noopener noreferrer" aria-label="welinkBTC Telegram">TG</a>
+        <a class="social-link global-tool global-tool--chat" href="https://www.binance.com/groupList?chatId=v1.00.QzJDSWRDcnlwdEZpeGRJVoyW1RmbQWciia4jSYxam7s&amp;source=squareProfile" target="_blank" rel="noopener noreferrer">币安聊天室</a>
+        <a class="social-link global-tool global-tool--support" href="https://linktr.ee/welinkBTC" target="_blank" rel="noopener noreferrer">支持</a>
+      </div>
+    </div>
+
+    <main class="aiops-shell">
+      <section class="aiops-upper-panel" aria-label="全平台内容与发布配置">
+      <section class="aiops-hero">
+        <div>
+          <a class="brand dashboard-brand hero-brand" href="index.html#top" aria-label="welinkBTC home">
+            <span class="chain-pulse-mark" aria-hidden="true">
+              <span class="chain-pulse-ring ring-one"></span><span class="chain-pulse-ring ring-two"></span>
+              <span class="chain-pulse-sweep"></span><span class="chain-pulse-core">B</span>
+            </span>
+            <strong>welinkBTC</strong>
+          </a>
+          <p class="eyebrow"><span class="live-dot"></span>AI CONTENT COPILOT · HUMAN IN CONTROL</p>
+          <div class="aiops-title-row">
+            <h1>全平台自动 AI <span>运营台</span></h1>
+            <p class="extension-install-note">
+              <span>要使用此自动 AI 运营台助手一键发帖，请先点击</span>
+              <a href="chrome-extension.zip" download aria-label="下载并安装 Chrome 发布助手插件">【安装 / 连接】</a>
+              <span>下载并安装 Chrome 发布助手插件！</span>
+            </p>
+          </div>
+          <p>随机选题 → AI 成稿 → AI 出图 → 人工审核 → 填入平台编辑框 → 真人确认发送。系统永远不会自动点击发送。</p>
+        </div>
+        <div class="hero-side-stack">
+          <button class="hero-library-action" id="open-library" type="button"><span>⌁</span><strong>素材库</strong><small>抓取热门内容与账号素材</small></button>
+          <aside class="safety-card">
+            <span class="safety-icon">✓</span>
+            <div><strong>发布安全锁已开启</strong><p>只填充，不发送。每一条内容都必须由你亲自确认。</p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="platform-catalog platform-switch" id="platform-catalog" aria-labelledby="platform-catalog-title">
+        <header class="platform-catalog-head">
+          <div><p class="eyebrow">PLATFORM ROUTER · CAPABILITY AWARE</p><h2 id="platform-catalog-title">选择发布平台</h2></div>
+          <p>平台类型决定内容结构、发布方式和适配器能力；所有平台均保留人工确认发送。</p>
+        </header>
+        <div class="platform-groups">
+          <article class="platform-group" data-platform-category="rich">
+            <div class="platform-group-title"><span>▦</span><div><strong>图文内容平台</strong><small>图文、长文与多图内容</small></div></div>
+            <div class="platform-chip-list" data-platform-list="rich"></div>
+          </article>
+          <article class="platform-group" data-platform-category="community">
+            <div class="platform-group-title"><span>◎</span><div><strong>社区内容平台</strong><small>社群、讨论与问答内容</small></div></div>
+            <div class="platform-chip-list" data-platform-list="community"></div>
+          </article>
+          <article class="platform-group" data-platform-category="video">
+            <div class="platform-group-title"><span>▶</span><div><strong>视频内容平台</strong><small>短视频、长视频与动态内容</small></div></div>
+            <div class="platform-chip-list" data-platform-list="video"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="publishing-modes" id="publishing-modes" aria-labelledby="publishing-modes-title">
+        <header class="publishing-modes-head">
+          <div><p class="eyebrow">PUBLISHING ROUTER · HUMAN CONFIRMATION</p><h2 id="publishing-modes-title">平台发布方式</h2></div>
+          <p id="publish-mode-summary">当前推荐：Browser Fill。平台和发布方式可以自由组合。</p>
+        </header>
+        <div class="publish-mode-grid" role="radiogroup" aria-label="选择平台发布方式">
+          <label class="publish-mode-card is-recommended">
+            <input type="radio" name="publish-mode" value="browser-fill" checked />
+            <span class="publish-mode-number">01</span>
+            <span class="publish-mode-copy"><strong>Browser Fill <i>优先推荐</i></strong><small>打开网页 · 填充文字 · 上传图片 · 真人发送</small></span>
+          </label>
+          <label class="publish-mode-card">
+            <input type="radio" name="publish-mode" value="intent-url" />
+            <span class="publish-mode-number">02</span>
+            <span class="publish-mode-copy"><strong>Intent URL</strong><small>纯文本快速唤起 · 无复杂 selector · 图片能力有限</small></span>
+          </label>
+          <label class="publish-mode-card">
+            <input type="radio" name="publish-mode" value="official-api" />
+            <span class="publish-mode-number">03</span>
+            <span class="publish-mode-copy"><strong>官方 API</strong><small>稳定可追踪 · 需要平台凭证 · 点击后人工确认执行</small></span>
+          </label>
+          <label class="publish-mode-card">
+            <input type="radio" name="publish-mode" value="copy-manual" />
+            <span class="publish-mode-number">04</span>
+            <span class="publish-mode-copy"><strong>复制 + 人工发布</strong><small>复制文案 · 下载图片 · 前往 App · 后台标记已发布</small></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="ops-status" aria-label="运营台状态">
+        <button class="status-pill status-pill-button" id="open-ai-setup" type="button"><i class="status-dot" id="api-dot"></i><span>OpenAI</span><strong id="api-status">检测中</strong></button>
+        <div class="status-pill"><i class="status-dot" id="bridge-dot"></i><span>Chrome 桥接</span><strong id="bridge-status">检测中</strong></div>
+        <div class="status-pill"><span>今日生成</span><strong id="stat-generated">0</strong></div>
+        <div class="status-pill"><span>待发</span><strong id="stat-pending">0</strong></div>
+        <div class="status-pill"><span>今日已发</span><strong id="stat-published">0</strong></div>
+        <div class="status-pill"><span>人工审核率</span><strong>100%</strong></div>
+      </section>
+
+      <section class="core-operations" id="core-operations" aria-labelledby="core-operations-title">
+        <header class="core-operations-head"><div><p class="eyebrow">CORE WORKFLOW · STEP BY STEP</p><h2 id="core-operations-title">核心操作区</h2></div><p>前五步完成后显示 ✅；预览填充和发布不作强制校验。</p></header>
+        <ol class="core-flow-grid">
+          <li class="core-flow-step" data-flow-step="install"><span class="flow-index">01</span><div><strong>安装 / 连接</strong><small id="extension-version-state">检测 Chrome 发布助手版本</small></div><button class="flow-action" id="connection-help" type="button">安装 / 连接</button><i class="flow-status">待完成</i></li>
+          <li class="core-flow-step" data-flow-step="platform"><span class="flow-index">02</span><div><strong>选择发布平台</strong><small id="flow-platform-name">微博</small></div><button class="flow-action" type="button" data-scroll-target="platform-catalog">去选择</button><i class="flow-status">待完成</i></li>
+          <li class="core-flow-step" data-flow-step="mode"><span class="flow-index">03</span><div><strong>选择发布方式</strong><small id="flow-mode-name">Browser Fill</small></div><button class="flow-action" type="button" data-scroll-target="publishing-modes">去选择</button><i class="flow-status">待完成</i></li>
+          <li class="core-flow-step" data-flow-step="chrome"><span class="flow-index">04</span><div><strong>打开 Chrome</strong><small id="platform-ready-state">等待定位平台编辑页</small></div><button class="flow-action" id="open-platform" type="button">打开 Chrome</button><label class="manual-ready-check"><input id="confirm-platform-ready" type="checkbox" /> 已登录并进入编辑页</label><i class="flow-status">待完成</i></li>
+          <li class="core-flow-step core-flow-generate" data-flow-step="generate"><span class="flow-index">05</span><div><strong>生成主题</strong><small id="flow-generation-name">AI 主题</small></div><label><span class="sr-only">生成主题类型</span><select id="generation-type"><option value="featured">生成精选主题</option><option value="ai" selected>生成 AI 主题</option><option value="library">生成素材库主题</option><option value="news">生成新闻主题</option></select></label><button class="flow-action flow-action-primary" id="generate-drafts" type="button">生成主题</button><i class="flow-status">待完成</i></li>
+          <li class="core-flow-step is-optional" data-flow-step="preview"><span class="flow-index">06</span><div><strong>预览与填充</strong><small>在候选稿中检查文案、图片并填充</small></div><i class="flow-status">可选校验</i></li>
+          <li class="core-flow-step is-optional" data-flow-step="publish"><span class="flow-index">07</span><div><strong>手动 / 自动发布</strong><small>真人发送或明确确认后调用官方 API</small></div><i class="flow-status">可选校验</i></li>
+        </ol>
+        <div class="generation-options">
+          <label class="count-select"><span>生成数量</span><select id="draft-count"><option value="5" selected>5 条</option><option value="3">3 条</option><option value="1">1 条</option></select></label>
+          <label class="topic-select"><span>AI 主题方向</span><select id="topic-mode"><option value="random">随机选题</option><option>币圈热门</option><option>搞钱主意</option><option>降本增效</option><option>AI 获客</option><option>上手敲门</option><option>先发优势</option></select></label>
+          <label class="featured-select" hidden><span>精选来源</span><select id="featured-source"><option value="cost-basis">链上看板 · BTC 成本基础</option><option value="sth-ratio">链上看板 · STH/TMMP 比例</option><option value="realized-profit-loss">链上看板 · 已实现盈亏</option><option value="median-realized-price">链上看板 · 中位实现价格</option><option value="lth-realized-price">链上看板 · LTH 实现价格</option><option value="alphaops">AlphaOps · 项目池</option><option value="alpha-radar">Alpha Radar · 异动雷达</option><option value="all">全部来源 · 生成 5 条</option></select></label>
+          <p id="generation-help">先生成平台无关的主草稿，再按当前平台规则生成可发布版本。</p>
+        </div>
+      </section>
+
+      <div class="ops-alert" id="ops-alert" role="alert" hidden><strong>操作未完成</strong><span></span><button type="button" aria-label="关闭提示">×</button></div>
+      </section>
+
+      <section class="aiops-lower-panel" aria-label="候选稿审核与发布工作台">
+      <section class="workspace-head">
+        <div>
+          <div class="source-tabs theme-library-tabs" role="tablist" aria-label="四类主题库">
+            <button data-source="featured" type="button"><span>◆</span><strong>精选主题</strong><small><i>候选 <b data-source-count="featured-pending">0</b></i><i>已发 <b data-source-count="featured-published">0</b></i><i>已废 <b data-source-count="featured-discarded">0</b></i></small></button>
+            <button class="active" data-source="ai" type="button"><span>✦</span><strong>AI 主题</strong><small><i>候选 <b data-source-count="ai-pending">0</b></i><i>已发 <b data-source-count="ai-published">0</b></i><i>已废 <b data-source-count="ai-discarded">0</b></i></small></button>
+            <button data-source="library" type="button"><span>⌁</span><strong>素材库主题</strong><small><i>候选 <b data-source-count="library-pending">0</b></i><i>已发 <b data-source-count="library-published">0</b></i><i>已废 <b data-source-count="library-discarded">0</b></i></small></button>
+            <button data-source="news" type="button"><span>◉</span><strong>新闻主题</strong><small><i>候选 <b data-source-count="news-pending">0</b></i><i>已发 <b data-source-count="news-published">0</b></i><i>已废 <b data-source-count="news-discarded">0</b></i></small></button>
+          </div>
+          <div class="view-tabs" role="tablist">
+            <button class="active" data-view="pending" type="button">候选稿 <span id="tab-pending-count">0</span></button>
+            <button data-view="published" type="button">已发布 <span id="tab-published-count">0</span></button>
+            <button data-view="discarded" type="button">已废弃 <span id="tab-discarded-count">0</span></button>
+          </div>
+        </div>
+        <div class="workspace-tools"><button id="open-publish-log" type="button">发布日志 <span id="publish-log-count">0</span></button><label class="search-field">⌕ <input id="draft-search" type="search" placeholder="搜索标题或正文" /></label><button id="clear-all" type="button">清空演示数据</button></div>
+      </section>
+
+      <section class="draft-list" id="draft-list" aria-live="polite"></section>
+
+      <section class="empty-state" id="empty-state">
+        <div class="empty-orbit"><span>✦</span></div>
+        <h2>今天的内容，从一个好主题开始</h2>
+        <p>点击「生成主题稿」，一次获得 5 条带平台预览和配图的候选内容。</p>
+        <button type="button" id="empty-generate">生成第一批主题稿</button>
+      </section>
+      </section>
+    </main>
+
+    <div class="toast-stack" id="toast-stack" aria-live="assertive"></div>
+
+    <aside class="surf-assistant" id="surf-assistant" aria-label="小微双引擎深度研究助手">
+      <button class="surf-bot-toggle" id="surf-bot-toggle" type="button" aria-expanded="false" aria-controls="surf-bot-panel" aria-label="打开小微双引擎深度研究助手">
+        <span class="surf-bot-robot" aria-hidden="true"><i class="surf-bot-antenna"></i><i class="surf-bot-face"><b></b><b></b></i><i class="surf-bot-body">B</i></span>
+        <span class="surf-bot-toggle-copy"><strong>小微</strong><small>双擎深研</small></span>
+        <i class="surf-bot-live" aria-hidden="true"></i>
+      </button>
+      <section class="surf-bot-panel" id="surf-bot-panel" aria-hidden="true" aria-labelledby="surf-bot-title">
+        <header class="surf-bot-head surf-bot-drag-handle">
+          <div class="surf-bot-mini" aria-hidden="true"><i></i><b>B</b></div>
+          <div><span>WELINKBTC × SURF × OPENAI</span><h2 id="surf-bot-title">小微深度研究</h2></div>
+          <button id="surf-bot-close" type="button" aria-label="关闭小微助手">×</button>
+        </header>
+        <div class="surf-bot-context"><i id="surf-bot-status-dot"></i><span id="surf-bot-status">正在检测研究双引擎</span><strong id="surf-bot-platform">当前平台：微博</strong></div>
+        <div class="surf-bot-messages" id="surf-bot-messages" role="log" aria-live="polite">
+          <article class="surf-message assistant"><span>微</span><div><strong>小微</strong><p>告诉我你要研究的币种、项目、市场信号或候选稿。我会优先调用 SURF 实时研究；若未返回有效结果，OpenAI 将自动接力，并按当前发布平台整理证据、来源和发布前核验项。</p></div></article>
+        </div>
+        <div class="surf-quick-prompts" aria-label="常用研究问题">
+          <button type="button" data-surf-prompt="研究今天 BTC 最重要的三条链上与市场信号，并说明哪些信息适合做成内容。">今日 BTC 信号</button>
+          <button type="button" data-surf-prompt="研究当前加密市场最值得关注的热点，区分已确认事实、市场解读和仍待核验的信息。">实时热点</button>
+          <button type="button" data-surf-prompt="请核验下面这段候选稿中的事实、数字、时间和因果关系，并列出需要修改的地方：\n\n">核验候选稿</button>
+        </div>
+        <form class="surf-bot-form" id="surf-bot-form">
+          <label class="surf-bot-input"><span class="sr-only">输入深度研究问题</span><textarea id="surf-bot-query" rows="3" maxlength="4000" placeholder="输入研究问题，或粘贴候选稿进行事实核验…" required></textarea></label>
+          <div class="surf-bot-actions">
+            <label><span>研究强度</span><select id="surf-bot-effort"><option value="low">快速</option><option value="medium" selected>标准</option><option value="high">深度</option></select></label>
+            <button id="surf-bot-new" type="button">新研究</button>
+            <button class="surf-bot-submit" id="surf-bot-submit" type="submit">开始研究</button>
+          </div>
+        </form>
+        <footer><span>SERVER-SIDE · HUMAN REVIEW</span><button id="surf-bot-copy" type="button" disabled>复制最新结论</button></footer>
+      </section>
+    </aside>
+
+    <div class="drawer-backdrop" id="library-backdrop" hidden></div>
+    <aside class="material-drawer" id="material-drawer" aria-hidden="true" aria-labelledby="material-drawer-title">
+      <header class="drawer-head">
+        <div><span>REALTIME CONTENT SOURCES</span><h2 id="material-drawer-title">素材库</h2><p>抓取公开热门信息，选择后再由 AI 改写；不会自动发布。</p></div>
+        <button id="close-library" type="button" aria-label="关闭素材库">×</button>
+      </header>
+      <section class="source-config">
+        <label><span>素材源</span><select id="library-source"><option value="x-account">X · 指定账号热门帖</option><option value="x-hot">X · 实时热门内容</option><option value="weibo-hot">微博 · 实时热搜</option><option value="binance-hot">币安广场 · 热门内容</option><option value="manual">手动导入公开素材</option></select></label>
+        <label data-library-field="account"><span>账号 / 主页</span><input id="library-account" value="https://x.com/wangchangfu88" placeholder="@wangchangfu88 或主页链接" /></label>
+        <label data-library-field="query" hidden><span>关键词</span><input id="library-query" value="BTC OR Bitcoin OR 人工智能 OR AI" placeholder="BTC OR AI" /></label>
+        <label data-library-field="platform" hidden><span>来源平台</span><select id="library-manual-platform"><option value="binance">币安广场</option><option value="weibo">微博</option><option value="x">X</option><option value="okx">OKX 星球</option><option value="other">其他公开来源</option></select></label>
+        <label class="source-text-field" data-library-field="manual" hidden><span>公开素材正文</span><textarea id="library-manual-text" rows="6" placeholder="粘贴公开帖文；多个素材可用空行分隔。"></textarea></label>
+        <div class="source-config-row"><label><span>时间范围</span><select id="library-days"><option value="7">最近 7 天</option><option value="30">最近 30 天</option><option value="90" selected>最近 3 个月</option></select></label><label><span>返回数量</span><select id="library-limit"><option value="10">10 条</option><option value="20" selected>20 条</option><option value="50">50 条</option></select></label></div>
+        <button class="primary-action" id="fetch-library" type="button">开始实时抓取</button>
+        <p class="source-notice" id="library-notice">X 使用官方 API；微博读取公开热搜；没有稳定公开接口的平台请使用手动导入。</p>
+      </section>
+      <section class="material-results"><header><div><strong>热门素材</strong><span id="material-result-meta">尚未抓取</span></div><button id="select-all-materials" type="button">全选</button></header><div id="material-result-list" class="material-result-list"></div></section>
+      <footer class="drawer-footer"><span id="material-selected-count">已选 0 条</span><button id="import-materials" class="primary-action" type="button" disabled>AI 润色并生成候选稿</button></footer>
+    </aside>
+
+    <dialog class="help-dialog ai-setup-dialog" id="ai-setup-dialog">
+      <form method="dialog">
+        <header><div><span>SERVER-SIDE AI</span><h2>配置 OpenAI 实时生成</h2></div><button aria-label="关闭" value="close">×</button></header>
+        <div class="extension-connect-state"><i class="status-dot offline" id="ai-setup-dot"></i><div><strong id="ai-setup-title">正在检测配置</strong><span id="ai-setup-copy">密钥只保存在服务端，不会发送到浏览器。</span></div></div>
+        <ol>
+          <li><strong>创建 API Key</strong><span>登录 OpenAI Platform，在 API Keys 页面创建项目密钥。</span></li>
+          <li><strong>添加到生产环境</strong><span>在 Vercel 项目设置的 Environment Variables 中新增 <code>OPENAI_API_KEY</code>，勾选 Production。</span></li>
+          <li><strong>重新部署</strong><span>部署完成后，运营台会自动切换为实时 AI 成稿和 AI 出图，无需修改前端代码。</span></li>
+        </ol>
+        <a class="extension-download" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer"><span>↗</span><strong>打开 OpenAI API Keys</strong><small>platform.openai.com</small></a>
+        <div class="dialog-safety">🔒 不要把 API Key 填进网页输入框、候选稿或浏览器扩展。运营台只通过服务端环境变量读取密钥。</div>
+        <button class="primary-action" value="close">我知道了</button>
+      </form>
+    </dialog>
+
+    <dialog class="help-dialog" id="help-dialog">
+      <form method="dialog">
+        <header><div><span>CHROME BRIDGE</span><h2>连接浏览器发布助手</h2></div><button aria-label="关闭" value="close">×</button></header>
+        <div class="extension-connect-state"><i class="status-dot offline"></i><div><strong id="dialog-bridge-title">尚未检测到发布助手</strong><span id="dialog-bridge-copy">安装并刷新页面后，这里会自动显示已连接。</span></div></div>
+        <a class="extension-download" href="chrome-extension.zip" download><span>↓</span><strong>下载 Chrome 发布助手</strong><small>v0.6.1 · ZIP · 本地运行</small></a>
+        <ol>
+          <li><strong>下载并解压</strong><span>下载上方安装包，解压后会得到 <code>chrome-extension</code> 文件夹。</span></li>
+          <li><strong>加载扩展</strong><span>打开 <code>chrome://extensions/</code>，开启开发者模式，点击“加载已解压的扩展程序”。</span></li>
+          <li><strong>登录目标平台</strong><span>在同一个 Chrome 中登录微博、X 或币安，再刷新 AI 运营台。</span></li>
+          <li><strong>审核后填充</strong><span>保存草稿、确认登录，再点击“填充到发布框”；最终发送始终由你完成。</span></li>
+        </ol>
+        <div class="dialog-safety">🔒 账号登录态只保留在你的 Chrome 中，运营台不读取密码或 Cookie。</div>
+        <button class="primary-action" value="close">我知道了</button>
+      </form>
+    </dialog>
+
+    <dialog class="image-preview-dialog" id="image-preview-dialog">
+      <form method="dialog">
+        <header><div><span>IMAGE PREVIEW</span><h2 id="image-preview-title">候选稿配图</h2></div><button type="submit" aria-label="关闭图片预览">×</button></header>
+        <div class="image-preview-stage"><img id="image-preview-full" alt="候选稿配图大图预览" /></div>
+        <footer><span>原图预览 · 发布前人工检查</span><a id="image-preview-download" download="welinkbtc-draft.png">下载图片</a></footer>
+      </form>
+    </dialog>
+
+    <dialog class="publish-log-dialog" id="publish-log-dialog">
+      <form method="dialog">
+        <header><div><span>PUBLISH LOG</span><h2>统一发布日志</h2><p>记录平台稿、校验、发布方式、人工确认和发布结果。</p></div><button value="close" aria-label="关闭发布日志">×</button></header>
+        <div class="publish-log-list" id="publish-log-list"></div>
+        <footer><button class="ghost-action" id="clear-publish-log" type="button">清空日志</button><button class="primary-action" value="close">完成</button></footer>
+      </form>
+    </dialog>
+
+    <template id="draft-template">
+      <article class="draft-card">
+        <div class="draft-media">
+          <button class="image-preview-trigger" type="button" aria-label="预览候选稿配图"><img alt="AI 生成配图" /><span class="image-preview-label">⌕ 预览大图</span></button>
+          <span class="image-state">AI VISUAL</span>
+          <button class="image-nav image-prev" type="button" aria-label="上一张候选图">‹</button><button class="image-nav image-next" type="button" aria-label="下一张候选图">›</button>
+          <div class="image-pagination" aria-live="polite"><span class="image-page-current">1</span> / <span class="image-page-total">3</span><small>滑动选择</small></div>
+          <button class="regen-image" type="button">↻ 重新生成 3 张</button>
+        </div>
+        <div class="draft-content">
+          <header class="draft-meta"><div><span class="state-badge">待审核</span><span class="source-badge"></span><span class="topic-badge"></span><span class="draft-id"></span></div><time></time></header>
+          <label class="editable-field"><span>标题</span><input class="draft-title" maxlength="80" /></label>
+          <label class="editable-field body-field"><span>正文</span><textarea class="draft-body" rows="6" maxlength="1000"></textarea><small><b class="char-count">0</b> / 1000</small></label>
+          <section class="platform-preview"><header><span>平台预览</span><div class="preview-tools"><button class="copy-preview" type="button" aria-label="一键复制平台预览完整文稿">一键复制</button><strong class="preview-platform"></strong></div></header><div class="preview-post"><div class="preview-avatar">B</div><div><strong>welinkBTC <i>✓</i></strong><span>@fly_welinkBTC · 刚刚</span><p></p></div></div></section>
+          <footer class="draft-actions">
+            <button class="save-draft" type="button">保存修改</button><button class="discard-draft" type="button">废弃</button>
+            <span class="action-spacer"></span><label class="human-check"><input type="checkbox" /> 我已确认平台登录</label>
+            <button class="fill-platform" type="button">填充到微博发布框</button><button class="mark-published" type="button">标记已发布</button>
+          </footer>
+        </div>
+      </article>
+    </template>
+
+    <script src="ui-translations.js"></script>
+    <script src="platform-text.js"></script>
+    <script src="ai-ops-platforms.js"></script>
+    <script src="ai-ops.js"></script>
+    <script src="surf-assistant.js"></script>
+  </body>
+</html>

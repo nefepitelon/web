@@ -1,0 +1,31 @@
+{
+  "name": "grid-bot-all",
+  "version": "2.2.7",
+  "description": "清单驱动的多交易所网格交易机器人：Decibel / Extended / RISEx / Binance / Ondo Perps / Phoenix / Nado / OKX / GRVT / RHC Lighter。",
+  "type": "module",
+  "scripts": {
+    "start": "node src/launcher.js",
+    "preflight": "node src/preflight.js",
+    "engine": "node src/server.js",
+    "test": "node test/grid.test.js && node --test test/env-config.test.js test/config-routing.test.js test/dynamic-console.test.js test/instances.test.js test/instance-removal.test.js test/network-routing.test.js test/write-scheduler.test.js test/bot-start.test.js test/ai-provider.test.js test/binance.test.js test/extended.test.js test/ondo.test.js test/phoenix.test.js test/nado.test.js test/okx.test.js test/grvt.test.js test/lighter.test.js test/liquidation-price.test.js test/hedge-cycle.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aptos-labs/ts-sdk": "^5.2.1",
+    "@decibeltrade/sdk": "^0.6.0",
+    "@ellipsis-labs/rise": "^0.4.67",
+    "@nadohq/client": "^0.36.0",
+    "@nadohq/shared": "^0.36.0",
+    "@solana-program/compute-budget": "^0.10.0",
+    "@solana/kit": "^4.0.0",
+    "bignumber.js": "^11.1.1",
+    "undici": "^6.19.8",
+    "viem": "^2.52.0",
+    "zod": "^3.25.62"
+  },
+  "optionalDependencies": {
+    "risex-client": "^0.1.0"
+  }
+}

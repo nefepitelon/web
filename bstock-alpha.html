@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080b10" />
+    <meta
+      name="description"
+      content="bStockAlpha：通过双 AI 研究、确定性策略与 Binance Agentic Wallet 管理 bStock 交易和 Realized PnL。"
+    />
+    <title>bStockAlpha · Agentic PnL Terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="bstock-alpha.css?v=20260826-ledger-reports-v3" />
+    <link rel="stylesheet" href="bstock-alpha-ui.css?v=20260904-ui-system-v1" />
+    <link rel="stylesheet" href="bstock-equity-panel.css?v=20260904-equity-panel-v2" />
+  </head>
+  <body data-theme="dark">
+    <header class="platform-header">
+      <a class="platform-brand" href="index.html#top" aria-label="返回 welinkBTC 首页">
+        <span class="platform-brand-mark"><img src="assets/welinkbtc-orbit-brand.webp" alt="" /></span>
+        <strong>WELINKBTC</strong>
+      </a>
+      <nav class="platform-nav" aria-label="平台导航">
+        <a href="index.html#network">网络</a>
+        <a href="index.html#products">产品</a>
+        <a href="/research" target="_top">研究</a>
+        <a href="alphaops.html">AlphaOps</a>
+        <a href="alpha-radar.html">Alpha Radar</a>
+        <a class="active" href="bstock-alpha.html" aria-current="page">bStockAlpha</a>
+        <a href="dashboard.html">链上看板</a>
+        <a href="ai-ops.html">AI 运营台</a>
+        <a href="index.html#contact">联系</a>
+      </nav>
+      <div class="platform-tools">
+        <button class="theme-toggle" type="button" aria-label="当前深色，切换为浅色模式" data-current="dark"><span class="preference-icon" aria-hidden="true">◐</span><span class="preference-label">深色</span></button>
+        <button class="lang-toggle" type="button" aria-label="当前中文，切换为 English" data-current="zh"><span class="preference-icon" aria-hidden="true">文</span><span class="preference-label">中文</span></button>
+      </div>
+    </header>
+
+    <main class="terminal-shell">
+      <section class="command-bar" aria-label="bStockAlpha 控制栏">
+        <div class="command-brand">
+          <span class="command-logo" aria-hidden="true"><i></i><b>α</b></span>
+          <div>
+            <div class="command-title"><strong>bStock<span>Alpha</span></strong><em>BETA</em></div>
+            <p>AGENTIC PNL TERMINAL · BNB SMART CHAIN</p>
+          </div>
+        </div>
+
+        <div class="system-state" aria-label="系统状态">
+          <span id="public-data-state"><i class="state-dot is-waiting"></i>DATA SYNCING</span>
+          <span><i class="state-dot is-online"></i>RISK ENGINE</span>
+          <span id="execution-state"><i class="state-dot is-waiting"></i>WALLET OFFLINE</span>
+        </div>
+
+        <div class="command-actions">
+          <button class="equity-launch" id="open-equity-panel" type="button" aria-haspopup="dialog" aria-controls="equity-panel" aria-expanded="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15.5V4.5M3 15.5h14M6 11l3-3 3 2 4-5M12.5 5H16v3.5" /></svg>
+            <span class="equity-launch-label-zh">美股<span class="equity-launch-en">US Stock</span>全览</span>
+            <span class="equity-launch-label-en" lang="en">US Stock Overview</span>
+            <svg class="equity-launch-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5" /></svg>
+          </button>
+          <div class="mode-switch" role="group" aria-label="执行模式">
+            <button class="active" type="button" data-mode="policy" aria-pressed="true">POLICY</button>
+          </div>
+          <button class="wallet-button" id="connect-wallet" type="button">
+            <span class="wallet-button-icon" aria-hidden="true"></span>
+            <span id="wallet-button-label">连接 Agentic Wallet</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="market-strip" aria-label="市场概览">
+        <div class="strip-label"><i></i><span>MARKET REGIME</span><strong id="live-market-regime-label">等待连接</strong></div>
+        <div class="strip-item"><span>BTC · CMC</span><strong id="live-btc-price">等待连接</strong><em id="live-market-change">LIVE</em></div>
+        <div class="strip-item"><span>CMC SENTIMENT</span><strong id="live-cmc-sentiment">—</strong><em id="live-cmc-regime">WAITING</em></div>
+        <div class="strip-item"><span>BTC DOM.</span><strong id="live-btc-dominance">—</strong><em id="live-btc-dominance-change">—</em></div>
+        <div class="strip-item"><span>TOTAL MKT CAP</span><strong id="live-market-cap">—</strong><em>CMC</em></div>
+        <div class="strip-item strip-item--event"><span>24H VOLUME</span><strong id="live-market-volume">—</strong><em id="live-volume-change">—</em></div>
+        <div class="strip-stamp"><span>LIVE SNAPSHOT</span><strong id="live-snapshot-time">等待 Agent 会话</strong></div>
+      </section>
+
+      <section class="overview-grid">
+        <article class="metric-card metric-card--primary">
+          <div class="metric-head"><span>REALIZED PNL</span><em id="realized-source">等待真实成交历史</em></div>
+          <strong class="metric-value" id="realized-pnl">—</strong>
+          <div class="metric-foot"><span><i></i>已落袋</span><b id="realized-return">—</b></div>
+          <svg class="metric-sparkline" viewBox="0 0 180 40" aria-hidden="true"><path id="realized-sparkline" d="" /></svg>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>UNREALIZED</span><em>不计排名</em></div>
+          <strong class="metric-value" id="unrealized-pnl">—</strong>
+          <div class="metric-foot"><span id="open-position-count">等待真实持仓</span><b class="muted" id="unrealized-return">—</b></div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>WIN RATE</span><em>已平仓</em></div>
+          <strong class="metric-value" id="win-rate">—</strong>
+          <div class="metric-foot"><span id="closed-trade-count">等待成交历史</span><b id="win-loss-count">—</b></div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>PROFIT FACTOR</span><em>净收益 / 净亏损</em></div>
+          <strong class="metric-value" id="profit-factor">—</strong>
+          <div class="metric-foot"><span>真实已平仓订单</span><b id="average-payoff">—</b></div>
+        </article>
+        <article class="metric-card metric-card--qualification">
+          <div class="metric-head"><span>CONTEST READY</span><em>0 / 4</em></div>
+          <div class="qualification-row"><span id="qualification-cmc">CMC LIVE 等待</span><span id="qualification-studio">STUDIO PAID 等待</span><span id="qualification-pnl">PNL 对账待接入</span><span id="qualification-wallet">WALLET</span></div>
+          <div class="progress"><i style="width:0"></i></div>
+        </article>
+      </section>
+
+      <section class="trading-grid">
+        <aside class="panel universe-panel">
+          <header class="panel-head">
+            <div><span class="panel-kicker">BINANCE OFFICIAL TYPE-3</span><h2>bStock 机会池</h2></div>
+            <button class="icon-button" id="refresh-universe" type="button" aria-label="刷新机会池">↻</button>
+          </header>
+          <label class="token-search"><span aria-hidden="true"></span><input id="token-search" type="search" placeholder="搜索 bStock" /></label>
+          <div class="universe-tabs" role="tablist">
+            <button class="active" data-universe-filter="all" type="button">全部 <em>—</em></button>
+            <button data-universe-filter="weekly" type="button">周机会 <em>—</em></button>
+            <button data-universe-filter="stock" type="button">个股 <em>—</em></button>
+            <button data-universe-filter="etf" type="button">ETF <em>—</em></button>
+            <button data-universe-filter="recommended" type="button">推荐 <em>0</em></button>
+            <button data-universe-filter="watchlist" type="button">自选 <em>0</em></button>
+          </div>
+          <div class="token-list" id="token-list"><div class="universe-empty">正在载入持久化 bStock 注册表…</div></div>
+          <footer class="universe-foot"><span><i></i><b id="eligibility-week">固定清单与周机会核验中</b></span><span class="universe-foot-actions"><button id="restore-weekly-opportunities" type="button" hidden>恢复已移除</button><button id="show-eligibility" type="button">查看规则</button></span></footer>
+        </aside>
+
+        <section class="panel research-panel">
+          <header class="asset-head">
+            <div class="asset-identity"><span class="token-avatar nvda" id="asset-avatar">N</span><div><p><strong id="asset-symbol">NVDAB</strong><em id="asset-eligibility">VERIFYING</em></p><span id="asset-name">NVIDIA Tokenized Stock · BSC</span></div></div>
+            <div class="asset-price"><strong id="asset-price">—</strong><span id="asset-change">等待 Binance 实时行情</span></div>
+          </header>
+
+          <div class="chart-toolbar">
+            <div class="chart-periods" role="group" aria-label="图表周期"><button type="button">1H</button><button class="active" type="button">4H</button><button type="button">1D</button><button type="button">1W</button></div>
+            <span>VOL <b id="asset-volume">—</b></span><span>LIQ <b id="asset-liquidity-label">—</b></span>
+          </div>
+          <div class="price-chart" aria-label="NVDAB Binance 实时历史价格走势">
+            <div class="chart-grid" aria-hidden="true"></div>
+            <svg viewBox="0 0 760 210" preserveAspectRatio="none" role="img" aria-label="价格曲线">
+              <defs><linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7ff5ae" stop-opacity=".24"/><stop offset="1" stop-color="#7ff5ae" stop-opacity="0"/></linearGradient></defs>
+              <path class="chart-area" id="chart-area" d="" />
+              <path class="chart-line" id="chart-line" d="" />
+            </svg>
+            <div class="chart-price-label" id="chart-price-label">—</div>
+            <div class="chart-axis"><span>12:00</span><span>16:00</span><span>20:00</span><span>00:00</span><span>04:00</span><span>08:00</span></div>
+          </div>
+
+          <div class="research-heading"><div><span class="panel-kicker">DUAL AI CONSENSUS</span><h2>研究信号</h2></div><span class="research-age" id="research-age"><i></i>等待真实数据</span></div>
+          <div class="ai-grid">
+            <article class="ai-card" id="cmc-ai-card">
+              <header><span class="ai-mark cmc">C</span><div><strong>CMC AI</strong><small id="cmc-source-label">官方实时数据 · 等待连接</small></div><em id="cmc-live-state">WAITING</em></header>
+              <div class="ai-score"><strong id="crypto-score">—</strong><span>/ 100</span><b id="crypto-regime-label">等待实时源</b></div>
+              <div class="signal-bars"><span><em>市场情绪</em><i><b id="cmc-bar-sentiment" style="width:0"></b></i><strong id="cmc-sentiment-score">—</strong></span><span><em>市值变化</em><i><b id="cmc-bar-market" style="width:0"></b></i><strong id="cmc-market-score">—</strong></span><span><em>宏观风险</em><i><b id="cmc-bar-risk" style="width:0"></b></i><strong id="cmc-risk-score">—</strong></span></div>
+              <p id="cmc-live-thesis">正在请求 CoinMarketCap 官方实时数据。</p>
+              <button class="ai-live-action" id="cmc-paid-research" type="button">调用 CMC x402 付费研究</button>
+            </article>
+            <article class="ai-card" id="studio-ai-card">
+              <header><span class="ai-mark studio">A</span><div><strong>Agent Studio</strong><small id="studio-source-label">尚无真实付费研报</small></div><em id="studio-live-state">EMPTY</em></header>
+              <div class="ai-score"><strong id="equity-score">—</strong><span>/ 100</span><b id="equity-rating">等待研报</b></div>
+              <div class="target-price"><span>目标价</span><strong id="target-price">—</strong><em id="target-upside">—</em></div>
+              <p id="equity-thesis">生成并完成 Agent Studio 真实付费研报后显示；不会使用本地基线替代。</p>
+              <div class="ai-actions">
+                <button class="ai-live-action" id="studio-paid-research" type="button">生成 Agent Studio 付费研报</button>
+                <button class="ai-live-action secondary" id="studio-recover-research" type="button">回捞最近研报</button>
+                <button class="ai-live-action appreciation" id="studio-report-appreciation" type="button" disabled>AI 研报赏析</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="decision-engine">
+            <header><div><span class="panel-kicker">DETERMINISTIC STRATEGY</span><h2>决策引擎</h2></div><div class="decision-total"><span>FINAL SCORE</span><strong id="final-score">—</strong></div></header>
+            <div class="decision-components">
+              <div><span>CMC Regime <em>30%</em></span><i><b id="bar-crypto" style="width:0"></b></i><strong id="weight-crypto">—</strong></div>
+              <div><span>Equity Research <em>45%</em></span><i><b id="bar-equity" style="width:0"></b></i><strong id="weight-equity">—</strong></div>
+              <div><span>Liquidity <em>15%</em></span><i><b id="bar-liquidity" style="width:0"></b></i><strong id="weight-liquidity">—</strong></div>
+              <div><span>Portfolio Fit <em>10%</em></span><i><b id="bar-portfolio" style="width:0"></b></i><strong id="weight-portfolio">—</strong></div>
+            </div>
+            <div class="decision-result"><span class="decision-badge hold" id="decision-badge">WAIT</span><p><strong id="decision-copy">等待全部真实信号</strong><small>缺失数据保持留空，不使用演示值生成交易结论。</small></p><button id="inspect-decision" type="button">查看数据口径 →</button></div>
+          </div>
+        </section>
+
+        <aside class="panel order-panel">
+          <header class="panel-head"><div><span class="panel-kicker">AGENTIC WALLET</span><h2>交易执行</h2></div><span class="network-pill"><i></i>BSC</span></header>
+          <div class="execution-notice" id="execution-notice"><i></i><p><strong>Policy Live</strong><span>仅提交通过白名单、50% 仓位、双 AI 与实时余额复核的逐笔订单。</span></p></div>
+          <div class="side-switch" role="tablist"><button class="active" type="button" data-side="buy">买入</button><button type="button" data-side="sell">卖出</button></div>
+          <div class="order-asset"><span>交易标的</span><div><span class="token-avatar nvda" id="order-avatar">N</span><strong id="order-symbol">NVDAB</strong><em id="order-eligibility">VERIFYING</em></div></div>
+          <div class="order-field trade-amount-field"><span><b id="order-amount-label">支付金额</b><em id="available-balance">连接后读取真实余额</em></span><div class="trade-amount-row"><input id="order-amount" aria-label="支付金额" type="number" min="0" step="0.01" value="10" /><strong class="order-input-unit" id="order-input-unit">USDT</strong><label class="settlement-token"><small id="pay-token-role">支付币种</small><select id="pay-token" aria-label="支付币种"><option>USDT</option><option>USDC</option><option>USD1</option><option>U</option><option>BNB</option></select></label></div></div>
+          <div class="amount-presets"><button type="button" data-buy-amount="5" data-sell-ratio="25">$5</button><button class="active" type="button" data-buy-amount="10" data-sell-ratio="50">$10</button><button type="button" data-buy-amount="25" data-sell-ratio="75">$25</button><button type="button" data-buy-amount="50" data-sell-ratio="100">$50</button></div>
+          <label class="order-field"><span><b>最大滑点</b><em>上限 0.50%</em></span><div><input id="slippage" type="number" min="0.05" max="0.5" step="0.05" value="0.30" /><span class="field-suffix">%</span></div></label>
+          <div class="order-estimate"><span>预计获得</span><strong id="estimated-output">—</strong><small>真实行情与余额就绪后估算</small></div>
+          <div class="risk-checks">
+            <div class="risk-head"><span>RISK PREFLIGHT</span><em id="risk-count">5 / 6 PASSED</em></div>
+            <ul>
+              <li class="pending" id="eligibility-risk"><i></i><span>当周合格 bStock</span><strong>等待官方清单</strong></li>
+              <li class="pending" id="dual-ai-risk"><i></i><span>双 AI 信号在有效期</span><strong>等待真实信号</strong></li>
+              <li class="pending"><i></i><span>单标的仓位 &lt; 50%</span><strong id="position-check">—</strong></li>
+              <li class="pass"><i></i><span>滑点不超过 0.50%</span><strong id="slippage-check">0.30%</strong></li>
+              <li class="pending" id="daily-loss-risk" data-blocking="false"><i></i><span>当日 PnL 熔断状态</span><strong>INFO · 暂无真实 PnL</strong></li>
+              <li class="pending" id="wallet-risk"><i></i><span>钱包会话与 Gas</span><strong>待连接</strong></li>
+            </ul>
+          </div>
+          <button class="review-button" id="review-order" type="button"><span>审阅交易意图</span><em>⌘ ↵</em></button>
+          <p class="order-footnote">只有 <strong>FINISHED / CONFIRMED</strong> 成交才会进入持仓与 PnL 账本。</p>
+        </aside>
+      </section>
+
+      <section class="cycle-panel panel" aria-label="策略闭环">
+        <header><div><span class="panel-kicker">CONTROLLED EXECUTION LOOP</span><h2>从研究到落袋</h2></div><p>模型无下单权限 · Risk Engine 拥有一票否决</p></header>
+        <ol class="cycle-flow">
+          <li><span>01</span><i></i><div><strong>DISCOVER</strong><small>合格清单</small></div></li>
+          <li><span>02</span><i></i><div><strong>RESEARCH</strong><small>双 AI 证据</small></div></li>
+          <li><span>03</span><i></i><div><strong>DECIDE</strong><small>确定性评分</small></div></li>
+          <li><span>04</span><i></i><div><strong>RISK</strong><small>六项硬门槛</small></div></li>
+          <li><span>05</span><i></i><div><strong>EXECUTE</strong><small>Agentic Wallet</small></div></li>
+          <li><span>06</span><i></i><div><strong>RECONCILE</strong><small>链上确认</small></div></li>
+          <li><span>07</span><i></i><div><strong>REALIZE</strong><small>FIFO 归因</small></div></li>
+        </ol>
+      </section>
+
+      <section class="portfolio-panel panel">
+        <header class="portfolio-head">
+          <div><span class="panel-kicker">PORTFOLIO &amp; ATTRIBUTION</span><h2>组合与 Realized PnL</h2></div>
+          <div class="portfolio-tabs" role="tablist"><button class="active" type="button" data-ledger-tab="positions">开放仓位</button><button type="button" data-ledger-tab="orders">订单记录</button><button type="button" data-ledger-tab="realized">已实现账本</button><button type="button" data-ledger-tab="reports">研报历史</button><button type="button" data-ledger-tab="leaderboard">PnL 排名</button><button type="button" data-ledger-tab="audit">执行审计</button></div>
+          <button class="export-button" id="export-ledger" type="button">导出 CSV ↓</button>
+        </header>
+
+        <div class="ledger-panel active" data-ledger-panel="positions">
+          <div class="table-wrap"><table><thead><tr><th>资产</th><th>数量</th><th>平均成本</th><th>标记价格</th><th>市值</th><th>未实现 PnL</th><th>组合占比</th><th>策略动作</th></tr></thead><tbody id="positions-body">
+            <tr id="positions-empty"><td colspan="8">连接 Agentic Wallet 后显示真实链上 bStock 余额；平均成本与 PnL 仅在完整成交历史可重建时显示。</td></tr>
+          </tbody></table></div>
+        </div>
+
+        <div class="ledger-panel" data-ledger-panel="orders">
+          <div class="ledger-source-note" id="orders-source-note">连接 Agentic Wallet 后显示由 bStockAlpha 创建的买入 / 卖出意图，以及 Agentic Wallet 返回的真实订单状态。</div>
+          <div class="table-wrap"><table><thead><tr><th>创建时间</th><th>资产</th><th>方向</th><th>来源 / 模式</th><th>支付 / 卖出</th><th>实际 / 预计获得</th><th>状态</th><th>订单号</th><th>链上凭证</th></tr></thead><tbody id="order-records-body">
+            <tr id="orders-empty"><td colspan="9">尚无可验证的订单记录。</td></tr>
+          </tbody></table></div>
+        </div>
+
+        <div class="ledger-panel" data-ledger-panel="realized">
+          <div class="ledger-summary"><div><span>净已实现 PnL</span><strong id="ledger-realized-pnl">—</strong></div><div><span>实际卖出收入</span><strong id="ledger-sale-proceeds">—</strong></div><div><span>FIFO 实际买入成本</span><strong id="ledger-fifo-cost">—</strong></div><div><span>Gas（账外）</span><strong class="muted">不计排名</strong></div></div>
+          <div class="table-wrap"><table><thead><tr><th>时间</th><th>资产</th><th>卖出</th><th>FIFO 成本</th><th>费用</th><th>Realized PnL</th><th>状态</th><th>链上凭证</th></tr></thead><tbody id="realized-body">
+            <tr id="realized-empty"><td colspan="8">Binance Agentic Wallet 当前未公开活动排行榜/PnL 账本接口；未取得完整真实成交历史时保持留空。</td></tr>
+          </tbody></table></div>
+        </div>
+
+        <div class="ledger-panel" data-ledger-panel="reports">
+          <div class="ledger-source-note" id="report-history-source-note">连接 Agentic Wallet 后按 bStock 标的与生成时间显示已持久化的 Agent Studio 研报。</div>
+          <div class="table-wrap"><table><thead><tr><th>生成时间</th><th>bStock 标的</th><th>来源 / 状态</th><th>评级</th><th>评分</th><th>目标价</th><th>付款凭证</th><th>操作</th></tr></thead><tbody id="report-history-body">
+            <tr id="report-history-empty"><td colspan="8">当前 Agentic Wallet 尚无已完成研报。</td></tr>
+          </tbody></table></div>
+        </div>
+
+        <div class="ledger-panel" data-ledger-panel="leaderboard">
+          <div class="leaderboard-note"><span>RANKING METHOD</span><strong>按净 Realized PnL 排名</strong><p>未发现可验证的公开排行榜 API，因此不展示虚构名次；请以 Binance 官方活动页为准。</p></div>
+          <div class="table-wrap"><table class="leaderboard-table"><thead><tr><th>排名</th><th>Agent</th><th>Realized PnL</th><th>胜率</th><th>Profit Factor</th><th>已平仓</th><th>最大回撤</th><th>状态</th></tr></thead><tbody>
+            <tr><td colspan="8"><a href="https://web3.binance.com/zh-CN/dev-docs/products/agentic-wallet/use-cases/campaigns/bstock-pnl-contest" target="_blank" rel="noopener noreferrer">打开 Binance 官方活动规则与成绩入口 ↗</a></td></tr>
+          </tbody></table></div>
+        </div>
+
+        <div class="ledger-panel" data-ledger-panel="audit">
+          <div class="audit-grid" id="live-audit-grid"><article><span>—</span><i class="warning"></i><div><strong>等待真实事件</strong><p>仅记录本页实际发生的数据同步、付费研究与订单状态，不展示演示审计。</p></div><em>WAITING</em></article></div>
+        </div>
+      </section>
+
+      <footer class="terminal-footer"><span><i></i>REAL DATA ONLY · 缺失数据留空 · 实盘成交必须由 Agentic Wallet 确认</span><span>Realized PnL = 实际卖出收入 − FIFO 实际买入成本（Gas 不计排名）</span><a href="https://web3.binance.com/zh-CN/dev-docs/products/agentic-wallet/use-cases/campaigns/bstock-pnl-contest" target="_blank" rel="noopener noreferrer">活动规则 ↗</a></footer>
+    </main>
+
+    <dialog class="trade-dialog" id="trade-dialog">
+      <form method="dialog">
+        <header><div><span class="panel-kicker">TRADE INTENT REVIEW</span><h2 id="dialog-title">审阅 NVDAB 买入意图</h2></div><button value="cancel" aria-label="关闭">×</button></header>
+        <div class="dialog-score"><span>策略结论</span><strong id="dialog-decision">WAIT · 真实信号不完整</strong><em>确定性策略输出</em></div>
+        <dl><div><dt>执行模式</dt><dd id="dialog-mode">POLICY</dd></div><div><dt>支付</dt><dd id="dialog-pay">10 USDT</dd></div><div><dt>预计获得</dt><dd id="dialog-output">报价后显示</dd></div><div><dt>最大滑点</dt><dd id="dialog-slippage">0.30%</dd></div><div><dt>单标的仓位</dt><dd id="dialog-position">实时计算 / &lt; 50.0%</dd></div><div><dt>真实费用 / Gas</dt><dd id="dialog-costs">报价后显示</dd></div><div><dt>官方合约</dt><dd id="dialog-contract">报价后核验</dd></div></dl>
+        <div class="dialog-warning"><i></i><p><strong id="dialog-warning-title">等待钱包授权</strong><span id="dialog-warning-copy">报价与风控复核后，仍需钱包逐笔确认；只有最终链上成功才进入账本。</span></p></div>
+        <label class="approval-check"><input id="approval-check" type="checkbox" /><span>我确认 AI 仅提供研究，Risk Engine 的限制不可绕过。</span></label>
+        <label class="approval-check" id="eligibility-approval-row" hidden><input id="eligibility-approval-check" type="checkbox" /><span>我了解当前活动周资格未能实时核验，本次交易可能不计入活动 PnL。</span></label>
+        <div class="execution-progress" id="trade-execution-progress" hidden><i></i><span>等待执行</span></div>
+        <div class="dialog-actions"><button class="dialog-cancel" value="cancel">取消</button><button class="dialog-confirm" id="confirm-intent" value="default" type="button" disabled>确认并提交</button></div>
+      </form>
+    </dialog>
+
+    <dialog class="research-dialog" id="research-dialog">
+      <form method="dialog">
+        <header><div><span class="panel-kicker">X402 PAID RESEARCH</span><h2 id="research-dialog-title">付费研究预览</h2></div><button value="cancel" aria-label="关闭付费研究窗口">×</button></header>
+        <div class="research-payment-status" id="research-payment-status"><i></i><span>正在获取实时付款要求；此步骤不会签名或扣费。</span></div>
+        <div class="research-purpose"><span>用途</span><strong id="research-purpose">—</strong></div>
+        <div class="payment-options" id="research-payment-options"></div>
+        <div class="dialog-warning"><i></i><p><strong>签名前确认</strong><span>点击确认后，钱包会按已审阅付款选项使用对应 EVM 网络；如需 Permit2，将先提交一次性授权并等待该网络确认，再重放原请求。每次成功调用都会产生真实费用。</span></p></div>
+        <label class="approval-check"><input id="research-approval-check" type="checkbox" /><span>我已核对金额、代币、网络和收款地址，并确认本次真实付费请求。</span></label>
+        <div class="research-result" id="research-result" hidden></div>
+        <div class="dialog-actions"><button class="dialog-cancel" value="cancel">取消</button><button class="dialog-confirm" id="retry-research-preview" type="button" hidden>重新获取付款预览（不扣费）</button><button class="dialog-confirm" id="confirm-paid-research" type="button" disabled>确认签名并付费</button></div>
+      </form>
+    </dialog>
+
+    <dialog class="report-reader-dialog" id="report-reader-dialog" aria-labelledby="report-reader-title">
+      <form method="dialog">
+        <header>
+          <div><span class="panel-kicker">AGENT STUDIO · REPORT READING</span><h2 id="report-reader-title">AI 研报赏析</h2><p id="report-reader-subtitle">最新 Agent Studio 研报</p></div>
+          <button value="cancel" aria-label="关闭 AI 研报赏析">×</button>
+        </header>
+        <div class="report-reader-scroll">
+          <div class="report-reader-toolbar">
+            <div class="report-reader-meta"><span id="report-reader-source">结构化研报</span><span id="report-reader-language">原文语言</span><time id="report-reader-completed">—</time></div>
+            <div class="report-reader-language-switch" role="group" aria-label="研报阅读语言">
+              <button type="button" data-report-language="zh" aria-pressed="true">中文</button>
+              <button type="button" data-report-language="en" aria-pressed="false">English</button>
+            </div>
+          </div>
+          <section class="report-reader-overview" aria-labelledby="report-reader-summary-title">
+            <div class="report-reader-highlights" id="report-reader-highlights"></div>
+            <div class="report-reader-summary">
+              <span class="report-reader-kicker">EXECUTIVE SUMMARY</span>
+              <h3 id="report-reader-summary-title">核心摘要</h3>
+              <div id="report-reader-summary"></div>
+            </div>
+          </section>
+          <div class="report-reader-sections" id="report-reader-sections"></div>
+          <section class="report-reader-conclusion" aria-labelledby="report-reader-conclusion-title">
+            <span class="report-reader-kicker">CONCLUSION</span>
+            <h3 id="report-reader-conclusion-title">综合结论</h3>
+            <div id="report-reader-conclusion"></div>
+          </section>
+          <p class="report-reader-disclaimer" id="report-reader-disclaimer"></p>
+          <details class="report-reader-raw-panel">
+            <summary>查看原始研报</summary>
+            <pre id="report-reader-raw"></pre>
+          </details>
+        </div>
+        <footer>
+          <button class="dialog-cancel" value="cancel">阅读完成</button>
+          <button class="dialog-confirm report-share-button" id="share-studio-report" type="button"><span>生成品牌分享页</span><small>安全快照 · 可公开访问 ↗</small></button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="wallet-dialog" id="wallet-dialog">
+      <form method="dialog">
+        <header>
+          <div><span class="panel-kicker">AGENTIC WALLET LOGIN</span><h2>选择连接方式</h2></div>
+          <button value="cancel" aria-label="关闭钱包连接窗口">×</button>
+        </header>
+
+        <div class="wallet-method-tabs" role="tablist" aria-label="Agentic Wallet 登录方式">
+          <button class="active" type="button" role="tab" aria-selected="true" data-wallet-method="injected"><i class="method-wallet-icon"></i><span><strong>浏览器钱包</strong><small>通过浏览器扩展连接 EVM 网络</small></span></button>
+          <button type="button" role="tab" aria-selected="false" data-wallet-method="agent"><i class="method-qr-icon"></i><span><strong>Agent 扫码登录</strong><small>Binance App · 配对码校验</small></span><em>NEW</em></button>
+        </div>
+
+        <section class="wallet-method-panel active" data-wallet-panel="injected">
+          <div class="wallet-method-intro"><i class="method-wallet-icon"></i><div><strong>连接浏览器钱包</strong><p>请求钱包地址并用一次性消息验证所有权；x402 按付款选项切换网络，bStock 交易时再自动切换 BNB Chain。</p></div></div>
+          <ul class="wallet-safety-list"><li><i></i>不会请求私钥或助记词</li><li><i></i>所有权签名不授权交易</li><li><i></i>实盘交易仍需钱包逐笔确认</li></ul>
+          <button class="wallet-primary-action" id="connect-injected-wallet" type="button">连接浏览器钱包</button>
+        </section>
+
+        <section class="wallet-method-panel" data-wallet-panel="agent" hidden>
+          <div class="agent-login-callout"><span>01</span><div><strong>由站内后台请求 Binance Agentic Wallet</strong><code>生成全新的一次性登录会话</code></div><button id="request-agent-login" type="button">生成登录链接</button></div>
+          <ol class="agent-login-steps"><li><span>02</span><p><strong>自动回填官方链接与配对码</strong><small>加密会话仅保存在 HttpOnly Cookie，页面脚本无法读取。</small></p></li><li><span>03</span><p><strong>扫码后自动完成 Agent 验证</strong><small>核对配对码并授权；后台自动执行 confirm 与 query，直至 Binance 确认连接。</small></p></li></ol>
+
+          <div class="agent-login-status" id="agent-login-status" data-state="idle" role="status" aria-live="polite"><i></i><span>点击“生成登录链接”开始，旧链接不会被复用。</span><strong id="agent-login-countdown">等待生成</strong></div>
+
+          <div class="agent-login-fields">
+            <label><span>Binance 一次性登录链接</span><input id="agent-login-url" type="url" inputmode="url" autocomplete="off" placeholder="后台生成后自动填入" readonly /></label>
+            <label><span>配对码</span><input id="agent-pairing-code" type="text" maxlength="12" autocomplete="off" placeholder="自动填入" readonly /></label>
+          </div>
+
+          <div class="agent-qr-output" id="agent-qr-output" hidden>
+            <div class="agent-qr-frame"><img id="agent-qr-image" alt="Agentic Wallet 登录二维码" /></div>
+            <div class="agent-qr-meta"><span>PAIRING CODE</span><strong id="agent-pairing-display">—</strong><small id="agent-login-expiry">临时二维码通常约 5 分钟有效</small><a id="open-agent-login" target="_blank" rel="noopener noreferrer">无法扫码？打开官方登录链接 ↗</a></div>
+          </div>
+
+          <div class="agent-security-checks" aria-label="扫码登录安全确认">
+            <label><input class="agent-safety-check" type="checkbox" /><span>我已确认登录链接属于 Binance 官方域名。</span></label>
+            <label><input class="agent-safety-check" type="checkbox" /><span>我已核对 Binance App 中的配对码完全一致。</span></label>
+            <label><input class="agent-safety-check" type="checkbox" /><span>我不会向任何人提供助记词、私钥、验证码或会话令牌。</span></label>
+          </div>
+          <button class="wallet-primary-action" id="confirm-agent-login" type="button" disabled>立即检查 Agent 验证状态</button>
+          <p class="agent-session-note">扫码后后台每 2 秒自动完成 Agent 端确认；只有 Binance 返回 CONNECTED 且钱包创建完成才会显示已连接。交易仍需经过策略、风控与 Agentic Wallet 授权。</p>
+        </section>
+      </form>
+    </dialog>
+
+    <dialog class="info-dialog" id="info-dialog"><form method="dialog"><header><div><span class="panel-kicker">ELIGIBILITY &amp; SAFETY</span><h2>执行资格规则</h2></div><button value="cancel" aria-label="关闭">×</button></header><ul><li><i></i><span>“全部”固定保留 Binance BSC type-3 bStock 注册表；“周机会”采用 Binance 官方合格清单快照并长期展示。</span></li><li><i></i><span>周机会中的 × 只会隐藏该标的；它仍保留在“全部”列表并可交易，可从列表底部恢复。</span></li><li><i></i><span>买入支付币只允许 BNB、USDT、USDC、U 与 USD1。</span></li><li><i></i><span>清单内杠杆 / 反向 ETF 仍会展示并标注高风险；其波动、路径依赖与损耗显著放大。</span></li><li><i></i><span>单标的仓位必须严格低于 50%，单日亏损 1.5% 触发熔断。</span></li><li><i></i><span>SUBMITTED 不入账；必须等待 FINISHED / CONFIRMED。</span></li><li><i></i><span>活动 Realized PnL 使用实际卖出收入减 FIFO 实际买入成本；Gas 单独支付、不计排名。</span></li></ul><button class="dialog-confirm" value="cancel">了解</button></form></dialog>
+
+    <dialog class="equity-panel" id="equity-panel" aria-labelledby="equity-panel-title">
+      <header class="equity-panel-header">
+        <div class="equity-panel-brand">
+          <span class="equity-panel-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17V7m0 10h16M7 13l4-4 3 2 5-6M15 5h4v4" /></svg></span>
+          <div><p>SURF <span>US EQUITIES</span></p><h2 id="equity-panel-title">美股US Stock全览</h2></div>
+        </div>
+        <div class="equity-panel-tools" role="group" aria-label="美股全览窗口控制">
+          <button id="reload-equity-panel" type="button" title="刷新美股页面" aria-label="刷新美股页面"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" /></svg></button>
+          <button class="equity-panel-close" id="close-equity-panel" type="button" title="关闭美股全览" aria-label="关闭美股全览" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
+        </div>
+      </header>
+      <div class="equity-panel-source"><span><i aria-hidden="true"></i>asksurf.ai / equity</span><span id="equity-panel-status" role="status" aria-live="polite">按需加载</span></div>
+      <div class="equity-panel-content" id="equity-panel-content" aria-busy="false">
+        <div class="equity-panel-frame-host" id="equity-panel-frame-host"></div>
+        <div class="equity-panel-loading" id="equity-panel-loading" hidden>
+          <span class="equity-panel-spinner" aria-hidden="true"></span>
+          <strong id="equity-panel-loading-title">正在载入美股全览</strong>
+          <p id="equity-panel-loading-detail">连接 Surf，探索美股市场。</p>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"><i></i><span></span></div>
+  <script src="ui-translations.js?v=20260904-bstock-ui-v2"></script>
+  <script src="bstock-alpha-storage.js?v=20260902-dual-wallet-v4"></script>
+  <script src="bstock-alpha.js?v=20260904-ui-system-v1"></script>
+  <script src="bstock-equity-panel.js?v=20260904-equity-panel-v2"></script>
+  </body>
+</html>

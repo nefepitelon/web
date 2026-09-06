@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090b0c" />
+    <meta
+      name="description"
+      content="Alpha Radar Trading Platform：面向 Binance USDT 现货与永续标的的七维异动扫描、信号解释、风险控制与纸面交易工作台。"
+    />
+    <title>Alpha Radar Trading Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="alpha-scanner.css?v=20260824-readable-v1" />
+    <link rel="stylesheet" href="platform-actions.css" />
+    <link rel="stylesheet" href="surf-assistant.css" />
+  </head>
+  <body>
+    <header class="platform-header" id="platform-header">
+      <a class="platform-brand" href="index.html#top" aria-label="返回 welinkBTC 首页">
+        <span class="platform-brand-mark"><img src="assets/welinkbtc-start.jpg" alt="" /></span>
+        <strong>welinkBTC</strong>
+      </a>
+
+      <nav class="platform-nav" id="platform-nav" aria-label="平台导航">
+        <a href="index.html#network" data-platform-zh="网络" data-platform-en="Network">网络</a>
+        <a href="index.html#products" data-platform-zh="产品" data-platform-en="Products">产品</a>
+        <a href="/research" target="_top" data-platform-zh="研究" data-platform-en="Research">研究</a>
+        <a href="alphaops.html" data-platform-zh="ALPHAOPS" data-platform-en="ALPHAOPS">ALPHAOPS</a>
+        <a class="active" href="alpha-radar.html" aria-current="page" data-platform-zh="ALPHA RADAR" data-platform-en="ALPHA RADAR">ALPHA RADAR</a>
+        <a href="bstock-alpha.html" data-platform-zh="bStockAlpha" data-platform-en="bStockAlpha">bStockAlpha</a>
+        <a href="dashboard.html" data-platform-zh="链上看板" data-platform-en="Dashboard">链上看板</a>
+        <a href="ai-ops.html" data-platform-zh="AI 运营台" data-platform-en="AI Ops">AI 运营台</a>
+        <a href="index.html#contact" data-platform-zh="联系" data-platform-en="Contact">联系</a>
+      </nav>
+
+      <div class="platform-tools global-tools" aria-label="平台工具">
+        <button class="platform-theme global-tool" id="platform-theme" type="button" aria-label="切换为浅色界面">浅色</button>
+        <button class="platform-language global-tool" id="platform-language" type="button" aria-label="切换平台导航语言">EN</button>
+        <a class="global-tool" href="https://x.com/fly_welinkBTC" target="_blank" rel="noopener noreferrer" aria-label="welinkBTC X">X</a>
+        <a class="global-tool" href="https://t.me/+lr6ZZscid4o0ZDhl" target="_blank" rel="noopener noreferrer" aria-label="welinkBTC Telegram">TG</a>
+        <a class="global-tool global-tool--chat" href="https://www.binance.com/groupList?chatId=v1.00.QzJDSWRDcnlwdEZpeGRJVoyW1RmbQWciia4jSYxam7s&amp;source=squareProfile" target="_blank" rel="noopener noreferrer" data-platform-zh="币安聊天室" data-platform-en="Binance Chat">币安聊天室</a>
+        <a class="platform-support global-tool global-tool--support" href="https://linktr.ee/welinkBTC" target="_blank" rel="noopener noreferrer" data-platform-zh="支持" data-platform-en="Support">支持</a>
+        <button class="platform-menu-toggle" id="platform-menu-toggle" type="button" aria-label="打开平台导航" aria-expanded="false" aria-controls="platform-nav">
+          <span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <a class="sidebar-brand" href="index.html" aria-label="Alpha Radar Trading Platform">
+          <span class="brand-orbit" aria-hidden="true"><i></i><b></b></span>
+          <span><strong>Alpha Radar<span>Trading Platform</span></strong></span>
+        </a>
+
+        <nav class="side-nav" aria-label="产品模块">
+          <a class="active" href="#radar" data-section="radar">
+            <span class="nav-icon radar-icon" aria-hidden="true"></span>
+            <span><strong>妖币雷达</strong><small>Multi-Dimensional Scanner</small></span>
+            <em>01</em>
+          </a>
+          <a href="#signals" data-section="signals">
+            <span class="nav-icon signal-icon" aria-hidden="true"></span>
+            <span><strong>信号解释</strong><small>Signal Intelligence</small></span>
+            <em>02</em>
+          </a>
+          <a href="#risk-pool" data-section="risk-pool">
+            <span class="nav-icon pool-icon" aria-hidden="true"></span>
+            <span><strong>雷达执行池</strong><small>Alpha Risk Pool</small></span>
+            <em>03</em>
+          </a>
+          <a href="#execution-control" data-section="execution-control">
+            <span class="nav-icon execution-icon" aria-hidden="true"></span>
+            <span><strong>交易执行中心</strong><small>Execution Control</small></span>
+            <em>04</em>
+          </a>
+          <a href="#risk" data-section="risk">
+            <span class="nav-icon shield-icon" aria-hidden="true"></span>
+            <span><strong>风控执行</strong><small>Risk Engine</small></span>
+            <em>05</em>
+          </a>
+          <a href="#paper" data-section="paper">
+            <span class="nav-icon order-icon" aria-hidden="true"></span>
+            <span><strong id="portfolio-nav-title">纸面交易</strong><small id="portfolio-nav-subtitle">Paper Trading Only</small></span>
+            <em>06</em>
+          </a>
+        </nav>
+
+        <section class="source-stack" aria-label="已连接信号源">
+          <div class="side-label"><span>数据源</span><em>4 / 4</em></div>
+          <ul>
+            <li><i class="source-dot live"></i><span>Binance Spot</span><em>LIVE</em></li>
+            <li><i class="source-dot live"></i><span>Binance Futures</span><em>LIVE</em></li>
+            <li><i class="source-dot pulse"></i><span>Crypto Bubbles · 1D</span><em>30s</em></li>
+            <li><i class="source-dot pulse"></i><span>BWE OI Monitor</span><em>TG</em></li>
+          </ul>
+        </section>
+
+        <section class="safety-lock" id="execution-safety-lock">
+          <div class="lock-glyph" aria-hidden="true"></div>
+          <div><strong id="execution-lock-title">生产实盘默认加锁</strong><span id="execution-lock-copy">四环境共用风控与审计内核</span></div>
+        </section>
+
+        <div class="side-footer">
+          <div class="avatar">W</div>
+          <div><strong>Research Desk</strong><span>模拟权益 · 10,000 USDT</span></div>
+          <button type="button" aria-label="更多账户选项">•••</button>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <button class="mobile-menu" id="mobile-menu" type="button" aria-label="打开导航" aria-expanded="false">
+            <span></span><span></span>
+          </button>
+          <div class="market-tape" aria-label="市场概览">
+            <div class="market-tape-track" id="market-tape-track">
+              <div class="market-tape-group">
+                <div class="market-item" title="Binance Spot · BTC/USDT"><span>BTC</span><strong data-market-price="BTCUSDT">--</strong><em data-market-change="BTCUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · ETH/USDT"><span>ETH</span><strong data-market-price="ETHUSDT">--</strong><em data-market-change="ETHUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · BNB/USDT"><span>BNB</span><strong data-market-price="BNBUSDT">--</strong><em data-market-change="BNBUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · SOL/USDT"><span>SOL</span><strong data-market-price="SOLUSDT">--</strong><em data-market-change="SOLUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · DOGE/USDT"><span>DOGE</span><strong data-market-price="DOGEUSDT">--</strong><em data-market-change="DOGEUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · ZEC/USDT"><span>ZEC</span><strong data-market-price="ZECUSDT">--</strong><em data-market-change="ZECUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · TAO/USDT"><span>TAO</span><strong data-market-price="TAOUSDT">--</strong><em data-market-change="TAOUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · ENA/USDT"><span>ENA</span><strong data-market-price="ENAUSDT">--</strong><em data-market-change="ENAUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · ONDO/USDT"><span>ONDO</span><strong data-market-price="ONDOUSDT">--</strong><em data-market-change="ONDOUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · UNI/USDT"><span>UNI</span><strong data-market-price="UNIUSDT">--</strong><em data-market-change="UNIUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · XRP/USDT"><span>XRP</span><strong data-market-price="XRPUSDT">--</strong><em data-market-change="XRPUSDT">--</em></div>
+                <div class="market-item" title="Binance Spot · SUI/USDT"><span>SUI</span><strong data-market-price="SUIUSDT">--</strong><em data-market-change="SUIUSDT">--</em></div>
+                <div class="market-item" title="Binance USDⓈ-M · HYPE/USDT 永续"><span>HYPE<sup>P</sup></span><strong data-market-price="HYPEUSDT">--</strong><em data-market-change="HYPEUSDT">--</em></div>
+              </div>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <span class="feed-status connecting" id="market-feed-status" title="Binance Spot WebSocket"><i></i><span>连接实时行情…</span></span>
+            <button class="mode-pill locked" id="mode-toggle" type="button" aria-label="打开交易执行中心" title="查看当前交易执行环境与安全状态">
+              <span id="mode-pill-name">PAPER</span><i></i><em id="mode-pill-state">SAFE</em>
+            </button>
+            <a class="exit-link" href="index.html" aria-label="返回官网">↗</a>
+          </div>
+        </header>
+
+        <main>
+          <div class="alpha-main-column">
+          <section class="radar-section" id="radar">
+            <div class="page-heading">
+              <div>
+                <div class="eyebrow"><i></i>BINANCE USDT · ALPHA SCANNER <span>PHASE 01</span></div>
+                <h1>Alpha 妖币雷达</h1>
+                <p>七维异动扫描 × 反指 / 共振方向模型。先发现，再解释，最后才执行。</p>
+              </div>
+              <div class="heading-actions">
+                <div class="scan-meta"><span>上次扫描</span><strong id="scan-time">同步中…</strong><em id="scan-next">每 2 小时</em></div>
+                <button class="outline-button" id="refresh-scan" type="button"><i></i><span>刷新快照</span></button>
+              </div>
+            </div>
+
+            <div class="stage-banner">
+              <span class="stage-icon">!</span>
+              <p><strong>强制安全链路：</strong>信号只能创建 Trade Intent；Paper、Mock、Testnet 与 Live 均必须经过 Risk Engine、Execution Plan、订单监控与对账。</p>
+              <button type="button" id="show-roadmap">查看上线门槛 <span>→</span></button>
+            </div>
+
+            <div class="metric-grid">
+              <article>
+                <div class="metric-label"><span>扫描标的</span><em>SPOT + PERP</em></div>
+                <strong id="scan-universe-count">—</strong>
+                <p id="scan-market-mix"><i>同步中</i></p>
+                <span class="mini-bars bars-blue" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              </article>
+              <article>
+                <div class="metric-label"><span>强信号</span><em>SCORE ≥ 80</em></div>
+                <strong id="strong-count">—</strong>
+                <p id="strong-breakdown"><i>等待扫描结果</i></p>
+                <span class="mini-bars bars-green" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              </article>
+              <article>
+                <div class="metric-label"><span>风控拦截</span><em>LAST 24H</em></div>
+                <strong class="amber">3</strong>
+                <p><i>2</i> 重复 · <i>1</i> 深度不足</p>
+                <span class="mini-bars bars-amber" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              </article>
+              <article>
+                <div class="metric-label"><span>纸面组合</span><em>7D PNL</em></div>
+                <strong class="green">+3.84%</strong>
+                <p><i class="up">68.2%</i> 信号胜率</p>
+                <span class="mini-line" aria-hidden="true"></span>
+              </article>
+            </div>
+
+            <div class="radar-layout">
+              <section class="panel scanner-panel">
+                <div class="panel-head scanner-head">
+                  <div class="scanner-title-block">
+                    <span class="panel-kicker" id="scanner-mode-kicker">2H LIVE SCAN · BINANCE USDT</span>
+                    <h2 class="sr-only" id="scanner-mode-title">异动排行榜</h2>
+                    <div class="ranking-universe-tabs" role="tablist" aria-label="排行榜切换">
+                      <button class="active" type="button" data-ranking-universe="anomaly" role="tab" aria-selected="true" aria-controls="token-ranking-table">异动排行榜</button>
+                      <button type="button" data-ranking-universe="mainstream" role="tab" aria-selected="false" aria-controls="token-ranking-table">热门精选主流 <em>13</em></button>
+                    </div>
+                  </div>
+                  <div class="scan-controls">
+                    <label class="search-box">
+                      <span aria-hidden="true"></span>
+                      <input id="token-search" type="search" placeholder="搜索币种" autocomplete="off" />
+                    </label>
+                    <select id="market-filter" aria-label="市场筛选">
+                      <option value="all">现货 + 永续</option>
+                      <option value="perp">仅永续</option>
+                      <option value="spot">仅现货</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="direction-tabs" role="tablist" aria-label="方向筛选">
+                  <button class="active" type="button" data-filter="all" role="tab">全部 <em>—</em></button>
+                  <button type="button" data-filter="long" role="tab">偏多 <em>—</em></button>
+                  <button type="button" data-filter="short" role="tab">偏空 <em>—</em></button>
+                  <button type="button" data-filter="neutral" role="tab">中性 <em>—</em></button>
+                  <button type="button" data-filter="watch" role="tab">自选 <em id="watch-count">2</em></button>
+                </div>
+
+                <div class="scan-method-strip">
+                  <strong id="ranking-method-title">异常强度 ≠ 买入信号</strong>
+                  <p id="ranking-method-copy">价格、成交、资金费率、多空比、爆仓代理、社交趋势与媒体资讯分别评分，再判断共振或反指过热。</p>
+                  <span>7D MODEL</span>
+                </div>
+
+                <div class="token-table-wrap">
+                  <table class="token-table" id="token-ranking-table">
+                    <thead>
+                      <tr>
+                        <th>排名 / 标的</th>
+                        <th>24H</th>
+                        <th>成交异动</th>
+                        <th>资金费率</th>
+                        <th>OI 变化</th>
+                        <th>Alpha 分</th>
+                        <th>方向</th>
+                        <th><span class="sr-only">操作</span></th>
+                      </tr>
+                    </thead>
+                    <tbody id="token-rows"></tbody>
+                  </table>
+                  <div class="empty-state" id="empty-state" hidden>没有符合当前条件的标的</div>
+                </div>
+                <nav class="ranking-pagination" id="ranking-pagination" aria-label="异动排行榜分页">
+                  <span id="ranking-page-summary">第 1–12 名 · 共 24 个标的</span>
+                  <div>
+                    <button id="ranking-prev" type="button" aria-label="上一页" disabled>←</button>
+                    <span class="ranking-pages" id="ranking-pages" aria-label="页码"></span>
+                    <button id="ranking-next" type="button" aria-label="下一页">→</button>
+                  </div>
+                </nav>
+                <footer class="panel-foot">
+                  <span id="scan-cycle-label"><i></i>正在连接两小时扫描快照</span>
+                  <button type="button" id="expand-universe">查看上线门槛 <em>→</em></button>
+                </footer>
+              </section>
+
+              <aside class="panel momentum-panel">
+                <div class="panel-head">
+                  <div>
+                    <a class="panel-kicker bubble-source-link" href="https://cryptobubbles.net/zh/" target="_blank" rel="noopener noreferrer">CRYPTO BUBBLES · BINANCE <span aria-hidden="true">↗</span></a>
+                    <h2>1 日动量榜</h2>
+                  </div>
+                  <div class="bubble-meta">
+                    <span class="bubble-live-state loading" id="bubble-live-state"><i></i><span>连接中</span></span>
+                    <span class="range-chip">1D</span>
+                  </div>
+                </div>
+                <div class="bubble-area" id="bubble-area" aria-label="一日涨跌幅气泡图">
+                  <div class="bubble-loading" id="bubble-loading"><span></span><strong>正在读取 Binance 1D 动量</strong></div>
+                </div>
+                <div class="bubble-legend"><span><i class="green-dot"></i>涨幅 TOP 10</span><span><i class="red-dot"></i>跌幅 TOP 10</span><em id="bubble-updated">每 60 秒更新</em></div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="intelligence-grid" id="signals">
+            <article class="panel interpreter-panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">SIGNAL INTELLIGENCE</span>
+                  <h2>Telegram 信号解释器</h2>
+                </div>
+                <a href="https://t.me/BWE_OI_Price_monitor" target="_blank" rel="noopener noreferrer" class="source-link">@BWE_OI_Price_monitor ↗</a>
+              </div>
+              <p class="panel-intro">外部信号仅触发分析，不直接触发订单。粘贴原始文本后，将其翻译成结构化因子并送入风控。</p>
+              <label class="signal-input">
+                <span>原始消息</span>
+                <textarea id="signal-text" rows="4" spellcheck="false">#POPCAT OI 15min +31.8%｜Price +12.4%｜Volume 4.2x｜Funding -0.018%｜多空比 0.72</textarea>
+              </label>
+              <div class="signal-actions">
+                <button class="primary-button" id="parse-signal" type="button"><span>解析信号</span><em>⌘ ↵</em></button>
+                <button class="ghost-button" id="clear-signal" type="button">清空</button>
+              </div>
+              <div class="parse-result" id="parse-result" aria-live="polite">
+                <div class="parse-top">
+                  <span class="token-avatar token-pop">P</span>
+                  <div><strong>POPCAT / USDT</strong><em>检测到 OI + 价格同步异动</em></div>
+                  <span class="confidence">91% 置信</span>
+                </div>
+                <div class="factor-chips">
+                  <span><em>价格</em>+12.4%</span><span><em>OI</em>+31.8%</span><span><em>量能</em>4.2×</span><span><em>资金费率</em>-0.018%</span>
+                </div>
+                <div class="explain-callout">
+                  <div class="callout-icon">↗</div>
+                  <div><span>模型结论 · 偏多共振</span><p>价格、OI 与成交量同向扩张，而资金费率仍为负，空头拥挤可能形成被动回补；但 24H 涨幅过高，建议等待回踩而非追价。</p></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel pulse-panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">RECENT TRIGGERS</span>
+                  <h2>信号流水</h2>
+                </div>
+                <div class="trigger-head-actions">
+                  <span class="trigger-live loading" id="trigger-live"><i></i><span>同步中</span></span>
+                  <button class="icon-button" id="refresh-triggers" type="button" aria-label="刷新真实信号流水">↻</button>
+                </div>
+              </div>
+              <div class="signal-stream" id="signal-stream" aria-live="polite" aria-busy="true">
+                <div class="stream-state loading"><i></i><strong>正在同步 Telegram 最新 20 条消息</strong><span>@BWE_OI_Price_monitor</span></div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel risk-pool-panel" id="risk-pool">
+            <div class="panel-head risk-pool-head">
+              <div>
+                <span class="panel-kicker">ALPHA RISK EXECUTION POOL</span>
+                <h2>Alpha雷达风控执行池</h2>
+              </div>
+              <div class="risk-pool-state"><i></i><span id="risk-pool-state">汇聚三路实时候选</span><strong id="risk-pool-total">—</strong></div>
+            </div>
+            <div class="risk-pool-summary" aria-label="风控执行池数据摘要">
+              <article><span>雷达候选</span><strong id="risk-pool-scan-count">—</strong><em>异动榜 TOP 10</em></article>
+              <article><span>动量候选</span><strong id="risk-pool-momentum-count">—</strong><em>涨 5 + 跌 5</em></article>
+              <article><span>信号候选</span><strong id="risk-pool-signal-count">—</strong><em>流水去重</em></article>
+              <article><span>多源共振</span><strong id="risk-pool-resonance-count">—</strong><em>至少命中两路</em></article>
+            </div>
+            <div class="risk-pool-layout">
+              <div class="venn-panel">
+                <div class="venn-title"><strong>三源交集象限</strong><span>环内标的进入筛选池，不直接触发订单</span></div>
+                <div class="venn-stage" aria-label="异动榜、动量榜和 Telegram 信号三集合交集图">
+                  <div class="venn-ring venn-scan"><span>异动榜 TOP 10</span><strong id="venn-scan-count">—</strong></div>
+                  <div class="venn-ring venn-momentum"><span>1D 涨跌 TOP 5</span><strong id="venn-momentum-count">—</strong></div>
+                  <div class="venn-ring venn-signal"><span>Telegram 去重</span><strong id="venn-signal-count">—</strong></div>
+                  <div class="venn-overlap overlap-scan-momentum"><span>雷达 ∩ 动量</span><strong id="overlap-scan-momentum">等待数据</strong></div>
+                  <div class="venn-overlap overlap-scan-signal"><span>雷达 ∩ 信号</span><strong id="overlap-scan-signal">等待数据</strong></div>
+                  <div class="venn-overlap overlap-momentum-signal"><span>动量 ∩ 信号</span><strong id="overlap-momentum-signal">等待数据</strong></div>
+                  <div class="venn-core"><span>三源共振</span><strong id="overlap-all">—</strong><em id="overlap-all-symbols">等待三路数据</em></div>
+                </div>
+              </div>
+              <aside class="risk-pool-candidates">
+                <div class="pool-candidate-head">
+                  <div><strong>风控候选清单</strong><span id="pool-visible-count">0 个</span></div>
+                  <div class="pool-filters" role="tablist" aria-label="风控池来源筛选">
+                    <button class="active" type="button" data-pool-filter="all">全部</button>
+                    <button type="button" data-pool-filter="triple">三源</button>
+                    <button type="button" data-pool-filter="double">双源</button>
+                    <button type="button" data-pool-filter="single">单源</button>
+                  </div>
+                </div>
+                <div class="pool-candidate-list" id="pool-candidate-list" aria-live="polite">
+                  <div class="pool-loading"><i></i><strong>正在汇聚实时候选</strong><span>Radar · Momentum · Telegram</span></div>
+                </div>
+              </aside>
+            </div>
+            <footer class="risk-pool-legend">
+              <span><i class="legend-scan"></i>异动排行榜 TOP 10</span>
+              <span><i class="legend-momentum"></i>1 日动量涨跌各 TOP 5</span>
+              <span><i class="legend-signal"></i>信号流水去重币种</span>
+              <em>来源越多，风控审核优先级越高</em>
+            </footer>
+          </section>
+
+          <section class="panel execution-control-panel" id="execution-control" aria-labelledby="execution-control-title">
+            <div class="panel-head execution-control-head">
+              <div>
+                <span class="panel-kicker">BINANCE EXECUTION CONTROL · FOUR ENVIRONMENTS</span>
+                <h2 id="execution-control-title">交易执行中心</h2>
+                <p>同一套状态机、风控规则、订单模型与审计日志；环境、密钥、额度和权限严格隔离。</p>
+              </div>
+              <div class="execution-health" id="execution-health"><i></i><span>正在读取安全配置</span><strong>FAIL CLOSED</strong></div>
+            </div>
+
+            <div class="execution-mode-grid" role="radiogroup" aria-label="交易执行环境">
+              <button class="active" type="button" data-execution-mode="paper" role="radio" aria-checked="true"><i>01</i><span><strong>PAPER</strong><em>纸面交易 · 策略验证</em></span><b>无真实资金</b></button>
+              <button type="button" data-execution-mode="mock_exchange" role="radio" aria-checked="false"><i>02</i><span><strong>MOCK EXCHANGE</strong><em>单元测试 · CI</em></span><b>无 Binance 请求</b></button>
+              <button type="button" data-execution-mode="testnet" role="radio" aria-checked="false"><i>03</i><span><strong>BINANCE TESTNET</strong><em>签名 · 保护单 · 回报</em></span><b>测试资金</b></button>
+              <button class="live-mode" type="button" data-execution-mode="live" role="radio" aria-checked="false"><i>04</i><span><strong>PRODUCTION LIVE</strong><em>生产实盘 · 额外加锁</em></span><b>真实资金</b></button>
+            </div>
+
+            <div class="execution-control-grid">
+              <form class="execution-settings" id="execution-config-form">
+                <header><div><span>ENVIRONMENT &amp; RISK</span><strong>环境与额度配置</strong></div><em id="execution-config-state">仅读取服务端配置</em></header>
+                <div class="execution-field-grid">
+                  <label><span>执行模式</span><select id="execution-mode" name="activeMode"><option value="paper">PAPER</option><option value="mock_exchange">MOCK EXCHANGE</option><option value="testnet">BINANCE TESTNET</option><option value="live">PRODUCTION LIVE</option></select></label>
+                  <label><span>交易市场</span><select id="execution-market" name="defaultMarket"><option value="futures">USDⓈ-M 永续</option><option value="spot">USDT 现货</option></select></label>
+                  <label><span>单笔名义上限</span><span class="execution-input-unit"><input id="execution-per-order-limit" name="perOrderNotionalLimit" type="number" min="5" max="100000" step="5" value="50"><em>USDT</em></span></label>
+                  <label><span>单日名义上限</span><span class="execution-input-unit"><input id="execution-daily-limit" name="dailyNotionalLimit" type="number" min="5" max="1000000" step="10" value="200"><em>USDT</em></span></label>
+                  <label class="execution-switch"><span>Testnet 闸门</span><input id="execution-testnet-enabled" name="testnetEnabled" type="checkbox"><i></i><em>允许测试网请求</em></label>
+                  <label class="execution-switch"><span>自动执行</span><input id="execution-auto" name="autoExecuteEnabled" type="checkbox"><i></i><em>仅审批后执行</em></label>
+                  <label class="execution-switch"><span>人工确认</span><input id="execution-manual-confirm" name="requireManualConfirmation" type="checkbox" checked><i></i><em>执行前二次确认</em></label>
+                  <label class="execution-switch forced"><span>保护单</span><input type="checkbox" checked disabled><i></i><em>强制止损 / 止盈</em></label>
+                </div>
+                <button class="execution-primary" id="save-execution-config" type="submit"><span>保存环境与风控配置</span><em>SERVER SIDE →</em></button>
+              </form>
+
+              <section class="credential-vault" aria-labelledby="credential-vault-title">
+                <header><div><span>ENCRYPTED KEY VAULT</span><strong id="credential-vault-title">Binance API 与代理配置</strong></div><em>服务端 AES-GCM 加密</em></header>
+                <form id="execution-credential-form" autocomplete="off">
+                  <div class="credential-selector-row">
+                    <label><span>环境</span><select id="execution-credential-environment" name="environment"><option value="testnet">TESTNET</option><option value="live">LIVE · 实盘</option></select></label>
+                    <label><span>市场</span><select id="execution-credential-market" name="market"><option value="futures">FUTURES</option><option value="spot">SPOT</option></select></label>
+                  </div>
+                  <label><span>API Key</span><input id="execution-api-key" name="apiKey" type="password" minlength="8" maxlength="240" placeholder="仅提交到服务端，不回显" spellcheck="false" autocomplete="new-password"></label>
+                  <label><span>Secret Key</span><input id="execution-api-secret" name="apiSecret" type="password" minlength="8" maxlength="512" placeholder="加密保存，页面不可读取" spellcheck="false" autocomplete="new-password"></label>
+                  <label><span>代理 IP / URL（可选）</span><input id="execution-proxy" name="proxy" type="url" maxlength="500" placeholder="https://user:pass@proxy.example.com:443" spellcheck="false"><small>仅允许公网 HTTP(S) 代理；私网与本机地址会被拒绝。</small></label>
+                  <div class="credential-actions"><button id="save-execution-credential" type="submit">加密保存</button><button id="test-execution-credential" type="button">连接校验</button><button id="delete-execution-credential" type="button">删除</button></div>
+                </form>
+                <div class="credential-state" id="execution-credential-state"><i></i><span>尚未读取凭据状态</span></div>
+                <div class="credential-summary-list" id="execution-credential-list"><span>凭据只显示脱敏摘要</span></div>
+              </section>
+
+              <section class="live-unlock-panel" id="live-unlock-panel" aria-labelledby="live-unlock-title">
+                <header><div><span>PRODUCTION INTERLOCK</span><strong id="live-unlock-title">生产实盘双重保险锁</strong></div><em id="live-lock-state">LOCKED</em></header>
+                <p>实盘默认关闭。仅双重验证管理员、已校验的无提现权限 API、健康对账和未触发 Kill Switch 时才可解锁。</p>
+                <div class="live-phrase-guide" id="live-phrase-help">
+                  <span>这不是短信验证码，请完整输入确认短语：</span>
+                  <code id="live-required-phrase">ENABLE LIVE TRADING</code>
+                  <button id="fill-live-phrase" type="button">填入短语</button>
+                </div>
+                <label><span>实盘解锁确认短语</span><input id="live-unlock-phrase" type="text" placeholder="请在此输入上方英文短语" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="live-phrase-help"></label>
+                <label class="live-ack"><input id="live-ack-funds" type="checkbox"><span>我确认这会使用真实资金，并接受单笔与单日额度限制。</span></label>
+                <label class="live-ack"><input id="live-ack-withdraw" type="checkbox"><span>我确认 API Key 未开启提现权限，并已绑定受控 IP。</span></label>
+                <div class="live-unlock-actions"><button id="unlock-live" type="button">管理员解锁实盘</button><button id="relock-live" type="button">立即重新加锁</button></div>
+              </section>
+            </div>
+
+            <div class="execution-operations">
+              <div><span>ORDER MONITOR &amp; RECONCILIATION</span><strong>订单监控与对账</strong><em>状态不明时只查询，不盲目重试</em></div>
+              <span class="operation-state" id="execution-reconcile-state"><i></i>等待首轮对账</span>
+              <span class="operation-state" id="execution-stream-state"><i></i>WebSocket 未连接</span>
+              <button id="execution-stream" type="button">连接成交回报</button>
+              <button id="execution-reconcile" type="button">立即对账</button>
+            </div>
+            <div class="execution-ledger">
+              <div class="execution-ledger-head"><strong>统一订单流水</strong><span id="execution-order-count">0 ORDERS</span></div>
+              <div class="execution-order-list" id="execution-order-list"><div class="execution-empty"><strong>暂无服务端订单</strong><span>审批后的执行计划会在这里显示环境、幂等键、成交与保护单状态。</span></div></div>
+            </div>
+          </section>
+
+          <section class="risk-workbench" id="risk">
+            <article class="panel risk-console">
+              <div class="panel-head risk-console-head">
+                <div>
+                  <span class="panel-kicker">RISK EXECUTION OS · UNIFIED V2</span>
+                  <h2>风控执行层</h2>
+                </div>
+                <div class="risk-head-actions">
+                  <span class="guard-state" id="risk-engine-state"><i></i>强制生效</span>
+                  <button class="kill-switch" id="kill-switch" type="button"><i></i><span>KILL SWITCH</span><em>未触发</em></button>
+                </div>
+              </div>
+
+              <div class="risk-rules risk-rules-top" aria-label="当前环境风控参数">
+                <label><span><i class="rule-icon">%</i><strong>单笔风险</strong><small>按止损距离反推仓位</small></span><select id="risk-per-trade"><option>0.50%</option><option selected>0.75%</option><option>1.00%</option><option>1.50%</option></select></label>
+                <label><span><i class="rule-icon">×</i><strong>最大杠杆</strong><small>硬性上限，不可绕过</small></span><select id="max-leverage"><option>2×</option><option selected>3×</option><option>5×</option><option>10×</option><option>20×</option></select></label>
+                <label><span><i class="rule-icon">↓</i><strong>单日熔断</strong><small>触发后停止新开仓</small></span><select id="daily-stop"><option>-1.5%</option><option selected>-2.0%</option><option>-3.0%</option><option>-3.5%</option></select></label>
+                <label><span><i class="rule-icon">↻</i><strong>信号去重</strong><small>同环境 / 市场 / 标的 / 方向冷却</small></span><select id="dedupe-window"><option>5 min</option><option>10 min</option><option selected>15 min</option><option>30 min</option><option>60 min</option></select></label>
+                <span class="risk-policy-save-state" id="risk-policy-save-state"><i></i>服务端参数已同步</span>
+              </div>
+
+              <div class="risk-safety-banner">
+                <strong>强制交易链路</strong>
+                <span>扫描器与 Telegram 只能创建 Trade Intent；任何环境的订单都必须经过审批、执行计划、保护单校验、监控与对账。</span>
+                <em id="risk-environment-lock">PAPER · FUTURES</em>
+              </div>
+
+              <ol class="risk-pipeline" id="risk-pipeline" aria-label="风控执行状态机">
+                <li class="active" data-risk-stage="CREATED"><i>01</i><span><strong>Trade Intent</strong><small>交易意图</small></span></li>
+                <li data-risk-stage="RISK_CHECKED"><i>02</i><span><strong>Risk Engine</strong><small>风控审批</small></span></li>
+                <li data-risk-stage="PLANNED"><i>03</i><span><strong>Execution Plan</strong><small>执行计划</small></span></li>
+                <li data-risk-stage="SUBMITTED"><i>04</i><span><strong>Order Executor</strong><small>统一执行器</small></span></li>
+                <li data-risk-stage="MONITORING"><i>05</i><span><strong>Order Monitor</strong><small>订单 / 持仓监控</small></span></li>
+                <li data-risk-stage="RECONCILED"><i>06</i><span><strong>Reconciliation</strong><small>交易所对账</small></span></li>
+                <li data-risk-stage="KILLED"><i>07</i><span><strong>Kill Switch</strong><small>熔断处置</small></span></li>
+                <li data-risk-stage="AUDITED"><i>08</i><span><strong>Audit Log</strong><small>审计留痕</small></span></li>
+              </ol>
+
+              <div class="risk-console-grid">
+                <form class="intent-form" id="trade-intent-form">
+                  <div class="risk-subhead">
+                    <div><span>TRADE INTENT</span><strong>创建交易意图</strong></div>
+                    <div class="intent-source-actions" aria-label="候选载入方式">
+                      <button class="signal-candidate-action" id="load-signal-candidate" type="button"><i>TG</i><span>载入信号流水候选</span></button>
+                      <button class="pool-candidate-action" id="load-pool-candidate" type="button"><i>P1</i><span>载入雷达执行池候选</span></button>
+                      <button class="radar-candidate-action" id="queue-trade" type="button"><i>7D</i><span>载入当前雷达候选</span></button>
+                    </div>
+                  </div>
+                  <div class="intent-form-grid">
+                    <label><span>标的</span><input id="intent-symbol" name="symbol" value="POPCATUSDT" autocomplete="off" required></label>
+                    <label><span>方向</span><select id="intent-side" name="side"><option value="LONG">LONG · 做多</option><option value="SHORT">SHORT · 做空</option></select></label>
+                    <label><span>参考入场</span><input id="intent-entry" name="entryPrice" type="number" min="0" step="any" value="0.6412" required></label>
+                    <label><span>保护止损</span><input id="intent-stop" name="stopLoss" type="number" min="0" step="any" value="0.6026" required></label>
+                    <label><span>目标止盈</span><input id="intent-target" name="takeProfit" type="number" min="0" step="any" value="0.7184" required></label>
+                    <label><span>杠杆</span><select id="intent-leverage" name="leverage"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>10</option><option>20</option></select></label>
+                    <label><span>信号源</span><select id="intent-source" name="source"><option value="alpha-radar">Alpha Radar</option><option value="telegram">Telegram</option><option value="risk-pool">雷达执行池</option><option value="crypto-bubbles">Crypto Bubbles 1D</option><option value="manual">人工录入</option></select></label>
+                    <label><span>Alpha 分</span><input id="intent-score" name="alphaScore" type="number" min="0" max="100" step="1" value="91"></label>
+                    <label><span>交易市场</span><select id="intent-market" name="market"><option value="futures">USDⓈ-M 永续</option><option value="spot">USDT 现货</option></select></label>
+                    <label><span>订单类型</span><select id="intent-order-type" name="orderType"><option value="MARKET">MARKET · 市价</option><option value="LIMIT">LIMIT · 限价</option></select></label>
+                  </div>
+                  <div class="intent-guard-row"><span><i></i>当前 <strong id="intent-mode-label">PAPER</strong> · <strong id="intent-market-label">FUTURES</strong></span><span>风控权益 <strong id="intent-equity">服务端计算</strong></span></div>
+                  <button class="risk-submit" id="risk-submit" type="submit"><span>提交 Risk Engine 审批</span><em>仅生成执行计划 →</em></button>
+                </form>
+
+                <section class="risk-decision" id="risk-decision-view" aria-live="polite">
+                  <div class="risk-empty-decision">
+                    <span class="decision-orbit"><i></i></span>
+                    <strong>等待交易意图</strong>
+                    <p>风控审批后会在这里输出完整执行计划；不会直接输出“买入”或自动开仓。</p>
+                    <div><span>去重</span><span>风险预算</span><span>保护单</span><span>熔断</span></div>
+                  </div>
+                </section>
+              </div>
+
+            </article>
+
+            <div class="risk-ops-grid">
+              <article class="panel position-monitor-panel">
+                <div class="panel-head compact-head"><div><span class="panel-kicker" id="position-monitor-kicker">POSITION MONITOR</span><h2 id="position-monitor-title">持仓监控</h2></div><span class="monitor-count" id="monitor-count">0 OPEN</span></div>
+                <div class="position-monitor-list" id="position-monitor-list"><div class="risk-list-empty"><strong>暂无受控持仓</strong><span>执行计划成交并附加保护单后才会进入监控</span></div></div>
+              </article>
+              <article class="panel audit-panel">
+                <div class="panel-head compact-head"><div><span class="panel-kicker">AUDIT TRAIL</span><h2>审计日志</h2></div><button class="audit-clear" id="export-audit" type="button">导出审计</button></div>
+                <div class="audit-log-list" id="risk-audit-list"><div class="risk-list-empty"><strong>等待首条审计事件</strong><span>审批、确认、保护单、平仓和熔断都会留痕</span></div></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel paper-panel" id="paper">
+            <div class="panel-head paper-head">
+              <div class="paper-heading-block">
+                <div>
+                  <span class="panel-kicker" id="portfolio-kicker">PAPER PORTFOLIO</span>
+                  <h2 id="portfolio-title">纸面交易</h2>
+                </div>
+                <div class="paper-view-tabs" id="paper-view-tabs" role="tablist" aria-label="纸面交易视图">
+                  <button class="active" id="paper-tab-current" type="button" data-paper-view="current" role="tab" aria-selected="true" aria-controls="paper-current-view">当前测试</button>
+                  <button id="paper-tab-history" type="button" data-paper-view="history" role="tab" aria-selected="false" aria-controls="paper-history-view">纸面交易历史 <em id="paper-history-count">0</em></button>
+                </div>
+              </div>
+              <div class="paper-head-actions">
+                <div class="paper-stats"><span><em id="portfolio-equity-label">组合权益</em><strong id="paper-equity">10,000.00 USDT</strong></span><span><em>浮动盈亏</em><strong id="paper-pnl">0.00</strong></span><span><em>风险敞口</em><strong id="paper-exposure">0.0%</strong></span><span id="portfolio-realized-stat" hidden><em>历史实际盈亏</em><strong id="portfolio-realized-pnl">0.00</strong><small id="portfolio-realized-count">0 笔已完结</small></span></div>
+                <button class="live-pull-button" id="live-portfolio-pull" type="button" hidden><i>↻</i><span>实时数据回捞<small id="live-portfolio-pull-state">每 30s 自动同步</small></span></button>
+                <button class="paper-reset-button" id="reset-paper-trading" type="button" aria-label="归档当前纸面交易并还原初始测试状态"><i>↺</i><span>一键还原<small>归档并初始化</small></span></button>
+              </div>
+            </div>
+            <div class="paper-tab-panel" id="paper-current-view" role="tabpanel" aria-labelledby="paper-tab-current">
+              <div class="paper-table-wrap">
+                <table class="paper-table">
+                  <thead><tr><th>标的</th><th>下单时间</th><th>方向</th><th>入场 / 标记</th><th>仓位</th><th>止损 / 止盈</th><th>浮动盈亏</th><th>来源</th><th>状态 / 操作</th></tr></thead>
+                  <tbody id="paper-rows">
+                    <tr class="paper-empty-row"><td colspan="9"><strong>暂无纸面交易</strong><span>从雷达候选创建交易意图，通过 Risk Engine 并人工确认后显示</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <footer class="panel-foot"><span id="portfolio-footnote"><i></i>Paper Executor 不连接 Binance；所有盈亏均为模拟计算</span><button type="button" id="export-trades"><span id="portfolio-export-label">导出纸面记录</span> <em>↓</em></button></footer>
+            </div>
+            <div class="paper-tab-panel paper-history-view" id="paper-history-view" role="tabpanel" aria-labelledby="paper-tab-history" hidden>
+              <div class="paper-history-intro"><div><span>TEST SESSION ARCHIVE</span><strong>纸面交易历史</strong><p>每次一键还原前自动冻结当前权益、订单、风控配置与审计摘要。</p></div><em>最多保留最近 12 期 · 本机记录</em></div>
+              <div class="paper-history-list" id="paper-history-list">
+                <div class="paper-history-empty"><i>↺</i><strong>暂无历史测试</strong><span>点击“一键还原”后，当前测试会先归档到这里。</span></div>
+              </div>
+              <footer class="panel-foot paper-history-foot"><span><i></i>历史快照仅用于纸面策略复盘，不会触发任何 Binance 订单</span></footer>
+            </div>
+          </section>
+
+          <section class="architecture-strip" aria-label="产品架构">
+            <article><span>01</span><div><strong>妖币雷达扫描器</strong><p>Binance USDT 现货 / 永续与 1D 动量池</p></div><em>→</em></article>
+            <article><span>02</span><div><strong>信号解释层</strong><p>七维评分、Telegram 解析、反指 / 共振</p></div><em>→</em></article>
+            <article><span>03</span><div><strong>风控执行层</strong><p>止损、去重、仓位、熔断与深度检查</p></div><em>→</em></article>
+            <article><span>04</span><div><strong>Binance 下单层</strong><p>Paper / Mock / Testnet / Live 共用状态机 · 实盘默认加锁</p></div></article>
+          </section>
+          </div>
+
+          <aside class="panel surf-pulse-panel" id="surf-pulse" aria-labelledby="surf-pulse-title">
+            <header class="surf-pulse-head">
+              <div>
+                <a class="panel-kicker surf-pulse-source" href="https://asksurf.ai/pulse" target="_blank" rel="noopener noreferrer">SURF PULSE · REAL-TIME <span aria-hidden="true">↗</span></a>
+                <h2 id="surf-pulse-title">实时情报流</h2>
+              </div>
+              <span class="surf-live-state loading" id="surf-live-state"><i></i><span>同步中</span></span>
+            </header>
+
+            <div class="surf-category-tabs" role="tablist" aria-label="Surf Pulse 类型筛选">
+              <button class="active" type="button" data-surf-filter="all" role="tab">全部</button>
+              <button type="button" data-surf-filter="listing" role="tab">TGE / 上市</button>
+              <button type="button" data-surf-filter="product" role="tab">产品 / 升级</button>
+              <button type="button" data-surf-filter="institution" role="tab">机构 / 监管</button>
+              <button type="button" data-surf-filter="unlock" role="tab">解锁</button>
+            </div>
+
+            <div class="surf-toolbar">
+              <label><span>排序</span><select id="surf-sort" aria-label="Surf Pulse 排序"><option value="score">按评分排序</option><option value="latest">按时间排序</option></select></label>
+              <button class="surf-refresh" id="refresh-surf-pulse" type="button" aria-label="立即刷新 Surf Pulse"><i></i><span>更新</span></button>
+            </div>
+
+            <div class="surf-retention">
+              <span><i></i>10 分钟同步</span>
+              <em id="surf-pulse-count">— 条</em>
+              <strong>15D TTL</strong>
+            </div>
+
+            <div class="surf-pulse-feed" id="surf-pulse-feed" aria-live="polite" aria-busy="true">
+              <div class="surf-feed-state"><i></i><strong>正在连接 Surf Real-time Feed</strong><span>同步实时新闻与项目事件</span></div>
+            </div>
+
+            <footer class="surf-pulse-foot">
+              <a href="https://asksurf.ai/pulse" target="_blank" rel="noopener noreferrer">原始数据 · Surf ↗</a>
+              <span>ALPHA SCORE · 0–100</span>
+            </footer>
+          </aside>
+        </main>
+      </div>
+    </div>
+
+    <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <aside class="detail-drawer" id="detail-drawer" aria-hidden="true" aria-label="代币详情">
+      <header class="drawer-head">
+        <div><span class="panel-kicker" id="detail-drawer-kicker">SIGNAL DETAIL</span><strong id="detail-drawer-title">七维信号明细</strong></div>
+        <button id="close-drawer" type="button" aria-label="关闭详情">×</button>
+      </header>
+      <div class="drawer-scroll">
+        <section class="token-hero">
+          <div class="token-avatar token-pop" id="detail-avatar">P</div>
+          <div><h2 id="detail-name">POPCAT <span>/ USDT</span></h2><p id="detail-subtitle">Solana Meme · Binance 永续</p></div>
+          <button class="watch-button active" id="watch-button" type="button" aria-label="加入自选">★</button>
+        </section>
+        <section class="detail-quote">
+          <div><span>最新价</span><strong id="detail-price">$0.6412</strong><em id="detail-change" class="up">+38.6%</em></div>
+          <div class="score-orb"><strong id="detail-score">91</strong><span id="detail-score-label">ALPHA</span></div>
+        </section>
+        <section class="bias-card long" id="bias-card">
+          <span id="detail-bias">偏多共振</span><strong id="detail-signal">LONG BIAS</strong><p id="detail-reason">价格、OI 与量能同向扩张，资金费率逆向，存在空头回补动能。</p>
+        </section>
+        <section class="detail-section">
+          <div class="detail-title"><strong id="detail-dimension-title">七维雷达</strong><span id="detail-dimension-window">当前窗口 · 15m / 4h</span></div>
+          <div class="radar-detail">
+            <canvas id="radar-canvas" width="280" height="250" aria-label="七维信号雷达图"></canvas>
+            <div class="dimension-list" id="dimension-list"></div>
+          </div>
+        </section>
+        <section class="detail-section">
+          <div class="detail-title"><strong id="detail-heat-title">X / 媒体热度</strong><span id="heat-label">较 24H 均值 +164%</span></div>
+          <canvas id="heat-canvas" width="540" height="118" aria-label="社交热度走势"></canvas>
+          <div class="kol-row" id="kol-row"><span>KOL 扩散</span><i>@lookonchain</i><i>@0xSun</i><i>@defioasis</i><em>+12</em></div>
+        </section>
+        <section class="detail-section">
+          <div class="detail-title"><strong id="detail-headline-title">媒体头条</strong><span id="detail-headline-window">近 6 小时</span></div>
+          <div class="headline-list" id="headline-list"></div>
+        </section>
+        <section class="detail-section risk-detail">
+          <div class="detail-title"><strong>风险提示</strong><span>自动识别</span></div>
+          <div id="detail-risks"></div>
+        </section>
+      </div>
+      <footer class="drawer-actions">
+        <div class="detail-direction-picker" id="detail-direction-picker" hidden>
+          <div><strong>中性标的 · 人工定向</strong><small>选择做多或做空后，交易意图仍须经过 Risk Engine 审批</small></div>
+          <div role="radiogroup" aria-label="选择交易方向">
+            <button type="button" data-detail-side="LONG" aria-pressed="false"><i>↗</i>做多</button>
+            <button type="button" data-detail-side="SHORT" aria-pressed="false"><i>↘</i>做空</button>
+          </div>
+        </div>
+        <button class="ghost-button" id="detail-watch" type="button">加入自选</button>
+        <button class="primary-button" id="detail-queue" type="button"><span>送入风控审批</span><em>→</em></button>
+      </footer>
+    </aside>
+
+    <dialog class="roadmap-dialog" id="roadmap-dialog">
+      <form method="dialog">
+        <header><div><span class="panel-kicker">GO-LIVE GATES</span><h2>实盘上线门槛</h2></div><button value="close" aria-label="关闭">×</button></header>
+        <p>只有当每一项验证完成，才允许用小资金开启真实 Binance 合约权限。</p>
+        <ol>
+          <li class="done"><i>✓</i><span><strong>扫描与七维评分</strong><small>两小时 Binance 快照、异常值处理、可解释输出</small></span><em>LIVE β</em></li>
+          <li><i>02</i><span><strong>止损与仓位模型</strong><small>滑点、手续费与最小下单量已纳入</small></span><em>待验证</em></li>
+          <li><i>03</i><span><strong>去重与风控熔断</strong><small>重复信号、连续亏损和 API 异常保护</small></span><em>待验证</em></li>
+          <li><i>04</i><span><strong>回测与前向测试</strong><small>跨市场阶段验证，排除幸存者偏差</small></span><em>待验证</em></li>
+          <li><i>05</i><span><strong>Testnet 稳定运行</strong><small>至少 30 天订单、撤单、恢复演练</small></span><em>待验证</em></li>
+        </ol>
+        <button class="primary-button dialog-close" value="close">了解，继续纸面验证</button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"><i>✓</i><span>交易意图已更新</span></div>
+    <script src="ui-translations.js"></script>
+    <script src="alpha-scanner.js?v=20260816-featured"></script>
+    <script src="surf-assistant.js"></script>
+  </body>
+</html>

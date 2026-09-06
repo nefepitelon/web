@@ -1,0 +1,1427 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  PRIVY
+}
+
+enum SubscriptionStatus {
+  FREE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  TRIALING
+}
+
+enum CryptoPaymentStatus {
+  PENDING
+  CONFIRMING
+  PAID
+  FAILED
+  EXPIRED
+  REVIEW
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAYABLE
+  PAID
+  VOID
+}
+
+enum WlbTransactionType {
+  DEPOSIT
+  TRANSFER
+  WITHDRAWAL
+  COMMISSION
+  REWARD
+  ADJUSTMENT
+}
+
+enum WlbTransactionStatus {
+  PENDING
+  CONFIRMING
+  COMPLETED
+  REJECTED
+  FAILED
+  EXPIRED
+}
+
+enum WalletChain {
+  EVM
+  SOLANA
+}
+
+enum ResearchArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ResearchArticleAccess {
+  PUBLIC
+  FREE
+  PRO
+  MAX
+}
+
+enum ResearchArticleSource {
+  INTERNAL
+  EXTERNAL
+}
+
+enum AlphaExecutionMode {
+  PAPER
+  MOCK_EXCHANGE
+  TESTNET
+  LIVE
+}
+
+enum AlphaMarketType {
+  SPOT
+  FUTURES
+}
+
+enum AlphaExecutionState {
+  CREATED
+  NORMALIZED
+  DEDUPE_CHECKED
+  RISK_REJECTED
+  RISK_APPROVED
+  PLANNED
+  AWAITING_CONFIRMATION
+  EXECUTING
+  SUBMITTED
+  PARTIALLY_FILLED
+  FILLED
+  PROTECTION_ACTIVE
+  MONITORING
+  RECONCILING
+  RECONCILED
+  CANCELED
+  CLOSED
+  KILLED
+  FAILED
+  UNKNOWN
+}
+
+enum AlphaOrderStatus {
+  PENDING
+  SUBMITTED
+  NEW
+  PARTIALLY_FILLED
+  FILLED
+  CANCELED
+  REJECTED
+  EXPIRED
+  UNKNOWN
+}
+
+enum AlphaOrderRole {
+  ENTRY
+  STOP_LOSS
+  TAKE_PROFIT
+  CLOSE
+}
+
+enum ResearchCommentStatus {
+  PUBLISHED
+  HIDDEN
+}
+
+model User {
+  id                          String                   @id @db.Uuid
+  email                       String                   @unique
+  emailVerifiedAt             DateTime?
+  status                      UserStatus               @default(ACTIVE)
+  lastLoginAt                 DateTime?
+  privyUserId                 String?                  @unique
+  embeddedWalletId            String?                  @unique
+  createdAt                   DateTime                 @default(now())
+  updatedAt                   DateTime                 @updatedAt
+  profile                     Profile?
+  authAccounts                AuthAccount[]
+  roles                       UserRole[]
+  subscriptions               Subscription[]
+  cryptoPayments              CryptoPayment[]
+  socialAccounts              SocialAccount[]
+  wallets                     Wallet[]
+  walletChallenges            WalletChallenge[]
+  twoFactor                   TwoFactorSetting?
+  backupCodes                 BackupCode[]
+  referralCodes               ReferralCode[]
+  referralsMade               Referral[]               @relation("ReferralReferrer")
+  referralReceived            Referral?                @relation("ReferralReferred")
+  commissionsEarned           CommissionLedger[]       @relation("CommissionReferrer")
+  commissionsCreated          CommissionLedger[]       @relation("CommissionReferred")
+  auditLogs                   AuditLog[]               @relation("AuditActor")
+  apiKeys                     ApiKey[]
+  researchArticles            ResearchArticle[]        @relation("ResearchAuthor")
+  researchBookmarks           ResearchBookmark[]
+  researchComments            ResearchComment[]
+  accessRedemptions           AccessCodeRedemption[]
+  toolboxFavorites            ToolboxFavorite[]
+  alphaTradingCredentials     AlphaTradingCredential[]
+  alphaExecutionConfig        AlphaExecutionConfig?
+  alphaTradeIntents           AlphaTradeIntent[]
+  alphaExecutionPlans         AlphaExecutionPlan[]
+  alphaTradingOrders          AlphaTradingOrder[]
+  alphaTradingPositions       AlphaTradingPosition[]
+  alphaTradingAudits          AlphaTradingAudit[]
+  tideSightTradingCredentials TideSightTradingCredential[]
+  tideSightExecutionConfig TideSightExecutionConfig?
+  tideSightTradeIntents TideSightTradeIntent[]
+  tideSightExecutionPlans TideSightExecutionPlan[]
+  tideSightTradingOrders TideSightTradingOrder[]
+  tideSightTradingPositions TideSightTradingPosition[]
+  tideSightTradingAudits TideSightTradingAudit[]
+  tideSightAutoEvents TideSightAutoEvent[]
+  classicGridBot              ClassicGridBot?
+  hostedGridOpsBot            HostedGridOpsBot?
+  hostedGridOpsCommands       HostedGridOpsCommand[]
+  onboardingTasks             UserOnboardingTask[]
+  analyticsEvents             AnalyticsEvent[]
+  wlbAccount                  WlbAccount?
+  wlbOwnedTransactions        WlbTransaction[]         @relation("WlbTransactionOwner")
+  wlbCounterpartyTransactions WlbTransaction[]         @relation("WlbTransactionCounterparty")
+  wlbLedgerEntries            WlbLedgerEntry[]
+  chainTransactionClaims      ChainTransactionClaim[]
+
+  @@map("users")
+}
+
+model ClassicGridBot {
+  id              String    @id @default(cuid())
+  userId          String    @unique @db.Uuid
+  configEncrypted String    @db.Text
+  configSummary   Json
+  dryRun          Boolean   @default(true)
+  paused          Boolean   @default(false)
+  status          String    @default("STOPPED") @db.VarChar(24)
+  runId           String?   @db.VarChar(160)
+  snapshot        Json?
+  lastError       String?   @db.VarChar(2000)
+  heartbeatAt     DateTime?
+  startedAt       DateTime?
+  stoppedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, heartbeatAt])
+  @@map("classic_grid_bots")
+}
+
+model HostedGridOpsBot {
+  id              String                 @id @default(cuid())
+  userId          String                 @unique @db.Uuid
+  configEncrypted String                 @db.Text
+  configSummary   Json
+  status          String                 @default("STOPPED") @db.VarChar(24)
+  runId           String?                @db.VarChar(160)
+  snapshot        Json?
+  marketCatalog   Json?
+  lastError       String?                @db.VarChar(2000)
+  heartbeatAt     DateTime?
+  startedAt       DateTime?
+  stoppedAt       DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commands        HostedGridOpsCommand[]
+
+  @@index([status, heartbeatAt])
+  @@map("hosted_grid_ops_bots")
+}
+
+model HostedGridOpsCommand {
+  id          String           @id @default(cuid())
+  botId       String
+  userId      String           @db.Uuid
+  type        String           @db.VarChar(48)
+  target      String?          @db.VarChar(48)
+  payload     Json?
+  status      String           @default("PENDING") @db.VarChar(24)
+  result      Json?
+  error       String?          @db.VarChar(2000)
+  createdAt   DateTime         @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  bot         HostedGridOpsBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([botId, status, createdAt])
+  @@index([userId, createdAt])
+  @@map("hosted_grid_ops_commands")
+}
+
+model AlphaTradingCredential {
+  id                 String              @id @default(cuid())
+  userId             String              @db.Uuid
+  environment        AlphaExecutionMode
+  market             AlphaMarketType
+  label              String              @default("Binance")
+  apiKeyEncrypted    String              @db.Text
+  apiSecretEncrypted String              @db.Text
+  proxyEncrypted     String?             @db.Text
+  apiKeyHint         String
+  enabled            Boolean             @default(true)
+  verifiedAt         DateTime?
+  permissionSummary  Json?
+  lastError          String?             @db.VarChar(1000)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders             AlphaTradingOrder[]
+
+  @@unique([userId, environment, market])
+  @@index([userId, enabled])
+  @@map("alpha_trading_credentials")
+}
+
+model AlphaExecutionConfig {
+  id                        String             @id @default(cuid())
+  userId                    String             @unique @db.Uuid
+  activeMode                AlphaExecutionMode @default(PAPER)
+  defaultMarket             AlphaMarketType    @default(FUTURES)
+  testnetEnabled            Boolean            @default(false)
+  liveEnabled               Boolean            @default(false)
+  autoExecuteEnabled        Boolean            @default(false)
+  killSwitchActive          Boolean            @default(false)
+  requireManualConfirmation Boolean            @default(true)
+  requireProtectionOrders   Boolean            @default(true)
+  riskPerTradePct           Float              @default(0.75)
+  maxLeverage               Int                @default(3)
+  dailyLossLimitPct         Float              @default(2)
+  dedupeWindowMinutes       Int                @default(15)
+  maxOpenPositions          Int                @default(6)
+  maxPortfolioExposurePct   Float              @default(50)
+  minAlphaScore             Int                @default(75)
+  perOrderNotionalLimit     Float              @default(50)
+  dailyNotionalLimit        Float              @default(200)
+  liveUnlockedAt            DateTime?
+  liveUnlockedBy            String?            @db.Uuid
+  lastReconciledAt          DateTime?
+  reconciliationHealthy     Boolean            @default(true)
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+  user                      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("alpha_execution_configs")
+}
+
+model AlphaTradeIntent {
+  id              String              @id @default(cuid())
+  userId          String              @db.Uuid
+  environment     AlphaExecutionMode
+  market          AlphaMarketType
+  symbol          String
+  side            String
+  orderType       String              @default("MARKET")
+  entryPrice      Float
+  stopLoss        Float
+  takeProfit      Float
+  leverage        Int                 @default(1)
+  riskPct         Float
+  source          String
+  alphaScore      Float?
+  dedupeHash      String
+  state           AlphaExecutionState @default(CREATED)
+  rejectionReason String?             @db.VarChar(2000)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            AlphaExecutionPlan?
+  audits          AlphaTradingAudit[]
+
+  @@index([userId, symbol, side, createdAt])
+  @@index([userId, state, createdAt])
+  @@index([dedupeHash, createdAt])
+  @@map("alpha_trade_intents")
+}
+
+model AlphaExecutionPlan {
+  id               String                @id @default(cuid())
+  intentId         String                @unique
+  userId           String                @db.Uuid
+  environment      AlphaExecutionMode
+  market           AlphaMarketType
+  state            AlphaExecutionState   @default(PLANNED)
+  mainOrder        Json
+  protectionOrders Json
+  riskSnapshot     Json
+  safeguards       Json
+  expiresAt        DateTime
+  confirmedAt      DateTime?
+  executedAt       DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  intent           AlphaTradeIntent      @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders           AlphaTradingOrder[]
+  position         AlphaTradingPosition?
+  audits           AlphaTradingAudit[]
+
+  @@index([userId, state, createdAt])
+  @@map("alpha_execution_plans")
+}
+
+model AlphaTradingOrder {
+  id               String                  @id @default(cuid())
+  userId           String                  @db.Uuid
+  planId           String
+  credentialId     String?
+  environment      AlphaExecutionMode
+  market           AlphaMarketType
+  role             AlphaOrderRole
+  symbol           String
+  side             String
+  orderType        String
+  quantity         Float
+  price            Float?
+  stopPrice        Float?
+  clientOrderId    String
+  idempotencyKey   String                  @unique
+  exchangeOrderId  String?
+  status           AlphaOrderStatus        @default(PENDING)
+  filledQuantity   Float                   @default(0)
+  averagePrice     Float?
+  rawResponse      Json?
+  errorMessage     String?                 @db.VarChar(2000)
+  lastReconciledAt DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             AlphaExecutionPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  credential       AlphaTradingCredential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+  audits           AlphaTradingAudit[]
+
+  @@unique([userId, environment, market, clientOrderId])
+  @@index([userId, status, createdAt])
+  @@index([planId, role])
+  @@map("alpha_trading_orders")
+}
+
+model AlphaTradingPosition {
+  id               String              @id @default(cuid())
+  userId           String              @db.Uuid
+  planId           String              @unique
+  environment      AlphaExecutionMode
+  market           AlphaMarketType
+  symbol           String
+  side             String
+  quantity         Float
+  entryPrice       Float
+  markPrice        Float?
+  stopLoss         Float
+  takeProfit       Float
+  unrealizedPnl    Float               @default(0)
+  state            AlphaExecutionState @default(MONITORING)
+  lastReconciledAt DateTime?
+  openedAt         DateTime            @default(now())
+  closedAt         DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             AlphaExecutionPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([userId, state, openedAt])
+  @@map("alpha_trading_positions")
+}
+
+model AlphaTradingAudit {
+  id        String              @id @default(cuid())
+  userId    String              @db.Uuid
+  intentId  String?
+  planId    String?
+  orderId   String?
+  state     AlphaExecutionState
+  status    String
+  message   String              @db.VarChar(2000)
+  metadata  Json?
+  createdAt DateTime            @default(now())
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intent    AlphaTradeIntent?   @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  plan      AlphaExecutionPlan? @relation(fields: [planId], references: [id], onDelete: Cascade)
+  order     AlphaTradingOrder?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([planId, createdAt])
+  @@map("alpha_trading_audits")
+}
+
+model TideSightTradingCredential {
+  id                 String              @id @default(cuid())
+  userId             String              @db.Uuid
+  environment        AlphaExecutionMode
+  market             AlphaMarketType
+  label              String              @default("Binance")
+  apiKeyEncrypted    String              @db.Text
+  apiSecretEncrypted String              @db.Text
+  proxyEncrypted     String?             @db.Text
+  apiKeyHint         String
+  enabled            Boolean             @default(true)
+  verifiedAt         DateTime?
+  permissionSummary  Json?
+  lastError          String?             @db.VarChar(1000)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders             TideSightTradingOrder[]
+
+  @@unique([userId, environment, market])
+  @@index([userId, enabled])
+  @@map("tidesight_trading_credentials")
+}
+
+model TideSightExecutionConfig {
+  id                        String             @id @default(cuid())
+  userId                    String             @unique @db.Uuid
+  activeMode                AlphaExecutionMode @default(PAPER)
+  defaultMarket             AlphaMarketType    @default(FUTURES)
+  testnetEnabled            Boolean            @default(false)
+  liveEnabled               Boolean            @default(false)
+  autoExecuteEnabled        Boolean            @default(false)
+  killSwitchActive          Boolean            @default(false)
+  requireManualConfirmation Boolean            @default(true)
+  requireProtectionOrders   Boolean            @default(true)
+  riskPerTradePct           Float              @default(1.5)
+  maxLeverage               Int                @default(25)
+  dailyLossLimitPct         Float              @default(2)
+  dedupeWindowMinutes       Int                @default(15)
+  maxOpenPositions          Int                @default(6)
+  maxPortfolioExposurePct   Float              @default(50)
+  minTideSightScore             Int                @default(75)
+  perOrderNotionalLimit     Float              @default(1000)
+  dailyNotionalLimit        Float              @default(5000)
+  liveUnlockedAt            DateTime?
+  liveUnlockedBy            String?            @db.Uuid
+  lastReconciledAt          DateTime?
+  reconciliationHealthy     Boolean            @default(false)
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+  user                      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  autoGeneration            String?
+  autoRunId                 String?
+  autoStartedAt             DateTime?
+  autoHeartbeatAt           DateTime?
+  autoError                 String? @db.VarChar(2000)
+  autoStopLossPct            Float?
+  autoTakeProfitPct          Float?
+  executionLeaseToken       String?
+  executionLeaseUntil       DateTime?
+
+  @@map("tidesight_execution_configs")
+}
+
+model TideSightTradeIntent {
+  id              String              @id @default(cuid())
+  userId          String              @db.Uuid
+  environment     AlphaExecutionMode
+  market          AlphaMarketType
+  symbol          String
+  side            String
+  orderType       String              @default("MARKET")
+  entryPrice      Float
+  stopLoss        Float
+  takeProfit      Float
+  leverage        Int                 @default(1)
+  riskPct         Float
+  source          String
+  tideSightScore      Float?
+  dedupeHash      String
+  state           AlphaExecutionState @default(CREATED)
+  rejectionReason String?             @db.VarChar(2000)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            TideSightExecutionPlan?
+  audits          TideSightTradingAudit[]
+
+  @@index([userId, symbol, side, createdAt])
+  @@index([userId, state, createdAt])
+  @@index([dedupeHash, createdAt])
+  @@map("tidesight_trade_intents")
+}
+
+model TideSightExecutionPlan {
+  id               String                @id @default(cuid())
+  intentId         String                @unique
+  userId           String                @db.Uuid
+  environment      AlphaExecutionMode
+  market           AlphaMarketType
+  state            AlphaExecutionState   @default(PLANNED)
+  mainOrder        Json
+  protectionOrders Json
+  riskSnapshot     Json
+  safeguards       Json
+  expiresAt        DateTime
+  confirmedAt      DateTime?
+  executedAt       DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  intent           TideSightTradeIntent      @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders           TideSightTradingOrder[]
+  position         TideSightTradingPosition?
+  audits           TideSightTradingAudit[]
+
+  @@index([userId, state, createdAt])
+  @@map("tidesight_execution_plans")
+}
+
+model TideSightTradingOrder {
+  id               String                  @id @default(cuid())
+  userId           String                  @db.Uuid
+  planId           String
+  credentialId     String?
+  environment      AlphaExecutionMode
+  market           AlphaMarketType
+  role             AlphaOrderRole
+  symbol           String
+  side             String
+  orderType        String
+  quantity         Float
+  price            Float?
+  stopPrice        Float?
+  clientOrderId    String
+  idempotencyKey   String                  @unique
+  exchangeOrderId  String?
+  status           AlphaOrderStatus        @default(PENDING)
+  filledQuantity   Float                   @default(0)
+  averagePrice     Float?
+  rawResponse      Json?
+  errorMessage     String?                 @db.VarChar(2000)
+  lastReconciledAt DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             TideSightExecutionPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  credential       TideSightTradingCredential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+  audits           TideSightTradingAudit[]
+
+  @@unique([userId, environment, market, clientOrderId])
+  @@index([userId, status, createdAt])
+  @@index([planId, role])
+  @@map("tidesight_trading_orders")
+}
+
+model TideSightTradingPosition {
+  id               String              @id @default(cuid())
+  userId           String              @db.Uuid
+  planId           String              @unique
+  environment      AlphaExecutionMode
+  market           AlphaMarketType
+  symbol           String
+  side             String
+  quantity         Float
+  entryPrice       Float
+  markPrice        Float?
+  stopLoss         Float
+  takeProfit       Float
+  unrealizedPnl    Float               @default(0)
+  state            AlphaExecutionState @default(MONITORING)
+  lastReconciledAt DateTime?
+  openedAt         DateTime            @default(now())
+  closedAt         DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             TideSightExecutionPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([userId, state, openedAt])
+  @@map("tidesight_trading_positions")
+}
+
+model TideSightTradingAudit {
+  id        String              @id @default(cuid())
+  userId    String              @db.Uuid
+  intentId  String?
+  planId    String?
+  orderId   String?
+  state     AlphaExecutionState
+  status    String
+  message   String              @db.VarChar(2000)
+  metadata  Json?
+  createdAt DateTime            @default(now())
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intent    TideSightTradeIntent?   @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  plan      TideSightExecutionPlan? @relation(fields: [planId], references: [id], onDelete: Cascade)
+  order     TideSightTradingOrder?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([planId, createdAt])
+  @@map("tidesight_trading_audits")
+}
+
+model TideSightAutoEvent {
+  id         String @id @default(cuid())
+  userId     String @db.Uuid
+  eventKey   String @unique
+  strategyId String
+  symbol     String
+  interval   String
+  closedAt   DateTime
+  status     String @default("CLAIMED")
+  planId     String?
+  message    String? @db.VarChar(2000)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("tidesight_auto_events")
+}
+
+model ToolboxCategory {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  color       String        @default("#4BA3D8")
+  sortOrder   Int           @default(0)
+  isPublic    Boolean       @default(true)
+  isCollapsed Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  items       ToolboxItem[]
+
+  @@index([sortOrder])
+  @@map("toolbox_categories")
+}
+
+model ToolboxItem {
+  id           String             @id @default(cuid())
+  categoryId   String
+  name         String
+  description  String?            @db.VarChar(1000)
+  officialUrl  String?
+  loginAccount String?            @db.VarChar(1000)
+  isPublished  Boolean            @default(false)
+  rating       Int?
+  financing    String?
+  tutorial     String?            @db.VarChar(2000)
+  isPublic     Boolean            @default(true)
+  rowColor     String             @default("none")
+  sortOrder    Int                @default(0)
+  createdBy    String?            @db.Uuid
+  updatedBy    String?            @db.Uuid
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  category     ToolboxCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cells        ToolboxCellValue[]
+  favorites    ToolboxFavorite[]
+
+  @@index([categoryId, sortOrder])
+  @@index([isPublic, isPublished])
+  @@map("toolbox_items")
+}
+
+model ToolboxColumn {
+  id          String             @id @default(cuid())
+  key         String             @unique
+  title       String
+  type        String             @default("text")
+  width       Int                @default(160)
+  sortOrder   Int                @default(0)
+  isSystem    Boolean            @default(false)
+  isVisible   Boolean            @default(true)
+  isPublic    Boolean            @default(true)
+  isSensitive Boolean            @default(false)
+  isEditable  Boolean            @default(true)
+  isRequired  Boolean            @default(false)
+  options     Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  cells       ToolboxCellValue[]
+
+  @@index([sortOrder])
+  @@map("toolbox_columns")
+}
+
+model ToolboxCellValue {
+  id        String        @id @default(cuid())
+  itemId    String
+  columnId  String
+  value     Json?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  item      ToolboxItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  column    ToolboxColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, columnId])
+  @@index([columnId])
+  @@map("toolbox_cell_values")
+}
+
+model ToolboxFavorite {
+  id        String      @id @default(cuid())
+  userId    String      @db.Uuid
+  itemId    String
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item      ToolboxItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@index([userId, createdAt])
+  @@map("toolbox_favorites")
+}
+
+model AuthAccount {
+  id                String       @id @default(cuid())
+  userId            String       @db.Uuid
+  provider          AuthProvider
+  providerAccountId String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model Profile {
+  id                 String    @id @default(cuid())
+  userId             String    @unique @db.Uuid
+  handle             String?   @unique
+  displayName        String?
+  bio                String?   @db.VarChar(500)
+  avatarUrl          String?
+  region             String?
+  website            String?
+  profileCompletedAt DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([handle])
+  @@map("profiles")
+}
+
+model Role {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId    String   @db.Uuid
+  roleId    String
+  grantedBy String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model Plan {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  name         String
+  description  String?
+  monthlyCents Int
+  yearlyCents  Int      @default(0)
+  currency     String   @default("usd")
+  rank         Int      @unique
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("plans")
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String             @db.Uuid
+  provider               String             @default("stripe")
+  providerCustomerId     String?
+  providerSubscriptionId String?            @unique
+  planKey                String             @default("free")
+  billingInterval        String             @default("month")
+  amountCents            Int                @default(0)
+  status                 SubscriptionStatus @default(FREE)
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  canceledAt             DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([providerCustomerId])
+  @@map("subscriptions")
+}
+
+model CryptoPayment {
+  id               String              @id @default(cuid())
+  userId           String              @db.Uuid
+  planKey          String
+  billingInterval  String              @default("month")
+  amountCents      Int
+  currency         String              @default("usd")
+  paymentMethod    String              @default("TRON_USDT")
+  paymentAmount    Decimal?            @db.Decimal(20, 8)
+  paymentCurrency  String              @default("USDT")
+  network          String              @default("TRON")
+  asset            String              @default("USDT")
+  receiveAddress   String
+  txHash           String?             @unique
+  paymentReference String?
+  proofUrl         String?
+  status           CryptoPaymentStatus @default(PENDING)
+  expiresAt        DateTime
+  submittedAt      DateTime?
+  confirmedAt      DateTime?
+  reviewDueAt      DateTime?
+  reviewedAt       DateTime?
+  reviewedBy       String?             @db.Uuid
+  reviewNote       String?             @db.VarChar(1000)
+  blockNumber      BigInt?
+  metadata         Json?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@index([status, expiresAt])
+  @@index([paymentMethod, status, createdAt])
+  @@index([status, reviewDueAt])
+  @@map("crypto_payments")
+}
+
+model SocialAccount {
+  id                String    @id @default(cuid())
+  userId            String    @db.Uuid
+  provider          String
+  providerAccountId String
+  username          String?
+  profileUrl        String?
+  avatarUrl         String?
+  accessToken       String?   @db.Text
+  refreshToken      String?   @db.Text
+  tokenExpiresAt    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("social_accounts")
+}
+
+model Wallet {
+  id         String      @id @default(cuid())
+  userId     String      @db.Uuid
+  chain      WalletChain
+  address    String
+  label      String?
+  verifiedAt DateTime    @default(now())
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chain, address])
+  @@unique([userId, chain, address])
+  @@index([userId])
+  @@map("wallets")
+}
+
+model WalletChallenge {
+  id        String      @id @default(cuid())
+  userId    String      @db.Uuid
+  chain     WalletChain
+  address   String
+  nonce     String      @unique
+  message   String      @db.Text
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("wallet_challenges")
+}
+
+model TwoFactorSetting {
+  id        String    @id @default(cuid())
+  userId    String    @unique @db.Uuid
+  factorId  String    @unique
+  enabledAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor_settings")
+}
+
+model BackupCode {
+  id        String    @id @default(cuid())
+  userId    String    @db.Uuid
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+  @@map("backup_codes")
+}
+
+model ReferralCode {
+  id        String     @id @default(cuid())
+  userId    String     @db.Uuid
+  code      String     @unique
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals Referral[]
+
+  @@index([userId, active])
+  @@map("referral_codes")
+}
+
+model Referral {
+  id             String       @id @default(cuid())
+  referrerUserId String       @db.Uuid
+  referredUserId String       @unique @db.Uuid
+  referralCodeId String
+  source         String?
+  qualifiedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  referrer       User         @relation("ReferralReferrer", fields: [referrerUserId], references: [id], onDelete: Cascade)
+  referred       User         @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: Cascade)
+  referralCode   ReferralCode @relation(fields: [referralCodeId], references: [id], onDelete: Restrict)
+
+  @@index([referrerUserId])
+  @@map("referrals")
+}
+
+model CommissionLedger {
+  id             String           @id @default(cuid())
+  referrerUserId String           @db.Uuid
+  referredUserId String           @db.Uuid
+  paymentEventId String           @unique
+  rewardType     String           @default("SUBSCRIPTION")
+  level          Int              @default(1)
+  planKey        String
+  amountCents    Int
+  currency       String           @default("usd")
+  rateBps        Int
+  status         CommissionStatus @default(PENDING)
+  approvedAt     DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  referrer       User             @relation("CommissionReferrer", fields: [referrerUserId], references: [id], onDelete: Restrict)
+  referred       User             @relation("CommissionReferred", fields: [referredUserId], references: [id], onDelete: Restrict)
+
+  @@index([referrerUserId, status])
+  @@index([rewardType, status, createdAt])
+  @@map("commission_ledger")
+}
+
+model WlbAccount {
+  id                        String   @id @default(cuid())
+  userId                    String   @unique @db.Uuid
+  availableMilliWlb         BigInt   @default(0)
+  pendingWithdrawalMilliWlb BigInt   @default(0)
+  totalCreditedMilliWlb     BigInt   @default(0)
+  totalDebitedMilliWlb      BigInt   @default(0)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("wlb_accounts")
+}
+
+model WlbTransaction {
+  id                 String               @id @default(cuid())
+  type               WlbTransactionType
+  status             WlbTransactionStatus @default(PENDING)
+  ownerUserId        String               @db.Uuid
+  counterpartyUserId String?              @db.Uuid
+  amountMilliWlb     BigInt
+  usdtAmountCents    Int?
+  paymentMethod      String?
+  network            String?
+  receiveAddress     String?
+  payoutAddress      String?
+  txHash             String?
+  externalReference  String?              @unique
+  note               String?              @db.VarChar(1000)
+  metadata           Json?
+  expiresAt          DateTime?
+  reviewedBy         String?              @db.Uuid
+  reviewedAt         DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  owner              User                 @relation("WlbTransactionOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  counterparty       User?                @relation("WlbTransactionCounterparty", fields: [counterpartyUserId], references: [id], onDelete: Restrict)
+  ledgerEntries      WlbLedgerEntry[]
+
+  @@unique([network, txHash])
+  @@index([ownerUserId, status, createdAt])
+  @@index([counterpartyUserId, status, createdAt])
+  @@index([type, status, createdAt])
+  @@map("wlb_transactions")
+}
+
+model WlbLedgerEntry {
+  id                     String         @id @default(cuid())
+  transactionId          String
+  userId                 String         @db.Uuid
+  phase                  String         @db.VarChar(24)
+  availableDeltaMilliWlb BigInt
+  pendingDeltaMilliWlb   BigInt
+  availableAfterMilliWlb BigInt
+  pendingAfterMilliWlb   BigInt
+  createdAt              DateTime       @default(now())
+  transaction            WlbTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  user                   User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([transactionId, userId, phase])
+  @@index([userId, createdAt])
+  @@map("wlb_ledger_entries")
+}
+
+model ChainTransactionClaim {
+  id          String   @id @default(cuid())
+  network     String   @db.VarChar(24)
+  txHash      String   @db.VarChar(160)
+  purpose     String   @db.VarChar(48)
+  referenceId String   @db.VarChar(191)
+  userId      String   @db.Uuid
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([network, txHash])
+  @@index([purpose, referenceId])
+  @@index([userId, createdAt])
+  @@map("chain_transaction_claims")
+}
+
+model UserOnboardingTask {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  taskKey     String
+  completedAt DateTime @default(now())
+  metadata    Json?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, taskKey])
+  @@index([taskKey, completedAt])
+  @@map("user_onboarding_tasks")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String?  @db.Uuid
+  sessionId String   @db.VarChar(80)
+  eventType String   @default("PAGE_VIEW") @db.VarChar(40)
+  path      String   @db.VarChar(300)
+  day       DateTime @db.Date
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, eventType, path, day])
+  @@index([eventType, createdAt])
+  @@index([userId, createdAt])
+  @@index([day, eventType])
+  @@map("analytics_events")
+}
+
+model ContentGate {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  label        String
+  minimumPlan  String
+  guestPreview Boolean  @default(false)
+  previewLimit Int?
+  enabled      Boolean  @default(true)
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("content_gates")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String    @db.Uuid
+  name       String
+  prefix     String
+  secretHash String
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@map("api_keys")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?  @db.Uuid
+  action      String
+  targetType  String
+  targetId    String?
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  actor       User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+model ResearchArticle {
+  id             String                @id @default(cuid())
+  slug           String                @unique
+  title          String
+  excerpt        String                @db.VarChar(600)
+  body           String                @db.Text
+  coverImageUrl  String?
+  category       String                @default("ON-CHAIN")
+  access         ResearchArticleAccess @default(PUBLIC)
+  status         ResearchArticleStatus @default(DRAFT)
+  sourceType     ResearchArticleSource @default(INTERNAL)
+  externalUrl    String?
+  readingMinutes Int                   @default(5)
+  viewCount      Int                   @default(0)
+  featured       Boolean               @default(false)
+  publishedAt    DateTime?
+  authorUserId   String?               @db.Uuid
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  author         User?                 @relation("ResearchAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+  bookmarks      ResearchBookmark[]
+  comments       ResearchComment[]
+
+  @@index([status, publishedAt])
+  @@index([sourceType, status, publishedAt])
+  @@index([category, publishedAt])
+  @@map("research_articles")
+}
+
+model ResearchBookmark {
+  id        String          @id @default(cuid())
+  articleId String
+  userId    String          @db.Uuid
+  createdAt DateTime        @default(now())
+  article   ResearchArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([userId, createdAt])
+  @@map("research_bookmarks")
+}
+
+model ResearchComment {
+  id        String                @id @default(cuid())
+  articleId String
+  userId    String                @db.Uuid
+  body      String                @db.VarChar(2000)
+  status    ResearchCommentStatus @default(PUBLISHED)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  article   ResearchArticle       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, status, createdAt])
+  @@index([userId, createdAt])
+  @@map("research_comments")
+}
+
+model AccessCode {
+  id              String                 @id @default(cuid())
+  codeHash        String                 @unique
+  codeHint        String
+  label           String
+  active          Boolean                @default(true)
+  durationDays    Int                    @default(30)
+  maxRedemptions  Int?
+  redemptionCount Int                    @default(0)
+  startsAt        DateTime?
+  expiresAt       DateTime?
+  createdByUserId String?                @db.Uuid
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  redemptions     AccessCodeRedemption[]
+
+  @@index([active, startsAt, expiresAt])
+  @@map("access_codes")
+}
+
+model AccessCodeRedemption {
+  id           String     @id @default(cuid())
+  accessCodeId String
+  userId       String     @db.Uuid
+  source       String     @default("account")
+  startsAt     DateTime   @default(now())
+  endsAt       DateTime
+  createdAt    DateTime   @default(now())
+  accessCode   AccessCode @relation(fields: [accessCodeId], references: [id], onDelete: Restrict)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([accessCodeId, userId])
+  @@index([userId, endsAt])
+  @@index([accessCodeId, createdAt])
+  @@map("access_code_redemptions")
+}
+
+model WebhookEvent {
+  id          String   @id
+  provider    String
+  eventType   String
+  processedAt DateTime @default(now())
+  payload     Json?
+
+  @@index([provider, eventType])
+  @@map("webhook_events")
+}
+
+model SystemSetting {
+  key         String   @id
+  value       Json
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model RateLimitBucket {
+  id          String   @id @default(cuid())
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+  expiresAt   DateTime
+
+  @@unique([key, windowStart])
+  @@index([expiresAt])
+  @@map("rate_limit_buckets")
+}
+
+model BstockResearchJob {
+  id                String    @id @default(cuid())
+  agentKey          String    @db.VarChar(64)
+  ownerKey          String?   @db.VarChar(64)
+  provider          String    @default("AGENT_STUDIO") @db.VarChar(32)
+  symbol            String    @db.VarChar(16)
+  jobId             String    @unique @db.VarChar(200)
+  jobTokenEncrypted String    @db.Text
+  status            String    @default("queued") @db.VarChar(32)
+  paymentTxHash     String?   @db.VarChar(200)
+  reportMarkdown    String?   @db.Text
+  errorMessage      String?   @db.VarChar(2000)
+  upstreamErrorCode String?   @db.VarChar(64)
+  retryable         Boolean   @default(false)
+  resumeCount       Int       @default(0)
+  lastResumedAt     DateTime?
+  expiresAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([agentKey, createdAt])
+  @@index([agentKey, status, updatedAt])
+  @@index([ownerKey, symbol, createdAt])
+  @@index([ownerKey, status, updatedAt])
+  @@map("bstock_research_jobs")
+}
+
+model BstockResearchTranslation {
+  id            String   @id @default(cuid())
+  researchJobId String   @db.VarChar(64)
+  language      String   @db.VarChar(8)
+  sourceLanguage String  @db.VarChar(8)
+  report        Json
+  model         String?  @db.VarChar(80)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([researchJobId, language])
+  @@index([researchJobId, updatedAt])
+  @@map("bstock_research_translations")
+}
+
+model BstockResearchShare {
+  id            String   @id @default(cuid())
+  shareKey      String   @unique @db.VarChar(64)
+  ownerKey      String   @db.VarChar(64)
+  sourceJobId   String   @db.VarChar(64)
+  language      String   @db.VarChar(8)
+  symbol        String   @db.VarChar(16)
+  ticker        String   @db.VarChar(16)
+  companyName   String?  @db.VarChar(200)
+  companyNameZh String?  @db.VarChar(200)
+  report        Json
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([ownerKey, sourceJobId, language])
+  @@index([shareKey, createdAt])
+  @@map("bstock_research_shares")
+}
+
+model BstockTradeRecord {
+  id                  String    @id @default(cuid())
+  ownerKey            String    @db.VarChar(64)
+  agentKey            String    @db.VarChar(64)
+  intentHash          String    @unique @db.VarChar(64)
+  orderId             String?   @unique @db.VarChar(128)
+  mode                String    @db.VarChar(16)
+  side                String    @db.VarChar(8)
+  symbol              String    @db.VarChar(32)
+  ticker              String    @db.VarChar(16)
+  fromToken           String    @db.VarChar(128)
+  toToken             String    @db.VarChar(128)
+  fromSymbol          String    @db.VarChar(32)
+  toSymbol            String    @db.VarChar(32)
+  requestedAmount     String    @db.VarChar(100)
+  quotedAmount        String?   @db.VarChar(100)
+  actualFromAmount    String?   @db.VarChar(100)
+  actualToAmount      String?   @db.VarChar(100)
+  slippageRatio       String?   @db.VarChar(50)
+  campaignEligibility String?   @db.VarChar(32)
+  status              String    @default("INTENT_CREATED") @db.VarChar(32)
+  txHash              String?   @db.VarChar(200)
+  submittedAt         DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([ownerKey, createdAt])
+  @@index([ownerKey, status, updatedAt])
+  @@map("bstock_trade_records")
+}

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Classic Grid · Demo Dashboard（八所脱敏示例）</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --panel2: #1f2630;
+      --border: #30363d;
+      --txt: #e6edf3;
+      --mut: #8b949e;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --blue: #58a6ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--txt);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.45;
+    }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(13, 17, 23, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    h1 { font-size: 20px; font-weight: 800; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--mut); display: inline-block; }
+    .dot.on { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .meta { color: var(--mut); font-size: 12px; }
+    .pill {
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 4px 10px; font-size: 12px; background: var(--panel);
+    }
+    .pill.live { color: var(--green); border-color: #238636; }
+    .pill.dry { color: var(--yellow); border-color: #9e6a03; }
+    .pill.offok { color: var(--blue); border-color: #1f6feb; }
+    .btn-panic {
+      margin-left: auto;
+      border: 1px solid #f85149;
+      background: #3a1618;
+      color: #ff7b72;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+    main { max-width: 1280px; margin: 0 auto; padding: 18px; }
+    .section-title {
+      margin: 28px 0 14px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+    .section-title.t-overview { color: #58a6ff; }
+    .section-title.t-venues { color: #d29922; }
+    .section-title.t-ladder { color: #a371f7; margin-top: 18px; }
+    .section-title.t-cal { color: #39c5cf; }
+    .kpis { display: grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 12px; }
+    .kpi {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; min-height: 96px;
+    }
+    .kpi label { display: block; color: var(--mut); font-size: 12px; margin-bottom: 6px; }
+    .kpi .value {
+      font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere; word-break: break-all; min-height: 1.2em;
+    }
+    .kpi .value.up { color: var(--green); }
+    .kpi .value.down { color: var(--red); }
+    .sub { color: var(--mut); font-size: 12px; margin-top: 7px; }
+    .up { color: var(--green); }
+    .down { color: var(--red); }
+    .table {
+      width: 100%; border-collapse: collapse; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .table th, .table td {
+      padding: 10px; border-bottom: 1px solid var(--border);
+      text-align: left; font-size: 13px; white-space: nowrap;
+    }
+    .table th { color: var(--mut); font-weight: 600; background: var(--panel2); }
+    .table tr:last-child td { border-bottom: 0; }
+    .scroll { overflow-x: auto; }
+    .badge { display: inline-block; border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 700; }
+    .badge.ok { background: #14351f; color: var(--green); }
+    .ladders { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
+    .ladder {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+    }
+    .ladder-head {
+      display: flex; flex-wrap: wrap; gap: 8px 16px;
+      align-items: baseline; justify-content: space-between; font-size: 13px;
+    }
+    .ladder-head .name { font-weight: 800; font-size: 15px; }
+    .ladder-head .stat { color: var(--mut); font-variant-numeric: tabular-nums; }
+    .ladder-head .stat.ok { color: var(--green); }
+    .ladder-rail {
+      position: relative; height: 52px; margin-top: 12px;
+      border-radius: 8px; background: #0d1117; border: 1px solid var(--border);
+    }
+    .ladder-tick {
+      position: absolute; top: 8px; width: 3px; height: 36px;
+      border-radius: 1px; background: var(--blue); z-index: 2;
+    }
+    .ladder-mid {
+      position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px;
+      background: #ffd666; box-shadow: 0 0 8px rgba(255, 214, 102, 0.7); z-index: 3;
+    }
+    .ladder-anchor {
+      position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px;
+      background: #3fb950; box-shadow: 0 0 8px rgba(63, 185, 80, 0.65); z-index: 3;
+    }
+    .ladder-legend {
+      display: flex; flex-wrap: wrap; gap: 10px 16px;
+      margin-top: 6px; color: var(--mut); font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .ladder-legend i {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 2px; margin-right: 4px; vertical-align: -1px;
+    }
+    .ladder-legend .lg-mid { background: #ffd666; }
+    .ladder-legend .lg-anchor { background: #3fb950; }
+    .ladder-axis {
+      display: flex; justify-content: space-between;
+      margin-top: 8px; color: var(--mut); font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .note { margin-top: 16px; color: var(--mut); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="dot on"></span>
+    <h1>八所网格总看板</h1>
+    <span class="pill live">LIVE</span>
+    <span class="pill offok">数据齐全</span>
+    <span class="meta">更新 21:00:00</span>
+    <button type="button" class="btn-panic">紧急暂停</button>
+  </header>
+  <main>
+    <p class="section-title t-overview">总览</p>
+    <section class="kpis">
+      <div class="kpi"><label>今日盈亏</label><div class="value up">+$128.40</div><div class="sub">总余额相对日切差</div></div>
+      <div class="kpi"><label>总余额</label><div class="value">$7,320.00</div><div class="sub">各所权益合计</div></div>
+      <div class="kpi"><label>今日成交量</label><div class="value">$296,420</div><div class="sub">官方各所合计</div></div>
+      <div class="kpi"><label>挂单合计</label><div class="value">640</div><div class="sub">open / 期望≈</div></div>
+      <div class="kpi"><label>健康</label><div class="value up">8/8</div><div class="sub">无报错的所</div></div>
+    </section>
+
+    <p class="section-title t-venues">八所状态汇总</p>
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>交易所</th><th>状态</th><th>方向</th><th>仓位(U)</th><th>完成格</th>
+            <th>挂单</th><th>mid</th><th>权益</th><th>今日成交量</th><th>格数</th><th>浮盈亏</th><th>备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span style="color:#58a6ff">●</span> Extended</td><td><span class="badge ok">正常</span></td><td class="up">多</td><td>$2,410</td><td>722</td><td>80/80</td><td>64021.5</td><td>$842</td><td>$38,210</td><td>80</td><td class="up">+$12.6</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#3fb950">●</span> RISEx</td><td><span class="badge ok">正常</span></td><td class="down">空</td><td>$640</td><td>688</td><td>46/46</td><td>64008.9</td><td>$826</td><td>$34,520</td><td>46</td><td class="up">+$0.4</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#d29922">●</span> Decibel</td><td><span class="badge ok">正常</span></td><td class="up">多</td><td>$2,620</td><td>749</td><td>80/80</td><td>64015.2</td><td>$836</td><td>$32,890</td><td>80</td><td class="up">+$12.6</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#39c5cf">●</span> N1</td><td><span class="badge ok">正常</span></td><td class="down">空</td><td>$1,020</td><td>690</td><td>80/80</td><td>64028.7</td><td>$819</td><td>$31,440</td><td>80</td><td class="down">-$1.6</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#f78166">●</span> Phoenix</td><td><span class="badge ok">正常</span></td><td class="down">空</td><td>$6,450</td><td>1097</td><td>80/80</td><td>64012.4</td><td>$1,164</td><td>$28,770</td><td>80</td><td class="up">+$27.9</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#ff9f6b">●</span> Phoenix2</td><td><span class="badge ok">正常</span></td><td class="down">空</td><td>$6,260</td><td>485</td><td>80/80</td><td>64012.4</td><td>$1,097</td><td>$26,340</td><td>80</td><td class="up">+$45.4</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#a371f7">●</span> Nado</td><td><span class="badge ok">正常</span></td><td class="up">多</td><td>$1,840</td><td>312</td><td>80/80</td><td>64019.3</td><td>$812</td><td>$22,110</td><td>80</td><td class="up">+$8.2</td><td class="meta">运行中</td></tr>
+          <tr><td><span style="color:#e85d75">●</span> PopDEX</td><td><span class="badge ok">正常</span></td><td class="up">多</td><td>$2,310</td><td>70</td><td>80/80</td><td>64023.8</td><td>$825</td><td>$18,650</td><td>80</td><td class="up">+$12.7</td><td class="meta">运行中</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="section-title t-ladder">挂单档位分布</p>
+    <div class="ladders">
+      <div class="ladder">
+        <div class="ladder-head">
+          <span class="name" style="color:#58a6ff">● Extended</span>
+          <span class="stat ok">均匀 · 均档 74.0 / 期望 73.9 · 80档</span>
+        </div>
+        <div class="ladder-rail" id="rail-ext">
+          <span class="ladder-anchor" style="left:50%"></span>
+          <span class="ladder-mid" style="left:49.2%"></span>
+        </div>
+        <div class="ladder-axis"><span>61127</span><span>64085</span><span>67042</span></div>
+        <div class="ladder-legend">
+          <span><i class="lg-mid"></i>当前价 mid</span>
+          <span><i class="lg-anchor"></i>铺单锚点</span>
+          <span>偏锚 -0.10%</span>
+          <span>期望档距 73.9</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-title t-cal">日历</p>
+    <div class="scroll">
+      <table class="table">
+        <thead><tr><th>日期</th><th>盈亏</th><th>成交量</th><th>余额</th></tr></thead>
+        <tbody>
+          <tr><td>2026-08-13（今天）</td><td class="up">+$145.04</td><td>$296,420</td><td>$7,320.00</td></tr>
+          <tr><td>2026-08-12</td><td class="up">+$290.58</td><td>$274,110</td><td>$7,174.96</td></tr>
+          <tr><td>2026-08-11</td><td class="up">+$288.21</td><td>$268,940</td><td>$6,884.38</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">本页为仓库演示截图源：八所适配器 + 看板界面，数据为脱敏示例，不含真实密钥、账户地址、服务器地址或真实账本。</p>
+  </main>
+  <script>
+    function fillTicks(id, n, skip) {
+      const rail = document.getElementById(id);
+      if (!rail) return;
+      for (let i = 0; i < n; i++) {
+        if (skip != null && Math.abs(i - skip) <= 0.5) continue;
+        const t = document.createElement('span');
+        t.className = 'ladder-tick';
+        t.style.left = (i / (n - 1) * 100) + '%';
+        rail.appendChild(t);
+      }
+    }
+    fillTicks('rail-ext', 80, 39.5);
+  </script>
+</body>
+</html>

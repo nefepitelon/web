@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>八所网格总看板 · 8088</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --panel2: #1f2630;
+      --border: #30363d;
+      --txt: #e6edf3;
+      --mut: #8b949e;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --blue: #58a6ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--txt);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.45;
+    }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(13, 17, 23, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    h1 { font-size: 20px; font-weight: 800; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--mut); display: inline-block; }
+    .dot.on { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .dot.off { background: var(--red); }
+    .meta { color: var(--mut); font-size: 12px; }
+    .pill {
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 4px 10px; font-size: 12px; background: var(--panel);
+    }
+    .pill.live { color: var(--green); border-color: #238636; }
+    .pill.dry { color: var(--yellow); border-color: #9e6a03; }
+    .pill.offok { color: var(--blue); border-color: #1f6feb; }
+    .pill.paused { color: #fff; background: #8b1a1a; border-color: #f85149; }
+    .btn-panic {
+      margin-left: auto;
+      border: 1px solid #f85149;
+      background: #3a1618;
+      color: #ff7b72;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn-panic:hover { background: #5a1e22; color: #fff; }
+    .btn-panic:disabled { opacity: 0.55; cursor: wait; }
+    .btn-resume {
+      border: 1px solid #238636;
+      background: #14351f;
+      color: var(--green);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn-resume:hover { background: #1a4d28; }
+    .btn-resume:disabled { opacity: 0.55; cursor: wait; }
+    .pause-banner {
+      display: none; padding: 12px 14px; margin-bottom: 14px;
+      border: 1px solid #f85149; border-radius: 12px;
+      color: #ff7b72; background: #3a1618; font-weight: 700;
+    }
+    .pause-banner.on { display: block; }
+    main { max-width: 1280px; margin: 0 auto; padding: 18px; }
+    .section-title {
+      margin: 28px 0 14px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+    .section-title.t-overview { color: #58a6ff; }
+    .section-title.t-venues { color: #d29922; }
+    .section-title.t-cal { color: #39c5cf; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin: 28px 0 14px;
+    }
+    .section-head .section-title { margin: 0; }
+    .stats-refresh {
+      margin-left: auto; border: 1px solid #1f6feb; border-radius: 8px;
+      padding: 7px 12px; color: #79c0ff; background: #10233f;
+      font-size: 12px; font-weight: 800; cursor: pointer;
+    }
+    .stats-refresh:hover { color: #fff; background: #16345d; }
+    .stats-refresh:disabled { opacity: .55; cursor: wait; }
+    .stats-refresh-meta { min-width: 120px; text-align: right; }
+    .kpis { display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 12px; }
+    .kpi, .alert {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .kpi { padding: 16px; min-height: 96px; }
+    .kpi label { display: block; color: var(--mut); font-size: 12px; margin-bottom: 6px; }
+    .kpi .value {
+      font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere; word-break: break-all; min-height: 1.2em;
+    }
+    .kpi .value.up { color: var(--green); }
+    .kpi .value.down { color: var(--red); }
+    .sub { color: var(--mut); font-size: 12px; margin-top: 7px; }
+    .up { color: var(--green); }
+    .down { color: var(--red); }
+    .warn { color: var(--yellow); }
+    .alert {
+      display: none; padding: 12px 14px; margin-bottom: 14px;
+      border-color: #d2992255; color: #f2cc60; background: #2d250d;
+    }
+    .table {
+      width: 100%; border-collapse: collapse; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .table th, .table td {
+      padding: 10px; border-bottom: 1px solid var(--border);
+      text-align: left; font-size: 13px; white-space: nowrap;
+    }
+    .table th { color: var(--mut); font-weight: 600; background: var(--panel2); }
+    .table tr:last-child td { border-bottom: 0; }
+    .scroll { overflow-x: auto; }
+    .badge {
+      display: inline-block; border-radius: 999px; padding: 3px 8px;
+      font-size: 12px; font-weight: 700;
+    }
+    .badge.ok { background: #14351f; color: var(--green); }
+    .badge.busy { background: #332a12; color: var(--yellow); }
+    .badge.down { background: #3a1618; color: var(--red); }
+    .badge.off { background: #242a31; color: var(--mut); }
+    .ladders {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .ladder {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .ladder-head {
+      display: flex; flex-wrap: wrap; gap: 8px 16px;
+      align-items: baseline; justify-content: space-between;
+      font-size: 13px;
+    }
+    .ladder-head .name { font-weight: 800; font-size: 15px; }
+    .ladder-head .stat { color: var(--mut); font-variant-numeric: tabular-nums; }
+    .ladder-head .stat.bad { color: var(--yellow); font-weight: 700; }
+    .ladder-head .stat.ok { color: var(--green); }
+    .ladder-rail {
+      position: relative;
+      height: 52px;
+      margin-top: 12px;
+      border-radius: 8px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      overflow: visible;
+    }
+    .ladder-gap {
+      position: absolute;
+      top: 10px;
+      height: 32px;
+      background: rgba(210, 153, 34, 0.35);
+      border: 1px solid rgba(210, 153, 34, 0.7);
+      border-radius: 3px;
+      z-index: 1;
+    }
+    .ladder-tick {
+      position: absolute;
+      top: 8px;
+      width: 3px;
+      height: 36px;
+      border-radius: 1px;
+      background: var(--blue);
+      z-index: 2;
+    }
+    .ladder-mid {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 3px;
+      margin-left: -1px;
+      background: #ffd666;
+      box-shadow: 0 0 8px rgba(255, 214, 102, 0.7);
+      z-index: 3;
+    }
+    .ladder-anchor {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 3px;
+      margin-left: -1px;
+      background: #3fb950;
+      box-shadow: 0 0 8px rgba(63, 185, 80, 0.65);
+      z-index: 3;
+    }
+    .ladder-anchor.near-mid {
+      /* 与 mid 几乎重合时略加宽，仍能辨认 */
+      width: 5px;
+      margin-left: -2px;
+      opacity: 0.85;
+    }
+    .ladder-legend {
+      display: flex; flex-wrap: wrap; gap: 10px 16px;
+      margin-top: 6px; color: var(--mut); font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .ladder-legend i {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 2px; margin-right: 4px; vertical-align: -1px;
+    }
+    .ladder-legend .lg-mid { background: #ffd666; }
+    .ladder-legend .lg-anchor { background: #3fb950; }
+    .ladder-axis {
+      display: flex; justify-content: space-between;
+      margin-top: 8px; color: var(--mut); font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .ladder-hint { color: var(--mut); font-size: 11px; margin-top: 4px; }
+    .ladder-empty { color: var(--mut); font-size: 12px; padding: 10px 0 2px; }
+    .section-title.t-ladder { color: #a371f7; margin-top: 18px; }
+    @media (max-width: 900px) {
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span id="dot" class="dot"></span>
+    <h1>八所网格总看板</h1>
+    <span id="mode" class="pill dry">…</span>
+    <span id="pausePill" class="pill" style="display:none">暂停中</span>
+    <span id="offPill" class="pill">数据…</span>
+    <span id="time" class="meta">等待数据</span>
+    <button type="button" id="btnPause" class="btn-panic" title="停止机器人一切下单/撤单/补单">紧急暂停</button>
+    <button type="button" id="btnResume" class="btn-resume" style="display:none" title="恢复机器人自动网格">恢复运行</button>
+  </header>
+  <main>
+    <div id="pauseBanner" class="pause-banner">紧急暂停中：机器人已停止操作。请自行到各所撤单/平仓；完成后再点「恢复运行」。</div>
+    <div id="alert" class="alert"></div>
+
+    <p class="section-title t-overview">总览</p>
+    <section class="kpis">
+      <div class="kpi">
+        <label>今日盈亏（已实现）</label>
+        <div id="kOffPnl" class="value">-</div>
+        <div id="kOffPnlSub" class="sub">官方已实现盈亏 − 官方手续费</div>
+      </div>
+      <div class="kpi">
+        <label>总余额</label>
+        <div id="kEquity" class="value">-</div>
+        <div id="kEquitySub" class="sub">各所权益合计</div>
+      </div>
+      <div class="kpi">
+        <label>今日成交量</label>
+        <div id="kVol" class="value">-</div>
+        <div id="kVolSub" class="sub">官方各所合计</div>
+      </div>
+      <div class="kpi">
+        <label>挂单合计</label>
+        <div id="kOrders" class="value">-</div>
+        <div id="kOrdersSub" class="sub">open / 期望≈</div>
+      </div>
+      <div class="kpi">
+        <label>健康</label>
+        <div id="kHealth" class="value">-</div>
+        <div id="kHealthSub" class="sub">无报错的所</div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <p class="section-title t-venues">八所状态汇总</p>
+      <span id="statsRefreshMeta" class="meta stats-refresh-meta">每 5 分钟自动回捞</span>
+      <button type="button" id="btnStatsRefresh" class="stats-refresh" title="立即从八所官方接口回捞今日成交、手续费、已实现盈亏和完成格">↻ 实时数据回捞</button>
+    </div>
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>交易所</th><th>状态</th><th>方向及杠杆</th><th>当前仓位(U)</th><th>完成格</th>
+            <th>挂单</th><th>mid</th><th>权益</th><th>今日成交量</th><th>格数</th><th>浮盈亏(官方)</th><th>备注</th>
+          </tr>
+        </thead>
+        <tbody id="venueRows"></tbody>
+      </table>
+    </div>
+    <p class="section-title t-ladder">挂单档位分布</p>
+    <p class="meta" style="margin:-6px 0 4px">横轴=价格 · 蓝线=挂单 · <span style="color:#ffd666">黄线=当前价 mid</span> · <span style="color:#3fb950">绿线=铺单锚点</span> · 黄块=档距空洞</p>
+    <div id="venueLadders" class="ladders"></div>
+
+    <p class="section-title t-cal">日历</p>
+    <div class="meta" id="calMeta">按日汇总</div>
+    <div class="scroll" style="margin-top:8px">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>收益</th>
+            <th>成交量</th>
+            <th>总余额</th>
+          </tr>
+        </thead>
+        <tbody id="calendarRows"></tbody>
+      </table>
+    </div>
+  </main>
+  <script>
+    const LABELS = { extended: "Extended", risex: "RISEx", decibel: "Decibel", n1: "N1", phoenix: "Phoenix", phoenix2: "ph2号", nado: "Nado", popdex: "PopDEX" };
+    const COLORS = { extended: "#58a6ff", risex: "#3fb950", decibel: "#d29922", n1: "#39c5cf", phoenix: "#f78166", phoenix2: "#ff9f6b", nado: "#a371f7", popdex: "#e85d75" };
+    const ORDER = ["extended", "risex", "decibel", "n1", "phoenix", "phoenix2", "nado", "popdex"];
+
+    function el(id) { return document.getElementById(id); }
+    function esc(value) {
+      return String(value == null ? "" : value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+    function setText(id, text, className) {
+      const node = el(id);
+      if (!node) return;
+      node.textContent = text;
+      if (className != null) node.className = className;
+    }
+    function n(v) { const x = Number(v); return Number.isFinite(x) ? x : 0; }
+    function usd(v) {
+      return "$" + n(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function usdShort(v) {
+      return "$" + n(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
+    }
+    function signed(v) {
+      const x = n(v);
+      return (x > 0 ? "+" : "") + usd(x);
+    }
+    function price(v) {
+      const x = n(v);
+      if (!x) return "-";
+      if (Math.abs(x) >= 1000) return x.toFixed(1);
+      return x.toFixed(2);
+    }
+    function cls(v) { return n(v) > 0 ? "up" : n(v) < 0 ? "down" : ""; }
+    function expectOo(v) { return Math.max(0, n(v.gridCount)); }
+    function statusOf(v) {
+      if (v.lastError) return "down";
+      if (!v.mid) return "down";
+      if (!v.seeded && n(v.openOrders) === 0) return "busy";
+      const exp = expectOo(v);
+      if (exp > 0 && n(v.openOrders) < exp * 0.5) return "busy";
+      return "ok";
+    }
+    function statusLabel(s) {
+      return s === "ok" ? "正常" : s === "busy" ? "铺单中" : "异常";
+    }
+    function sideLabel(v) {
+      const p = n(v && v.position);
+      if (p > 1e-12) return "多";
+      if (p < -1e-12) return "空";
+      const sides = new Set((Array.isArray(v && v.orders) ? v.orders : []).map((o) => o && o.side));
+      if (sides.has("buy") && sides.has("sell")) return "双向";
+      if (sides.has("buy")) return "买";
+      if (sides.has("sell")) return "卖";
+      return "平";
+    }
+    function officialRow(v, row) {
+      if (row && row.source === "official") return row;
+      if (!v) return row || {};
+      const known = [v.officialVolume, v.officialFees, v.officialRealizedPnl, v.officialFills, v.officialCloseFills]
+        .some((value) => value != null && Number.isFinite(Number(value)));
+      return known ? {
+        source: "official",
+        volume: v.officialVolume,
+        fees: v.officialFees,
+        realizedPnl: v.officialRealizedPnl,
+        fills: v.officialFills,
+        closeFills: v.officialCloseFills,
+        updatedAt: v.updatedAt,
+      } : (row || {});
+    }
+
+    /** 挂单档位横轴：看档距是否均匀；黄块=空洞 */
+    function renderLadder(v, id) {
+      const orders = Array.isArray(v.orders) ? v.orders : [];
+      const mid = n(v.mid);
+      const expectGap = n(v.spacing);
+      const prices = orders
+        .map((o) => n(o.price))
+        .filter((x) => x > 0)
+        .sort((a, b) => a - b);
+      const uniq = [];
+      for (const px of prices) {
+        if (!uniq.length || Math.abs(px - uniq[uniq.length - 1]) > 1e-6) uniq.push(px);
+      }
+
+      let lo = n(v.lower);
+      let hi = n(v.upper);
+      if (!(lo > 0) || !(hi > 0) || hi <= lo) {
+        if (uniq.length >= 2) {
+          lo = uniq[0];
+          hi = uniq[uniq.length - 1];
+        } else if (mid > 0) {
+          lo = mid * 0.97;
+          hi = mid * 1.03;
+        } else {
+          return `<div class="ladder"><div class="ladder-head"><span class="name" style="color:${COLORS[id] || "#8b949e"}">${esc(LABELS[id] || id)}</span></div><div class="ladder-empty">无价格轴</div></div>`;
+        }
+      }
+      const pad = (hi - lo) * 0.015;
+      const axisLo = lo - pad;
+      const axisHi = hi + pad;
+      const span = axisHi - axisLo || 1;
+      const pctOf = (px) => Math.max(0, Math.min(100, ((px - axisLo) / span) * 100));
+
+      const gaps = [];
+      for (let i = 1; i < uniq.length; i++) gaps.push(uniq[i] - uniq[i - 1]);
+      const avgGap = gaps.length ? gaps.reduce((s, x) => s + x, 0) / gaps.length : 0;
+      const maxGap = gaps.length ? Math.max(...gaps) : 0;
+      const baseGap = expectGap > 0 ? expectGap : avgGap;
+      const holeThresh = baseGap > 0 ? baseGap * 1.6 : 0;
+      // 中间 skipBand：买卖跨 mid 的 ~2 格跳空是设计预期，不算缺档空洞
+      const midSkipMax = baseGap > 0 ? baseGap * 2.25 : 0;
+      let holes = 0;
+      let missingEst = 0;
+      let midSkipGap = 0;
+      const gapMarks = [];
+      if (holeThresh > 0) {
+        for (let i = 1; i < uniq.length; i++) {
+          const g = uniq[i] - uniq[i - 1];
+          const a = uniq[i - 1];
+          const b = uniq[i];
+          const crossesMid = mid > 0 && a < mid && b > mid;
+          if (crossesMid && midSkipMax > 0 && g <= midSkipMax) {
+            midSkipGap = Math.max(midSkipGap, g);
+            continue;
+          }
+          if (g <= holeThresh) continue;
+          holes += 1;
+          missingEst += Math.max(0, Math.round(g / baseGap) - 1);
+          const left = pctOf(a);
+          const right = pctOf(b);
+          const w = Math.max(0.4, right - left);
+          gapMarks.push(
+            `<span class="ladder-gap" style="left:${left}%;width:${w}%" title="空洞 ${g.toFixed(1)} · ${price(a)}→${price(b)}"></span>`
+          );
+        }
+      }
+
+      const ticks = uniq
+        .map((px) => `<span class="ladder-tick" style="left:${pctOf(px)}%" title="${price(px)}"></span>`)
+        .join("");
+      const anchor = n(v.anchorMid);
+      const midMark =
+        mid > 0
+          ? `<span class="ladder-mid" style="left:${pctOf(mid)}%" title="当前价 mid ${price(mid)}"></span>`
+          : "";
+      const near = mid > 0 && anchor > 0 && Math.abs(mid - anchor) / Math.max(mid, 1) < 0.0008;
+      const anchorMark =
+        anchor > 0
+          ? `<span class="ladder-anchor${near ? " near-mid" : ""}" style="left:${pctOf(anchor)}%" title="铺单锚点 ${price(anchor)}"></span>`
+          : "";
+      const driftTxt =
+        mid > 0 && anchor > 0
+          ? `偏锚 ${(((mid - anchor) / anchor) * 100).toFixed(3)}%`
+          : "";
+
+      let statCls = "ok";
+      let statText = "均匀";
+      if (!uniq.length) {
+        statCls = "";
+        statText = "无挂单";
+      } else if (holes > 0) {
+        statCls = "bad";
+        statText = `不匀 · 空洞${holes}处≈缺${missingEst}档`;
+      } else if (baseGap > 0 && avgGap > 0 && Math.abs(avgGap - baseGap) / baseGap > 0.25) {
+        statCls = "bad";
+        statText = `档距偏 · 均${avgGap.toFixed(1)}/期望${baseGap.toFixed(1)}`;
+      } else {
+        statText = `均匀 · 均档${avgGap.toFixed(1)}${expectGap ? ` / 期望${expectGap.toFixed(1)}` : ""}`;
+      }
+
+      return `<div class="ladder">
+        <div class="ladder-head">
+          <span class="name" style="color:${COLORS[id] || "#8b949e"}">● ${esc(LABELS[id] || id)}</span>
+          <span class="stat ${statCls}">${statText} · ${uniq.length}档</span>
+        </div>
+        ${uniq.length
+          ? `<div class="ladder-rail">${gapMarks.join("")}${ticks}${anchorMark}${midMark}</div>
+        <div class="ladder-axis"><span>${price(lo)}</span><span>${price(hi)}</span></div>
+        <div class="ladder-legend">
+          <span><i class="lg-mid"></i>当前价 ${mid > 0 ? price(mid) : "-"}</span>
+          <span><i class="lg-anchor"></i>铺单锚点 ${anchor > 0 ? price(anchor) : "-"}</span>
+          ${driftTxt ? `<span>${driftTxt}</span>` : ""}
+          <span>期望档距 ${expectGap ? expectGap.toFixed(1) : "-"}</span>
+          <span>中间跳空 ${midSkipGap ? midSkipGap.toFixed(1) : (maxGap ? maxGap.toFixed(1) : "-")}${expectGap ? ` (≈2×${expectGap.toFixed(0)})` : ""}</span>
+        </div>`
+          : `<div class="ladder-empty">暂无挂单明细</div>`}
+      </div>`;
+    }
+
+    function render(data) {
+      const venues = Array.isArray(data.venues) ? data.venues.slice() : [];
+      const byId = {};
+      for (const v of venues) byId[v.venue] = v;
+      const orderList = ORDER.slice();
+      for (const v of venues) {
+        if (v && v.venue && !orderList.includes(v.venue)) orderList.push(v.venue);
+      }
+      const configured = Array.isArray(data.welinkbtc?.enabledVenues)
+        ? data.welinkbtc.enabledVenues.filter((id) => orderList.includes(id))
+        : venues.map((v) => v.venue);
+      const enabledIds = new Set(configured);
+      const enabledVenues = venues.filter((v) => enabledIds.has(v.venue));
+      const oo = enabledVenues.reduce((s, v) => s + n(v.openOrders), 0);
+      const exp = enabledVenues.reduce((s, v) => s + expectOo(v), 0);
+      const healthy = enabledVenues.filter((v) => statusOf(v) === "ok").length;
+      const alerts = venues.filter((v) => v.lastError).map((v) => `${v.venue}: ${v.lastError}`);
+      const ledger = data.ledger || {};
+      const cal = Array.isArray(ledger.calendar) ? ledger.calendar : [];
+      const todayRow = cal.find((r) => r.day === ledger.dayKey) || cal[0];
+      const off = data.official || {};
+      const offVenues = { ...(off.venues || {}) };
+      let offVol = 0, offVolN = 0, offRealized = 0, offFees = 0, offPnlN = 0, offFills = 0, offFillsKnown = false;
+      for (const id of configured) {
+        const o = officialRow(byId[id], offVenues[id]);
+        offVenues[id] = o;
+        if (!o || o.source !== "official") continue;
+        if (o.volume != null && Number.isFinite(Number(o.volume))) { offVol += Number(o.volume); offVolN++; }
+        const realizedKnown = o.realizedPnl != null && Number.isFinite(Number(o.realizedPnl));
+        const feesKnown = o.fees != null && Number.isFinite(Number(o.fees));
+        if (realizedKnown || feesKnown) {
+          offRealized += realizedKnown ? Number(o.realizedPnl) : 0;
+          offFees += feesKnown ? Math.abs(Number(o.fees)) : 0;
+          offPnlN++;
+        }
+        if (o.fills != null && Number.isFinite(Number(o.fills))) { offFills += Number(o.fills); offFillsKnown = true; }
+      }
+      const officialNetPnl = offPnlN ? offRealized - offFees : null;
+      const venueEquity = venues.reduce((s, v) => s + n(v.equityUsd), 0);
+      const equityKnown = venues.filter((v) => v.equityUsd != null && Number(v.equityUsd) > 0).length;
+      const ledgerEquity = todayRow ? n(todayRow.equity) : 0;
+      const todayEquity = venueEquity > 0 ? venueEquity : ledgerEquity;
+
+      setText("mode", data.dryRun ? "DRY_RUN" : "LIVE", "pill " + (data.dryRun ? "dry" : "live"));
+      const paused = !!data.paused;
+      const pausePill = el("pausePill");
+      const btnPause = el("btnPause");
+      const btnResume = el("btnResume");
+      const pauseBanner = el("pauseBanner");
+      if (pausePill) {
+        pausePill.style.display = paused ? "inline-block" : "none";
+        if (paused) setText("pausePill", "暂停中", "pill paused");
+      }
+      if (btnPause) btnPause.style.display = paused ? "none" : "inline-block";
+      if (btnResume) btnResume.style.display = paused ? "inline-block" : "none";
+      if (pauseBanner) {
+        pauseBanner.className = "pause-banner" + (paused ? " on" : "");
+        if (paused && data.pausedAt) {
+          pauseBanner.textContent =
+            "紧急暂停中（" + new Date(data.pausedAt).toLocaleString("zh-CN") +
+            "）：机器人已停止下单/撤单/补单。请自行到各所撤单/平仓；完成后再点「恢复运行」。";
+        }
+      }
+      setText("offPill", configured.length > 0 && offVolN === configured.length ? "数据齐全" : `数据 ${offVolN}/${configured.length}`, "pill " + (configured.length > 0 && offVolN === configured.length ? "offok" : "dry"));
+      setText("kEquity", todayEquity > 0 ? usd(todayEquity) : "-");
+      setText("kEquitySub", equityKnown ? `${equityKnown}/${configured.length} 所有读数` : "各所权益合计");
+      setText("kVol", offVolN > 0 ? usdShort(offVol) : "-");
+      setText("kVolSub", offVolN ? `${offVolN}/${configured.length} 所官方合计${offFillsKnown ? ` · ${offFills} 笔成交` : ""}` : "等待官方成交历史回捞");
+      setText(
+        "kOffPnl",
+        officialNetPnl != null ? signed(officialNetPnl) : "-",
+        "value " + (officialNetPnl != null ? cls(officialNetPnl) : "")
+      );
+      setText(
+        "kOffPnlSub",
+        officialNetPnl != null
+          ? `已实现 ${signed(offRealized)} − 手续费 ${usd(offFees)} · ${offPnlN}/${configured.length} 所`
+          : "等待官方已实现盈亏与手续费回捞"
+      );
+      setText("kOrders", String(oo));
+      setText("kOrdersSub", `open ${oo} / 期望≈${exp}`);
+      setText("kHealth", `${healthy}/${configured.length}`, "value " + (configured.length > 0 && healthy === configured.length ? "up" : "warn"));
+      setText("kHealthSub", configured.length > 0 && healthy === configured.length ? "已启用场所正常" : "已启用场所有异常或未铺满");
+      const officialUpdatedAt = off.updatedAt || data.statistics?.updatedAt || data.welinkbtc?.statsRefreshedAt;
+      setText(
+        "statsRefreshMeta",
+        officialUpdatedAt && Date.parse(officialUpdatedAt) > 0
+          ? `统计更新 ${new Date(officialUpdatedAt).toLocaleTimeString("zh-CN")}`
+          : "尚未完成官方回捞"
+      );
+
+      el("venueRows").innerHTML = orderList.map((id) => {
+        const v = byId[id];
+        if (!v) {
+          const enabled = enabledIds.has(id);
+          return `<tr><td><span style="color:${COLORS[id] || "#8b949e"}">●</span> ${esc(LABELS[id] || id)}</td><td><span class="badge ${enabled ? "busy" : "off"}">${enabled ? "等待数据" : "未启用"}</span></td><td colspan="10" class="meta">${enabled ? "服务器尚未生成该场所快照" : "可在环境配置 → 启用交易场所中勾选"}</td></tr>`;
+        }
+        const st = statusOf(v);
+        const expOo = expectOo(v);
+        const side = sideLabel(v);
+        const sideCls = side === "多" || side === "买" ? "up" : side === "空" || side === "卖" ? "down" : "";
+        const leverage = n(v.leverage);
+        const sideAndLeverage = `${side}${leverage > 0 ? ` · ${leverage}x` : ""}`;
+        const posU = Math.abs(n(v.position) * n(v.mid));
+        const posULabel = n(v.mid) > 0 ? usd(posU) : "-";
+        const o = offVenues[id] || {};
+        const volOk = o.source === "official" && o.volume != null && Number.isFinite(Number(o.volume));
+        return `<tr>
+          <td><span style="color:${COLORS[id] || "#8b949e"}">●</span> ${esc(LABELS[id] || id)}</td>
+          <td><span class="badge ${st}">${statusLabel(st)}</span></td>
+          <td class="${sideCls}">${sideAndLeverage}</td>
+          <td class="${sideCls}">${posULabel}</td>
+          <td>${n(v.completedRungs)}</td>
+          <td>${n(v.openOrders)}/${expOo}</td>
+          <td>${price(v.mid)}</td>
+          <td>${v.equityUsd != null ? usd(v.equityUsd) : "-"}</td>
+          <td>${volOk ? usdShort(o.volume) : "-"}</td>
+          <td>${n(v.gridCount)}</td>
+          <td class="${v.unrealizedPnl != null && Number.isFinite(n(v.unrealizedPnl)) ? cls(v.unrealizedPnl) : ""}">${v.unrealizedPnl != null && Number.isFinite(n(v.unrealizedPnl)) ? signed(v.unrealizedPnl) : "-"}</td>
+          <td class="meta" style="white-space:normal;max-width:200px">${esc(v.lastError || (paused ? "已暂停（可手动撤单/平仓）" : (v.seeded ? "运行中" : "待铺")))}</td>
+        </tr>`;
+      }).join("") + (() => {
+        let posU = 0, rungs = 0, ooSum = 0, expSum = 0, eq = 0, eqN = 0, grids = 0, upnl = 0, upnlN = 0, okN = 0, knownN = 0;
+        for (const id of orderList) {
+          const v = byId[id];
+          if (!v) continue;
+          knownN++;
+          if (statusOf(v) === "ok") okN++;
+          if (n(v.mid) > 0) posU += Math.abs(n(v.position) * n(v.mid));
+          rungs += n(v.completedRungs);
+          ooSum += n(v.openOrders);
+          expSum += expectOo(v);
+          grids += n(v.gridCount);
+          if (v.equityUsd != null && Number.isFinite(n(v.equityUsd))) { eq += n(v.equityUsd); eqN++; }
+          if (v.unrealizedPnl != null && Number.isFinite(n(v.unrealizedPnl))) { upnl += n(v.unrealizedPnl); upnlN++; }
+        }
+        return `<tr style="background:var(--panel2);font-weight:700">
+          <td>合计</td>
+          <td>${configured.length ? `${okN}/${configured.length}` : "-"}</td>
+          <td class="meta">—</td>
+          <td>${posU > 0 ? usd(posU) : "-"}</td>
+          <td>${rungs}</td>
+          <td>${ooSum}/${expSum}</td>
+          <td class="meta">—</td>
+          <td>${eqN ? usd(eq) : "-"}</td>
+          <td>${offVolN ? usdShort(offVol) : "-"}</td>
+          <td>${grids || "-"}</td>
+          <td class="${upnlN ? cls(upnl) : ""}">${upnlN ? signed(upnl) : "-"}</td>
+          <td class="meta">${upnlN ? `浮盈亏 ${upnlN} 所有数` : "浮盈亏暂无"}</td>
+        </tr>`;
+      })();
+
+      const ladders = el("venueLadders");
+      if (ladders) {
+        ladders.innerHTML = orderList.map((id) => {
+          const v = byId[id];
+          if (!v) {
+            const enabled = enabledIds.has(id);
+            return `<div class="ladder"><div class="ladder-head"><span class="name">${esc(LABELS[id] || id)}</span><span class="badge ${enabled ? "busy" : "off"}">${enabled ? "等待数据" : "未启用"}</span></div><div class="ladder-empty">${enabled ? "服务器尚未生成挂单档位" : "可在环境配置中启用后查看"}</div></div>`;
+          }
+          return renderLadder(v, id);
+        }).join("");
+      }
+
+      const meta = el("calMeta");
+      if (meta) meta.textContent = `记账日 ${ledger.dayKey || "-"}`;
+      const calBody = el("calendarRows");
+      if (!cal.length) {
+        calBody.innerHTML = '<tr><td colspan="4" class="meta">暂无每日记录</td></tr>';
+      } else {
+        let sumPnl = 0, sumVol = 0, pnlN = 0, volN = 0;
+        const latestEquity = n((cal.find((r) => r.day === ledger.dayKey) || cal[0] || {}).equity);
+        const rows = cal.map((r) => {
+          const isToday = r.day === ledger.dayKey;
+          const bal = n(r.equity);
+          const pnl = isToday && officialNetPnl != null
+            ? officialNetPnl
+            : (r.officialNetPnl != null && Number.isFinite(Number(r.officialNetPnl))
+                ? Number(r.officialNetPnl)
+                : (Number.isFinite(Number(r.dayProfit)) ? Number(r.dayProfit) : null));
+          const vol =
+            isToday && offVolN > 0
+              ? offVol
+              : (r.officialVolume != null && Number.isFinite(Number(r.officialVolume))
+                  ? Number(r.officialVolume)
+                  : (r.volume != null && Number.isFinite(Number(r.volume))
+                      ? Number(r.volume)
+                      : null));
+          // 禁止用本地 todayVolume 估算充数（即便旧字段残留）
+          if (pnl != null) { sumPnl += pnl; pnlN++; }
+          if (vol != null) { sumVol += vol; volN++; }
+          return `<tr>
+            <td>${r.day}${isToday ? "（今天）" : ""}</td>
+            <td class="${pnl != null ? cls(pnl) : ""}">${pnl != null ? signed(pnl) : "-"}</td>
+            <td>${vol != null ? usdShort(vol) : "-"}</td>
+            <td>${bal > 0 ? usd(bal) : "-"}</td>
+          </tr>`;
+        }).join("");
+        calBody.innerHTML = rows + `<tr style="background:var(--panel2);font-weight:700">
+          <td>总计</td>
+          <td class="${pnlN ? cls(sumPnl) : ""}">${pnlN ? signed(sumPnl) : "-"}</td>
+          <td>${volN ? usdShort(sumVol) : "-"}</td>
+          <td>${latestEquity > 0 ? usd(latestEquity) : "-"}</td>
+        </tr>`;
+      }
+
+      const box = el("alert");
+      if (alerts.length) {
+        box.style.display = "block";
+        box.textContent = alerts.join("；");
+      } else {
+        box.style.display = "none";
+        box.textContent = "";
+      }
+
+      el("time").textContent = "更新 " + new Date(data.updatedAt || Date.now()).toLocaleTimeString("zh-CN");
+      el("dot").className = "dot on";
+    }
+
+    async function poll() {
+      try {
+        const r = await fetch("/api/snapshot?_=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        render(await r.json());
+      } catch (e) {
+        el("dot").className = "dot off";
+        el("time").textContent = "读取失败: " + (e && e.message ? e.message : e);
+      }
+    }
+
+    async function setPaused(paused) {
+      const btn = paused ? el("btnPause") : el("btnResume");
+      if (btn) btn.disabled = true;
+      try {
+        const r = await fetch(paused ? "/api/pause" : "/api/resume", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: "dashboard-ui" }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j.ok === false) throw new Error(j.error || ("HTTP " + r.status));
+        await poll();
+      } catch (e) {
+        alert((paused ? "暂停失败：" : "恢复失败：") + (e && e.message ? e.message : e));
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function refreshStatistics() {
+      const btn = el("btnStatsRefresh");
+      if (btn) { btn.disabled = true; btn.textContent = "回捞中…"; }
+      setText("statsRefreshMeta", "正在连接交易所官方接口…");
+      try {
+        const r = await fetch("/api/statistics-refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || j.ok === false) throw new Error(j.error || ("HTTP " + r.status));
+        const requestedAt = Date.parse(j.requestedAt || "");
+        for (let attempt = 0; attempt < 45; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          const snap = await fetch("/api/snapshot?_=" + Date.now(), { cache: "no-store" });
+          if (!snap.ok) continue;
+          const data = await snap.json();
+          render(data);
+          const refreshedAt = Date.parse(data.official?.updatedAt || data.welinkbtc?.statsRefreshedAt || "");
+          if (Number.isFinite(refreshedAt) && (!Number.isFinite(requestedAt) || refreshedAt >= requestedAt)) return;
+        }
+        throw new Error("后台仍在回捞，请稍后点击刷新查看");
+      } catch (e) {
+        alert("实时数据回捞失败：" + (e && e.message ? e.message : e));
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "↻ 实时数据回捞"; }
+      }
+    }
+
+    el("btnPause").addEventListener("click", () => {
+      if (!confirm("确认紧急暂停？\n\n机器人将立刻停止一切下单 / 撤单 / 补单。\n挂单与仓位不会自动处理，请你自己去各所手动撤单、平仓。")) return;
+      void setPaused(true);
+    });
+    el("btnResume").addEventListener("click", () => {
+      if (!confirm("确认恢复运行？\n\n机器人将重新开始自动补单/铺网格。\n若你已手动清仓撤单，恢复后可能会按当前锚点重新挂单。")) return;
+      void setPaused(false);
+    });
+    el("btnStatsRefresh").addEventListener("click", () => void refreshStatistics());
+
+    poll();
+    setInterval(poll, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "welinkBTC AI 运营发布助手",
+  "version": "0.6.1",
+  "description": "按平台能力插件把经人工审核的内容填入发布框。不会自动点击发送。",
+  "homepage_url": "https://welinkbtc-onchainmain.xyz/ai-ops",
+  "host_permissions": [
+    "https://welinkbtc-onchainmain.xyz/*",
+    "https://www.welinkbtc-onchainmain.xyz/*",
+    "https://weibo.com/*",
+    "https://*.weibo.com/*",
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://www.binance.com/*",
+    "https://creator.xiaohongshu.com/*",
+    "https://www.zhihu.com/*",
+    "https://www.threads.net/*",
+    "https://creator.douyin.com/*",
+    "https://www.tiktok.com/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://welinkbtc-onchainmain.xyz/*", "https://www.welinkbtc-onchainmain.xyz/*"],
+      "js": ["content-ops.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://weibo.com/*", "https://*.weibo.com/*", "https://x.com/*", "https://twitter.com/*", "https://www.binance.com/*", "https://creator.xiaohongshu.com/*", "https://www.zhihu.com/*", "https://www.threads.net/*", "https://creator.douyin.com/*", "https://www.tiktok.com/*"],
+      "js": ["platform-plugins.js", "platform-editor.js", "content-platform.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["x-main-world.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ],
+  "action": {
+    "default_title": "welinkBTC AI 运营发布助手",
+    "default_popup": "popup.html"
+  }
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>X 编辑器多场景验证</title>
+<style>
+  body{font:16px/1.6 system-ui;background:#0b0d10;color:#eef2f5;padding:32px}main{max-width:760px;margin:auto}li{margin:10px 0;padding:12px;border:1px solid #28313a;border-radius:10px}.pass{color:#4ade80}.fail{color:#fb7185}[contenteditable]{position:fixed;left:-9999px}
+</style>
+<main><h1>X 编辑器多场景验证</h1><ol id="results"></ol><strong id="summary">正在验证…</strong></main>
+<script src="../chrome-extension/platform-editor.js"></script>
+<script>
+  const cases = [
+    ["中文三行", "第一行：市场观察\n第二行：执行建议\n第三行：保持耐心", 0],
+    ["空行与标签", "标题\n\n正文 #BTC #AI", 0],
+    ["表情与链接", "机会出现 🚀\nhttps://welinkbtc-onchainmain.xyz", 0],
+    ["中英混排", "AI 获客方法\nBuild first, optimize later.\n#AI #Growth", 0],
+    ["三图异步加载后提交", "图片已就绪\n最终正文仍然完整\n#BTC #AI", 80]
+  ];
+  (async () => {
+    let passed = 0;
+    for (const [name, text, imageDelay] of cases) {
+      const editor = document.createElement("div"); editor.contentEditable = "true"; document.body.appendChild(editor);
+      let state = "";
+      const render = () => { editor.textContent = state; };
+      editor.addEventListener("beforeinput", (event) => {
+        if (event.inputType !== "insertText") return;
+        event.preventDefault(); state += event.data; render();
+      });
+      editor.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") { event.preventDefault(); state += "\n"; render(); }
+        if (event.key === "Backspace") { event.preventDefault(); state = ""; render(); }
+      });
+      if (imageDelay) { editor.textContent = "图片加载中…"; await new Promise((resolve) => setTimeout(resolve, imageDelay)); state = ""; render(); }
+      const result = await WelinkEditorFill.commitXEditorState(editor, text);
+      const ok = result.exact && result.stateAccepted && result.fallbackCommands === 0 && editor.getAttribute("contenteditable") === "true";
+      if (ok) passed += 1;
+      const item = document.createElement("li"); item.className = ok ? "pass" : "fail"; item.textContent = `${name}：${ok ? "通过" : "失败"}`; document.querySelector("#results").appendChild(item);
+    }
+    const summary = document.querySelector("#summary"); summary.dataset.status = passed === cases.length ? "passed" : "failed"; summary.textContent = `${passed}/${cases.length} 场景通过`;
+  })();
+</script>
+</html>

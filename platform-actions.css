@@ -1,0 +1,99 @@
+.global-tools {
+  --global-tool-fg: var(--ink, #111111);
+  --global-tool-bg: var(--paper, #f7f5ef);
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.global-tools .global-tool {
+  display: inline-flex;
+  min-width: 42px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: var(--global-tool-fg);
+  border: 1px solid var(--global-tool-fg);
+  border-radius: 0;
+  background: transparent;
+  font: 800 12px/1 "Inter", system-ui, sans-serif;
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.global-tools .global-tool:hover {
+  color: var(--global-tool-bg);
+  border-color: var(--global-tool-fg);
+  background: var(--global-tool-fg);
+  transform: translateY(-1px);
+}
+
+.global-tools .global-tool:focus-visible {
+  outline: 2px solid #47c778;
+  outline-offset: 3px;
+}
+
+.global-tools .global-tool--chat {
+  min-width: 92px;
+}
+
+.global-tools .global-tool--support {
+  min-width: 58px;
+}
+
+.platform-header .global-tools {
+  --global-tool-fg: #111111;
+  --global-tool-bg: #f7f5ef;
+}
+
+.hero-brand {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.hero-brand strong {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.alphaops-header .hero-brand {
+  margin-bottom: 0;
+}
+
+@media (max-width: 580px) {
+  .platform-header .global-tools {
+    gap: 5px;
+  }
+
+  .platform-header .global-tools .global-tool {
+    min-width: 35px;
+    min-height: 35px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  .platform-header .global-tools .global-tool--chat {
+    min-width: 78px;
+  }
+
+  .platform-header .global-tools .global-tool--support {
+    min-width: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-tools .global-tool {
+    transition: none;
+  }
+}

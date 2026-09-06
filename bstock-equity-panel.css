@@ -1,0 +1,71 @@
+.equity-launch {
+  display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 9px;
+  min-height: 38px; padding: 0 13px; border: 1px solid rgba(127,245,174,.28); border-radius: 9px;
+  color: var(--green); background: linear-gradient(120deg, rgba(127,245,174,.11), rgba(98,218,232,.04));
+  font-size: 12px; font-weight: 700; white-space: nowrap; transition: border-color .2s, background .2s, transform .2s;
+}
+.equity-launch:hover, .equity-launch[aria-expanded="true"] { border-color: var(--green); background: var(--green-soft); transform: translateY(-1px); }
+.equity-launch-en { margin-inline: 4px; font-family: Inter, sans-serif; }
+.equity-launch svg, .equity-panel svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.equity-launch .equity-launch-arrow { width: 13px; height: 13px; opacity: .65; }
+.equity-launch:focus-visible, .equity-panel button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+body.equity-panel-open { overflow: hidden; }
+
+dialog.equity-panel {
+  position: fixed; inset: 14px 14px 14px auto; margin: 0; padding: 0;
+  width: min(1100px, 76vw); max-width: calc(100vw - 28px); height: calc(100dvh - 28px); max-height: none;
+  overflow: hidden; border: 1px solid var(--line-strong); border-radius: 18px;
+  color: var(--text); background: var(--bg-elevated); box-shadow: -24px 0 100px rgba(0,0,0,.42), 0 16px 52px rgba(0,0,0,.25);
+}
+dialog.equity-panel[open] { display: flex; flex-direction: column; animation: equity-panel-enter .24s ease-out; }
+dialog.equity-panel::backdrop { background: rgba(2,5,9,.38); backdrop-filter: blur(2px); }
+.equity-panel-header { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 16px; min-height: 84px; padding: 18px 22px; border-top: 2px solid var(--green); border-bottom: 1px solid var(--line); background: linear-gradient(115deg, var(--green-soft), transparent 60%); }
+.equity-panel-brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.equity-panel-mark { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(127,245,174,.26); border-radius: 12px; color: var(--green); background: var(--green-soft); }
+.equity-panel-mark svg { width: 25px; height: 25px; }
+.equity-panel-brand p { margin: 0 0 5px; color: var(--green); font: 700 11px/1.25 "JetBrains Mono", monospace; letter-spacing: .13em; }
+.equity-panel-brand p span { margin-left: 8px; color: var(--muted); font-weight: 500; }
+.equity-panel-brand h2 { margin: 0; font-size: 18px; line-height: 1.4; letter-spacing: -.02em; }
+.equity-panel-tools { display: flex; flex: 0 0 auto; gap: 5px; align-items: center; }
+.equity-panel-tools button { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid transparent; border-radius: 9px; color: var(--muted); background: transparent; transition: background .15s, color .15s; }
+.equity-panel-tools button:hover { color: var(--text); background: var(--surface-3); border-color: var(--line); }
+.equity-panel-tools .equity-panel-close { margin-left: 5px; border-color: var(--line); background: var(--surface); }
+.equity-panel-source { display: flex; flex: 0 0 auto; justify-content: space-between; align-items: center; gap: 12px; min-height: 37px; padding: 9px 22px; border-bottom: 1px solid var(--line); color: var(--muted); font: 500 11px/1.4 "JetBrains Mono", "Noto Sans SC", monospace; }
+.equity-panel-source > span:first-child { display: inline-flex; align-items: center; gap: 8px; }
+.equity-panel-source i { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+.equity-panel-content { position: relative; flex: 1 1 auto; min-height: 0; background: #0a0a0a; }
+.equity-panel-frame-host { position: absolute; inset: 0; }
+.equity-panel iframe { display: block; width: 100%; height: 100%; border: 0; color-scheme: normal; background: #0a0a0a; }
+.equity-panel-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 24px; text-align: center; background: var(--bg-elevated); }
+.equity-panel-loading[hidden] { display: none; }
+.equity-panel-loading strong { margin-top: 20px; font-size: 16px; font-weight: 600; }
+.equity-panel-loading p { margin: 10px 0 0; max-width: 340px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.equity-panel-spinner { width: 32px; height: 32px; border: 2px solid var(--line); border-top-color: var(--green); border-radius: 50%; animation: equity-panel-spin 1s linear infinite; }
+.equity-panel-loading.is-error .equity-panel-spinner { animation: none; border-color: var(--amber); opacity: .6; }
+@keyframes equity-panel-enter { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes equity-panel-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1100px) {
+  .command-bar { flex-wrap: wrap; }
+  .command-actions { flex-wrap: wrap; }
+  dialog.equity-panel { width: min(960px, calc(100vw - 28px)); }
+}
+@media (min-width: 621px) and (max-width: 900px) {
+  .command-actions { max-width: 410px; justify-content: flex-end; }
+  .equity-launch { flex-basis: 100%; }
+}
+@media (max-width: 620px) {
+  .equity-launch { min-height: 42px; }
+  dialog.equity-panel { inset: 6px; width: calc(100vw - 12px); max-width: none; height: calc(100dvh - 12px); border-radius: 14px; }
+  .equity-panel-header { flex-wrap: wrap; gap: 12px; padding: 15px; }
+  .equity-panel-brand { flex: 1; gap: 10px; }
+  .equity-panel-brand h2 { font-size: 16px; }
+  .equity-panel-brand p { font-size: 10px; }
+  .equity-panel-mark { width: 36px; height: 36px; }
+  .equity-panel-tools { justify-content: flex-end; margin-left: auto; }
+  .equity-panel-tools button { width: 34px; height: 34px; }
+  .equity-panel-source { padding-inline: 15px; font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog.equity-panel, .equity-panel-spinner { animation: none; transition: none; }
+}
