@@ -1,0 +1,13 @@
+/* WelinkBTC hosting adaptation. Upstream FreqUI styles remain unchanged. */
+.welink-frequi-session-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:7px 14px; min-height:34px; color:#abc6ce; background:#0a1821; border-bottom:1px solid #263f4b; font:11px/1.5 Arial,sans-serif; }
+.welink-frequi-session-bar a { color:#88ddc8; text-decoration:none; white-space:nowrap; }
+.welink-frequi-session-bar nav { display:flex; gap:13px; }
+#welink-frequi-status[data-state="connected"] { color:#88ddc8; }
+#app .h-dvh { height:calc(100dvh - 34px); }
+.welink-frequi-access { max-width:600px; margin:80px auto; padding:28px; font:14px/1.8 Arial,sans-serif; color:#e8f0f0; background:#13232c; border:1px solid #2a3e49; border-radius:12px; }
+.welink-frequi-access a { color:#88ddc8; }
+/* Original bot login is replaced only at the hosting boundary: bot connections
+   belong to the authenticated tenant and native credentials stay on the server. */
+form:has(#url-input) > * { display:none !important; }
+form:has(#url-input)::before { content:"此连接由本站账户与服务器统一管理。请返回量化交易集配置；无需输入原生 API 用户名、密码或外部地址。 / This connection is managed by your WelinkBTC account and server. Configure it in Quant Suite; native API credentials and external endpoints are not entered here."; display:block; text-align:left; padding:18px; font:13px/1.8 Arial,sans-serif; }
+@media(max-width:640px) { .welink-frequi-session-bar { align-items:flex-start; font-size:10px; flex-direction:column; } #app .h-dvh { height:calc(100dvh - 56px); } .welink-frequi-session-bar nav { gap:15px; } .welink-frequi-access { margin:30px 14px; } }

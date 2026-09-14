@@ -16,7 +16,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 const ENGINE_URL = "http://127.0.0.1:8080";
-const ENGINE_VERSION = "2.2.7";
+const ENGINE_VERSION = "2.3.1";
 const CONSOLE_API_VERSION = 8;
 const MIN_COMPATIBLE_ENGINE_VERSION = "1.2.3";
 const START_COMMAND = 'cd /d "%USERPROFILE%\\Documents\\welinkbtc-main" && npm run grid:start';
@@ -78,7 +78,7 @@ function RunModeChoice({ onChoose }: { onChoose: (mode: RunMode) => void }) {
               <h2>启动本地交易引擎</h2>
               <p>交易所密钥、签名私钥与运行状态只留在你的电脑。首次使用需要下载一键启动文件，并保持本地引擎窗口开启。</p>
               <ul>
-                <li>支持 AI 助手、多账号和 10 个交易场所</li>
+                <li>支持 AI 助手、多账号和 12 个交易场所</li>
                 <li>浏览器通过 127.0.0.1 连接本机控制台</li>
               </ul>
               <button type="button" onClick={() => onChoose("local")}>
@@ -90,7 +90,7 @@ function RunModeChoice({ onChoose }: { onChoose: (mode: RunMode) => void }) {
               <div className="grid-ops-mode-option-icon"><Server size={28} aria-hidden="true" /></div>
               <span className="grid-ops-mode-option-pill">免下载 · 持续运行</span>
               <h2>线上服务器托管运行</h2>
-              <p>无需下载项目或安装 Node.js。由 welinkBTC 的 Durable Workflow 托管十交易所 AI 网格与 AI 对冲策略，关闭网页后仍会继续运行。</p>
+              <p>无需下载项目或安装 Node.js。由 welinkBTC 的 Durable Workflow 托管十二交易所 AI 网格与 AI 对冲策略，关闭网页后仍会继续运行。</p>
               <ul>
                 <li>支持 AI网格交易Ops、AI对冲交易Ops 与多账号</li>
                 <li>配置经 AES-256-GCM 加密，状态可恢复并持续运行</li>
@@ -216,7 +216,7 @@ function LocalGridOpsSurface({ onSwitchMode }: { onSwitchMode: () => void }) {
           <div>
             <span className="grid-ops-status-dot grid-ops-status-dot--online" aria-hidden="true" />
             <strong>AI网格交易Ops</strong>
-            <span>本地引擎已连接 · Decibel / Extended / RISEx / Binance / Ondo Perps / Phoenix / Nado / OKX / GRVT / RHC Lighter</span>
+            <span>本地引擎已连接 · Decibel / Extended / RISEx / Binance / Ondo Perps / Phoenix / Nado / OKX / GRVT / Arcus / Entropy / RHC Lighter</span>
           </div>
           <div className="grid-ops-ribbon-actions">
             <button type="button" onClick={() => setFrameVersion((version) => version + 1)}>

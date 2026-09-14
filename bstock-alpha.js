@@ -21,7 +21,7 @@
   const uiTranslator = window.WelinkUiTranslator?.create({
     roots: document.body,
     profile: "bstock",
-    exclude: "#surf-assistant, script, style"
+    exclude: "#surf-assistant, #bstock-autotrade, script, style"
   });
   let selected = assets.NVDAB;
   let executionMode = "policy";
@@ -30,6 +30,9 @@
   let agentSessionReady = false;
   let walletConnectionMode = "";
   let browserWalletVerified = false;
+  window.BstockAutoWalletContext = {
+    getState: () => ({ mode: walletConnectionMode, address: walletAddress })
+  };
   let walletContextVersion = 0;
   let walletLoginVersion = 0;
   let walletActionInFlight = false;
@@ -1319,6 +1322,7 @@
     walletConnectionMode = "";
     browserWalletVerified = false;
     walletAddress = "";
+    window.dispatchEvent(new Event("bstock:wallet-context"));
     if (liveSnapshot) liveSnapshot = { ...liveSnapshot, wallet: null };
     resetTradeQuote();
     liveSnapshotRequest?.abort();
@@ -1442,6 +1446,7 @@
     walletConnectionMode = "agent";
     browserWalletVerified = false;
     walletAddress = "";
+    window.dispatchEvent(new Event("bstock:wallet-context"));
     const button = byId("connect-wallet");
     button.classList.add("is-connected");
     byId("wallet-button-label").textContent = "Agent 扫码已确认";
@@ -1710,6 +1715,7 @@
     agentSessionReady = false;
     walletConnectionMode = "browser";
     browserWalletVerified = Boolean(verified);
+    window.dispatchEvent(new Event("bstock:wallet-context"));
     const button = byId("connect-wallet");
     button.classList.add("is-connected");
     byId("wallet-button-label").textContent = shortAddress(address);

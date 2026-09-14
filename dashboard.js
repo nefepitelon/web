@@ -549,6 +549,60 @@ const translations = {
     "under3mHodl.explainTwo": "历史周期中，2011、2015、2019、2022 与本轮低点都落在约 12%–18% 的极低区域。低位本身代表投机退潮；低位后持续抬升，才更接近短线玩家从净离场切换为净入场的右侧证据。",
     "under3mHodl.explainThree": "短期资本占比极低说明大部分成本权重已沉淀至 3 个月以上筹码，活跃供应偏紧；若现货需求同步恢复，小幅新增买盘更容易放大价格变化。高位则表示筹码快速年轻化，需要关注投机和派发。",
     "under3mHodl.disclaimer": "完整历史来自 BGeometrics 公开已实现市值 HODL Waves，最新精细年龄段由 Bitcoin Data 公开日频数据续接；小于 3 个月占比按透明恒等式“100% − 3 个月以上占比”计算，实时现价来自 Binance Spot。不使用付费 API 或专有实体聚类，仅用于周期研究，不构成投资建议。",
+    "under3mHeat.title": "BTC：<3个月 已实现市值 HODL 波动",
+    "under3mHeat.subtitle": "用持币不足 3 个月的新筹码占比，衡量增量资金与热钱的活跃程度，并观察 39%–45% 的历史过热区。",
+    "under3mHeat.current": "公开源当前值",
+    "under3mHeat.reference": "参考图模型值",
+    "under3mHeat.distance": "距离 39% 警戒线",
+    "under3mHeat.price": "BTC 实时价格",
+    "under3mHeat.loading": "正在同步 2011 年至今的公开历史，并计算未来 365 日热钱情景...",
+    "under3mHeat.signalLabel": "新资金与热钱阶段",
+    "under3mHeat.waiting": "等待公开数据同步",
+    "under3mHeat.signalPending": "同步后将按公开实测值、参考图锚点、39% 警戒线和 45% 过热线评估当前阶段。",
+    "under3mHeat.change": "7 日变化",
+    "under3mHeat.overheatDistance": "距离 45% 过热线",
+    "under3mHeat.scenario": "365 日情景终点",
+    "under3mHeat.date": "链上日期",
+    "under3mHeat.explainTitle": "新筹码占比持续升高代表增量资金入场；进入 39%–45% 区间后，历史上的阶段性顶部风险明显上升",
+    "under3mHeat.explainOne": "指标统计最后移动时间不足 3 个月的筹码在全网已实现市值中的权重。它把每枚筹码按最后移动时的成本计价，因此更接近新资金掌握的经济权重，而不是简单币量。",
+    "under3mHeat.cooldown": "沉淀区",
+    "under3mHeat.cooldownCopy": "热钱占比较低",
+    "under3mHeat.expansion": "增量区",
+    "under3mHeat.expansionCopy": "新资金温和活跃",
+    "under3mHeat.caution": "警戒区",
+    "under3mHeat.cautionCopy": "阶段顶部风险抬升",
+    "under3mHeat.overheated": "过热区",
+    "under3mHeat.overheatedCopy": "短线投机集中",
+    "under3mHeat.explainTwo": "参考图给出的 2016、2019、2024 三个锚点分别为 39.2%、43.7%、44.7%。系统同时展示相同时间窗内公开源的实际峰值；两者不会混算，以免实体调整和年龄分桶差异造成误导。",
+    "under3mHeat.explainThree": "后续虚线按最近 90 日动量逐步衰减，并向过去四年的公开序列中位数回归。它用于持续观察路径和阈值距离，不是对 BTC 价格、收益或顶部日期的确定预测。",
+    "under3mHeat.disclaimer": "公开日频值来自 BGeometrics 与 Bitcoin Data，BTC 现价来自 Binance Spot；31.7%及三个历史峰值来自参考图，仅作为独立模型锚点。不同数据商的实体调整与分桶可能显著不同，仅用于周期研究，不构成投资建议。",
+    "utxoAgeRp.title": "BTC：按 UTXO 年龄区间划分的比特币已实现价格",
+    "utxoAgeRp.subtitle": "用 6–12 个月与 12–18 个月筹码成本线的交叉，观察深熊换手和约 1050 天的宏观周期窗口。",
+    "utxoAgeRp.sixToTwelve": "6–12 个月成本",
+    "utxoAgeRp.twelveToEighteen": "12–18 个月成本",
+    "utxoAgeRp.cross": "本轮死叉锚点",
+    "utxoAgeRp.countdown": "千日周期进度",
+    "utxoAgeRp.loading": "正在重建 2014 年至今的公开 UTXO 年龄成本线，并计算剩余千日周期情景...",
+    "utxoAgeRp.signalLabel": "中长期筹码成本结构",
+    "utxoAgeRp.waiting": "等待公开数据同步",
+    "utxoAgeRp.signalPending": "同步后将分别显示公开重建的交叉状态与参考图给出的 2026 周期锚点。",
+    "utxoAgeRp.spread": "成本差",
+    "utxoAgeRp.elapsed": "参考锚点后经过",
+    "utxoAgeRp.remaining": "参考窗口剩余",
+    "utxoAgeRp.date": "链上日期",
+    "utxoAgeRp.explainTitle": "6–12 个月成本线下穿 12–18 个月成本线，反映中期筹码成本低于更长期筹码，常见于深熊换手阶段",
+    "utxoAgeRp.explainOne": "绿线代表 6–12 个月持有者成本，橙线代表 12–18 个月持有者成本。系统要求下穿后连续 14 个日频观测保持倒挂，才把公开重建结果标记为已确认。",
+    "utxoAgeRp.bottom": "深熊换手",
+    "utxoAgeRp.bottomCopy": "观察长线套牢盘清洗",
+    "utxoAgeRp.early": "周期早期",
+    "utxoAgeRp.earlyCopy": "成本结构开始修复",
+    "utxoAgeRp.expansion": "趋势扩张",
+    "utxoAgeRp.expansionCopy": "验证现货需求与筹码沉淀",
+    "utxoAgeRp.timing": "历史时间窗",
+    "utxoAgeRp.timingCopy": "仅作宏观时间参考",
+    "utxoAgeRp.explainTwo": "参考图给出的三个周期为 1045、1028 与 1063 天，均值为 1045 天。系统把这些研究锚点与公开重建交叉分开绘制；公开序列不满足死叉条件时，不会借用参考锚点宣称公开模型已确认。",
+    "utxoAgeRp.explainThree": "虚线根据两条成本线近期动量与一年结构趋势逐步衰减，持续推演至参考周期窗口结束。它只用于检验成本结构路径，不预测 BTC 顶部价格，也不保证顶部日期。",
+    "utxoAgeRp.disclaimer": "6–12 个月成本由公开分组已实现市值除以公开分组供应量重建；公开源仅发布 1–2 年合并组，因此 12–18 个月线使用价格年龄切片并校准至该公开合并组。发布基线之后的数据标记为估算。参考周期与 2026 锚点来自用户提供的研究图，仅用于周期研究，不构成投资建议。",
     "sth200dma.title": "BTC：“短期持有者成本线”与“200 日均线”的金叉",
     "sth200dma.subtitle": "用 STH 已实现价格上穿 BTC 200 日均线识别熊牛结构转换，并以历史周期样本估算长期窗口。",
     "sth200dma.sth": "STH 短期成本",
@@ -849,6 +903,20 @@ const translations = {
     "halving.target": "目标区块",
     "halving.blocks": "剩余区块",
     "halving.reward": "区块奖励",
+    "halving.loading": "正在同步区块高度…",
+    "halving.daysRemaining": "天 · 预计剩余",
+    "halving.estimatedDate": "预计减半日期（北京时间）",
+    "halving.currentReward": "当前区块奖励",
+    "halving.nextReward": "下次区块奖励",
+    "halving.reduction": "奖励降幅",
+    "halving.timeline": "减半时间线 · UTC",
+    "halving.awaitEstimate": "预计日期同步中",
+    "halving.method": "按每 210,000 个区块减半、平均 10 分钟出块估算；日期并非固定，将随实际出块速度变化。缓存回退保留原始观测时间，不推算实时区块。",
+    "halving.live": "区块数据已同步",
+    "halving.cached": "缓存快照 · 重试中",
+    "halving.unavailable": "数据暂不可用 · 自动重试中",
+    "halving.cycleProgress": "当前减半周期已完成",
+    "halving.estimated": "预计",
     "reference.title": "指标参考说明",
     "reference.action": "点击折叠 / 展开",
     "radar.realtime": "实时判断",
@@ -861,7 +929,6 @@ const translations = {
     "radar.halving": "减半周期",
     "radar.noteTitle": "当前观察",
     "radar.note": "数据同步后生成周期观察，不构成投资建议。",
-    "radar.sources": "数据来源",
     "footer.label": "BTC On-chain Intelligence",
     "footer.home": "返回首页",
     days: "天",
@@ -1421,6 +1488,60 @@ const translations = {
     "under3mHodl.explainTwo": "The 2011, 2015, 2019, 2022 and current-cycle lows all cluster around roughly 12%–18%. A low reading shows speculation has cooled; a sustained recovery from that low offers stronger evidence that short-term capital has shifted from net exit to net entry.",
     "under3mHodl.explainThree": "An extremely low young-capital share means most realized-cap weight has aged beyond three months and active supply is relatively tight. If spot demand recovers at the same time, small incremental inflows can have a larger price impact. High readings instead signal rapid rejuvenation, speculation and potential distribution.",
     "under3mHodl.disclaimer": "Complete history uses BGeometrics public Realized Cap HODL Waves, extended with Bitcoin Data public daily fine-age bands. The under-three-month share is calculated with the transparent identity 100% minus the over-three-month share; live spot comes from Binance. No paid API or proprietary entity clustering is used. For cycle research only, not investment advice.",
+    "under3mHeat.title": "BTC: <3m Realized Cap HODL Waves",
+    "under3mHeat.subtitle": "Use the realized-cap share younger than three months to track new-money activity and the historical 39%–45% overheating zone.",
+    "under3mHeat.current": "Public Live Reading",
+    "under3mHeat.reference": "Reference-Figure Reading",
+    "under3mHeat.distance": "Distance to 39% Warning",
+    "under3mHeat.price": "Live BTC Price",
+    "under3mHeat.loading": "Syncing public history since 2011 and calculating the next 365-day hot-capital scenario...",
+    "under3mHeat.signalLabel": "New Money and Hot-Capital Phase",
+    "under3mHeat.waiting": "Waiting for public data",
+    "under3mHeat.signalPending": "The model will evaluate the public observation, reference anchors, 39% warning line and 45% overheat line after synchronization.",
+    "under3mHeat.change": "7-Day Change",
+    "under3mHeat.overheatDistance": "Distance to 45% Overheat",
+    "under3mHeat.scenario": "365-Day Scenario End",
+    "under3mHeat.date": "On-Chain Date",
+    "under3mHeat.explainTitle": "A sustained rise in young realized capital signals new money entering; historical local-top risk increases inside the 39%–45% band",
+    "under3mHeat.explainOne": "The metric measures the share of network realized capitalization held by coins last moved less than three months ago. Weighting each coin at its last-moved cost better represents the economic weight controlled by new capital than a simple coin count.",
+    "under3mHeat.cooldown": "Cooldown",
+    "under3mHeat.cooldownCopy": "Young capital remains subdued",
+    "under3mHeat.expansion": "Expansion",
+    "under3mHeat.expansionCopy": "New money is becoming active",
+    "under3mHeat.caution": "Warning",
+    "under3mHeat.cautionCopy": "Local-top risk is rising",
+    "under3mHeat.overheated": "Overheated",
+    "under3mHeat.overheatedCopy": "Short-term speculation is concentrated",
+    "under3mHeat.explainTwo": "The supplied reference figure marks 2016, 2019 and 2024 at 39.2%, 43.7% and 44.7%. The system also shows the observed public-source peak for each matching window; the two methodologies remain separate so entity adjustment and age-bucket differences are visible.",
+    "under3mHeat.explainThree": "The dashed continuation decays the latest 90-day momentum and gradually reverts toward the public series' four-year median. It is a threshold-monitoring scenario, not a deterministic forecast of BTC price, returns or a top date.",
+    "under3mHeat.disclaimer": "Public daily values come from BGeometrics and Bitcoin Data, with live BTC spot from Binance. The 31.7% reading and three historical peaks come from the supplied reference figure and remain separately labelled anchors. Provider entity adjustment and bucket definitions can diverge materially. For cycle research only, not investment advice.",
+    "utxoAgeRp.title": "BTC: Bitcoin Realized Price by UTXO Age Bands",
+    "utxoAgeRp.subtitle": "Track the 6–12 month and 12–18 month cohort cost crossover to study deep-bear rotation and the roughly 1,050-day macro window.",
+    "utxoAgeRp.sixToTwelve": "6–12M Cost Basis",
+    "utxoAgeRp.twelveToEighteen": "12–18M Cost Basis",
+    "utxoAgeRp.cross": "Current Cross Anchor",
+    "utxoAgeRp.countdown": "Thousand-Day Progress",
+    "utxoAgeRp.loading": "Reconstructing public UTXO age-band costs since 2014 and extending the remaining cycle scenario...",
+    "utxoAgeRp.signalLabel": "Medium- and Long-Term Cost Structure",
+    "utxoAgeRp.waiting": "Waiting for public data",
+    "utxoAgeRp.signalPending": "The public reconstructed crossover and the supplied 2026 reference anchor will be reported separately.",
+    "utxoAgeRp.spread": "Cost Spread",
+    "utxoAgeRp.elapsed": "Days Since Reference",
+    "utxoAgeRp.remaining": "Reference Window Left",
+    "utxoAgeRp.date": "On-Chain Date",
+    "utxoAgeRp.explainTitle": "A 6–12M cost move below the 12–18M cost reflects cheaper medium-term coins than longer-held coins, a structure seen during deep-bear rotation",
+    "utxoAgeRp.explainOne": "The green line is the 6–12 month cohort cost and the orange line is the 12–18 month cohort cost. The public reconstruction requires 14 consecutive daily observations below the longer cohort after a cross before confirming it.",
+    "utxoAgeRp.bottom": "Deep-Bear Rotation",
+    "utxoAgeRp.bottomCopy": "Watch for long-held loss rotation",
+    "utxoAgeRp.early": "Early Cycle",
+    "utxoAgeRp.earlyCopy": "Cost structure begins to recover",
+    "utxoAgeRp.expansion": "Trend Expansion",
+    "utxoAgeRp.expansionCopy": "Validate spot demand and aging",
+    "utxoAgeRp.timing": "Historical Window",
+    "utxoAgeRp.timingCopy": "Macro timing reference only",
+    "utxoAgeRp.explainTwo": "The supplied figure reports 1,045, 1,028 and 1,063 days, averaging 1,045 days. These research anchors are drawn separately from public reconstructed crosses; when the public series does not meet the death-cross rule, the reference anchor is not presented as public confirmation.",
+    "utxoAgeRp.explainThree": "Dashed lines decay recent momentum toward the one-year structural trend and continue through the reference window. They test a cost-structure path; they do not predict a BTC top price or guarantee a top date.",
+    "utxoAgeRp.disclaimer": "The 6–12M cost is reconstructed from public cohort realized cap divided by public cohort supply. Because the source only publishes a combined 1–2Y cohort, the 12–18M line uses a price-vintage slice calibrated to that public aggregate. Observations after the publisher baseline are marked estimated. Reference cycles and the 2026 anchor come from the supplied research figure. Research only; not investment advice.",
     "sth200dma.title": "BTC: Short-Term Holder Realized Price / 200DMA Golden Cross",
     "sth200dma.subtitle": "Track the STH realized price crossing above BTC's 200-day average to identify macro regime transitions and estimate long-cycle windows from public history.",
     "sth200dma.sth": "STH Cost Basis",
@@ -1721,6 +1842,20 @@ const translations = {
     "halving.target": "Target Height",
     "halving.blocks": "Blocks Left",
     "halving.reward": "Block Reward",
+    "halving.loading": "Syncing block height…",
+    "halving.daysRemaining": "days · estimated remaining",
+    "halving.estimatedDate": "Estimated date (UTC+8)",
+    "halving.currentReward": "Current block reward",
+    "halving.nextReward": "Next block reward",
+    "halving.reduction": "Reward reduction",
+    "halving.timeline": "Halving timeline · UTC",
+    "halving.awaitEstimate": "Awaiting date estimate",
+    "halving.method": "Estimated at 10 minutes per block and 210,000 blocks per halving. The date is not fixed and changes with actual block production. Cached snapshots retain their original observation time; live heights are never extrapolated.",
+    "halving.live": "Block data synced",
+    "halving.cached": "Cached snapshot · retrying",
+    "halving.unavailable": "Data unavailable · retrying automatically",
+    "halving.cycleProgress": "through the current halving cycle",
+    "halving.estimated": "Est.",
     "reference.title": "Metric Reference",
     "reference.action": "Click to collapse / expand",
     "radar.realtime": "Live assessment",
@@ -1733,7 +1868,6 @@ const translations = {
     "radar.halving": "Halving cycle",
     "radar.noteTitle": "Current Watch",
     "radar.note": "A cycle observation appears after sync. Not investment advice.",
-    "radar.sources": "Data Sources",
     "footer.label": "BTC On-chain Intelligence",
     "footer.home": "Back to home",
     days: "days",
@@ -1944,6 +2078,20 @@ let under3mHodlSources = null;
 let under3mHodlLows = [];
 let under3mHodlRange = "all";
 let under3mHodlChartState = null;
+let under3mHeatSnapshot = null;
+let under3mHeatSources = null;
+let under3mHeatReferenceCycles = [];
+let under3mHeatProjection = [];
+let under3mHeatRange = "all";
+let under3mHeatChartState = null;
+let utxoAgeRpSeries = [];
+let utxoAgeRpProjection = [];
+let utxoAgeRpSnapshot = null;
+let utxoAgeRpSources = null;
+let utxoAgeRpReferenceCycles = [];
+let utxoAgeRpPublicCrosses = [];
+let utxoAgeRpRange = "all";
+let utxoAgeRpChartState = null;
 let sth200dmaSeries = [];
 let sth200dmaSnapshot = null;
 let sth200dmaSources = null;
@@ -2009,6 +2157,10 @@ const metricSnapshot = { price: null, wma: null, fng: null, mvrv: null, funding:
 const API_BASE = window.WELINKBTC_DATA_API_BASE || "";
 const OVERVIEW_CACHE_KEY = "welinkbtc-onchain-overview-v1";
 const EXTENDED_CACHE_KEY = "welinkbtc-market-metrics-v1";
+const HALVING_CACHE_KEY = "welinkbtc-halving-v1";
+const HALVING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+let halvingSnapshot = null;
+let halvingInFlight = null;
 const COST_BASIS_CACHE_KEY = "welinkbtc-cost-basis-v1";
 const LTH_REALIZED_CACHE_KEY = "welinkbtc-lth-realized-price-v1";
 const REALIZED_PROFIT_LOSS_CACHE_KEY = "welinkbtc-realized-profit-loss-v1";
@@ -2028,6 +2180,8 @@ const PERCENT_PROFIT_CACHE_KEY = "welinkbtc-percent-supply-profit-v1";
 const LTH_EXCHANGE_LOSS_CACHE_KEY = "welinkbtc-lth-exchange-loss-v1";
 const TWO_WEEK_RSI_CACHE_KEY = "welinkbtc-two-week-rsi-v1";
 const UNDER_3M_HODL_CACHE_KEY = "welinkbtc-under-3m-realized-cap-hodl-v1";
+const UNDER_3M_HEAT_CACHE_KEY = "welinkbtc-under-3m-realized-cap-cycle-v1";
+const UTXO_AGE_RP_CACHE_KEY = "welinkbtc-utxo-age-realized-price-cycle-v1";
 const STH_200DMA_CACHE_KEY = "welinkbtc-sth-200dma-v1";
 const VDD_MEDIAN_CACHE_KEY = "welinkbtc-vdd-median-cycle-v1";
 const SSR_CACHE_KEY = "welinkbtc-stablecoin-supply-ratio-v1";
@@ -2040,6 +2194,7 @@ const SURF_METRIC_CACHE_KEY = "welinkbtc-surf-metric-analysis-v1";
 const SURF_METRIC_CACHE_MS = 30 * 60 * 1000;
 
 const DASHBOARD_DATA_CACHE_KEYS = [
+  HALVING_CACHE_KEY,
   OVERVIEW_CACHE_KEY,
   EXTENDED_CACHE_KEY,
   COST_BASIS_CACHE_KEY,
@@ -2061,6 +2216,8 @@ const DASHBOARD_DATA_CACHE_KEYS = [
   LTH_EXCHANGE_LOSS_CACHE_KEY,
   TWO_WEEK_RSI_CACHE_KEY,
   UNDER_3M_HODL_CACHE_KEY,
+  UNDER_3M_HEAT_CACHE_KEY,
+  UTXO_AGE_RP_CACHE_KEY,
   STH_200DMA_CACHE_KEY,
   VDD_MEDIAN_CACHE_KEY,
   SSR_CACHE_KEY,
@@ -6159,6 +6316,448 @@ const hideUnder3mHodlTooltip = () => {
   if (tooltip) tooltip.hidden = true;
 };
 
+const getUnder3mHeatVisibleSeries = () => {
+  if (!under3mHodlSeries.length || under3mHeatRange === "all") return under3mHodlSeries;
+  const days = Number(under3mHeatRange);
+  const end = under3mHodlSeries.at(-1).date.getTime();
+  const start = end - Math.max(days - 1, 1) * 86_400_000;
+  const visible = under3mHodlSeries.filter((point) => point.date.getTime() >= start);
+  return visible.length >= 2 ? visible : under3mHodlSeries.slice(-2);
+};
+
+const drawUnder3mHeatChart = () => {
+  const canvas = document.querySelector("#under-3m-heat-chart");
+  const stage = canvas?.closest(".under-3m-heat-stage");
+  const history = getUnder3mHeatVisibleSeries();
+  const projection = ["all", "365"].includes(under3mHeatRange) ? under3mHeatProjection : [];
+  if (!canvas || !stage || history.length < 2) {
+    drawEmptyChart("#under-3m-heat-chart");
+    under3mHeatChartState = null;
+    return;
+  }
+
+  canvas.style.removeProperty("height");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.max(rect.width, 1);
+  const height = Math.max(rect.height || stage.clientHeight || 590, 360);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const context = canvas.getContext("2d");
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colors = chartColors();
+  const compact = width < 700;
+  const padding = { top: 24, right: compact ? 48 : 64, bottom: 44, left: compact ? 54 : 70 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const paneGap = compact ? 24 : 30;
+  const priceHeight = chartHeight * 0.42;
+  const shareTop = padding.top + priceHeight + paneGap;
+  const shareHeight = chartHeight - priceHeight - paneGap;
+  const startTime = history[0].date.getTime();
+  const endTime = projection.at(-1)?.date.getTime() || history.at(-1).date.getTime();
+  const xFor = (date) => padding.left + ((date.getTime() - startTime) / Math.max(endTime - startTime, 1)) * chartWidth;
+  const prices = history.map((point) => point.price).filter((value) => Number.isFinite(value) && value > 0);
+  const priceLogMin = Math.log10(Math.min(...prices)) - 0.06;
+  const priceLogMax = Math.log10(Math.max(...prices)) + 0.06;
+  const priceY = (value) => padding.top + (1 - (Math.log10(Math.max(value, 0.0001)) - priceLogMin) / Math.max(priceLogMax - priceLogMin, 0.0001)) * priceHeight;
+  const shareY = (value) => shareTop + (1 - Math.max(0, Math.min(0.6, value)) / 0.6) * shareHeight;
+
+  context.clearRect(0, 0, width, height);
+  context.font = "700 10px JetBrains Mono";
+  context.lineWidth = 1;
+  context.textBaseline = "middle";
+
+  for (let index = 0; index < 4; index += 1) {
+    const progress = index / 3;
+    const y = padding.top + progress * priceHeight;
+    const value = 10 ** (priceLogMax - progress * (priceLogMax - priceLogMin));
+    context.strokeStyle = colors.line;
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = colors.muted;
+    context.textAlign = "right";
+    context.fillText(formatAxisUsd(value), padding.left - 8, y);
+  }
+
+  const fillBand = (from, to, color, alpha) => {
+    context.save();
+    context.fillStyle = color;
+    context.globalAlpha = alpha;
+    context.fillRect(padding.left, shareY(to), chartWidth, Math.max(0, shareY(from) - shareY(to)));
+    context.restore();
+  };
+  fillBand(0.39, 0.45, "#f0a13d", document.body.dataset.theme === "dark" ? 0.13 : 0.09);
+  fillBand(0.45, 0.6, colors.red, document.body.dataset.theme === "dark" ? 0.07 : 0.05);
+
+  [0, 0.15, 0.3, 0.39, 0.45, 0.6].forEach((value) => {
+    const y = shareY(value);
+    const isThreshold = value === 0.39 || value === 0.45;
+    context.strokeStyle = isThreshold ? (value === 0.45 ? colors.red : "#f0a13d") : colors.line;
+    context.setLineDash(isThreshold ? [6, 5] : []);
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.setLineDash([]);
+    context.fillStyle = isThreshold ? (value === 0.45 ? colors.red : "#f0a13d") : colors.muted;
+    context.textAlign = "right";
+    context.fillText(`${Math.round(value * 100)}%`, padding.left - 8, y);
+  });
+
+  const drawLine = (rows, valueFor, color, lineWidth, yFor, dashed = false, alpha = 1) => {
+    if (rows.length < 2) return;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+    context.globalAlpha = alpha;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.setLineDash(dashed ? [7, 6] : []);
+    context.beginPath();
+    rows.forEach((point, index) => {
+      const x = xFor(point.date);
+      const y = yFor(valueFor(point));
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+    context.restore();
+  };
+
+  drawLine(history, (point) => point.price, colors.ink, compact ? 1.5 : 1.9, priceY, false, 0.9);
+  drawLine(history, (point) => point.underThreeMonths, "#f0a13d", compact ? 2 : 2.55, shareY);
+  if (projection.length) {
+    const scenarioRows = [{ date: history.at(-1).date, value: history.at(-1).underThreeMonths }, ...projection];
+    drawLine(scenarioRows, (point) => point.value, "#67cfe6", compact ? 1.6 : 2.1, shareY, true, 0.95);
+  }
+
+  if (under3mHeatRange === "all") {
+    under3mHeatReferenceCycles.forEach((cycle, index) => {
+      const date = new Date(`${cycle.observedDate || cycle.end}T00:00:00Z`);
+      const x = xFor(date);
+      const y = shareY(Number(cycle.referenceValue));
+      context.save();
+      context.strokeStyle = "#20b7e7";
+      context.fillStyle = "#20b7e7";
+      context.lineWidth = 1.5;
+      context.setLineDash([8, 6]);
+      context.beginPath();
+      context.moveTo(x, shareTop);
+      context.lineTo(x, y - 7);
+      context.stroke();
+      context.setLineDash([]);
+      context.beginPath();
+      context.arc(x, y, compact ? 3.5 : 4.5, 0, Math.PI * 2);
+      context.stroke();
+      context.font = compact ? "700 8px JetBrains Mono" : "700 10px JetBrains Mono";
+      context.textAlign = index === 0 ? "left" : index === under3mHeatReferenceCycles.length - 1 ? "right" : "center";
+      context.fillText(`${cycle.cycle} · REF ${(Number(cycle.referenceValue) * 100).toFixed(1)}%`, x, shareTop + 10);
+      context.restore();
+    });
+  }
+
+  context.save();
+  context.fillStyle = colors.ink;
+  context.globalAlpha = document.body.dataset.theme === "dark" ? 0.085 : 0.065;
+  context.font = `800 ${Math.max(30, Math.min(width * 0.085, height * 0.15, 86))}px Inter`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  drawBrandWatermark(context, padding.left + chartWidth / 2, padding.top + chartHeight / 2);
+  context.restore();
+
+  const latest = history.at(-1);
+  [[priceY(latest.price), colors.ink, 3], [shareY(latest.underThreeMonths), "#f0a13d", 4.5]].forEach(([y, color, radius]) => {
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(xFor(latest.date), y, radius, 0, Math.PI * 2);
+    context.fill();
+  });
+  if (under3mHeatRange === "all") {
+    context.save();
+    context.strokeStyle = "#20b7e7";
+    context.setLineDash([3, 4]);
+    context.beginPath();
+    context.arc(xFor(latest.date), shareY(0.317), compact ? 4 : 5, 0, Math.PI * 2);
+    context.stroke();
+    context.restore();
+  }
+
+  const xTicks = compact ? 4 : 7;
+  const shortRange = ["7", "30", "90"].includes(under3mHeatRange);
+  const dateFormatter = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", {
+    year: shortRange ? undefined : "numeric",
+    month: "short",
+    day: shortRange ? "2-digit" : undefined
+  });
+  context.textBaseline = "alphabetic";
+  for (let index = 0; index < xTicks; index += 1) {
+    const progress = index / Math.max(xTicks - 1, 1);
+    const date = new Date(startTime + progress * (endTime - startTime));
+    const x = padding.left + progress * chartWidth;
+    context.fillStyle = colors.muted;
+    context.textAlign = index === 0 ? "left" : index === xTicks - 1 ? "right" : "center";
+    context.fillText(dateFormatter.format(date), x, height - 13);
+  }
+
+  under3mHeatChartState = { rows: [...history.map((point) => ({ ...point, kind: "public" })), ...projection.map((point) => ({ ...point, kind: "scenario" }))], padding, chartWidth, width, height };
+};
+
+const showUnder3mHeatTooltip = (event) => {
+  const canvas = document.querySelector("#under-3m-heat-chart");
+  const tooltip = document.querySelector("#under-3m-heat-tooltip");
+  if (!canvas || !tooltip || !under3mHeatChartState) return;
+  const { rows, padding, chartWidth, width, height } = under3mHeatChartState;
+  const rect = canvas.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * width;
+  const progress = Math.max(0, Math.min(1, (x - padding.left) / Math.max(chartWidth, 1)));
+  const point = rows[Math.round(progress * (rows.length - 1))];
+  if (!point) return;
+  const date = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit" }).format(point.date);
+  tooltip.innerHTML = point.kind === "scenario"
+    ? `<strong>${date} · SCENARIO</strong><span>&lt;3M Realized Cap <i>${(point.value * 100).toFixed(2)}%</i></span><span>${currentLanguage === "zh" ? "模型" : "Model"} <i>90D MOMENTUM DECAY</i></span>`
+    : `<strong>${date} · PUBLIC</strong><span>BTC <i>${formatUsd(point.price)}</i></span><span>&lt;3M Realized Cap <i>${(point.underThreeMonths * 100).toFixed(2)}%</i></span><span>7D / 30D <i>${(point.average7 * 100).toFixed(2)}% / ${(point.average30 * 100).toFixed(2)}%</i></span>`;
+  tooltip.hidden = false;
+  const tooltipWidth = tooltip.offsetWidth || 250;
+  tooltip.style.left = `${Math.max(8, Math.min(rect.width - tooltipWidth - 8, event.clientX - rect.left + 14))}px`;
+  tooltip.style.top = `${Math.max(8, Math.min(height - 148, event.clientY - rect.top - 82))}px`;
+};
+
+const hideUnder3mHeatTooltip = () => {
+  const tooltip = document.querySelector("#under-3m-heat-tooltip");
+  if (tooltip) tooltip.hidden = true;
+};
+
+const getUtxoAgeRpVisibleSeries = () => {
+  if (!utxoAgeRpSeries.length || utxoAgeRpRange === "all") return utxoAgeRpSeries;
+  const days = Number(utxoAgeRpRange);
+  const end = utxoAgeRpSeries.at(-1).date.getTime();
+  const start = end - Math.max(days - 1, 1) * 86_400_000;
+  const visible = utxoAgeRpSeries.filter((point) => point.date.getTime() >= start);
+  return visible.length >= 2 ? visible : utxoAgeRpSeries.slice(-2);
+};
+
+const drawUtxoAgeRpChart = () => {
+  const canvas = document.querySelector("#utxo-age-rp-chart");
+  const stage = canvas?.closest(".utxo-age-rp-stage");
+  const history = getUtxoAgeRpVisibleSeries();
+  const projection = ["all", "365"].includes(utxoAgeRpRange) ? utxoAgeRpProjection : [];
+  if (!canvas || !stage || history.length < 2) {
+    drawEmptyChart("#utxo-age-rp-chart");
+    utxoAgeRpChartState = null;
+    return;
+  }
+
+  canvas.style.removeProperty("height");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.max(rect.width, 1);
+  const height = Math.max(rect.height || stage.clientHeight || 620, 380);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const context = canvas.getContext("2d");
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colors = chartColors();
+  const compact = width < 700;
+  const padding = { top: compact ? 62 : 76, right: compact ? 24 : 48, bottom: 46, left: compact ? 58 : 76 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const startTime = history[0].date.getTime();
+  const endTime = projection.at(-1)?.date.getTime() || history.at(-1).date.getTime();
+  const xFor = (date) => padding.left + ((date.getTime() - startTime) / Math.max(endTime - startTime, 1)) * chartWidth;
+  const values = history.flatMap((point) => [point.price, point.sixToTwelve, point.twelveToEighteen])
+    .concat(projection.flatMap((point) => [point.sixToTwelve, point.twelveToEighteen]))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  const logMin = Math.log10(Math.min(...values)) - 0.08;
+  const logMax = Math.log10(Math.max(...values)) + 0.08;
+  const yFor = (value) => padding.top + (1 - (Math.log10(Math.max(value, 0.0001)) - logMin) / Math.max(logMax - logMin, 0.0001)) * chartHeight;
+
+  context.clearRect(0, 0, width, height);
+  context.font = "700 10px JetBrains Mono";
+  context.textBaseline = "middle";
+  for (let index = 0; index < 6; index += 1) {
+    const progress = index / 5;
+    const y = padding.top + progress * chartHeight;
+    const value = 10 ** (logMax - progress * (logMax - logMin));
+    context.strokeStyle = colors.line;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = colors.muted;
+    context.textAlign = "right";
+    context.fillText(formatAxisUsd(value), padding.left - 9, y);
+  }
+
+  const drawLine = (rows, accessor, color, lineWidth, dashed = false, alpha = 1) => {
+    if (rows.length < 2) return;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+    context.globalAlpha = alpha;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.setLineDash(dashed ? [8, 6] : []);
+    context.beginPath();
+    rows.forEach((point, index) => {
+      const x = xFor(point.date);
+      const y = yFor(accessor(point));
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+    context.restore();
+  };
+
+  drawLine(history, (point) => point.price, colors.ink, compact ? 1.2 : 1.6, false, 0.42);
+  drawLine(history, (point) => point.sixToTwelve, "#31b97b", compact ? 2 : 2.6);
+  drawLine(history, (point) => point.twelveToEighteen, "#e7a33d", compact ? 2 : 2.6);
+  if (projection.length) {
+    const latest = history.at(-1);
+    drawLine([{ date: latest.date, sixToTwelve: latest.sixToTwelve }, ...projection], (point) => point.sixToTwelve, "#31b97b", compact ? 1.6 : 2.1, true, 0.92);
+    drawLine([{ date: latest.date, twelveToEighteen: latest.twelveToEighteen }, ...projection], (point) => point.twelveToEighteen, "#e7a33d", compact ? 1.6 : 2.1, true, 0.92);
+  }
+
+  if (utxoAgeRpRange === "all") {
+    const arrowY = compact ? 28 : 34;
+    const arrowHead = compact ? 4 : 6;
+    const drawCycleArrow = (cycle, current = false) => {
+      const crossDate = new Date(`${cycle.crossDate}T00:00:00Z`);
+      const topDate = new Date(`${cycle.topDate || utxoAgeRpSnapshot?.targetDate}T00:00:00Z`);
+      const startX = xFor(crossDate);
+      const finishX = xFor(topDate);
+      if (finishX < padding.left || startX > width - padding.right) return;
+      const left = Math.max(padding.left, startX);
+      const right = Math.min(width - padding.right, finishX);
+      context.save();
+      context.strokeStyle = "#24b8e8";
+      context.fillStyle = "#24b8e8";
+      context.lineWidth = current ? 1.8 : 1.25;
+      context.beginPath();
+      context.moveTo(left, arrowY);
+      context.lineTo(right, arrowY);
+      context.moveTo(left, arrowY);
+      context.lineTo(left + arrowHead, arrowY - arrowHead);
+      context.moveTo(left, arrowY);
+      context.lineTo(left + arrowHead, arrowY + arrowHead);
+      context.moveTo(right, arrowY);
+      context.lineTo(right - arrowHead, arrowY - arrowHead);
+      context.moveTo(right, arrowY);
+      context.lineTo(right - arrowHead, arrowY + arrowHead);
+      context.stroke();
+      context.setLineDash([7, 6]);
+      context.globalAlpha = 0.72;
+      [startX, finishX].forEach((x) => {
+        if (x < padding.left || x > width - padding.right) return;
+        context.beginPath();
+        context.moveTo(x, arrowY + 8);
+        context.lineTo(x, height - padding.bottom);
+        context.stroke();
+      });
+      context.setLineDash([]);
+      context.globalAlpha = 1;
+      context.font = compact ? "800 9px JetBrains Mono" : "800 13px JetBrains Mono";
+      context.textAlign = "center";
+      const label = current
+        ? `${utxoAgeRpSnapshot?.referenceElapsedDays ?? 0} / ${cycle.durationDays}D · REF`
+        : `${cycle.durationDays} DAYS`;
+      context.fillText(label, (left + right) / 2, arrowY - (compact ? 10 : 13));
+      context.restore();
+    };
+    utxoAgeRpReferenceCycles.forEach((cycle) => drawCycleArrow(cycle));
+    if (utxoAgeRpSnapshot?.targetDate) drawCycleArrow({
+      crossDate: utxoAgeRpSnapshot.activeCrossDate,
+      topDate: utxoAgeRpSnapshot.targetDate,
+      durationDays: utxoAgeRpSnapshot.averageCycleDays
+    }, true);
+
+    utxoAgeRpPublicCrosses.forEach((cross) => {
+      const date = new Date(`${cross.date}T00:00:00Z`);
+      const x = xFor(date);
+      if (x < padding.left || x > width - padding.right) return;
+      context.save();
+      context.fillStyle = "#ef665b";
+      context.strokeStyle = document.body.dataset.theme === "dark" ? "#0a0d0c" : "#fff";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.arc(x, yFor(Number(cross.sixToTwelve)), compact ? 3.5 : 4.5, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.restore();
+    });
+  }
+
+  context.save();
+  context.fillStyle = colors.ink;
+  context.font = `800 ${Math.max(30, Math.min(width * 0.08, height * 0.14, 84))}px Inter`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  drawBrandWatermark(context, padding.left + chartWidth / 2, padding.top + chartHeight / 2);
+  context.restore();
+
+  const latest = history.at(-1);
+  [[latest.price, colors.ink, 2.8], [latest.sixToTwelve, "#31b97b", 4.3], [latest.twelveToEighteen, "#e7a33d", 4.3]].forEach(([value, color, radius]) => {
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(xFor(latest.date), yFor(value), radius, 0, Math.PI * 2);
+    context.fill();
+  });
+
+  const xTicks = compact ? 4 : 7;
+  const shortRange = ["7", "30", "90"].includes(utxoAgeRpRange);
+  const dateFormatter = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", {
+    year: shortRange ? undefined : "numeric",
+    month: "short",
+    day: shortRange ? "2-digit" : undefined
+  });
+  context.textBaseline = "alphabetic";
+  for (let index = 0; index < xTicks; index += 1) {
+    const progress = index / Math.max(xTicks - 1, 1);
+    const date = new Date(startTime + progress * (endTime - startTime));
+    context.fillStyle = colors.muted;
+    context.textAlign = index === 0 ? "left" : index === xTicks - 1 ? "right" : "center";
+    context.fillText(dateFormatter.format(date), padding.left + progress * chartWidth, height - 13);
+  }
+
+  utxoAgeRpChartState = {
+    rows: [...history.map((point) => ({ ...point, kind: point.estimated ? "estimated" : "public" })), ...projection.map((point) => ({ ...point, kind: "scenario" }))],
+    startTime, endTime, padding, chartWidth, width, height
+  };
+};
+
+const showUtxoAgeRpTooltip = (event) => {
+  const canvas = document.querySelector("#utxo-age-rp-chart");
+  const tooltip = document.querySelector("#utxo-age-rp-tooltip");
+  if (!canvas || !tooltip || !utxoAgeRpChartState) return;
+  const { rows, startTime, endTime, padding, chartWidth, width, height } = utxoAgeRpChartState;
+  const rect = canvas.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * width;
+  const progress = Math.max(0, Math.min(1, (x - padding.left) / Math.max(chartWidth, 1)));
+  const target = startTime + progress * (endTime - startTime);
+  let point = rows[0];
+  rows.forEach((candidate) => {
+    if (Math.abs(candidate.date.getTime() - target) < Math.abs(point.date.getTime() - target)) point = candidate;
+  });
+  if (!point) return;
+  const date = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit" }).format(point.date);
+  const label = point.kind === "scenario" ? "SCENARIO" : point.kind === "estimated" ? "PUBLIC · EST" : "PUBLIC";
+  tooltip.innerHTML = `<strong>${date} · ${label}</strong>${Number.isFinite(point.price) ? `<span>BTC <i>${formatUsd(point.price)}</i></span>` : ""}<span>6M–12M <i>${formatUsd(point.sixToTwelve)}</i></span><span>12M–18M <i>${formatUsd(point.twelveToEighteen)}</i></span>`;
+  tooltip.hidden = false;
+  const tooltipWidth = tooltip.offsetWidth || 250;
+  tooltip.style.left = `${Math.max(8, Math.min(rect.width - tooltipWidth - 8, event.clientX - rect.left + 14))}px`;
+  tooltip.style.top = `${Math.max(8, Math.min(height - 132, event.clientY - rect.top - 72))}px`;
+};
+
+const hideUtxoAgeRpTooltip = () => {
+  const tooltip = document.querySelector("#utxo-age-rp-tooltip");
+  if (tooltip) tooltip.hidden = true;
+};
+
 const getSth200dmaVisibleSeries = () => {
   if (!sth200dmaSeries.length || sth200dmaRange === "all") return sth200dmaSeries;
   const days = Number(sth200dmaRange);
@@ -8512,6 +9111,8 @@ const drawAllCharts = () => {
   drawLthExchangeLossChart();
   drawTwoWeekRsiChart();
   drawUnder3mHodlChart();
+  drawUnder3mHeatChart();
+  drawUtxoAgeRpChart();
   drawSth200dmaChart();
   drawVddMedianCycleChart();
   drawSsrChart();
@@ -11074,7 +11675,7 @@ const loadTwoWeekRsiMetrics = async () => {
 
 const readUnder3mHodlCache = () => {
   try {
-    const cached = JSON.parse(localStorage.getItem(UNDER_3M_HODL_CACHE_KEY) || "null");
+    const cached = JSON.parse(localStorage.getItem(UNDER_3M_HEAT_CACHE_KEY) || localStorage.getItem(UNDER_3M_HODL_CACHE_KEY) || "null");
     if (!cached?.payload) return null;
     return cached.payload;
   } catch {
@@ -11168,9 +11769,85 @@ const applyUnder3mHodlPayload = (payload, cacheFallback = false) => {
   return true;
 };
 
+const applyUnder3mHeatPayload = (payload, cacheFallback = false) => {
+  const snapshot = payload?.cycleSnapshot;
+  const projection = (payload?.projection || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    value: Number(point.value)
+  })).filter((point) => !Number.isNaN(point.date.getTime()) && Number.isFinite(point.value) && point.value >= 0 && point.value <= 1);
+  if (!snapshot || !Number.isFinite(Number(snapshot.current)) || projection.length < 30) return false;
+
+  under3mHeatSnapshot = snapshot;
+  under3mHeatSources = payload.sources || null;
+  under3mHeatReferenceCycles = Array.isArray(payload.referenceCycles) ? payload.referenceCycles : [];
+  under3mHeatProjection = projection;
+
+  const current = Number(snapshot.current);
+  const referenceCurrent = Number(snapshot.referenceCurrent);
+  const sevenDayChange = Number(snapshot.sevenDayChange);
+  const distanceToCaution = Number(snapshot.distanceToCaution);
+  const distanceToOverheat = Number(snapshot.distanceToOverheat);
+  const scenarioEnd = Number(snapshot.scenarioEnd);
+  const percentage = (value, decimals = 2) => Number.isFinite(value) ? `${(value * 100).toFixed(decimals)}%` : "--";
+  const signedPoints = (value, decimals = 2) => Number.isFinite(value) ? `${value >= 0 ? "+" : ""}${(value * 100).toFixed(decimals)} pct` : "--";
+  const remainingPoints = (value, decimals = 2) => Number.isFinite(value) ? `${Math.max(0, value * 100).toFixed(decimals)} pct` : "--";
+  const zoneLabels = currentLanguage === "zh"
+    ? { cooldown: "沉淀区", expansion: "健康增量区", caution: "过热警戒区", overheated: "投机过热区" }
+    : { cooldown: "Cooldown", expansion: "Healthy Expansion", caution: "Overheat Warning", overheated: "Speculative Overheat" };
+  const sourceSuffix = payload.stale || cacheFallback ? " · CACHE" : "";
+
+  setText("#under-3m-heat-current", percentage(current));
+  setText("#under-3m-heat-as-of", `${snapshot.onchainAsOf || "--"} · PUBLIC`);
+  setText("#under-3m-heat-reference", percentage(referenceCurrent, 1));
+  setText("#under-3m-heat-divergence", `${currentLanguage === "zh" ? "公开源相对参考图" : "Public vs reference"} ${signedPoints(Number(snapshot.referenceDivergence))}`);
+  setText("#under-3m-heat-distance", remainingPoints(distanceToCaution));
+  setText("#under-3m-heat-zone", zoneLabels[snapshot.zone] || "--");
+  setText("#under-3m-heat-price", formatUsd(Number(snapshot.price)));
+  setText("#under-3m-heat-price-as-of", `${under3mHeatSources?.price || "Binance Spot"}${sourceSuffix}`);
+  setText("#under-3m-heat-change", signedPoints(sevenDayChange));
+  setText("#under-3m-heat-overheat-distance", remainingPoints(distanceToOverheat));
+  setText("#under-3m-heat-scenario", `${percentage(scenarioEnd)} · ${snapshot.scenarioEndDate || "--"}`);
+  setText("#under-3m-heat-date", snapshot.onchainAsOf || "--");
+  setText("#under-3m-heat-source", `${under3mHeatSources?.history || "BGeometrics public history"} + ${under3mHeatSources?.exactExtension || "Bitcoin Data public daily"}${sourceSuffix}`);
+  setText("#under-3m-heat-signal-title", zoneLabels[snapshot.zone] || "--");
+
+  const trendLabel = snapshot.trend === "rising"
+    ? (currentLanguage === "zh" ? "回升" : "rising")
+    : snapshot.trend === "falling"
+      ? (currentLanguage === "zh" ? "回落" : "falling")
+      : (currentLanguage === "zh" ? "横向" : "flat");
+  const signalCopy = currentLanguage === "zh"
+    ? `公开日频源当前读数为 ${percentage(current)}（${snapshot.onchainAsOf || "--"}），7 日变化 ${signedPoints(sevenDayChange)}，趋势为${trendLabel}；距 39% 警戒线仍有 ${remainingPoints(distanceToCaution)}。参考图的 31.7% 是独立口径锚点，当前公开源与其相差 ${signedPoints(Number(snapshot.referenceDivergence))}，两者未混合。365 日透明情景终点为 ${percentage(scenarioEnd)}，只用于继续跟踪路径。`
+    : `The public daily reading is ${percentage(current)} (${snapshot.onchainAsOf || "--"}), with a seven-day change of ${signedPoints(sevenDayChange)} and a ${trendLabel} trend. It remains ${remainingPoints(distanceToCaution)} below the 39% warning line. The supplied 31.7% is a separately labelled reference anchor; the public source differs by ${signedPoints(Number(snapshot.referenceDivergence))}. The transparent 365-day scenario ends at ${percentage(scenarioEnd)} and is used only for path monitoring.`;
+  setText("#under-3m-heat-signal-copy", signalCopy);
+
+  const signal = document.querySelector("#under-3m-heat-signal");
+  if (signal) ["cooldown", "expansion", "caution", "overheated"].forEach((zone) => signal.classList.toggle(`is-${zone}`, snapshot.zone === zone));
+
+  const history = document.querySelector("#under-3m-heat-history");
+  if (history) {
+    history.innerHTML = under3mHeatReferenceCycles.map((cycle) => {
+      const observed = Number(cycle.observedValue);
+      return `<div><span>${cycle.cycle} · REFERENCE</span><strong>${percentage(Number(cycle.referenceValue), 1)}</strong><em>${currentLanguage === "zh" ? "公开窗峰值" : "Public-window peak"} ${percentage(observed, 1)} · ${cycle.observedDate || "--"}</em></div>`;
+    }).join("");
+  }
+
+  const loading = document.querySelector("#under-3m-heat-loading");
+  if (loading) {
+    loading.hidden = true;
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+  }
+  hideUnder3mHeatTooltip();
+  drawUnder3mHeatChart();
+  return true;
+};
+
 const loadUnder3mHodlMetrics = async () => {
   const cached = readUnder3mHodlCache();
   const loading = document.querySelector("#under-3m-hodl-loading");
+  const heatLoading = document.querySelector("#under-3m-heat-loading");
   if (loading) {
     loading.hidden = under3mHodlSeries.length >= 2 && Boolean(under3mHodlSnapshot);
     loading.classList.remove("is-error");
@@ -11178,26 +11855,178 @@ const loadUnder3mHodlMetrics = async () => {
     loading.removeAttribute("tabindex");
     loading.textContent = getCopy("under3mHodl.loading");
   }
+  if (heatLoading) {
+    heatLoading.hidden = under3mHodlSeries.length >= 2 && Boolean(under3mHeatSnapshot);
+    heatLoading.classList.remove("is-error");
+    heatLoading.removeAttribute("role");
+    heatLoading.removeAttribute("tabindex");
+    heatLoading.textContent = getCopy("under3mHeat.loading");
+  }
   try {
-    const response = await fetch(`${API_BASE}/api/under-3m-realized-cap-hodl-waves?schema=1`, { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
-    if (!response.ok) throw new Error(`Under-3m Realized Cap HODL Waves API ${response.status}`);
+    const response = await fetch(`${API_BASE}/api/under-3m-realized-cap-cycle?schema=1`, { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+    if (!response.ok) throw new Error(`Under-3m Realized Cap cycle API ${response.status}`);
     const payload = await response.json();
     if (!applyUnder3mHodlPayload(payload, false)) throw new Error("Under-3m Realized Cap HODL Waves payload is empty");
-    writeDashboardCache(UNDER_3M_HODL_CACHE_KEY, payload, "Under-3m Realized Cap HODL Waves");
+    if (!applyUnder3mHeatPayload(payload, false)) throw new Error("Under-3m Realized Cap cycle payload is empty");
+    writeDashboardCache(UNDER_3M_HEAT_CACHE_KEY, payload, "Under-3m Realized Cap cycle");
     if (payload.stale) publicDataWarnings.push("under-3m-hodl-stale");
   } catch (error) {
-    if (preserveRenderedChart(under3mHodlSeries, under3mHodlSnapshot, ["#under-3m-hodl-loading"], "under-3m-hodl-refresh")) return;
-    if (cached && applyUnder3mHodlPayload(cached, true)) {
+    if (preserveRenderedChart(under3mHodlSeries, under3mHodlSnapshot, ["#under-3m-hodl-loading", "#under-3m-heat-loading"], "under-3m-hodl-refresh")) return;
+    if (cached && applyUnder3mHodlPayload(cached, true) && applyUnder3mHeatPayload(cached, true)) {
       publicDataWarnings.push("under-3m-hodl-cache");
       return;
     }
-    clearDashboardCache(UNDER_3M_HODL_CACHE_KEY, "Under-3m Realized Cap HODL Waves");
+    clearDashboardCache(UNDER_3M_HEAT_CACHE_KEY, "Under-3m Realized Cap cycle");
     if (loading) {
       loading.hidden = false;
       loading.classList.add("is-error");
       loading.setAttribute("role", "button");
       loading.setAttribute("tabindex", "0");
       loading.textContent = currentLanguage === "zh" ? "小于 3 个月已实现市值年龄波同步失败，点击重试" : "Under-3m Realized Cap HODL Waves sync failed. Click to retry.";
+    }
+    if (heatLoading) {
+      heatLoading.hidden = false;
+      heatLoading.classList.add("is-error");
+      heatLoading.setAttribute("role", "button");
+      heatLoading.setAttribute("tabindex", "0");
+      heatLoading.textContent = currentLanguage === "zh" ? "热钱周期模型同步失败，点击重试" : "Hot-capital cycle sync failed. Click to retry.";
+    }
+    throw error;
+  }
+};
+
+const readUtxoAgeRpCache = () => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(UTXO_AGE_RP_CACHE_KEY) || "null");
+    return cached?.payload || null;
+  } catch {
+    return null;
+  }
+};
+
+const applyUtxoAgeRpPayload = (payload, cacheFallback = false) => {
+  const rows = (payload?.series || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    price: Number(point.price),
+    sixToTwelve: Number(point.sixToTwelve),
+    twelveToEighteen: Number(point.twelveToEighteen),
+    oneToTwoYears: Number(point.oneToTwoYears),
+    spread: Number(point.spread),
+    spreadPercent: Number(point.spreadPercent),
+    estimated: Boolean(point.estimated)
+  })).filter((point) => !Number.isNaN(point.date.getTime())
+    && Number.isFinite(point.price) && point.price > 0
+    && Number.isFinite(point.sixToTwelve) && point.sixToTwelve > 0
+    && Number.isFinite(point.twelveToEighteen) && point.twelveToEighteen > 0);
+  const projection = (payload?.projection || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    sixToTwelve: Number(point.sixToTwelve),
+    twelveToEighteen: Number(point.twelveToEighteen)
+  })).filter((point) => !Number.isNaN(point.date.getTime())
+    && Number.isFinite(point.sixToTwelve) && point.sixToTwelve > 0
+    && Number.isFinite(point.twelveToEighteen) && point.twelveToEighteen > 0);
+  const snapshot = payload?.snapshot;
+  if (rows.length < 365 || projection.length < 30 || !snapshot
+    || !Number.isFinite(Number(snapshot.sixToTwelve))
+    || !Number.isFinite(Number(snapshot.twelveToEighteen))
+    || !Number.isFinite(Number(snapshot.price))) return false;
+
+  utxoAgeRpSeries = rows;
+  utxoAgeRpProjection = projection;
+  utxoAgeRpSnapshot = snapshot;
+  utxoAgeRpSources = payload.sources || null;
+  utxoAgeRpReferenceCycles = Array.isArray(payload.referenceCycles) ? payload.referenceCycles : [];
+  utxoAgeRpPublicCrosses = Array.isArray(payload.publicCrosses) ? payload.publicCrosses : [];
+
+  const sixToTwelve = Number(snapshot.sixToTwelve);
+  const twelveToEighteen = Number(snapshot.twelveToEighteen);
+  const spreadPercent = Number(snapshot.spreadPercent);
+  const elapsed = Number(snapshot.referenceElapsedDays);
+  const averageDays = Number(snapshot.averageCycleDays);
+  const remaining = Math.max(0, averageDays - elapsed);
+  const sourceSuffix = payload.stale || cacheFallback ? " · CACHE" : "";
+  const crossSource = snapshot.crossSource === "public-model"
+    ? (currentLanguage === "zh" ? "公开模型" : "Public model")
+    : (currentLanguage === "zh" ? "参考锚点" : "Reference anchor");
+  const publicStatus = snapshot.deathCrossActive
+    ? (currentLanguage === "zh" ? "公开重建已确认" : "Public cross confirmed")
+    : (currentLanguage === "zh" ? "公开重建未确认" : "Public cross not confirmed");
+  const signedPercent = Number.isFinite(spreadPercent) ? `${spreadPercent >= 0 ? "+" : ""}${spreadPercent.toFixed(2)}%` : "--";
+
+  setText("#utxo-age-rp-6m12m", formatUsd(sixToTwelve));
+  setText("#utxo-age-rp-6m12m-state", `${snapshot.estimated ? (currentLanguage === "zh" ? "公开延伸估算" : "Public extension estimate") : "PUBLIC"} · ${snapshot.onchainAsOf || "--"}`);
+  setText("#utxo-age-rp-12m18m", formatUsd(twelveToEighteen));
+  setText("#utxo-age-rp-spread", `6–12M / 12–18M ${signedPercent}`);
+  setText("#utxo-age-rp-cross", publicStatus);
+  setText("#utxo-age-rp-cross-date", `${crossSource} · ${snapshot.activeCrossDate || "--"}`);
+  setText("#utxo-age-rp-countdown", `${elapsed} / ${averageDays}D`);
+  setText("#utxo-age-rp-target", `${currentLanguage === "zh" ? "参考窗口" : "Reference window"} · ${snapshot.targetDate || "--"}`);
+  setText("#utxo-age-rp-signal-spread", signedPercent);
+  setText("#utxo-age-rp-elapsed", `${elapsed}D`);
+  setText("#utxo-age-rp-remaining", `${remaining}D`);
+  setText("#utxo-age-rp-date", snapshot.onchainAsOf || "--");
+  setText("#utxo-age-rp-source", `BGEOMETRICS · PUBLIC RECONSTRUCTION · DAILY${sourceSuffix} · BASELINE ${payload.publishedThrough || snapshot.publishedThrough || "--"}`);
+
+  const signal = document.querySelector("#utxo-age-rp-signal");
+  signal?.classList.toggle("is-confirmed", Boolean(snapshot.deathCrossActive));
+  signal?.classList.toggle("is-reference", !snapshot.deathCrossActive);
+  setText("#utxo-age-rp-signal-title", snapshot.deathCrossActive
+    ? (currentLanguage === "zh" ? "公开成本线死叉已确认" : "Public Cost-Basis Death Cross Confirmed")
+    : (currentLanguage === "zh" ? `公开重建未死叉 · 参考周期第 ${elapsed} 天` : `No Public Death Cross · Reference Day ${elapsed}`));
+  const signalCopy = currentLanguage === "zh"
+    ? `公开重建的 6–12 个月成本为 ${formatUsd(sixToTwelve)}，12–18 个月成本为 ${formatUsd(twelveToEighteen)}，前者${spreadPercent >= 0 ? "高" : "低"} ${Math.abs(spreadPercent).toFixed(2)}%。公开模型${snapshot.deathCrossActive ? "满足连续 14 日倒挂确认规则" : "当前不满足死叉规则"}。参考图锚点为 ${snapshot.activeCrossDate || "--"}，截至 ${snapshot.onchainAsOf || "--"} 经过 ${elapsed} 天，约 ${remaining} 天后进入 ${averageDays} 天历史均值窗口。两种口径保持独立。`
+    : `The public 6–12M cost is ${formatUsd(sixToTwelve)} versus ${formatUsd(twelveToEighteen)} for 12–18M, leaving the shorter cohort ${Math.abs(spreadPercent).toFixed(2)}% ${spreadPercent >= 0 ? "above" : "below"}. The public model ${snapshot.deathCrossActive ? "meets the 14-day inversion confirmation rule" : "does not currently meet the death-cross rule"}. The supplied reference anchor is ${snapshot.activeCrossDate || "--"}; ${elapsed} days have elapsed through ${snapshot.onchainAsOf || "--"}, leaving about ${remaining} days to the ${averageDays}-day historical mean window. The two definitions remain separate.`;
+  setText("#utxo-age-rp-signal-copy", signalCopy);
+
+  const history = document.querySelector("#utxo-age-rp-history");
+  if (history) {
+    const referenceRows = utxoAgeRpReferenceCycles.map((cycle) => `<div><span>${cycle.cycle} · REFERENCE</span><strong>${Number(cycle.durationDays)} DAYS</strong><em>${cycle.crossDate} → ${cycle.topDate}</em></div>`);
+    const publicRows = utxoAgeRpPublicCrosses.slice(-3).map((cross) => `<div><span>PUBLIC MODEL</span><strong>${cross.date}</strong><em>${Number(cross.confirmedDays) || 14}D ${currentLanguage === "zh" ? "倒挂确认" : "inversion confirmation"}${cross.estimated ? " · EST" : ""}</em></div>`);
+    history.innerHTML = [...referenceRows, ...publicRows].join("");
+  }
+
+  const loading = document.querySelector("#utxo-age-rp-loading");
+  if (loading) {
+    loading.hidden = true;
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+  }
+  hideUtxoAgeRpTooltip();
+  drawUtxoAgeRpChart();
+  return true;
+};
+
+const loadUtxoAgeRpMetrics = async () => {
+  const cached = readUtxoAgeRpCache();
+  const loading = document.querySelector("#utxo-age-rp-loading");
+  if (loading) {
+    loading.hidden = utxoAgeRpSeries.length >= 2 && Boolean(utxoAgeRpSnapshot);
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+    loading.textContent = getCopy("utxoAgeRp.loading");
+  }
+  try {
+    const response = await fetch(`${API_BASE}/api/utxo-age-realized-price-cycle?schema=1`, { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+    if (!response.ok) throw new Error(`UTXO age-band realized-price API ${response.status}`);
+    const payload = await response.json();
+    if (!applyUtxoAgeRpPayload(payload, false)) throw new Error("UTXO age-band realized-price payload is empty");
+    writeDashboardCache(UTXO_AGE_RP_CACHE_KEY, payload, "UTXO Age-Band Realized Price");
+    if (payload.stale) publicDataWarnings.push("utxo-age-rp-stale");
+  } catch (error) {
+    if (preserveRenderedChart(utxoAgeRpSeries, utxoAgeRpSnapshot, ["#utxo-age-rp-loading"], "utxo-age-rp-refresh")) return;
+    if (cached && applyUtxoAgeRpPayload(cached, true)) {
+      publicDataWarnings.push("utxo-age-rp-cache");
+      return;
+    }
+    clearDashboardCache(UTXO_AGE_RP_CACHE_KEY, "UTXO Age-Band Realized Price");
+    if (loading) {
+      loading.hidden = false;
+      loading.classList.add("is-error");
+      loading.setAttribute("role", "button");
+      loading.setAttribute("tabindex", "0");
+      loading.textContent = currentLanguage === "zh" ? "UTXO 年龄成本线同步失败，点击重试" : "UTXO age-band cost sync failed. Click to retry.";
     }
     throw error;
   }
@@ -12836,27 +13665,109 @@ const loadExtendedMetrics = async () => {
   }
 };
 
-const loadHalving = async () => {
-  const response = await fetch("https://mempool.space/api/blocks/tip/height");
-  if (!response.ok) throw new Error(`mempool height ${response.status}`);
-  const height = Number(await response.text());
-  const target = 1050000;
-  const previous = 840000;
-  const blocksLeft = Math.max(target - height, 0);
-  const daysLeft = Math.ceil((blocksLeft * 10) / 60 / 24);
-  const eta = new Date(Date.now() + blocksLeft * 10 * 60 * 1000);
-  const progress = Math.max(0, Math.min(100, ((height - previous) / (target - previous)) * 100));
-  metricSnapshot.halvingDays = daysLeft;
-  setText("#halving-days", `${formatNumber(daysLeft)} ${getCopy("days")}`);
-  setText("#halving-block", `${formatNumber(blocksLeft)} ${getCopy("blocks")} · mempool.space`);
-  setText("#current-height", formatNumber(height));
-  setText("#network-height", formatNumber(height));
-  setText("#blocks-left", formatNumber(blocksLeft));
-  setText("#halving-eta", `${formatDateTime(eta)} CST`);
-  setText("#halving-progress-label", `${progress.toFixed(2)}%`);
-  setText("#radar-halving", `${formatNumber(daysLeft)} ${getCopy("days")}`);
+// The overview, network height and detailed countdown share one validated snapshot.
+const validHalvingPayload = (payload, now = Date.now()) => {
+  if (!payload || payload.schema !== 1 || typeof payload.source !== "string" || !payload.source.trim()) return false;
+  const observed = Date.parse(payload.observedAt);
+  const estimated = Date.parse(payload.estimatedAt);
+  const height = payload.currentHeight;
+  if (!Number.isInteger(height) || height < 840000 || height > 10000000
+    || !Number.isFinite(observed) || observed > now + 60000 || now - observed > HALVING_MAX_AGE_MS) return false;
+  const previous = Math.floor(height / 210000) * 210000;
+  const target = previous + 210000;
+  const blocks = target - height;
+  const progress = (height - previous) / 210000 * 100;
+  const reward = Math.floor(5000000000 / (2 ** (previous / 210000))) / 100000000;
+  const nextReward = Math.floor(5000000000 / (2 ** (target / 210000))) / 100000000;
+  return payload.previousHeight === previous && payload.targetHeight === target
+    && payload.blocksRemaining === blocks && payload.daysRemaining === Math.ceil(blocks / 144)
+    && Number.isFinite(payload.progressPct) && Math.abs(payload.progressPct - progress) < 0.01
+    && Number.isFinite(estimated) && Math.abs(estimated - observed - blocks * 600000) < 1000
+    && payload.currentReward === reward && payload.nextReward === nextReward
+    && payload.estimateBlockSeconds === 600 && payload.halvingNumber === target / 210000
+    && Number.isFinite(payload.reductionPct) && Math.abs(payload.reductionPct - 50) < 0.01
+    && typeof payload.stale === "boolean";
+};
+
+const readHalvingCache = () => {
+  try {
+    const payload = JSON.parse(localStorage.getItem(HALVING_CACHE_KEY) || "null")?.payload;
+    return validHalvingPayload(payload) ? payload : null;
+  } catch { return null; }
+};
+
+const renderHalvingUnavailable = () => {
+  halvingSnapshot = null;
+  metricSnapshot.halvingDays = null;
+  ["#halving-days", "#halving-countdown-days", "#current-height", "#network-height", "#blocks-left", "#halving-eta", "#halving-progress-label", "#radar-halving"].forEach((selector) => setText(selector, "—"));
+  ["#halving-data-state", "#halving-block", "#halving-source"].forEach((selector) => setText(selector, getCopy("halving.unavailable")));
+  setText("#halving-timeline-date", getCopy("halving.awaitEstimate"));
+  const state = document.querySelector("#halving-data-state");
+  if (state) state.dataset.state = "unavailable";
   const bar = document.querySelector("#halving-progress");
-  if (bar) bar.style.width = `${progress}%`;
+  if (bar) bar.style.width = "0%";
+  document.querySelector(".halving-progress-shell")?.removeAttribute("aria-valuenow");
+  document.querySelector(".halving-progress-shell")?.removeAttribute("aria-valuetext");
+};
+
+const applyHalvingPayload = (payload, cacheFallback = false) => {
+  if (!validHalvingPayload(payload)) return false;
+  const stale = cacheFallback || payload.stale || Date.now() - Date.parse(payload.observedAt) > 90000;
+  halvingSnapshot = { ...payload, stale };
+  const days = `${formatNumber(payload.daysRemaining)} ${getCopy("days")}`;
+  const status = getCopy(stale ? "halving.cached" : "halving.live");
+  const source = `${payload.source} · ${status} · ${formatDateTime(new Date(payload.observedAt))} CST`;
+  metricSnapshot.halvingDays = payload.daysRemaining;
+  setText("#halving-days", days);
+  setText("#halving-countdown-days", formatNumber(payload.daysRemaining));
+  setText("#halving-block", `${formatNumber(payload.blocksRemaining)} ${getCopy("blocks")} · ${source}`);
+  setText("#halving-reward", `${payload.currentReward} → ${payload.nextReward} BTC`);
+  setText("#current-height", formatNumber(payload.currentHeight));
+  setText("#network-height", formatNumber(payload.currentHeight));
+  setText("#halving-target", formatNumber(payload.targetHeight));
+  setText("#blocks-left", formatNumber(payload.blocksRemaining));
+  setText("#halving-eta", new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", {
+    year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Shanghai"
+  }).format(new Date(payload.estimatedAt)));
+  setText("#halving-current-reward", `${payload.currentReward} BTC`);
+  setText("#halving-next-reward", `${payload.nextReward} BTC`);
+  setText("#halving-reduction", `−${payload.reductionPct}%`);
+  setText("#halving-progress-label", `${payload.progressPct.toFixed(2)}% · ${getCopy("halving.cycleProgress")}`);
+  setText("#radar-halving", days);
+  setText("#halving-data-state", status);
+  setText("#halving-source", source);
+  setText("#halving-title", payload.halvingNumber === 5 ? getCopy("halving.title")
+    : currentLanguage === "zh" ? `第 ${payload.halvingNumber} 次减半进度` : `Halving ${payload.halvingNumber} Progress`);
+  setText("#halving-timeline-date", payload.halvingNumber === 5
+    ? `${getCopy("halving.estimated")} ${payload.estimatedAt.slice(0, 10)}`
+    : currentLanguage === "zh" ? "已完成" : "Completed");
+  const state = document.querySelector("#halving-data-state");
+  if (state) state.dataset.state = stale ? "stale" : "live";
+  const bar = document.querySelector("#halving-progress");
+  if (bar) bar.style.width = `${payload.progressPct}%`;
+  const progress = document.querySelector(".halving-progress-shell");
+  progress?.setAttribute("aria-valuenow", payload.progressPct.toFixed(2));
+  progress?.setAttribute("aria-valuetext", `${payload.progressPct.toFixed(2)}% · ${getCopy("halving.cycleProgress")}`);
+  return true;
+};
+
+const loadHalving = async () => {
+  if (halvingInFlight) return halvingInFlight;
+  halvingInFlight = (async () => {
+    const cached = validHalvingPayload(halvingSnapshot) ? halvingSnapshot : readHalvingCache();
+    if (cached) applyHalvingPayload(cached, true);
+    try {
+      const payload = await fetchJsonWithRetry(`${API_BASE}/api/halving`, { attempts: 2, timeout: 18000 });
+      if (!applyHalvingPayload(payload)) throw new Error("Invalid halving snapshot");
+      writeDashboardCache(HALVING_CACHE_KEY, payload, "Halving");
+      if (halvingSnapshot.stale) publicDataWarnings.push("halving-cache");
+    } catch (error) {
+      if (cached && applyHalvingPayload(cached, true)) publicDataWarnings.push("halving-cache");
+      else { renderHalvingUnavailable(); throw error; }
+    }
+  })();
+  try { return await halvingInFlight; }
+  finally { halvingInFlight = null; }
 };
 
 const loadNetwork = async () => {
@@ -13225,6 +14136,36 @@ const saveUnder3mHodlSnapshot = () => {
   context.drawImage(canvas, 0, 0);
   exportCanvas.toBlob((blob) => {
     if (blob) downloadFile(blob, `welinkbtc-under-3m-realized-cap-hodl-waves-${new Date().toISOString().slice(0, 10)}.png`);
+  }, "image/png", 1);
+};
+
+const saveUnder3mHeatSnapshot = () => {
+  const canvas = document.querySelector("#under-3m-heat-chart");
+  if (!canvas || !under3mHodlSeries.length) return;
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+  const context = exportCanvas.getContext("2d");
+  context.fillStyle = getComputedStyle(document.body).getPropertyValue("--paper").trim() || "#0a0d0c";
+  context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+  context.drawImage(canvas, 0, 0);
+  exportCanvas.toBlob((blob) => {
+    if (blob) downloadFile(blob, `welinkbtc-under-3m-hot-capital-cycle-${new Date().toISOString().slice(0, 10)}.png`);
+  }, "image/png", 1);
+};
+
+const saveUtxoAgeRpSnapshot = () => {
+  const canvas = document.querySelector("#utxo-age-rp-chart");
+  if (!canvas || !utxoAgeRpSeries.length) return;
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+  const context = exportCanvas.getContext("2d");
+  context.fillStyle = getComputedStyle(document.body).getPropertyValue("--paper").trim() || "#0a0d0c";
+  context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+  context.drawImage(canvas, 0, 0);
+  exportCanvas.toBlob((blob) => {
+    if (blob) downloadFile(blob, `welinkbtc-utxo-age-realized-price-${new Date().toISOString().slice(0, 10)}.png`);
   }, "image/png", 1);
 };
 
@@ -13689,6 +14630,49 @@ const downloadUnder3mHodlCsv = () => {
     "public_realized_cap_hodl_waves_complement"
   ].join(","));
   downloadFile(new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" }), `welinkbtc-under-3m-realized-cap-hodl-waves-${under3mHodlRange}.csv`);
+};
+
+const downloadUnder3mHeatCsv = () => {
+  const history = getUnder3mHeatVisibleSeries();
+  if (!history.length) return;
+  const header = "date,btc_price_usd,under_3m_public_share,average_7d,average_30d,reference_model_share,scenario_share,data_kind";
+  const lines = history.map((point) => [
+    point.date.toISOString().slice(0, 10),
+    point.price,
+    point.underThreeMonths,
+    point.average7,
+    point.average30,
+    point.date.getTime() === history.at(-1).date.getTime() ? Number(under3mHeatSnapshot?.referenceCurrent) || "" : "",
+    "",
+    "public"
+  ].join(","));
+  if (["all", "365"].includes(under3mHeatRange)) {
+    under3mHeatProjection.forEach((point) => lines.push([
+      point.date.toISOString().slice(0, 10), "", "", "", "", "", point.value, "scenario"
+    ].join(",")));
+  }
+  downloadFile(new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" }), `welinkbtc-under-3m-hot-capital-cycle-${under3mHeatRange}.csv`);
+};
+
+const downloadUtxoAgeRpCsv = () => {
+  const history = getUtxoAgeRpVisibleSeries();
+  if (!history.length) return;
+  const header = "date,btc_price_usd,realized_price_6m_12m_usd,realized_price_12m_18m_usd,spread_percent,estimated,data_kind";
+  const lines = history.map((point) => [
+    point.date.toISOString().slice(0, 10),
+    point.price,
+    point.sixToTwelve,
+    point.twelveToEighteen,
+    point.spreadPercent,
+    point.estimated,
+    "public_reconstruction"
+  ].join(","));
+  if (["all", "365"].includes(utxoAgeRpRange)) {
+    utxoAgeRpProjection.forEach((point) => lines.push([
+      point.date.toISOString().slice(0, 10), "", point.sixToTwelve, point.twelveToEighteen, "", true, "forward_scenario"
+    ].join(",")));
+  }
+  downloadFile(new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" }), `welinkbtc-utxo-age-realized-price-${utxoAgeRpRange}.csv`);
 };
 
 const downloadSth200dmaCsv = () => {
@@ -14168,6 +15152,38 @@ const toggleUnder3mHodlFullscreen = async () => {
   }, 80);
 };
 
+const toggleUnder3mHeatFullscreen = async () => {
+  const panel = document.querySelector("#under-3m-heat-panel");
+  if (!panel) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (panel.requestFullscreen) await panel.requestFullscreen();
+    else panel.classList.toggle("is-expanded");
+  } catch {
+    panel.classList.toggle("is-expanded");
+  }
+  window.setTimeout(() => {
+    hideUnder3mHeatTooltip();
+    drawUnder3mHeatChart();
+  }, 80);
+};
+
+const toggleUtxoAgeRpFullscreen = async () => {
+  const panel = document.querySelector("#utxo-age-rp-panel");
+  if (!panel) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (panel.requestFullscreen) await panel.requestFullscreen();
+    else panel.classList.toggle("is-expanded");
+  } catch {
+    panel.classList.toggle("is-expanded");
+  }
+  window.setTimeout(() => {
+    hideUtxoAgeRpTooltip();
+    drawUtxoAgeRpChart();
+  }, 80);
+};
+
 const toggleSth200dmaFullscreen = async () => {
   const panel = document.querySelector("#sth-200dma-panel");
   if (!panel) return;
@@ -14411,6 +15427,29 @@ const surfMetricConfig = {
       ...(under3mHodlSnapshot || {}),
       methodology: "under_3m_equals_one_minus_over_3m_realized_cap_share",
       historicalLows: under3mHodlLows
+    })
+  },
+  "under-3m-heat": {
+    name: "BTC <3m Realized Cap HODL Waves · Hot Capital Cycle",
+    snapshot: () => ({
+      ...(under3mHeatSnapshot || {}),
+      methodology: "public_under_3m_realized_cap_share_with_reference_anchors_kept_separate_and_365d_momentum_decay_scenario",
+      thresholds: "warning_39_percent__overheat_45_percent",
+      referencePeaks: under3mHeatReferenceCycles.map((cycle) => `${cycle.cycle}:${(Number(cycle.referenceValue) * 100).toFixed(1)}%`).join(" | "),
+      publicWindowPeaks: under3mHeatReferenceCycles.map((cycle) => `${cycle.cycle}:${(Number(cycle.observedValue) * 100).toFixed(1)}%@${cycle.observedDate || "--"}`).join(" | "),
+      dataSources: `${under3mHeatSources?.history || "BGeometrics"} + ${under3mHeatSources?.exactExtension || "Bitcoin Data"}`
+    })
+  },
+  "utxo-age-rp": {
+    name: "BTC Realized Price by UTXO Age Bands · Thousand-Day Cycle",
+    snapshot: () => ({
+      ...(utxoAgeRpSnapshot || {}),
+      methodology: "public_6m_12m_cohort_realized_cap_divided_by_supply__calibrated_12m_18m_price_vintage_proxy",
+      publicCrossRule: "six_to_twelve_below_twelve_to_eighteen_for_14_consecutive_daily_observations",
+      referenceCycles: utxoAgeRpReferenceCycles.map((cycle) => `${cycle.cycle}:${cycle.crossDate}->${cycle.topDate}:${cycle.durationDays}d`).join(" | "),
+      publicCrosses: utxoAgeRpPublicCrosses.map((cross) => `${cross.date}:${Number(cross.spreadPercent).toFixed(2)}%${cross.estimated ? ":estimated" : ""}`).join(" | "),
+      dataSources: `${utxoAgeRpSources?.supply || "BGeometrics public HODL Waves supply"} + ${utxoAgeRpSources?.realizedCap || "BGeometrics public Realized-Cap HODL Waves"}`,
+      disclosure: utxoAgeRpSources?.disclosure || "Reference anchors and the public reconstruction are reported separately."
     })
   },
   "sth-200dma": {
@@ -14858,6 +15897,8 @@ const applyLanguage = () => {
   updateCycleRadar();
   renderReferences();
   if (cycleTimingSnapshot) refreshCycleTimingMode();
+  if (halvingSnapshot && !applyHalvingPayload(halvingSnapshot)) renderHalvingUnavailable();
+  else if (!halvingSnapshot && document.querySelector("#halving-data-state")?.dataset.state === "unavailable") renderHalvingUnavailable();
   applyTheme();
   window.updateProductDashboardLanguage?.();
 };
@@ -14915,6 +15956,7 @@ const analysisLoaders = [
   loadLthExchangeLossMetrics,
   loadTwoWeekRsiMetrics,
   loadUnder3mHodlMetrics,
+  loadUtxoAgeRpMetrics,
   loadSth200dmaMetrics,
   loadVddMedianMetrics,
   loadSsrMetrics,
@@ -15284,6 +16326,24 @@ document.querySelectorAll("[data-chart-tabs='under-3m-hodl'] button").forEach((b
   });
 });
 
+document.querySelectorAll("[data-chart-tabs='under-3m-heat'] button").forEach((button) => {
+  button.addEventListener("click", () => {
+    under3mHeatRange = button.dataset.range || "all";
+    document.querySelectorAll("[data-chart-tabs='under-3m-heat'] button").forEach((item) => item.classList.toggle("active", item === button));
+    hideUnder3mHeatTooltip();
+    drawUnder3mHeatChart();
+  });
+});
+
+document.querySelectorAll("[data-chart-tabs='utxo-age-rp'] button").forEach((button) => {
+  button.addEventListener("click", () => {
+    utxoAgeRpRange = button.dataset.range || "all";
+    document.querySelectorAll("[data-chart-tabs='utxo-age-rp'] button").forEach((item) => item.classList.toggle("active", item === button));
+    hideUtxoAgeRpTooltip();
+    drawUtxoAgeRpChart();
+  });
+});
+
 document.querySelectorAll("[data-chart-tabs='sth-200dma'] button").forEach((button) => {
   button.addEventListener("click", () => {
     sth200dmaRange = button.dataset.range || "all";
@@ -15470,6 +16530,16 @@ document.querySelector("#under-3m-hodl-download")?.addEventListener("click", dow
 document.querySelector("#under-3m-hodl-fullscreen")?.addEventListener("click", toggleUnder3mHodlFullscreen);
 document.querySelector("#under-3m-hodl-chart")?.addEventListener("pointermove", showUnder3mHodlTooltip);
 document.querySelector("#under-3m-hodl-chart")?.addEventListener("pointerleave", hideUnder3mHodlTooltip);
+document.querySelector("#under-3m-heat-snapshot")?.addEventListener("click", saveUnder3mHeatSnapshot);
+document.querySelector("#under-3m-heat-download")?.addEventListener("click", downloadUnder3mHeatCsv);
+document.querySelector("#under-3m-heat-fullscreen")?.addEventListener("click", toggleUnder3mHeatFullscreen);
+document.querySelector("#under-3m-heat-chart")?.addEventListener("pointermove", showUnder3mHeatTooltip);
+document.querySelector("#under-3m-heat-chart")?.addEventListener("pointerleave", hideUnder3mHeatTooltip);
+document.querySelector("#utxo-age-rp-snapshot")?.addEventListener("click", saveUtxoAgeRpSnapshot);
+document.querySelector("#utxo-age-rp-download")?.addEventListener("click", downloadUtxoAgeRpCsv);
+document.querySelector("#utxo-age-rp-fullscreen")?.addEventListener("click", toggleUtxoAgeRpFullscreen);
+document.querySelector("#utxo-age-rp-chart")?.addEventListener("pointermove", showUtxoAgeRpTooltip);
+document.querySelector("#utxo-age-rp-chart")?.addEventListener("pointerleave", hideUtxoAgeRpTooltip);
 document.querySelector("#sth-200dma-snapshot")?.addEventListener("click", saveSth200dmaSnapshot);
 document.querySelector("#sth-200dma-download")?.addEventListener("click", downloadSth200dmaCsv);
 document.querySelector("#sth-200dma-fullscreen")?.addEventListener("click", toggleSth200dmaFullscreen);
@@ -15656,6 +16726,17 @@ const retryUnder3mHodlLoading = (event) => {
 };
 document.querySelector("#under-3m-hodl-loading")?.addEventListener("click", retryUnder3mHodlLoading);
 document.querySelector("#under-3m-hodl-loading")?.addEventListener("keydown", retryUnder3mHodlLoading);
+document.querySelector("#under-3m-heat-loading")?.addEventListener("click", retryUnder3mHodlLoading);
+document.querySelector("#under-3m-heat-loading")?.addEventListener("keydown", retryUnder3mHodlLoading);
+const retryUtxoAgeRpLoading = (event) => {
+  const loading = event.currentTarget;
+  if (!loading.classList.contains("is-error")) return;
+  if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  loadUtxoAgeRpMetrics().catch((error) => console.warn("UTXO age-band realized-price retry failed", error));
+};
+document.querySelector("#utxo-age-rp-loading")?.addEventListener("click", retryUtxoAgeRpLoading);
+document.querySelector("#utxo-age-rp-loading")?.addEventListener("keydown", retryUtxoAgeRpLoading);
 const retrySth200dmaLoading = (event) => {
   const loading = event.currentTarget;
   if (!loading.classList.contains("is-error")) return;
@@ -15751,6 +16832,8 @@ document.addEventListener("fullscreenchange", () => window.setTimeout(() => {
   hideLthExchangeLossTooltip();
   hideTwoWeekRsiTooltip();
   hideUnder3mHodlTooltip();
+  hideUnder3mHeatTooltip();
+  hideUtxoAgeRpTooltip();
   hideSth200dmaTooltip();
   hideVddMedianTooltip();
   hideSsrTooltip();
@@ -15780,6 +16863,8 @@ document.addEventListener("fullscreenchange", () => window.setTimeout(() => {
   drawLthExchangeLossChart();
   drawTwoWeekRsiChart();
   drawUnder3mHodlChart();
+  drawUnder3mHeatChart();
+  drawUtxoAgeRpChart();
   drawSth200dmaChart();
   drawVddMedianCycleChart();
   drawSsrChart();
@@ -15839,6 +16924,7 @@ const scheduleClock = () => {
 document.addEventListener("visibilitychange", () => {
   scheduleClock();
   if (!document.hidden) {
+    void loadHalving().catch(() => {});
     if (analysisSyncStarted) void syncAnalysisData();
     else scheduleAnalysisSync();
   }
@@ -15846,6 +16932,10 @@ document.addEventListener("visibilitychange", () => {
 window.setInterval(() => {
   if (document.visibilityState === "visible") syncData();
 }, 30 * 60 * 1000);
+// Refresh block height independently; slow research APIs cannot hold up the clock.
+window.setInterval(() => {
+  if (!document.hidden) void loadHalving().catch(() => {});
+}, 60000);
 setupTrendNavigator();
 applyLanguage();
 scheduleClock();

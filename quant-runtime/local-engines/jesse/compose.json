@@ -1,0 +1,25 @@
+{
+  "services": {
+    "jesse": {
+      "image": "${ENGINE_IMAGE}", "restart": "unless-stopped", "working_dir": "/home",
+      "ports": ["127.0.0.1:${UI_PORT}:9000"],
+      "volumes": ["./native:/home"], "env_file": ["./native/.env"],
+      "command": ["jesse", "run", "--skip-agent-rules"],
+      "depends_on": { "postgres": { "condition": "service_healthy" }, "redis": { "condition": "service_healthy" } },
+      "stop_grace_period": "60s"
+    },
+    "postgres": {
+      "image": "postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+      "restart": "unless-stopped", "environment": { "POSTGRES_USER": "jesse_user", "POSTGRES_DB": "jesse_db", "POSTGRES_PASSWORD": "${DATABASE_PASSWORD}" },
+      "volumes": ["database:/var/lib/postgresql/data"],
+      "healthcheck": { "test": ["CMD-SHELL", "pg_isready -U jesse_user -d jesse_db"], "interval": "5s", "timeout": "3s", "retries": 30 }
+    },
+    "redis": {
+      "image": "redis@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+      "restart": "unless-stopped", "command": ["redis-server", "--save", "", "--appendonly", "no", "--requirepass", "${REDIS_PASSWORD}"],
+      "environment": { "REDISCLI_AUTH": "${REDIS_PASSWORD}" },
+      "healthcheck": { "test": ["CMD", "redis-cli", "ping"], "interval": "5s", "timeout": "3s", "retries": 30 }
+    }
+  },
+  "volumes": { "database": {} }
+}

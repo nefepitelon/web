@@ -179,6 +179,8 @@ model User {
   toolboxFavorites            ToolboxFavorite[]
   alphaTradingCredentials     AlphaTradingCredential[]
   alphaExecutionConfig        AlphaExecutionConfig?
+  alphaAutomationConfig       AlphaAutomationConfig?
+  alphaAutomationOrders       AlphaAutomationOrder[]
   alphaTradeIntents           AlphaTradeIntent[]
   alphaExecutionPlans         AlphaExecutionPlan[]
   alphaTradingOrders          AlphaTradingOrder[]
@@ -195,6 +197,9 @@ model User {
   classicGridBot              ClassicGridBot?
   hostedGridOpsBot            HostedGridOpsBot?
   hostedGridOpsCommands       HostedGridOpsCommand[]
+  quantSuiteInstances         QuantSuiteInstance[]
+  quantSuiteCommands          QuantSuiteCommand[]
+  quantSuiteDevices           QuantSuiteDevice[]
   onboardingTasks             UserOnboardingTask[]
   analyticsEvents             AnalyticsEvent[]
   wlbAccount                  WlbAccount?
@@ -269,6 +274,53 @@ model HostedGridOpsCommand {
   @@index([botId, status, createdAt])
   @@index([userId, createdAt])
   @@map("hosted_grid_ops_commands")
+}
+
+model AlphaAutomationConfig {
+  userId           String   @id @db.Uuid
+  settings         Json
+  version          String
+  enabled          Boolean  @default(false)
+  status           String   @default("STOPPED")
+  generation       String?
+  grantFingerprint String?
+  market           String   @default("futures")
+  startedAt        DateTime?
+  expiresAt        DateTime?
+  lastScanAt       DateTime?
+  nextScanAt       DateTime?
+  lastOrderAt      DateTime?
+  heartbeatAt      DateTime?
+  lastError        String?
+  runId            String?
+  leaseToken       String?
+  leaseUntil       DateTime?
+  submissionToken  String?
+  submissionUntil  DateTime?
+  dailyBaseline    Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AlphaAutomationOrder {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  generation       String
+  cycleKey         String
+  symbol           String
+  side             String
+  status           String   @default("RESERVED")
+  candidate        Json
+  notional         Float
+  planId           String?  @unique
+  closeAfter       DateTime
+  error            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, generation, cycleKey, symbol])
+  @@index([userId, status, createdAt])
 }
 
 model AlphaTradingCredential {
@@ -1418,10 +1470,199 @@ model BstockTradeRecord {
   txHash              String?   @db.VarChar(200)
   submittedAt         DateTime?
   completedAt         DateTime?
+  automationIgnoredAt DateTime?
+  automationIgnoredBy String?   @db.VarChar(42)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
   @@index([ownerKey, createdAt])
   @@index([ownerKey, status, updatedAt])
+  @@index([ownerKey, automationIgnoredAt, status])
   @@map("bstock_trade_records")
+}
+
+model BstockAutoConfig {
+  ownerKey          String    @id @db.VarChar(64)
+  walletAddress     String    @db.VarChar(42)
+  sessionEncrypted  String?   @db.Text
+  enabled           Boolean   @default(false)
+  status            String    @default("STOPPED") @db.VarChar(32)
+  generation        String?   @db.VarChar(64)
+  settings          Json
+  strategyVersion   String    @db.VarChar(64)
+  runId             String?   @db.VarChar(200)
+  startedAt         DateTime?
+  heartbeatAt       DateTime?
+  expiresAt         DateTime?
+  lastError         String?   @db.VarChar(2000)
+  equityStartUsd    Decimal   @default(0) @db.Decimal(30, 10)
+  equityHighUsd     Decimal   @default(0) @db.Decimal(30, 10)
+  realizedBaseline  Decimal   @default(0) @db.Decimal(30, 10)
+  stats             Json?
+  leaseToken        String?   @db.VarChar(64)
+  leaseUntil        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("bstock_auto_configs")
+}
+
+model BstockAutoOrder {
+  id                String    @id @default(cuid())
+  ownerKey          String    @db.VarChar(64)
+  generation        String    @db.VarChar(64)
+  signalKey         String    @unique @db.VarChar(160)
+  symbol            String    @db.VarChar(32)
+  side              String    @db.VarChar(8)
+  strategy          String    @db.VarChar(32)
+  strategyVersion   String    @db.VarChar(64)
+  reason            String    @db.VarChar(2000)
+  decision          Json
+  requestedAmount   String    @db.VarChar(100)
+  tradeRecordId     String?   @unique @db.VarChar(64)
+  status            String    @default("QUOTING") @db.VarChar(32)
+  orderId           String?   @db.VarChar(128)
+  txHash            String?   @unique @db.VarChar(200)
+  actualQuantity    String?   @db.VarChar(100)
+  actualUsd         Decimal?  @db.Decimal(30, 10)
+  realizedPnlUsd    Decimal?  @db.Decimal(30, 10)
+  gasEstimateUsd    Decimal?  @db.Decimal(30, 10)
+  error             String?   @db.VarChar(2000)
+  submittedAt       DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([ownerKey, status, createdAt])
+  @@map("bstock_auto_orders")
+}
+
+model BstockAutoPosition {
+  id                String    @id @default(cuid())
+  ownerKey          String    @db.VarChar(64)
+  symbol            String    @db.VarChar(32)
+  contractAddress   String    @db.VarChar(42)
+  multiplier        String    @db.VarChar(100)
+  quantity          String    @db.VarChar(100)
+  costUsd           Decimal   @db.Decimal(30, 10)
+  highPrice         Decimal   @db.Decimal(30, 10)
+  strategy          String    @db.VarChar(32)
+  entryOrderId      String    @db.VarChar(64)
+  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime  @default(now())
+
+  @@unique([ownerKey, symbol])
+  @@map("bstock_auto_positions")
+}
+
+model BstockAutoEvent {
+  id                String    @id @default(cuid())
+  ownerKey          String    @db.VarChar(64)
+  generation        String?   @db.VarChar(64)
+  kind              String    @db.VarChar(32)
+  status            String?   @db.VarChar(32)
+  symbol            String?   @db.VarChar(32)
+  side              String?   @db.VarChar(8)
+  strategy          String?   @db.VarChar(32)
+  reason            String    @db.VarChar(2000)
+  orderId           String?   @db.VarChar(128)
+  txHash            String?   @db.VarChar(200)
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+
+  @@index([ownerKey, createdAt])
+  @@map("bstock_auto_events")
+}
+
+model QuantSuiteInstance {
+  id              String   @id @default(cuid())
+  userId          String   @db.Uuid
+  engine          String
+  config          Json
+  revision        Int      @default(1)
+  controlSequence Int      @default(0)
+  activeCommandId String?
+  cachedRuntime   Json?
+  runtimeObservedAt DateTime?
+  runtimeWorkerId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, engine])
+  @@map("quant_suite_instances")
+}
+
+model QuantSuiteCommand {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  engine      String
+  action      String
+  requestId   String
+  payloadHash String
+  status      String   @default("PENDING")
+  result      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dispatch    QuantSuiteDispatch?
+
+  @@unique([userId, requestId])
+  @@index([userId, createdAt])
+  @@map("quant_suite_commands")
+}
+
+model QuantSuiteDispatch {
+  id                  String   @id @default(cuid())
+  commandId           String   @unique
+  userId              String   @db.Uuid
+  engine              String
+  action              String
+  requestId           String
+  controlSequence     Int
+  revision            Int
+  configHash          String
+  expectedVersion     String
+  payload             Json
+  status              String   @default("QUEUED")
+  workerId            String?
+  leaseTokenHash      String?
+  leaseExpiresAt      DateTime?
+  expiresAt           DateTime
+  dispatchedAt        DateTime?
+  completedAt         DateTime?
+  result              Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  command             QuantSuiteCommand @relation(fields: [commandId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, status, createdAt])
+  @@index([userId, engine, status])
+  @@index([status, leaseExpiresAt])
+  @@map("quant_suite_dispatches")
+}
+
+model QuantSuiteWorker {
+  id              String   @id
+  protocolVersion Int      @default(1)
+  lastSeenAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("quant_suite_workers")
+}
+
+model QuantSuiteDevice {
+  id        String    @id
+  userId    String    @db.Uuid
+  name      String
+  tokenHash String    @unique
+  engines   String[]
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@map("quant_suite_devices")
 }

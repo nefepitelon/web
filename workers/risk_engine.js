@@ -1,8 +1,9 @@
 const { createHash, randomUUID } = require("node:crypto");
 
-const ENGINE_VERSION = "alpha-execution-v2.0";
+const ENGINE_VERSION = "alpha-execution-v2.1";
 const EXECUTION_MODES = new Set(["paper", "mock_exchange", "testnet", "live"]);
 const BINANCE_MODES = new Set(["live", "testnet"]);
+const AUTOMATION_STRATEGIES = ["p1_three_source", "p2_two_source", "strong_signal", "same_coin_x2", "anomaly"];
 const DEFAULT_POLICY = Object.freeze({
   riskPerTradePct: 0.75,
   maxRiskPerTradePct: 1.5,
@@ -142,12 +143,25 @@ function isDuplicate(intent, recentIntents, windowMinutes, now) {
   });
 }
 
-function hardRiskChecks(intent, context, policy, now) {
+function resolveStrategyQualification(value) {
+  if (value === undefined) return null;
+  const matched = value && typeof value === "object" && !Array.isArray(value) ? value.matchedStrategies : null;
+  const valid = Array.isArray(matched) && matched.length > 0 && matched.length <= AUTOMATION_STRATEGIES.length
+    && new Set(matched).size === matched.length && matched.every(strategy => AUTOMATION_STRATEGIES.includes(strategy));
+  if (!valid) return { valid: false, matchedStrategies: [], scoreThresholdApplied: true };
+  return { valid: true, matchedStrategies: AUTOMATION_STRATEGIES.filter(strategy => matched.includes(strategy)),
+    scoreThresholdApplied: !matched.some(strategy => strategy !== "anomaly") };
+}
+
+function hardRiskChecks(intent, context, policy, now, strategyQualification) {
   const violations = [];
   const warnings = [];
   const equity = finiteNumber(context.equity, 10_000);
   const dailyPnl = finiteNumber(context.dailyPnl, 0);
   const openPositions = Math.max(0, Math.trunc(finiteNumber(context.openPositions, 0)));
+  if (strategyQualification && !strategyQualification.valid) {
+    violations.push({ code: "STRATEGY_QUALIFICATION_INVALID", message: "服务端自动策略资格无效，不能生成执行计划。" });
+  }
 
   if (!EXECUTION_MODES.has(intent.mode)) violations.push({ code: "MODE_INVALID", message: "执行模式必须为 paper、mock_exchange、testnet 或 live。" });
   if (BINANCE_MODES.has(intent.mode) && context.environmentEnabled !== true) {
@@ -207,8 +221,12 @@ function hardRiskChecks(intent, context, policy, now) {
     }
   }
 
-  if (intent.alphaScore == null) warnings.push({ code: "SCORE_MISSING", message: "未提供 Alpha 分，执行计划会保留人工复核要求。" });
-  else if (intent.alphaScore < policy.minAlphaScore) violations.push({ code: "SCORE_BELOW_THRESHOLD", message: `Alpha 分 ${intent.alphaScore} 低于阈值 ${policy.minAlphaScore}。` });
+  if (!(strategyQualification?.valid && !strategyQualification.scoreThresholdApplied)) {
+    if (intent.alphaScore == null) {
+      if (strategyQualification?.valid) violations.push({ code: "SCORE_REQUIRED_FOR_ANOMALY", message: "仅命中异动策略时必须保留真实 Alpha 分并通过分数阈值。" });
+      else warnings.push({ code: "SCORE_MISSING", message: "未提供 Alpha 分，执行计划会保留人工复核要求。" });
+    } else if (intent.alphaScore < policy.minAlphaScore) violations.push({ code: "SCORE_BELOW_THRESHOLD", message: `Alpha 分 ${intent.alphaScore} 低于阈值 ${policy.minAlphaScore}。` });
+  }
   if (intent.orderType === "MARKET") warnings.push({ code: "MARKET_ORDER", message: "执行计划使用市价单，并保留最大滑点与名义额度限制。" });
   if (!BINANCE_MODES.has(intent.mode)) warnings.push({ code: "SIMULATED_EXCHANGE_FILTERS", message: "当前模拟环境不会访问 Binance；交易所过滤器由 Mock/Paper 适配器校验。" });
 
@@ -316,7 +334,17 @@ function evaluateTradeIntent(input = {}, context = {}, options = {}) {
   provisionalIntent.dedupeHash = createDedupeHash(provisionalIntent);
   audit.push("DEDUPE_CHECKED", "OK", "已对成功下单或状态待确认的相同标的、相同方向订单执行去重检查。", { hash: provisionalIntent.dedupeHash, windowMinutes: policy.dedupeWindowMinutes });
 
-  const checks = hardRiskChecks(provisionalIntent, context, policy, now);
+  // Only the trusted service invocation may attest qualification. Neither the
+  // user intent nor account context can opt out of the generic score gate.
+  const strategyQualification = resolveStrategyQualification(options.strategyQualification);
+  if (strategyQualification?.valid) {
+    audit.push("RISK_CHECKED", "STRATEGY_QUALIFIED", strategyQualification.scoreThresholdApplied
+      ? "已记录服务端策略资格；仅异动策略继续检查真实 Alpha 分阈值。"
+      : "已记录服务端 P1/P2 或信号策略资格；保留真实 Alpha 分，按已命中策略评估筛选资格，其余风控继续执行。",
+    { matchedStrategies: strategyQualification.matchedStrategies, actualAlphaScore: provisionalIntent.alphaScore,
+      scoreThresholdApplied: strategyQualification.scoreThresholdApplied, minAlphaScore: policy.minAlphaScore });
+  }
+  const checks = hardRiskChecks(provisionalIntent, context, policy, now, strategyQualification);
   if (checks.violations.length) {
     audit.push("RISK_CHECKED", "REJECTED", "硬性风控检查未通过。", { violationCodes: checks.violations.map((item) => item.code) });
     audit.push("REJECTED", "FINAL", "交易意图已拒绝，不生成执行计划。", null);

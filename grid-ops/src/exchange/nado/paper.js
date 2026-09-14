@@ -47,7 +47,13 @@ export class NadoPaperExchange extends NadoExchange {
     const id = Number(marketId);
     this._market(id);
     this._watch.add(id);
-    return this._prices.get(id) || this.markets.get(id)?.lastPrice;
+    // PAPER orders are simulated, but the selected market still uses Nado's
+    // real BBO. Fetch it immediately so a newly selected non-BTC product does
+    // not inherit the oracle snapshot loaded at startup until the next poll.
+    if (this.dataSource === 'real') return super.getPrice(id);
+    const price = this._prices.get(id) || this.markets.get(id)?.lastPrice;
+    if (!(price > 0)) throw new Error(`Nado ${this._market(id).exchangeSymbol} 未返回有效模拟价格。`);
+    return price;
   }
 
   async getCandles(marketId, intervalSec = 3600, n = 200) {

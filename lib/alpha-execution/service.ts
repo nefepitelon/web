@@ -19,6 +19,7 @@ import {
 import { decryptTradingSecret } from "@/lib/alpha-execution/credentials";
 import { getOrCreateAlphaExecutionConfig, marketFrom, modeFrom, writeAlphaAudit } from "@/lib/alpha-execution/data";
 import riskEngine from "@/workers/risk_engine.js";
+import type { AlphaAutomationStrategy } from "./automation-strategy";
 
 const { evaluateTradeIntent, createDedupeHash, shouldBlockDedupeFromEntryOrder } = riskEngine as {
   evaluateTradeIntent: (intent: Record<string, unknown>, context: Record<string, unknown>, options?: Record<string, unknown>) => Record<string, any>;
@@ -31,6 +32,17 @@ const TERMINAL_ORDER_STATES = [AlphaOrderStatus.FILLED, AlphaOrderStatus.CANCELE
 const ACTIVE_PROTECTION_ORDER_STATES: AlphaOrderStatus[] = [AlphaOrderStatus.SUBMITTED, AlphaOrderStatus.NEW, AlphaOrderStatus.PARTIALLY_FILLED];
 const MISSING_ORDER_SETTLEMENT_GRACE_MS = 60_000;
 const KILL_SWITCH_RECONCILIATION_MAX_AGE_MS = 5 * 60_000;
+const credentialSecretSelect = {
+  id: true,
+  userId: true,
+  environment: true,
+  market: true,
+  apiKeyEncrypted: true,
+  apiSecretEncrypted: true,
+  proxyEncrypted: true,
+  verifiedAt: true,
+  enabled: true
+} satisfies Prisma.AlphaTradingCredentialSelect;
 
 function json(value: unknown) {
   return value as Prisma.InputJsonValue;
@@ -74,7 +86,8 @@ function idempotency(environment: AlphaExecutionMode, market: AlphaMarketType, p
 async function credentialFor(userId: string, environment: AlphaExecutionMode, market: AlphaMarketType) {
   if (environment !== AlphaExecutionMode.TESTNET && environment !== AlphaExecutionMode.LIVE) return null;
   return prisma.alphaTradingCredential.findUnique({
-    where: { userId_environment_market: { userId, environment, market } }
+    where: { userId_environment_market: { userId, environment, market } },
+    select: credentialSecretSelect
   });
 }
 
@@ -115,7 +128,10 @@ export async function preflightCredential(userId: string, environment: AlphaExec
   }
 }
 
-export async function approveTradeIntent(input: Record<string, unknown>, userId: string, twoFactorPassed: boolean): Promise<Record<string, any>> {
+export async function approveTradeIntent(input: Record<string, unknown>, userId: string, twoFactorPassed: boolean,
+  automation?: { context: Record<string, unknown>; policy: Record<string, number>; maxQuantity: number;
+    quantityStep: number; minQuantity: number; minNotional: number; matchedStrategies: AlphaAutomationStrategy[] }): Promise<Record<string, any>> {
+  if (String(input.source ?? "").startsWith("alpha-auto:") && !automation) throw new Error("自动交易意图只能由已授权的服务端任务创建");
   const config = await getOrCreateAlphaExecutionConfig(userId);
   const environment = modeFrom(String(input.mode ?? config.activeMode));
   const market = marketFrom(String(input.market ?? config.defaultMarket));
@@ -183,9 +199,11 @@ export async function approveTradeIntent(input: Record<string, unknown>, userId:
       liveTradingEnabled: config.liveEnabled,
       twoFactorPassed,
       reconciliationHealthy: config.reconciliationHealthy,
-      requireManualConfirmation: config.requireManualConfirmation
+      requireManualConfirmation: config.requireManualConfirmation,
+      ...(automation?.context ?? {})
     },
     {
+      ...(automation ? { strategyQualification: { matchedStrategies: automation.matchedStrategies } } : {}),
       policy: {
         riskPerTradePct: config.riskPerTradePct,
         maxLeverage: config.maxLeverage,
@@ -195,10 +213,61 @@ export async function approveTradeIntent(input: Record<string, unknown>, userId:
         maxPortfolioExposurePct: config.maxPortfolioExposurePct,
         minAlphaScore: config.minAlphaScore,
         perOrderNotionalLimit: config.perOrderNotionalLimit,
-        dailyNotionalLimit: config.dailyNotionalLimit
+        dailyNotionalLimit: config.dailyNotionalLimit,
+        ...(automation?.policy ?? {})
       }
     }
   );
+
+  if (automation && result.ok && result.executionPlan) {
+    const planData = result.executionPlan;
+    const rawQuantity = Number(planData.mainOrder?.quantity);
+    const { maxQuantity, quantityStep, minQuantity, minNotional } = automation;
+    const actualEquity = Number(automation.context.equity ?? runtimeEquity);
+    const leverage = Number(result.intent.leverage);
+    let violation: { code: string; message: string } | null = null;
+    let quantity: number | null = null;
+    if (![rawQuantity, maxQuantity, quantityStep, minQuantity, minNotional, marketReferencePrice, actualEquity, leverage].every(Number.isFinite)
+      || rawQuantity <= 0 || maxQuantity <= 0 || quantityStep <= 0 || minQuantity < 0 || minNotional < 0
+      || marketReferencePrice <= 0 || actualEquity <= 0 || leverage <= 0 || !Array.isArray(planData.protectionOrders)) {
+      violation = { code: "AUTOMATION_QUANTITY_FILTERS_INVALID", message: "自动审批缺少有效的交易所数量步长、最小数量或名义金额，拒绝生成执行计划。" };
+    } else {
+      // Decimal arithmetic floors even when a refreshed price shrinks the raw
+      // quantity below the candidate cap. Never round up to satisfy a minimum.
+      const step = new Prisma.Decimal(quantityStep);
+      const units = Prisma.Decimal.min(rawQuantity, maxQuantity).div(step).floor();
+      const finalQuantity = units.mul(step);
+      const notional = finalQuantity.mul(marketReferencePrice);
+      quantity = finalQuantity.toNumber();
+      if (!Number.isFinite(quantity) || quantity <= 0 || quantity > Math.min(rawQuantity, maxQuantity)
+        || finalQuantity.lt(minQuantity) || notional.lt(Math.max(5, minNotional))) {
+        violation = { code: "AUTOMATION_ORDER_BELOW_EXCHANGE_MINIMUM", message: "自动审批数量按交易所步长向下取整后，未达到当前最小数量或最小名义金额；不放大订单，等待下一轮。" };
+      } else {
+        const riskAmount = finalQuantity.mul(new Prisma.Decimal(marketReferencePrice).sub(Number(result.intent.stopLoss)).abs());
+        planData.mainOrder.quantity = quantity;
+        for (const protection of planData.protectionOrders) protection.quantity = quantity;
+        Object.assign(planData.risk, { notional: notional.toNumber(), marginRequired: notional.div(leverage).toNumber(),
+          riskAmount: riskAmount.toNumber(), riskPct: riskAmount.div(actualEquity).mul(100).toNumber(),
+          exposureCapped: Boolean(planData.risk.exposureCapped) || finalQuantity.lt(rawQuantity) });
+      }
+    }
+    const details = { rawQuantity: Number.isFinite(rawQuantity) ? rawQuantity : null, quantity,
+      quantityStep: Number.isFinite(quantityStep) ? quantityStep : null, maxQuantity: Number.isFinite(maxQuantity) ? maxQuantity : null,
+      minQuantity: Number.isFinite(minQuantity) ? minQuantity : null, minNotional: Number.isFinite(minNotional) ? minNotional : null };
+    const event = { auditId: `AUD-${randomUUID().slice(0, 8).toUpperCase()}`, intentId: result.intent.intentId, timestamp: now.toISOString(),
+      state: violation ? "REJECTED" : "RISK_CHECKED", status: violation ? "FINAL" : "QUANTITY_FILTERS_VALIDATED",
+      message: violation?.message ?? "自动审批数量已按交易所步长向下量化，并同步主单、保护单与风险金额。",
+      details: { ...details, ...(violation ? { violationCodes: [violation.code] } : {}) } };
+    if (violation) {
+      result.ok = false; result.decision = "REJECTED"; result.state = "REJECTED";
+      result.violations = [...result.violations, violation]; result.executionPlan = null;
+      result.audit = result.audit.filter((item: { state: string }) => !["PLANNED", "AWAITING_CONFIRMATION"].includes(item.state));
+      result.audit.push(event);
+    } else {
+      const plannedIndex = result.audit.findIndex((item: { state: string }) => item.state === "PLANNED");
+      result.audit.splice(plannedIndex < 0 ? result.audit.length : plannedIndex, 0, event);
+    }
+  }
 
   const intent = result.intent;
   const savedIntent = await prisma.alphaTradeIntent.create({
@@ -423,6 +492,23 @@ async function attachProtection(planId: string, client: AlphaBinanceClient, cred
 }
 
 export async function executePlan(planId: string, userId: string) {
+  const scope = await prisma.alphaExecutionPlan.findFirst({ where: { id: planId, userId }, select: { environment: true } });
+  if (!scope) throw new Error("执行计划不存在");
+  if (scope.environment !== AlphaExecutionMode.LIVE) return executeClaimedPlan(planId, userId);
+  // Serialize all LIVE entry requests for an owner, including manual API calls.
+  await prisma.alphaAutomationConfig.upsert({ where: { userId }, update: {}, create: { userId, settings: {}, version: randomUUID() } });
+  const token = randomUUID();
+  const claimed = await prisma.alphaAutomationConfig.updateMany({ where: { userId,
+    OR: [{ submissionUntil: null }, { submissionUntil: { lt: new Date() } }] },
+    data: { submissionToken: token, submissionUntil: new Date(Date.now() + 5 * 60_000) } });
+  if (!claimed.count) throw new Error("当前账户有订单正在提交，请等待订单回报和对账完成");
+  try { return await executeClaimedPlan(planId, userId, token); }
+  finally {
+    await prisma.alphaAutomationConfig.updateMany({ where: { userId, submissionToken: token }, data: { submissionToken: null, submissionUntil: null } });
+  }
+}
+
+async function executeClaimedPlan(planId: string, userId: string, submissionToken?: string) {
   const plan = await prisma.alphaExecutionPlan.findFirst({ where: { id: planId, userId }, include: { intent: true, orders: true } });
   if (!plan) throw new Error("执行计划不存在");
   if (plan.expiresAt.getTime() <= Date.now()) throw new Error("执行计划已过期，请重新提交风控审批");
@@ -450,6 +536,10 @@ export async function executePlan(planId: string, userId: string) {
     throw new Error(`执行计划当前状态为 ${plan.state}，不可再次执行；请处理失败原因后重新创建交易意图。`);
   }
   const currentReferencePrice = await getLiveBinanceReferencePrice(engineMarket(plan.market) as "spot" | "futures", plan.intent.symbol);
+  if (plan.intent.source.startsWith("alpha-auto:")) {
+    const { assertAutoPlanExecution } = await import("./automation-runtime");
+    await assertAutoPlanExecution(userId, plan.id, currentReferencePrice);
+  }
   await writeAlphaAudit({
     userId,
     intentId: plan.intentId,
@@ -497,7 +587,17 @@ export async function executePlan(planId: string, userId: string) {
   if (!credential?.verifiedAt || !credential.enabled) throw new Error("当前 Binance 凭据尚未通过连接和权限校验");
   const client = clientFromCredential(credential);
   await prisma.alphaTradingOrder.update({ where: { id: entryOrder.id }, data: { credentialId: credential.id } });
+  let acceptedEntry: BinanceOrderResult | null = null;
   try {
+    if (plan.intent.source.startsWith("alpha-auto:")) {
+      const { assertAutoPlanExecution } = await import("./automation-runtime");
+      await assertAutoPlanExecution(userId, plan.id);
+    }
+    if (submissionToken) {
+      const lock = await prisma.alphaAutomationConfig.findUnique({ where: { userId } });
+      if (lock?.submissionToken !== submissionToken || !lock.submissionUntil || lock.submissionUntil.getTime() <= Date.now())
+        throw new Error("账户下单锁已失效，禁止提交过期请求");
+    }
     const result = await client.placeOrder({
       symbol: plan.intent.symbol,
       side: String(main.side) as "BUY" | "SELL",
@@ -507,6 +607,7 @@ export async function executePlan(planId: string, userId: string) {
       leverage: plan.intent.leverage,
       clientOrderId
     });
+    acceptedEntry = result;
     const status = orderStatus(result.status);
     await prisma.alphaTradingOrder.update({
       where: { id: entryOrder.id },
@@ -529,6 +630,16 @@ export async function executePlan(planId: string, userId: string) {
     }
     return { ok: true, planId, order: result };
   } catch (caught) {
+    if (acceptedEntry) {
+      // A post-fill persistence/protection error must never relabel an acknowledged fill as rejected.
+      await prisma.alphaTradingOrder.update({ where: { id: entryOrder.id }, data: {
+        status: orderStatus(acceptedEntry.status), exchangeOrderId: acceptedEntry.exchangeOrderId,
+        filledQuantity: acceptedEntry.filledQuantity, averagePrice: acceptedEntry.averagePrice, rawResponse: json(acceptedEntry.raw),
+        errorMessage: caught instanceof Error ? caught.message : "成交后的状态处理异常" } }).catch(() => undefined);
+      await prisma.alphaExecutionPlan.updateMany({ where: { id: planId, state: { not: AlphaExecutionState.KILLED } }, data: { state: AlphaExecutionState.UNKNOWN } });
+      await prisma.alphaExecutionConfig.update({ where: { userId }, data: { reconciliationHealthy: false } });
+      throw caught;
+    }
     const unknown = caught instanceof BinanceRequestError && caught.statusUnknown;
     await prisma.alphaTradingOrder.update({ where: { id: entryOrder.id }, data: { status: unknown ? AlphaOrderStatus.UNKNOWN : AlphaOrderStatus.REJECTED, errorMessage: caught instanceof Error ? caught.message : "execution failed" } });
     await prisma.alphaExecutionPlan.update({ where: { id: planId }, data: { state: unknown ? AlphaExecutionState.UNKNOWN : AlphaExecutionState.FAILED } });
@@ -551,7 +662,11 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
     },
     orderBy: { createdAt: "asc" },
     take: 24,
-    include: { plan: { include: { intent: true } }, credential: true }
+    omit: { rawResponse: true },
+    include: {
+      plan: { select: { intentId: true } },
+      credential: { select: credentialSecretSelect }
+    }
   });
   const errors: string[] = [];
   const accountSnapshots: Array<{ environment: AlphaExecutionMode; market: AlphaMarketType; equity: number; updatedAt: string }> = [];
@@ -566,7 +681,8 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
       const status = orderStatus(result.status);
       await prisma.alphaTradingOrder.update({
         where: { id: order.id },
-        data: { status, exchangeOrderId: result.exchangeOrderId, filledQuantity: result.filledQuantity, averagePrice: result.averagePrice, rawResponse: json(result.raw), errorMessage: null, lastReconciledAt: new Date() }
+        data: { status, exchangeOrderId: result.exchangeOrderId, filledQuantity: result.filledQuantity, averagePrice: result.averagePrice, rawResponse: json(result.raw), errorMessage: null, lastReconciledAt: new Date() },
+        select: { id: true }
       });
       reconciled++;
       if (order.role === AlphaOrderRole.ENTRY && status === AlphaOrderStatus.FILLED) {
@@ -581,9 +697,10 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
           const direction = position.side === "LONG" ? 1 : -1;
           await prisma.alphaTradingPosition.update({
             where: { id: position.id },
-            data: { state: AlphaExecutionState.CLOSED, markPrice: exitPrice, unrealizedPnl: (exitPrice - position.entryPrice) * position.quantity * direction, lastReconciledAt: new Date(), closedAt: new Date() }
+            data: { state: AlphaExecutionState.CLOSED, markPrice: exitPrice, unrealizedPnl: (exitPrice - position.entryPrice) * position.quantity * direction, lastReconciledAt: new Date(), closedAt: new Date() },
+            select: { id: true }
           });
-          await prisma.alphaExecutionPlan.update({ where: { id: order.planId }, data: { state: AlphaExecutionState.RECONCILED } });
+          await prisma.alphaExecutionPlan.update({ where: { id: order.planId }, data: { state: AlphaExecutionState.RECONCILED }, select: { id: true } });
           await writeAlphaAudit({ userId, intentId: order.plan.intentId, planId: order.planId, orderId: order.id, state: AlphaExecutionState.CLOSED, status: "MANUAL_CLOSE_FILLED", message: `${order.symbol} 人工平仓订单已成交并完成对账。` });
         }
       }
@@ -601,14 +718,16 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
             await client.cancelOrder(sibling.symbol, sibling.clientOrderId, true);
             await prisma.alphaTradingOrder.update({
               where: { id: sibling.id },
-              data: { status: AlphaOrderStatus.CANCELED, lastReconciledAt: new Date() }
+              data: { status: AlphaOrderStatus.CANCELED, lastReconciledAt: new Date() },
+              select: { id: true }
             });
           } catch (caught) {
             const message = caught instanceof Error ? caught.message : "Algo sibling cancel failed";
             errors.push(`${sibling.symbol} sibling protection: ${message}`);
             await prisma.alphaTradingOrder.update({
               where: { id: sibling.id },
-              data: { status: AlphaOrderStatus.UNKNOWN, errorMessage: message, lastReconciledAt: new Date() }
+              data: { status: AlphaOrderStatus.UNKNOWN, errorMessage: message, lastReconciledAt: new Date() },
+              select: { id: true }
             });
           }
         }
@@ -624,10 +743,11 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
               unrealizedPnl: (exitPrice - position.entryPrice) * position.quantity * direction,
               lastReconciledAt: new Date(),
               closedAt: new Date()
-            }
+            },
+            select: { id: true }
           });
         }
-        await prisma.alphaExecutionPlan.update({ where: { id: order.planId }, data: { state: AlphaExecutionState.RECONCILED } });
+        await prisma.alphaExecutionPlan.update({ where: { id: order.planId }, data: { state: AlphaExecutionState.RECONCILED }, select: { id: true } });
         await writeAlphaAudit({
           userId,
           intentId: order.plan.intentId,
@@ -642,16 +762,17 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
       const missingLongEnough = isBinanceMissingOrderError(caught)
         && Date.now() - order.createdAt.getTime() >= MISSING_ORDER_SETTLEMENT_GRACE_MS;
       if (missingLongEnough) {
-        const status = order.status === AlphaOrderStatus.PENDING && !order.exchangeOrderId && !order.rawResponse
+        const status = order.status === AlphaOrderStatus.PENDING && !order.exchangeOrderId
           ? AlphaOrderStatus.REJECTED
           : AlphaOrderStatus.CANCELED;
         const message = `Binance 已确认订单不存在；本地 ${order.status} 已归一化为 ${status}`;
         await prisma.alphaTradingOrder.update({
           where: { id: order.id },
-          data: { status, errorMessage: message, lastReconciledAt: new Date() }
+          data: { status, errorMessage: message, lastReconciledAt: new Date() },
+          select: { id: true }
         });
         if (order.role === AlphaOrderRole.ENTRY && status === AlphaOrderStatus.REJECTED) {
-          await prisma.alphaExecutionPlan.update({ where: { id: order.planId }, data: { state: AlphaExecutionState.FAILED } });
+          await prisma.alphaExecutionPlan.update({ where: { id: order.planId }, data: { state: AlphaExecutionState.FAILED }, select: { id: true } });
         }
         reconciled++;
         await writeAlphaAudit({
@@ -694,9 +815,10 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
           await prisma.$transaction([
             prisma.alphaTradingPosition.update({
               where: { id: position.id },
-              data: { state: AlphaExecutionState.CLOSED, markPrice: mark, unrealizedPnl: (mark - position.entryPrice) * position.quantity * direction, lastReconciledAt: new Date(), closedAt: new Date() }
+              data: { state: AlphaExecutionState.CLOSED, markPrice: mark, unrealizedPnl: (mark - position.entryPrice) * position.quantity * direction, lastReconciledAt: new Date(), closedAt: new Date() },
+              select: { id: true }
             }),
-            prisma.alphaExecutionPlan.update({ where: { id: position.planId }, data: { state: AlphaExecutionState.RECONCILED } }),
+            prisma.alphaExecutionPlan.update({ where: { id: position.planId }, data: { state: AlphaExecutionState.RECONCILED }, select: { id: true } }),
             prisma.alphaTradingOrder.updateMany({
               where: { planId: position.planId, status: { notIn: TERMINAL_ORDER_STATES } },
               data: { status: AlphaOrderStatus.CANCELED, errorMessage: "Binance 持仓已归零，剩余本地订单已终结", lastReconciledAt: new Date() }
@@ -717,9 +839,30 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
           errors.push(message);
           await prisma.alphaTradingPosition.update({
             where: { id: position.id },
-            data: { state: AlphaExecutionState.UNKNOWN, markPrice: remote.markPrice, unrealizedPnl: remote.unrealizedPnl, lastReconciledAt: new Date() }
+            data: { state: AlphaExecutionState.UNKNOWN, markPrice: remote.markPrice, unrealizedPnl: remote.unrealizedPnl, lastReconciledAt: new Date() },
+            select: { id: true }
           });
           continue;
+        }
+
+        const ownerPlan = await prisma.alphaExecutionPlan.findUnique({
+          where: { id: position.planId },
+          include: { intent: { select: { source: true } }, orders: { omit: { rawResponse: true } } }
+        });
+        if (ownerPlan?.intent.source.startsWith("alpha-auto:")) {
+          const entryFilled = ownerPlan.orders.filter((order) => order.role === AlphaOrderRole.ENTRY).reduce((sum, order) => sum + order.filledQuantity, 0);
+          const exited = ownerPlan.orders.filter((order) => [AlphaOrderRole.CLOSE, AlphaOrderRole.STOP_LOSS, AlphaOrderRole.TAKE_PROFIT].includes(order.role as "CLOSE" | "STOP_LOSS" | "TAKE_PROFIT"))
+            .reduce((sum, order) => sum + order.filledQuantity, 0);
+          const ownedQuantity = Math.max(0, entryFilled - exited);
+          if (Math.abs(remote.quantity - ownedQuantity) > Math.max(1e-9, ownedQuantity * 1e-6)) {
+            const message = `${position.symbol} 交易所总仓与本自动策略成交份额不一致；保留保护单，暂停自动仓位操作。`;
+            errors.push(message);
+            await prisma.alphaTradingPosition.update({ where: { id: position.id }, data: { state: AlphaExecutionState.UNKNOWN, lastReconciledAt: new Date() }, select: { id: true } });
+            await prisma.alphaExecutionPlan.update({ where: { id: position.planId }, data: { state: AlphaExecutionState.UNKNOWN }, select: { id: true } });
+            await writeAlphaAudit({ userId, planId: position.planId, state: AlphaExecutionState.UNKNOWN, status: "AUTO_OWNERSHIP_CONFLICT", message,
+              metadata: { ownedQuantity, exchangeQuantity: remote.quantity, environment: "LIVE", market: "FUTURES", automation: true } });
+            continue;
+          }
         }
 
         const activeOrders = await prisma.alphaTradingOrder.findMany({
@@ -751,7 +894,8 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
             unrealizedPnl: remote.unrealizedPnl,
             lastReconciledAt: new Date(),
             state: nextState
-          }
+          },
+          select: { id: true }
         });
         if (quantityChanged || entryChanged || recovered) {
           await writeAlphaAudit({
@@ -777,7 +921,8 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
         const direction = position.side === "LONG" ? 1 : -1;
         await prisma.alphaTradingPosition.update({
           where: { id: position.id },
-          data: { markPrice: mark, unrealizedPnl: (mark - position.entryPrice) * position.quantity * direction, lastReconciledAt: new Date(), state: position.state }
+          data: { markPrice: mark, unrealizedPnl: (mark - position.entryPrice) * position.quantity * direction, lastReconciledAt: new Date(), state: position.state },
+          select: { id: true }
         });
       }
     } catch (caught) {
@@ -802,7 +947,8 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
       const snapshot = await client.preflight();
       await prisma.alphaTradingCredential.update({
         where: { id: credential.id },
-        data: { permissionSummary: json(snapshot), lastError: null }
+        data: { permissionSummary: json(snapshot), lastError: null },
+        select: { id: true }
       });
       accountSnapshots.push({
         environment: credential.environment,
@@ -813,7 +959,7 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "account snapshot failed";
       errors.push(`${credential.environment}/${credential.market} account: ${message}`);
-      await prisma.alphaTradingCredential.update({ where: { id: credential.id }, data: { lastError: message } }).catch(() => undefined);
+      await prisma.alphaTradingCredential.update({ where: { id: credential.id }, data: { lastError: message }, select: { id: true } }).catch(() => undefined);
     } finally {
       await client.close();
     }
@@ -821,15 +967,19 @@ export async function reconcileExecution(userId: string, scope: { environment?: 
 
   await prisma.alphaExecutionConfig.update({
     where: { userId },
-    data: { lastReconciledAt: new Date(), reconciliationHealthy: errors.length === 0 }
+    data: { lastReconciledAt: new Date(), reconciliationHealthy: errors.length === 0 },
+    select: { id: true }
   });
-  await writeAlphaAudit({
-    userId,
-    state: AlphaExecutionState.RECONCILED,
-    status: errors.length ? "WARNING" : "OK",
-    message: errors.length ? `本轮对账完成，但有 ${errors.length} 项异常。` : `本轮订单与持仓对账完成，共核对 ${reconciled} 笔订单。`,
-    metadata: { reconciled, accountSnapshots, errors: errors.slice(0, 8), previousHealthy: config.reconciliationHealthy }
-  });
+  const reconciliationHealthy = errors.length === 0;
+  if (errors.length > 0 || config.reconciliationHealthy !== reconciliationHealthy) {
+    await writeAlphaAudit({
+      userId,
+      state: AlphaExecutionState.RECONCILED,
+      status: errors.length ? "WARNING" : "RECOVERED",
+      message: errors.length ? `本轮对账完成，但有 ${errors.length} 项异常。` : "交易对账已恢复健康。",
+      metadata: { reconciled, accountSnapshots, errors: errors.slice(0, 8), previousHealthy: config.reconciliationHealthy }
+    });
+  }
   return { ok: errors.length === 0, reconciled, accountSnapshots, errors };
 }
 
@@ -874,7 +1024,9 @@ export async function closeLivePosition(positionId: string, userId: string) {
   const clientOrderId = safeClientOrderId("cl", position.planId);
   let closeOrder: Awaited<ReturnType<typeof createOrderRecord>> | null = null;
   try {
-    await cancelPositionProtectionOrders(client, position);
+    // Futures reduce-only exits retain exchange protection until the close is confirmed.
+    // Spot OCO locks base inventory, so its existing cancellation order is retained.
+    if (position.market === AlphaMarketType.SPOT) await cancelPositionProtectionOrders(client, position);
     closeOrder = await createOrderRecord({
       userId,
       planId: position.planId,
@@ -910,7 +1062,12 @@ export async function closeLivePosition(positionId: string, userId: string) {
       }),
       prisma.alphaExecutionPlan.update({ where: { id: position.planId }, data: { state: status === AlphaOrderStatus.FILLED ? AlphaExecutionState.RECONCILED : AlphaExecutionState.RECONCILING } })
     ]);
-    await writeAlphaAudit({ userId, intentId: position.plan.intentId, planId: position.planId, orderId: closeOrder.id, state: status === AlphaOrderStatus.FILLED ? AlphaExecutionState.CLOSED : AlphaExecutionState.RECONCILING, status: "MANUAL_CLOSE", message: `${position.symbol} 已提交生产实盘人工平仓；保护单已先行撤销。`, metadata: { clientOrderId, status } });
+    if (position.market === AlphaMarketType.FUTURES && status === AlphaOrderStatus.FILLED) {
+      await cancelPositionProtectionOrders(client, position).catch(async () => {
+        await writeAlphaAudit({ userId, planId: position.planId, state: AlphaExecutionState.RECONCILING, status: "WARNING", message: `${position.symbol} 平仓已成交；剩余保护单等待对账清理。` });
+      });
+    }
+    await writeAlphaAudit({ userId, intentId: position.plan.intentId, planId: position.planId, orderId: closeOrder.id, state: status === AlphaOrderStatus.FILLED ? AlphaExecutionState.CLOSED : AlphaExecutionState.RECONCILING, status: "MANUAL_CLOSE", message: `${position.symbol} 已提交生产实盘平仓；合约保护单在确认平仓后清理。`, metadata: { clientOrderId, status } });
     return { ok: true, positionId, order: result };
   } catch (caught) {
     const statusUnknown = caught instanceof BinanceRequestError && caught.statusUnknown;

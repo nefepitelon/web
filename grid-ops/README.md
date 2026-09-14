@@ -1,6 +1,6 @@
 # 多交易所整合网格交易机器人
 
-一个跑在你自己电脑上的**永续合约网格交易机器人**，当前支持 **Decibel**（Aptos 链）、**Extended**（Starknet 链）、**RISEx**、**Binance USDⓈ-M Futures**、**Ondo Perps**、**Phoenix**（Solana 链）、**Nado**（Ink L2）、**OKX**、**GRVT** 和 **RHC Lighter**。各交易所可以同时独立运行网格策略，统一在一个浏览器仪表盘里监控和操控。
+一个跑在你自己电脑上的**永续合约网格交易机器人**，当前支持 **Decibel**（Aptos 链）、**Extended**（Starknet 链）、**RISEx**、**Binance USDⓈ-M Futures**、**Ondo Perps**、**Phoenix**（Solana 链）、**Nado**（Ink L2）、**OKX**、**GRVT**、**RHC Lighter** 与 **Arcus**。**Entropy** 当前仅提供基于 Hyperliquid 官方实时行情的 `paper` 模拟，不开放 `live`。各交易所可以同时独立运行网格策略，统一在一个浏览器仪表盘里监控和操控。
 
 > ⚠️ **免责声明**：本程序仅供学习和研究。合约交易带高杠杆风险，可能损失全部本金。实盘前请务必先用模拟模式充分熟悉。使用本程序造成的任何盈亏由使用者自行承担。
 
@@ -34,10 +34,10 @@
 
 | 功能 | 说明 |
 |---|---|
-| 多交易所并行 | Decibel / Extended / RISEx / Binance / Ondo Perps / Phoenix / Nado / OKX / GRVT / RHC Lighter 各自独立运行网格机器人，互不影响 |
+| 多交易所并行 | Decibel / Extended / RISEx / Binance / Ondo Perps / Phoenix / Nado / OKX / GRVT / RHC Lighter / Arcus 各自独立运行；Entropy 当前仅运行官方实时行情驱动的 paper 模拟 |
 | 同所多账号 | 每种交易所最多创建 3 个独立账号实例；密钥、账户、模式、机器人状态和持久化数据彼此隔离 |
 | 配置化接入 | 交易所名称、环境字段、代理、实盘说明、页面卡片和路由由统一注册表生成，后续新增交易所只需补元数据与适配器 |
-| 双运行模式 | `paper` 模拟盘（虚拟资金，真实行情）和 `live` 实盘（真实下单） |
+| 双运行模式 | 通常提供 `paper` 模拟盘（虚拟资金，真实行情）和 `live` 实盘（真实下单）；Entropy 为安全边界明确的例外，当前只允许 `paper` |
 | 三种网格类型 | 中性（区间震荡双向吃单）、做多（低吸高抛）、做空（高抛低补） |
 | 等差网格 | 在设定区间内均匀布单，每次成交后在相邻一格自动补反向单，赚取格差 |
 | 智能填充参数 | 一键根据近期 K 线趋势分析，自动推荐网格类型、区间上下界、格数 |
@@ -236,7 +236,7 @@
 ### 7.0 总体步骤
 
 1. 用记事本（或任何文本编辑器）打开项目文件夹里的 `.env` 文件（没有就先复制 `.env.example` 改名为 `.env`；注意文件名就是 `.env`，前面有个点，没有别的后缀）。
-2. 把你要实盘的交易所模式改为 live：`DE_MODE=live`（Decibel）/ `EX_MODE=live`（Extended）/ `RS_MODE=live`（RISEx）/ `BN_MODE=live`（Binance）/ `ONDO_MODE=live`（Ondo Perps）/ `PHOENIX_MODE=live`（Phoenix）/ `NADO_MODE=live`（Nado）/ `OKX_MODE=live`（OKX）/ `GRVT_MODE=live`（GRVT）/ `LR_MODE=live`（RHC Lighter）。**各交易所互相独立**，可以只实盘一个、其余保持 paper。
+2. 把你要实盘的交易所模式改为 live：`DE_MODE=live`（Decibel）/ `EX_MODE=live`（Extended）/ `RS_MODE=live`（RISEx）/ `BN_MODE=live`（Binance）/ `ONDO_MODE=live`（Ondo Perps）/ `PHOENIX_MODE=live`（Phoenix）/ `NADO_MODE=live`（Nado）/ `OKX_MODE=live`（OKX）/ `GRVT_MODE=live`（GRVT）/ `LR_MODE=live`（RHC Lighter）/ `AR_MODE=live`（Arcus，须具备 Perps Beta 与地区资格）。**各交易所互相独立**，可以只实盘一个、其余保持 paper。Entropy 当前固定 `ENTROPY_MODE=paper`；改为 `live` 会被拒绝，不能绕过。
 3. 按下面各小节获取并填入对应凭据。
 4. 保存 `.env`，双击 `实盘启动.bat`，输入 `YES` 确认启动。
 5. 启动日志里看到 `[XX] ✓ 连接成功 [LIVE 模式]` 即成功。
@@ -391,6 +391,8 @@ NADO_ORDER_GAP_MS=200
 
 > ⚠️ Linked Signer 是推荐的最小权限方案。所有私钥与 EIP-712 签名只保留在本机；首次实盘请用小额和低杠杆。网络状态未知时机器人不会盲目重复下单。
 
+**实时行情锚点（2.3.1）**：Nado Archive K 线会先去重并按时间升序归一化，趋势指标基于历史 K 线计算，但智能区间始终以所选产品的最新 Sequencer BBO 为锚点。切换交易对会清除旧市场区间并重新取价；迟到的旧行情响应会被丢弃。启动前机器人再次读取实时价，若现价不在新区间内或中性网格无法同时生成上下双向初始单，会在撤单、设置杠杆和下单前直接阻止启动。
+
 ### 7.8 OKX USDⓈ 永续
 
 OKX 实盘需要 API Key、Secret Key 和创建 Key 时设置的 Passphrase：
@@ -439,13 +441,62 @@ GRVT_SUB_ACCOUNT_ID=
 
 **批量回包 / 订单跟踪（2.2.5）**：GRVT 的 `create_order` 会返回占位 `order_id="0x00"`，不能将其当成唯一订单号，否则多笔订单被合并成一笔，误报“成功 1/16”。现在以逐笔唯一的 `metadata.client_order_id` 建立稳定本地引用 `grvt-client:<编号>`，创建回包、实时挂单查询、撤单、缓存重建和重启恢复均关联到同一笔订单。查询获得的真实交易所订单号单独保存；旧版真实编号的订单仍可接管。回包缺少可验证的订单标识时，不计为成功、不自动重发，而是停止启动、尝试撤单并提示人工核对，不会再断言“未挂出任何初始订单”。
 
-升级线上网页不会自动替换已运行的本地引擎。请保留 `.env` 与 `data`，通过平台下载最新引擎或使用启动器更新，在合适的维护时间重启并确认版本 **2.2.7**；无需重填交易密钥。本次回归使用公开市场规则与离线签名/模拟接口，不会发出实盘测试订单。
+升级线上网页不会自动替换已运行的本地引擎。请保留 `.env` 与 `data`，通过平台下载最新引擎或使用启动器更新，在合适的维护时间重启并确认版本 **2.3.1**；无需重填交易密钥。本次回归使用公开市场规则与离线签名/模拟接口，不会发出实盘测试订单。
 
 回包与撤单规则参考：[GRVT 官方集成说明](https://github.com/gravity-technologies/grvt-skills/blob/main/skills/perpetual-trading/SKILL.md) · [官方交易 API](https://api-docs.grvt.io/trading_api/)
 
 数量规则参考：[官方市场元数据](https://api-docs.grvt.io/market_data_api/) · [官方阶梯单数量向下对齐说明](https://help.grvt.io/en/articles/13680720-advanced-order-type-scale-order)
 
-### 7.10 RHC Lighter（Robinhood Chain）
+### 7.10 Arcus（Robinhood Chain；Perps Beta）
+
+Arcus `paper` 使用官方公开实时行情并在本机模拟成交。`live` 通过 Arcus 官方永续 REST / WebSocket API 下单，但只适用于已经获得 **Perps Beta** 权限、且所在国家或地区符合 Arcus 条款的账户。Spot Beta 开放不等于 Perps API 已对该账户开放。
+
+```ini
+AR_MODE=paper
+AR_NETWORK=mainnet
+ARCUS_ADDRESS=
+ARCUS_ACCOUNT_INDEX=0
+ARCUS_API_KEY=
+ARCUS_API_PRIVATE_KEY=
+ARCUS_API_PRIVATE_KEY_FILE=secrets/arcus-private.pem
+ARCUS_GOOD_TIL_DAYS=40
+ARCUS_FEE_RATE=0.0005
+ARCUS_API_URL=
+ARCUS_WS_URL=
+```
+
+1. 先阅读 [Arcus 官网资格说明](https://arcus.xyz/)；未获 Perps Beta 权限或处于受限地区时保持 `AR_MODE=paper`。
+2. 在 [Arcus 主网应用](https://app.arcus.xyz/) 或 [Arcus 测试网](https://testnet.arcus.xyz/) 的 API Keys 页面生成密钥。Arcus 在浏览器中创建 **Ed25519 API keypair**，并用一次 EIP-712 钱包签名把 API 公钥绑定到地址和子账户。
+3. `ARCUS_ADDRESS` 只填写公开钱包地址，`ARCUS_ACCOUNT_INDEX` 填授权的子账户编号，`ARCUS_API_KEY` 填 Ed25519 公钥。API Signing Key 是 Ed25519 私钥半部，只显示一次；建议保存到 `ARCUS_API_PRIVATE_KEY_FILE` 指向的本机文件。
+4. **绝不能**把 Ethereum / Robinhood Chain 主钱包私钥或助记词填入任何 `ARCUS_*` 字段。`ARCUS_API_PRIVATE_KEY` 只接受 Arcus 专用 API Signing Key。
+5. 市场 ID、在线状态、`tickSize`、分层 `tickTiers`、`stepSize`、最小数量与最小名义金额必须从官方 `/v1/markets` 动态读取。离线市场、未按当前价格档 tick 对齐的价格、或不满足最小值的数量都必须在签名前拒绝。
+
+官方资料：[REST 下单指南](https://docs.arcus.xyz/guides/rest-trading) · [WebSocket 下单指南](https://docs.arcus.xyz/guides/websocket-trading) · [完整 API 索引](https://docs.arcus.xyz/llms.txt)
+
+> ⚠️ Arcus 官方的 `arcus-spot-sdk` 服务于 Spot RFQ，不是永续订单簿 SDK，不能拿它替代本节的 Perps API。`live` 启动前还必须通过 API key、公私钥匹配、账户权限、余额、市场状态和保证金预检；任一项失败都不发送订单。
+
+### 7.11 Entropy（Hyperliquid HIP-3；仅 Paper）
+
+Entropy 是 Hyperliquid 上 ticker / DEX 名为 `io` 的 HIP-3 市场部署者。当前版本只通过 Hyperliquid **官方** `/info` 接口读取 Entropy 的实时市场、订单簿与 K 线，在本机使用虚拟余额撮合；不会签名，也不会发送真实订单。
+
+```ini
+ENTROPY_MODE=paper
+ENTROPY_NETWORK=mainnet
+ENTROPY_DEX=io
+ENTROPY_API_URL=https://api.hyperliquid.xyz
+ENTROPY_PROXY=
+```
+
+- `ENTROPY_MODE` 当前只允许 `paper`；设置为 `live` 必须 fail-closed 并提示尚未开放，不能静默降级后仍显示 LIVE。
+- `ENTROPY_DEX` 固定为官方标识 `io`。市场名称形如 `io:ANTH`，具体清单、顺序、下架状态和 `szDecimals` 必须通过 `meta(dex:"io")` 动态读取，不能硬编码历史市场或 asset ID。
+- `ENTROPY_API_URL` 是官方 API **基地址**，保持 `https://api.hyperliquid.xyz`，不要追加 `/info`，也不要替换为臆造的 `api.entropy.io`。
+- Paper 不需要任何账户或密钥。不要在本项目中填写 Hyperliquid 主钱包私钥、助记词或 Agent/API Wallet 私钥。
+
+官方资料：[Entropy 架构与 `io` 标识](https://docs.entropy.io/) · [Hyperliquid HIP-3](https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-3-builder-deployed-perpetuals) · [Perpetuals Info API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals) · [资产 ID](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids) · [价格与数量精度](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size)
+
+> 安全边界：只有未来完成并审计 Hyperliquid Agent Wallet 签名、nonce、HIP-3 isolated margin / collateral、动态 asset ID、订单状态确认和撤单恢复后，才可以单独评估开放 Entropy `live`。当前文档和界面不得宣称 Entropy 已支持实盘。
+
+### 7.12 RHC Lighter（Robinhood Chain）
 
 RHC 固定使用官方主网，由官方 Python signer 在本机签名。账户编号、API Key 索引和 API 私钥必须属于同一个 RHC Profile：
 
@@ -469,7 +520,7 @@ LIGHTER_ORDER_GAP_MS=300
 
 官方 API：<https://apidocs.rh.lighter.xyz/>；官方应用：<https://robinhoodchain.lighter.xyz/?referral=WELINKBTC>
 
-### 7.11 测试网练手（可选）
+### 7.13 测试网练手（可选）
 
 支持测试环境的交易所都应先走沙盒流程：把对应的 `*_NETWORK` 改为 `testnet`，再使用该测试网账户凭据；Ondo Perps 的 `testnet` 映射到官方 sandbox。
 
@@ -493,6 +544,8 @@ PHOENIX_PROXY=
 NADO_PROXY=
 OKX_PROXY=
 GRVT_PROXY=
+ARCUS_PROXY=
+ENTROPY_PROXY=
 LIGHTER_PROXY=
 ```
 
@@ -591,9 +644,11 @@ AI_REPORT_HOUR=20             # 每天几点生成日报（0-23 整点）
 | `PAPER_BALANCE` | `10000` | 模拟模式初始虚拟余额（USDC） |
 | `EXCHANGE_INSTANCES` | 空 | 页面自动维护的多账号实例清单，如 `de2,bn2,bn3`；每种交易所最多 3 个账号 |
 | `GLOBAL_PROXY` | `direct` | 直连和服务独立代理都失败后的最低优先级兜底，见第八节 |
-| `DECIBEL_PROXY` / `EXTENDED_PROXY` / `RISEX_PROXY` / `BINANCE_PROXY` / `ONDO_PROXY` / `PHOENIX_PROXY` / `NADO_PROXY` / `OKX_PROXY` / `GRVT_PROXY` / `LIGHTER_PROXY` | 空 | 直连失败后使用的各所独立代理 |
-| `DE_MODE` / `EX_MODE` / `RS_MODE` / `BN_MODE` / `ONDO_MODE` / `PHOENIX_MODE` / `NADO_MODE` / `OKX_MODE` / `GRVT_MODE` / `LR_MODE` | `paper` | 各所运行模式：`paper` 或 `live` |
-| `DE_NETWORK` / `EX_NETWORK` / `RS_NETWORK` / `BN_NETWORK` / `ONDO_NETWORK` / `PHOENIX_NETWORK` / `NADO_NETWORK` / `OKX_NETWORK` / `GRVT_NETWORK` / `LR_NETWORK` | 各适配器默认值 | 主网 / 测试网；RHC 固定官方主网 |
+| `DECIBEL_PROXY` / `EXTENDED_PROXY` / `RISEX_PROXY` / `BINANCE_PROXY` / `ONDO_PROXY` / `PHOENIX_PROXY` / `NADO_PROXY` / `OKX_PROXY` / `GRVT_PROXY` / `ARCUS_PROXY` / `ENTROPY_PROXY` / `LIGHTER_PROXY` | 空 | 直连失败后使用的各所独立代理 |
+| `DE_MODE` / `EX_MODE` / `RS_MODE` / `BN_MODE` / `ONDO_MODE` / `PHOENIX_MODE` / `NADO_MODE` / `OKX_MODE` / `GRVT_MODE` / `AR_MODE` / `LR_MODE` | `paper` | 各所运行模式：`paper` 或 `live`；Arcus live 另受 Beta/地区资格约束 |
+| `ENTROPY_MODE` | `paper` | Entropy 当前只允许 `paper`；`live` 明确禁用 |
+| `DE_NETWORK` / `EX_NETWORK` / `RS_NETWORK` / `BN_NETWORK` / `ONDO_NETWORK` / `PHOENIX_NETWORK` / `NADO_NETWORK` / `OKX_NETWORK` / `GRVT_NETWORK` / `AR_NETWORK` / `LR_NETWORK` | 各适配器默认值 | 主网 / 测试网；RHC 固定官方主网，Arcus testnet/mainnet 凭据互不通用 |
+| `ENTROPY_NETWORK` / `ENTROPY_DEX` | `mainnet` / `io` | Entropy 官方 Hyperliquid HIP-3 网络与 DEX 标识；当前不可改为 live |
 | `DECIBEL_API_KEY` | 空 | Decibel：geomi.dev 的 API Key |
 | `DECIBEL_PRIVATE_KEY` | 空 | Decibel：API 钱包 Ed25519 私钥 |
 | `DECIBEL_SUBACCOUNT` | 空 | Decibel：Trading Account 地址 |
@@ -631,6 +686,12 @@ AI_REPORT_HOUR=20             # 每天几点生成日报（0-23 整点）
 | `GRVT_API_KEY` / `GRVT_PRIVATE_KEY` / `GRVT_SUB_ACCOUNT_ID` | 空 | GRVT Trade API Key、专用 EIP-712 交易签名私钥与数字子账户 ID |
 | `GRVT_ORDER_GAP_MS` / `GRVT_POLL_MS` | `250` / `4000` | GRVT 连续签名下单间隔与账户/订单轮询间隔 |
 | `GRVT_MARKET_URL` / `GRVT_TRADE_URL` / `GRVT_AUTH_URL` | 网络对应官方地址 | GRVT 市场、交易和登录接口，一般留空 |
+| `ARCUS_ADDRESS` / `ARCUS_ACCOUNT_INDEX` | 空 / `0` | Arcus 获授权的公开钱包地址与子账户编号；公开地址不是钱包私钥 |
+| `ARCUS_API_KEY` | 空 | Arcus Ed25519 API 公钥；仅 live 使用 |
+| `ARCUS_API_PRIVATE_KEY` / `ARCUS_API_PRIVATE_KEY_FILE` | 空 / `secrets/arcus-private.pem` | Arcus 专用 Ed25519 API Signing Key 或本机文件，二选一；绝不能填写主钱包私钥 |
+| `ARCUS_GOOD_TIL_DAYS` / `ARCUS_FEE_RATE` | `40` / `0.0005` | GTT 有效期与无法读取实际费率时的保守回退值 |
+| `ARCUS_API_URL` / `ARCUS_WS_URL` | 网络对应官方地址 | Arcus 官方 REST / WebSocket 地址，一般留空 |
+| `ENTROPY_API_URL` | `https://api.hyperliquid.xyz` | Hyperliquid 官方 API 基地址；程序调用 `/info` 获取 `io` 市场实时数据，不要追加 `/info` |
 | `LIGHTER_ACCOUNT_INDEX` / `LIGHTER_API_KEY_INDEX` | 空 | RHC 账户编号与 API Key 索引；实盘必填，Key 索引限制为 4–254 |
 | `LIGHTER_API_PRIVATE_KEY` / `LIGHTER_API_PRIVATE_KEY_FILE` | 空 / `secrets/lighter-api-private-key.txt` | RHC API 签名私钥或单行私钥文件，二选一 |
 | `LIGHTER_PYTHON` | 空 | 可选 64 位 Python 3.12 路径；留空由一键启动准备本机运行时 |
@@ -703,7 +764,7 @@ AI_REPORT_HOUR=20             # 每天几点生成日报（0-23 整点）
 网络问题。到 ⚙ IP配置页配置代理（见第八节），点"检测当前出口 IP"验证，然后点 🔌 重连交易所。
 
 **Q：模拟模式的行情是真的吗？**
-是。paper 模式拉真实行情、用虚拟资金撮合；拿不到行情时会退化为合成数据（界面会标注 dataSource）。
+是。paper 模式拉真实行情、用虚拟资金撮合；一般适配器拿不到行情时可能退化为合成数据（界面会标注 dataSource）。Entropy 是明确例外：只接受 Hyperliquid 官方 `io` 实时行情，官方数据不可用时应显示离线，不把合成价格伪装成 Entropy 行情。
 
 **Q：启动网格时报"格距过小"之类的错误？**
 格距不够覆盖手续费。减少网格数量或扩大区间。
@@ -712,7 +773,13 @@ AI_REPORT_HOUR=20             # 每天几点生成日报（0-23 整点）
 降低每格数量、减少格数，或提高杠杆（谨慎）。
 
 **Q：想同时实盘 A 所、模拟 B 所可以吗？**
-可以，全部交易所的 `*_MODE` 各自独立。
+可以，支持 live 的交易所其 `*_MODE` 各自独立。Entropy 当前只允许 paper，不能作为实盘一侧。
+
+**Q：Arcus 为什么有 API Signing Key，还需要钱包地址？**
+钱包地址是公开账户标识；Ed25519 API keypair 经一次 EIP-712 钱包签名后绑定到该地址与子账户，之后机器人只使用专用 API Signing Key 签交易请求。绝不能把主钱包私钥或助记词交给程序。Arcus live 还要求账户已获 Perps Beta 权限且地区符合官方条款。
+
+**Q：为什么 Entropy 不能切换到 live？**
+Entropy 虽可通过 Hyperliquid HIP-3 官方 API 真实交易，但当前版本尚未实现并审计 Agent Wallet 签名、nonce、isolated margin/collateral 与恢复流程。为避免把未完成的签名路径包装成实盘，当前只开放官方实时行情驱动的 paper；不需要、也不应填写任何钱包私钥。
 
 **Q：程序会把我的私钥传到哪里吗？**
 不会。私钥只在本机 `.env`，仅用于给交易请求签名。代码全部开源可审计。

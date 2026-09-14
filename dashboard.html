@@ -14,8 +14,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260902-sthmvrv-v1" />
-    <link rel="stylesheet" href="dashboard.css?v=20260902-sthmvrv-v1" />
+  <link rel="stylesheet" href="styles.css?v=20260914-system-ui-v1" />
+  <link rel="stylesheet" href="dashboard.css?v=20260914-system-ui-v1" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
   </head>
@@ -164,7 +164,7 @@
           <span class="card-kicker" data-i18n="kpi.halving">减半倒计时</span>
           <strong id="halving-days">--</strong>
           <em id="halving-reward">3.125 → 1.5625 BTC</em>
-          <p id="halving-block">mempool.space</p>
+          <p id="halving-block" data-i18n="halving.loading">正在同步区块高度…</p>
         </article>
       </section>
 
@@ -341,7 +341,7 @@
           <section class="terminal-section chart-section" id="charts">
             <aside class="trend-index" id="trend-index" aria-label="趋势指标导航">
               <div class="trend-index-head">
-                <span class="trend-index-kicker">INDEX / 30</span>
+              <span class="trend-index-kicker">INDEX / 32</span>
                 <strong data-i18n="trendNav.title">趋势指标导航</strong>
                 <p data-i18n="trendNav.text">点击名称快速定位</p>
               </div>
@@ -2687,18 +2687,195 @@
               </details>
             </article>
 
+            <article class="chart-panel cost-basis-panel under-3m-heat-panel" id="under-3m-heat-panel">
+              <div class="cost-basis-header">
+                <div class="cost-basis-heading">
+                  <p class="eyebrow">BTC: &lt;3M REALIZED CAP HODL WAVES · HOT CAPITAL CYCLE</p>
+                  <h2 data-i18n="under3mHeat.title">BTC：&lt;3个月 已实现市值 HODL 波动</h2>
+                  <p data-i18n="under3mHeat.subtitle">用持币不足 3 个月的新筹码占比，衡量增量资金与热钱的活跃程度，并观察 39%–45% 的历史过热区。</p>
+                </div>
+                <div class="cost-basis-toolbar">
+                  <div class="chart-actions" role="group" aria-label="Bitcoin under 3 months hot capital cycle chart tools">
+                    <button class="surf-model-switch" type="button" data-surf-model="under-3m-heat" title="Surf 模型解读" aria-label="打开 Surf 模型解读" aria-pressed="false"><span aria-hidden="true">⇄</span></button>
+                    <button id="under-3m-heat-snapshot" type="button" title="保存图表快照" aria-label="保存图表快照"><span aria-hidden="true">◉</span></button>
+                    <button id="under-3m-heat-download" type="button" title="下载图表数据" aria-label="下载图表数据"><span aria-hidden="true">⇩</span></button>
+                    <button id="under-3m-heat-fullscreen" type="button" title="全屏查看" aria-label="全屏查看"><span aria-hidden="true">⛶</span></button>
+                  </div>
+                  <div class="range-tabs cost-basis-tabs" data-chart-tabs="under-3m-heat" role="group" aria-label="Bitcoin under 3 months hot capital cycle range">
+                    <button type="button" data-range="7">7D</button>
+                    <button type="button" data-range="30">30D</button>
+                    <button type="button" data-range="90">90D</button>
+                    <button type="button" data-range="365">1Y</button>
+                    <button type="button" data-range="all" class="active">ALL</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cost-basis-snapshot under-3m-heat-snapshot" aria-live="polite">
+                <div><span data-i18n="under3mHeat.current">公开源当前值</span><strong id="under-3m-heat-current">--</strong><em id="under-3m-heat-as-of">--</em></div>
+                <div><span data-i18n="under3mHeat.reference">参考图模型值</span><strong id="under-3m-heat-reference">31.7%</strong><em id="under-3m-heat-divergence">独立口径锚点</em></div>
+                <div><span data-i18n="under3mHeat.distance">距离 39% 警戒线</span><strong id="under-3m-heat-distance">--</strong><em id="under-3m-heat-zone">--</em></div>
+                <div><span data-i18n="under3mHeat.price">BTC 实时价格</span><strong id="under-3m-heat-price">--</strong><em id="under-3m-heat-price-as-of">--</em></div>
+              </div>
+
+              <div class="chart-stage cost-basis-stage under-3m-heat-stage">
+                <canvas id="under-3m-heat-chart" height="590"></canvas>
+                <div class="cost-basis-tooltip" id="under-3m-heat-tooltip" hidden></div>
+                <div class="chart-loading" id="under-3m-heat-loading" data-i18n="under3mHeat.loading">正在同步 2011 年至今的公开历史，并计算未来 365 日热钱情景...</div>
+              </div>
+              <div class="chart-legend cost-basis-legend under-3m-heat-legend">
+                <span><i class="legend-under-3m-heat-price"></i>BTC Price</span>
+                <span><i class="legend-under-3m-heat-share"></i>&lt;3M Public Live</span>
+                <span><i class="legend-under-3m-heat-warning"></i>39%–45% Warning</span>
+                <span><i class="legend-under-3m-heat-reference"></i>Reference Anchors</span>
+                <span><i class="legend-under-3m-heat-projection"></i>365D Scenario</span>
+                <em id="under-3m-heat-source">BGEOMETRICS + BITCOIN DATA · DAILY</em>
+              </div>
+
+              <details class="cost-basis-analysis-disclosure">
+                <summary><span data-i18n="costBasis.analysisToggle">指标分析</span></summary>
+                <div class="cost-basis-analysis under-3m-heat-analysis">
+                  <div class="cost-basis-signal" id="under-3m-heat-signal">
+                    <span data-i18n="under3mHeat.signalLabel">新资金与热钱阶段</span>
+                    <strong id="under-3m-heat-signal-title" data-i18n="under3mHeat.waiting">等待公开数据同步</strong>
+                    <p id="under-3m-heat-signal-copy" data-i18n="under3mHeat.signalPending">同步后将按公开实测值、参考图锚点、39% 警戒线和 45% 过热线评估当前阶段。</p>
+                    <dl>
+                      <div><dt data-i18n="under3mHeat.change">7 日变化</dt><dd id="under-3m-heat-change">--</dd></div>
+                      <div><dt data-i18n="under3mHeat.overheatDistance">距离 45% 过热线</dt><dd id="under-3m-heat-overheat-distance">--</dd></div>
+                      <div><dt data-i18n="under3mHeat.scenario">365 日情景终点</dt><dd id="under-3m-heat-scenario">--</dd></div>
+                      <div><dt data-i18n="under3mHeat.date">链上日期</dt><dd id="under-3m-heat-date">--</dd></div>
+                    </dl>
+                  </div>
+                  <div class="cost-basis-explainer">
+                    <p class="eyebrow">Why It Matters</p>
+                    <h3 data-i18n="under3mHeat.explainTitle">新筹码占比持续升高代表增量资金入场；进入 39%–45% 区间后，历史上的阶段性顶部风险明显上升</h3>
+                    <p data-i18n="under3mHeat.explainOne">指标统计最后移动时间不足 3 个月的筹码在全网已实现市值中的权重。它把每枚筹码按最后移动时的成本计价，因此更接近新资金掌握的经济权重，而不是简单币量。</p>
+                    <div class="vdd-threshold-levels under-3m-heat-levels">
+                      <div class="cooldown"><span data-i18n="under3mHeat.cooldown">沉淀区</span><strong>&lt;30%</strong><em data-i18n="under3mHeat.cooldownCopy">热钱占比较低</em></div>
+                      <div class="expansion"><span data-i18n="under3mHeat.expansion">增量区</span><strong>30–39%</strong><em data-i18n="under3mHeat.expansionCopy">新资金温和活跃</em></div>
+                      <div class="caution"><span data-i18n="under3mHeat.caution">警戒区</span><strong>39–45%</strong><em data-i18n="under3mHeat.cautionCopy">阶段顶部风险抬升</em></div>
+                      <div class="overheated"><span data-i18n="under3mHeat.overheated">过热区</span><strong>≥45%</strong><em data-i18n="under3mHeat.overheatedCopy">短线投机集中</em></div>
+                    </div>
+                    <p data-i18n="under3mHeat.explainTwo">参考图给出的 2016、2019、2024 三个锚点分别为 39.2%、43.7%、44.7%。系统同时展示相同时间窗内公开源的实际峰值；两者不会混算，以免实体调整和年龄分桶差异造成误导。</p>
+                    <div class="cost-basis-history under-3m-heat-history" id="under-3m-heat-history" aria-label="Reference and public under-three-month cycle peaks"></div>
+                    <p data-i18n="under3mHeat.explainThree">后续虚线按最近 90 日动量逐步衰减，并向过去四年的公开序列中位数回归。它用于持续观察路径和阈值距离，不是对 BTC 价格、收益或顶部日期的确定预测。</p>
+                    <p class="cost-basis-disclaimer" data-i18n="under3mHeat.disclaimer">公开日频值来自 BGeometrics 与 Bitcoin Data，BTC 现价来自 Binance Spot；31.7%及三个历史峰值来自参考图，仅作为独立模型锚点。不同数据商的实体调整与分桶可能显著不同，仅用于周期研究，不构成投资建议。</p>
+                  </div>
+                </div>
+              </details>
+            </article>
+
+            <article class="chart-panel cost-basis-panel utxo-age-rp-panel" id="utxo-age-rp-panel">
+              <div class="cost-basis-header">
+                <div class="cost-basis-heading">
+                  <p class="eyebrow">BTC: REALIZED PRICE BY UTXO AGE BANDS · THOUSAND-DAY CYCLE</p>
+                  <h2 data-i18n="utxoAgeRp.title">BTC：按 UTXO 年龄区间划分的比特币已实现价格</h2>
+                  <p data-i18n="utxoAgeRp.subtitle">用 6–12 个月与 12–18 个月筹码成本线的交叉，观察深熊换手和约 1050 天的宏观周期窗口。</p>
+                </div>
+                <div class="cost-basis-toolbar">
+                  <div class="chart-actions" role="group" aria-label="Bitcoin UTXO age-band realized price chart tools">
+                    <button class="surf-model-switch" type="button" data-surf-model="utxo-age-rp" title="Surf 模型解读" aria-label="打开 Surf 模型解读" aria-pressed="false"><span aria-hidden="true">⇄</span></button>
+                    <button id="utxo-age-rp-snapshot" type="button" title="保存图表快照" aria-label="保存图表快照"><span aria-hidden="true">◉</span></button>
+                    <button id="utxo-age-rp-download" type="button" title="下载图表数据" aria-label="下载图表数据"><span aria-hidden="true">⇩</span></button>
+                    <button id="utxo-age-rp-fullscreen" type="button" title="全屏查看" aria-label="全屏查看"><span aria-hidden="true">⛶</span></button>
+                  </div>
+                  <div class="range-tabs cost-basis-tabs" data-chart-tabs="utxo-age-rp" role="group" aria-label="Bitcoin UTXO age-band realized price range">
+                    <button type="button" data-range="7">7D</button>
+                    <button type="button" data-range="30">30D</button>
+                    <button type="button" data-range="90">90D</button>
+                    <button type="button" data-range="365">1Y</button>
+                    <button type="button" data-range="all" class="active">ALL</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cost-basis-snapshot utxo-age-rp-snapshot" aria-live="polite">
+                <div><span data-i18n="utxoAgeRp.sixToTwelve">6–12 个月成本</span><strong id="utxo-age-rp-6m12m">--</strong><em id="utxo-age-rp-6m12m-state">--</em></div>
+                <div><span data-i18n="utxoAgeRp.twelveToEighteen">12–18 个月成本</span><strong id="utxo-age-rp-12m18m">--</strong><em id="utxo-age-rp-spread">--</em></div>
+                <div><span data-i18n="utxoAgeRp.cross">本轮死叉锚点</span><strong id="utxo-age-rp-cross">--</strong><em id="utxo-age-rp-cross-date">--</em></div>
+                <div><span data-i18n="utxoAgeRp.countdown">千日周期进度</span><strong id="utxo-age-rp-countdown">--</strong><em id="utxo-age-rp-target">--</em></div>
+              </div>
+
+              <div class="chart-stage cost-basis-stage utxo-age-rp-stage">
+                <canvas id="utxo-age-rp-chart" height="620"></canvas>
+                <div class="cost-basis-tooltip" id="utxo-age-rp-tooltip" hidden></div>
+                <div class="chart-loading" id="utxo-age-rp-loading" data-i18n="utxoAgeRp.loading">正在重建 2014 年至今的公开 UTXO 年龄成本线，并计算剩余千日周期情景...</div>
+              </div>
+              <div class="chart-legend cost-basis-legend utxo-age-rp-legend">
+                <span><i class="legend-utxo-age-rp-price"></i>BTC Price</span>
+                <span><i class="legend-utxo-age-rp-6m12m"></i>6M–12M Realized Price</span>
+                <span><i class="legend-utxo-age-rp-12m18m"></i>12M–18M Realized Price</span>
+                <span><i class="legend-utxo-age-rp-reference"></i>Reference Cycles</span>
+                <span><i class="legend-utxo-age-rp-projection"></i>Forward Scenario</span>
+                <em id="utxo-age-rp-source">BGEOMETRICS · PUBLIC RECONSTRUCTION · DAILY</em>
+              </div>
+
+              <details class="cost-basis-analysis-disclosure">
+                <summary><span data-i18n="costBasis.analysisToggle">指标分析</span></summary>
+                <div class="cost-basis-analysis utxo-age-rp-analysis">
+                  <div class="cost-basis-signal" id="utxo-age-rp-signal">
+                    <span data-i18n="utxoAgeRp.signalLabel">中长期筹码成本结构</span>
+                    <strong id="utxo-age-rp-signal-title" data-i18n="utxoAgeRp.waiting">等待公开数据同步</strong>
+                    <p id="utxo-age-rp-signal-copy" data-i18n="utxoAgeRp.signalPending">同步后将分别显示公开重建的交叉状态与参考图给出的 2026 周期锚点。</p>
+                    <dl>
+                      <div><dt data-i18n="utxoAgeRp.spread">成本差</dt><dd id="utxo-age-rp-signal-spread">--</dd></div>
+                      <div><dt data-i18n="utxoAgeRp.elapsed">参考锚点后经过</dt><dd id="utxo-age-rp-elapsed">--</dd></div>
+                      <div><dt data-i18n="utxoAgeRp.remaining">参考窗口剩余</dt><dd id="utxo-age-rp-remaining">--</dd></div>
+                      <div><dt data-i18n="utxoAgeRp.date">链上日期</dt><dd id="utxo-age-rp-date">--</dd></div>
+                    </dl>
+                  </div>
+                  <div class="cost-basis-explainer">
+                    <p class="eyebrow">Why It Matters</p>
+                    <h3 data-i18n="utxoAgeRp.explainTitle">6–12 个月成本线下穿 12–18 个月成本线，反映中期筹码成本低于更长期筹码，常见于深熊换手阶段</h3>
+                    <p data-i18n="utxoAgeRp.explainOne">绿线代表 6–12 个月持有者成本，橙线代表 12–18 个月持有者成本。系统要求下穿后连续 14 个日频观测保持倒挂，才把公开重建结果标记为已确认。</p>
+                    <div class="vdd-threshold-levels utxo-age-rp-levels">
+                      <div class="bottom"><span data-i18n="utxoAgeRp.bottom">深熊换手</span><strong>DEATH CROSS</strong><em data-i18n="utxoAgeRp.bottomCopy">观察长线套牢盘清洗</em></div>
+                      <div class="early"><span data-i18n="utxoAgeRp.early">周期早期</span><strong>0–350D</strong><em data-i18n="utxoAgeRp.earlyCopy">成本结构开始修复</em></div>
+                      <div class="expansion"><span data-i18n="utxoAgeRp.expansion">趋势扩张</span><strong>350–800D</strong><em data-i18n="utxoAgeRp.expansionCopy">验证现货需求与筹码沉淀</em></div>
+                      <div class="timing"><span data-i18n="utxoAgeRp.timing">历史时间窗</span><strong>≈1050D</strong><em data-i18n="utxoAgeRp.timingCopy">仅作宏观时间参考</em></div>
+                    </div>
+                    <p data-i18n="utxoAgeRp.explainTwo">参考图给出的三个周期为 1045、1028 与 1063 天，均值为 1045 天。系统把这些研究锚点与公开重建交叉分开绘制；公开序列不满足死叉条件时，不会借用参考锚点宣称公开模型已确认。</p>
+                    <div class="cost-basis-history utxo-age-rp-history" id="utxo-age-rp-history" aria-label="Reference UTXO age-band realized-price cycles"></div>
+                    <p data-i18n="utxoAgeRp.explainThree">虚线根据两条成本线近期动量与一年结构趋势逐步衰减，持续推演至参考周期窗口结束。它只用于检验成本结构路径，不预测 BTC 顶部价格，也不保证顶部日期。</p>
+                    <p class="cost-basis-disclaimer" data-i18n="utxoAgeRp.disclaimer">6–12 个月成本由公开分组已实现市值除以公开分组供应量重建；公开源仅发布 1–2 年合并组，因此 12–18 个月线使用价格年龄切片并校准至该公开合并组。发布基线之后的数据标记为估算。参考周期与 2026 锚点来自用户提供的研究图，仅用于周期研究，不构成投资建议。</p>
+                  </div>
+                </div>
+              </details>
+            </article>
+
             <article class="chart-panel halving-section">
               <div class="section-heading compact">
-                <div><p class="eyebrow">Halving Clock</p><h2 data-i18n="halving.title">第五次减半进度</h2></div>
-                <strong id="halving-eta">--</strong>
+                <div><p class="eyebrow">BTC Halving Countdown</p><h2 id="halving-title" data-i18n="halving.title">第五次减半进度</h2></div>
+                <span class="halving-data-state" id="halving-data-state" role="status" data-i18n="halving.loading">正在同步区块高度…</span>
               </div>
-              <div class="halving-progress-shell"><div class="halving-progress" id="halving-progress"></div><span id="halving-progress-label">--</span></div>
+              <div class="halving-countdown"><strong id="halving-countdown-days">--</strong><span data-i18n="halving.daysRemaining">天 · 预计剩余</span></div>
+              <div class="halving-progress-shell" role="progressbar" aria-label="Halving cycle progress" aria-valuemin="0" aria-valuemax="100"><div class="halving-progress" id="halving-progress"></div></div>
+              <p class="halving-progress-caption" id="halving-progress-label">--</p>
+              <dl class="halving-details">
+                <div><dt data-i18n="halving.estimatedDate">预计减半日期（北京时间）</dt><dd id="halving-eta">--</dd></div>
+                <div><dt data-i18n="halving.currentReward">当前区块奖励</dt><dd id="halving-current-reward">3.125 BTC</dd></div>
+                <div><dt data-i18n="halving.nextReward">下次区块奖励</dt><dd id="halving-next-reward">1.5625 BTC</dd></div>
+                <div><dt data-i18n="halving.reduction">奖励降幅</dt><dd class="halving-reduction" id="halving-reduction">−50%</dd></div>
+              </dl>
               <dl class="halving-stats">
                 <div><dt data-i18n="halving.height">当前区块</dt><dd id="current-height">--</dd></div>
-                <div><dt data-i18n="halving.target">目标区块</dt><dd>1,050,000</dd></div>
+                <div><dt data-i18n="halving.target">目标区块</dt><dd id="halving-target">1,050,000</dd></div>
                 <div><dt data-i18n="halving.blocks">剩余区块</dt><dd id="blocks-left">--</dd></div>
-                <div><dt data-i18n="halving.reward">区块奖励</dt><dd>3.125 → 1.5625 BTC</dd></div>
               </dl>
+              <div class="halving-timeline">
+                <h3 data-i18n="halving.timeline">减半时间线 · UTC</h3>
+                <ol>
+                  <li><span class="halving-epoch">01</span><time datetime="2012-11-28">2012-11-28</time><strong>50 → 25 BTC</strong><small>#210,000</small></li>
+                  <li><span class="halving-epoch">02</span><time datetime="2016-07-09">2016-07-09</time><strong>25 → 12.5 BTC</strong><small>#420,000</small></li>
+                  <li><span class="halving-epoch">03</span><time datetime="2020-05-11">2020-05-11</time><strong>12.5 → 6.25 BTC</strong><small>#630,000</small></li>
+                  <li><span class="halving-epoch">04</span><time datetime="2024-04-20">2024-04-20</time><strong>6.25 → 3.125 BTC</strong><small>#840,000</small></li>
+                  <li class="is-upcoming"><span class="halving-epoch">05</span><span id="halving-timeline-date" data-i18n="halving.awaitEstimate">预计日期同步中</span><strong>3.125 → 1.5625 BTC</strong><small>#1,050,000</small></li>
+                </ol>
+              </div>
+              <footer class="halving-method">
+                <p id="halving-source" data-i18n="halving.loading">正在同步区块高度…</p>
+                <p data-i18n="halving.method">按每 210,000 个区块减半、平均 10 分钟出块估算；日期并非固定，将随实际出块速度变化。缓存回退保留原始观测时间，不推算实时区块。</p>
+              </footer>
             </article>
           </section>
 
@@ -2734,17 +2911,6 @@
           <div class="radar-note">
             <span data-i18n="radar.noteTitle">当前观察</span>
             <p id="radar-observation" data-i18n="radar.note">数据同步后生成周期观察，不构成投资建议。</p>
-          </div>
-          <div class="source-ledger">
-            <span data-i18n="radar.sources">数据来源</span>
-          <div><i class="source-live"></i><strong>CoinGecko</strong><em>Price</em></div>
-          <div><i class="source-live"></i><strong>Binance Market Data</strong><em>Price fallback</em></div>
-          <div><i class="source-live"></i><strong>Coin Metrics</strong><em>On-chain fallback</em></div>
-          <div><i class="source-live"></i><strong>BGeometrics</strong><em>Public history</em></div>
-          <div><i class="source-live"></i><strong>mempool.space</strong><em>Network</em></div>
-            <div><i class="source-live"></i><strong>alternative.me</strong><em>Sentiment</em></div>
-            <div><i class="source-api"></i><strong>CryptoQuant</strong><em>On-chain</em></div>
-            <div><i class="source-api"></i><strong>Coinglass</strong><em>Derivatives</em></div>
           </div>
         </aside>
       </div>
@@ -2787,8 +2953,8 @@
       </div>
     </aside>
 
-    <script src="dashboard.js?v=20260902-sthmvrv-v1"></script>
-    <script src="dashboard-product-carousel.js?v=20260902-sthmvrv-v1"></script>
+  <script src="dashboard.js?v=20260914-system-ui-v1"></script>
+  <script src="dashboard-product-carousel.js?v=20260914-system-ui-v1"></script>
     <script src="surf-assistant.js"></script>
   </body>
 </html>

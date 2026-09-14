@@ -43,8 +43,8 @@ test("bStockAlpha keeps deterministic qualification and risk controls", () => {
   const css = read("bstock-alpha.css");
   const eligibility = read("lib/bstock-eligible-snapshot.ts");
   const riskPolicy = read("lib/bstock-risk-policy.ts");
-  const quoteRoute = read("app/api/bstock-alpha/trading/quote/route.ts");
-  const executeRoute = read("app/api/bstock-alpha/trading/execute/route.ts");
+  const quoteRoute = read("lib/bstock-trading-quote-handler.ts");
+  const executeRoute = read("lib/bstock-trading-execute-handler.ts");
 
   assert.equal((eligibility.match(/^    \["/gm) || []).length, 67);
   for (const filter of ["all", "weekly", "stock", "etf", "recommended", "watchlist"]) assert.match(html, new RegExp(`data-universe-filter="${filter}"`));
@@ -411,9 +411,9 @@ test("bStockAlpha gates real research payment and live trading behind explicit c
   const researchRecover = read("app/api/bstock-alpha/research/recover/route.ts");
   const studioHelper = read("lib/bstock-agent-studio.ts");
   const schema = read("prisma/schema.prisma");
-  const quote = read("app/api/bstock-alpha/trading/quote/route.ts");
-  const tradeExecute = read("app/api/bstock-alpha/trading/execute/route.ts");
-  const status = read("app/api/bstock-alpha/trading/order-status/route.ts");
+  const quote = read("lib/bstock-trading-quote-handler.ts");
+  const tradeExecute = read("lib/bstock-trading-execute-handler.ts");
+  const status = read("lib/bstock-trading-status-handler.ts");
   const statusHelper = read("lib/bstock-agentic-wallet-order-status.ts");
 
   assert.match(html, /id="cmc-paid-research"/);
@@ -783,9 +783,9 @@ test("bStockAlpha persists buy and sell intents and exposes a durable order-reco
   const html = read("bstock-alpha.html");
   const script = read("bstock-alpha.js");
   const schema = read("prisma/schema.prisma");
-  const quote = read("app/api/bstock-alpha/trading/quote/route.ts");
-  const execute = read("app/api/bstock-alpha/trading/execute/route.ts");
-  const status = read("app/api/bstock-alpha/trading/order-status/route.ts");
+  const quote = read("lib/bstock-trading-quote-handler.ts");
+  const execute = read("lib/bstock-trading-execute-handler.ts");
+  const status = read("lib/bstock-trading-status-handler.ts");
   const snapshot = read("app/api/bstock-alpha/live-snapshot/route.ts");
 
   assert.match(html, /data-ledger-tab="orders">订单记录/);
@@ -868,7 +868,7 @@ test("bStock sell controls use held-token quantities and exit-specific review se
 });
 
 test("bStock live quote separates invalid request input from upstream response drift", () => {
-  const quoteRoute = read("app/api/bstock-alpha/trading/quote/route.ts");
+  const quoteRoute = read("lib/bstock-trading-quote-handler.ts");
   assert.match(quoteRoute, /INVALID_TRADE_QUOTE_INPUT/);
   assert.match(quoteRoute, /INVALID_AGENTIC_WALLET_QUOTE/);
   assert.match(quoteRoute, /normalizeAgenticWalletQuote\(quoted\.data\)/);
@@ -879,7 +879,7 @@ test("bStock live quote separates invalid request input from upstream response d
   assert.match(quoteRoute, /amount: z\.string\(\)\.trim\(\)\.min\(1\)\.max\(100\)\.regex\(\/\^\\d\+\(\?:\\\.\\d\+\)\?\$\/\)/);
   assert.match(quoteRoute, /resolveBstockSellRawAmount\(input\.amount, asset\.multiplier, rawBstockToken!\.balance, rawTokenDecimals\)/);
   assert.doesNotMatch(quoteRoute, /\? "交易报价参数无效。"/);
-  const executeRoute = read("app/api/bstock-alpha/trading/execute/route.ts");
+  const executeRoute = read("lib/bstock-trading-execute-handler.ts");
   assert.match(executeRoute, /tokenShare: intent\.side === "sell" \? intent\.amount : null/);
   assert.match(executeRoute, /multiplier: intent\.side === "sell" \? asset\.multiplier : null/);
   assert.match(executeRoute, /INVALID_TRADE_EXECUTION_INPUT/);

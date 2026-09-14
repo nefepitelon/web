@@ -132,7 +132,7 @@ test("legacy surfaces keep a single viewport scrollbar and viewport-sized overla
   assert.doesNotMatch(surface, /setHeight|style=\{\{ height/);
   assert.match(route, /--platform-header-height: 0px !important/);
   assert.match(route, /\.dashboard-subnav \{ top: 0 !important; \}/);
-  assert.match(route, /\.cycle-radar \{ top: 62px !important; \}/);
+  assert.match(route, /\.cycle-radar \{ top: auto !important; \}/);
   assert.match(route, /scroll-padding-top: 62px/);
   assert.match(route, /\.detail-drawer/);
   assert.match(route, /\.onchain-support-drawer/);

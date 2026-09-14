@@ -9,18 +9,18 @@ const js = fs.readFileSync(path.join(root, "product-dashboard.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 const legacyRoute = fs.readFileSync(path.join(root, "lib", "legacy-route.ts"), "utf8");
 
-test("homepage product dashboard exposes all 30 on-chain trend snapshots", () => {
+test("homepage product dashboard exposes all 32 on-chain trend snapshots", () => {
   const options = html.match(/data-model-option="[^"]+"/g) || [];
-  assert.equal(options.length, 30);
+  assert.equal(options.length, 32);
   for (const indicator of [
     "cost-basis", "sth-ratio", "lth-loss", "rpl", "median-rp", "lth-sth", "lth-rp", "supply-pl", "median-mvrv",
     "mvrv-bands", "vdd", "lth-nupl", "mvrv-price-bands", "stock-to-flow", "cycle-timing", "rhodl", "lth-rpl", "slrv",
-    "realized-cap-hodl", "lth-spent", "percent-profit", "lth-exchange-loss", "two-week-rsi", "under-3m-hodl", "sth-200dma", "vdd-median", "ssr", "sth-bands", "percent-profit-ex-10y", "sth-mvrv"
+    "realized-cap-hodl", "lth-spent", "percent-profit", "lth-exchange-loss", "two-week-rsi", "under-3m-hodl", "sth-200dma", "vdd-median", "ssr", "sth-bands", "percent-profit-ex-10y", "sth-mvrv", "under-3m-heat", "utxo-age-rp"
   ]) {
     assert.match(html, new RegExp(`data-model-option="${indicator}"`));
     assert.match(js, new RegExp(`"?${indicator}"?:?\\s*\\{`));
   }
-  assert.match(html, /class="power-copy-orbit"><strong>30<\/strong>/);
+  assert.match(html, /class="power-copy-orbit"><strong>32<\/strong>/);
   assert.match(html, /product-dashboard\.js/);
   assert.match(legacyRoute, /"product-dashboard\.js"/);
 });
@@ -106,7 +106,9 @@ test("homepage snapshots reuse the dashboard data APIs and render latest metric 
     "/api/stablecoin-supply-ratio?schema=1",
     "/api/sth-cost-basis-bands?schema=1",
     "/api/percent-supply-profit-ex-10y?schema=1",
-    "/api/sth-mvrv?schema=1"
+    "/api/sth-mvrv?schema=1",
+    "/api/under-3m-realized-cap-cycle?schema=1",
+    "/api/utxo-age-realized-price-cycle?schema=1"
   ]) {
     assert.ok(js.includes(endpoint), `missing endpoint ${endpoint}`);
   }

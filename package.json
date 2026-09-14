@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/run-with-grid.mjs dev",
-    "build": "npm run grid:package && prisma generate && node scripts/migrate-on-vercel.mjs && next build",
+    "build": "npm run grid:package && npm run quant:native && npm run quant:package && prisma generate && node scripts/migrate-on-vercel.mjs && next build",
     "start": "node scripts/run-with-grid.mjs start",
     "postinstall": "npm install --prefix grid-ops --omit=dev && npm install --prefix classic-grid --omit=dev",
     "grid:install": "npm install --prefix grid-ops --omit=dev",
@@ -12,6 +12,9 @@
     "grid:start": "npm --prefix grid-ops start",
     "grid:smoke": "node scripts/smoke-grid-ops.mjs",
     "grid:test": "npm --prefix grid-ops test",
+    "quant:package": "node scripts/package-quant-runtime.mjs",
+    "quant:native": "node scripts/package-native-quant-freqtrade.mjs && node scripts/verify-native-quant-assets.mjs",
+    "quant:test": "npm --prefix quant-runtime test",
     "classic-grid:test": "npm --prefix classic-grid test",
     "test": "node --test tests/*.test.js",
     "typecheck": "tsc --noEmit",

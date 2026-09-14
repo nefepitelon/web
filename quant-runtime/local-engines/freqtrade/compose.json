@@ -1,0 +1,12 @@
+{
+  "services": {
+    "freqtrade": {
+      "image": "${ENGINE_IMAGE}",
+      "restart": "unless-stopped",
+      "ports": ["127.0.0.1:${UI_PORT}:8080"],
+      "volumes": ["./project:/freqtrade/user_data"],
+      "command": ["webserver", "--config", "/freqtrade/user_data/config.json"],
+      "stop_grace_period": "60s"
+    }
+  }
+}

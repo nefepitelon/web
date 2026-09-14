@@ -26,6 +26,9 @@
       "maxDuration": 60,
       "regions": ["iad1"]
     },
+    "api/aicoin-pulse-collector.js": {
+      "maxDuration": 60
+    },
     "api/surf-pulse.js": {
       "maxDuration": 60
     },
@@ -48,6 +51,12 @@
       "maxDuration": 10
     }
   },
+  "crons": [
+    {
+      "path": "/api/aicoin-pulse-collector",
+      "schedule": "*/10 * * * *"
+    }
+  ],
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [

@@ -29,11 +29,11 @@ test("hosted Grid and Hedge commands execute through a durable workflow", () => 
   assert.match(runtime, /case "HEDGE_START"/);
   assert.match(api, /assertSameOrigin\(request\)/);
   assert.match(api, /requireAlphaOperator\(\{ live: true \}\)/);
-  assert.match(api, /version: "2\.2\.7"/);
+  assert.match(api, /version: "2\.3\.1"/);
   assert.match(runtime, /hedgeDashboard/);
 });
 
-test("the same ten-exchange console is bridged to authenticated hosted APIs", () => {
+test("the same twelve-exchange console is bridged to authenticated hosted APIs", () => {
   const consoleRoute = read("app/grid-ops-hosted-console/route.ts");
   const surface = read("components/grid-ops-surface.tsx");
   assert.match(consoleRoute, /grid-ops.*public.*index\.html/s);
@@ -41,5 +41,5 @@ test("the same ten-exchange console is bridged to authenticated hosted APIs", ()
   assert.match(consoleRoute, /requireAlphaOperator/);
   assert.match(surface, /使用本地交易引擎/);
   assert.match(surface, /使用线上服务器托管/);
-  assert.match(surface, /十交易所 AI 网格与 AI 对冲策略/);
+  assert.match(surface, /十二交易所 AI 网格与 AI 对冲策略/);
 });

@@ -11,8 +11,10 @@ const rootFiles = new Set([
   "styles.css",
   "dashboard.css",
   "alpha-scanner.css",
+  "alpha-auto-trading.css",
   "bstock-alpha.css",
   "bstock-alpha-ui.css",
+  "bstock-autotrade.css",
   "bstock-equity-panel.css",
   "ai-ops.css",
   "platform-actions.css",
@@ -21,11 +23,14 @@ const rootFiles = new Set([
   "home-market.js",
   "home-product-demo.js",
   "product-dashboard.js",
+  "trend-indicator-cycle.js",
   "dashboard.js",
   "dashboard-product-carousel.js",
   "alpha-scanner.js",
+  "alpha-auto-trading.js",
   "bstock-alpha-storage.js",
   "bstock-alpha.js",
+  "bstock-autotrade.js",
   "bstock-equity-panel.js",
   "ai-ops.js",
   "ai-ops-platforms.js",
@@ -109,7 +114,7 @@ const embedStyle = String.raw`
     overflow-x: hidden;
   }
   html.welinkbtc-embedded .dashboard-subnav { top: 0 !important; }
-  html.welinkbtc-embedded .cycle-radar { top: 62px !important; }
+  html.welinkbtc-embedded .cycle-radar { top: auto !important; }
   html.welinkbtc-embedded :is(
     .alpha-content-dialog,
     .alpha-content-form,

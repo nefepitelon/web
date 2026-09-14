@@ -17,7 +17,7 @@ test("dashboard exposes the 28th STH four-year nine-band model with complete con
   assert.match(html, /id="sth-bands-snapshot"/);
   assert.match(html, /id="sth-bands-download"/);
   assert.match(html, /id="sth-bands-fullscreen"/);
-  assert.match(html, /INDEX \/ 30/);
+  assert.match(html, /INDEX \/ 32/);
   assert.match(html, /短期持有成本基础模型 \[4年，2011年至今\] 九彩条形带/);
 
   assert.match(js, /\/api\/sth-cost-basis-bands\?schema=1/);
@@ -31,7 +31,7 @@ test("dashboard exposes the 28th STH four-year nine-band model with complete con
   assert.match(route, /"sth-cost-basis-bands"/);
   assert.match(css, /\.sth-bands-stage/);
   assert.match(css, /\.legend-sth-bands-line7/);
-  assert.match(css, /grid-row: 1 \/ span 30/);
+  assert.match(css, /grid-row: 1 \/ span 32/);
 });
 
 test("homepage exposes the 28th model snapshot", () => {

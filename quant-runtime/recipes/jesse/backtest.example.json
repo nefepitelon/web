@@ -1,0 +1,4 @@
+{
+  "exchangeId": "binance",
+  "config": { "starting_balance": 10000, "fee": 0.001, "type": "spot", "exchange": "Binance Spot", "warm_up_candles": 0 }
+}

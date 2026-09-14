@@ -29,6 +29,7 @@ import {
 } from "@/lib/bstock-alpha-live";
 import { prisma } from "@/lib/prisma";
 import { tradeIntentAuditHash } from "@/lib/bstock-trade-records";
+import { BstockSubmissionClaimError, withBstockManualQuoteGuard } from "@/lib/bstock-trade-submission-claim";
 import {
   BSTOCK_MAX_POSITION_PCT,
   bstockPositionLimitUsd,
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
     const input = inputSchema.parse(await request.json());
     if (safeNumber(input.amount) <= 0) return json({ error: "交易数量必须大于 0。" }, 400);
     const identity = await requireBoundEvmBrowserWallet(input.address);
+    await withBstockManualQuoteGuard(prisma, identity.ownerKey, async () => undefined);
     const [market, cmcResult] = await Promise.all([
       fetchOfficialBstockMarket(),
       fetchCmcLiveSnapshot().then((value) => ({ value })).catch(() => ({ value: null }))
@@ -206,7 +208,7 @@ export async function POST(request: NextRequest) {
       createdAt: Date.now()
     });
     const intentHash = tradeIntentAuditHash(intent);
-    const record = await prisma.bstockTradeRecord.upsert({
+    const record = await withBstockManualQuoteGuard(prisma, identity.ownerKey, (tx) => tx.bstockTradeRecord.upsert({
       where: { intentHash },
       create: {
         ownerKey: identity.ownerKey,
@@ -226,9 +228,9 @@ export async function POST(request: NextRequest) {
         campaignEligibility: "CONFIRMED",
         status: "INTENT_CREATED"
       },
-      update: { quotedAmount: quoteOutput, status: "INTENT_CREATED" },
+      update: {},
       select: { id: true }
-    });
+    }));
     const approval = fromTokenAddress.toLowerCase() === PAY_TOKEN_ADDRESSES.BNB.toLowerCase()
       ? null
       : { token: fromTokenAddress, spender: router, amount: rawAmount.toString() };
@@ -287,6 +289,9 @@ export async function POST(request: NextRequest) {
       warning: "浏览器钱包将在 BNB Chain 上显示授权（如需）及 PancakeSwap 交易确认；只有链上回执成功才计入账本。"
     });
   } catch (error) {
+    if (error instanceof BstockSubmissionClaimError) {
+      return json({ error: error.message, code: error.code }, 409);
+    }
     const message = error instanceof z.ZodError
       ? "浏览器钱包交易报价参数无效。"
       : error instanceof Error ? error.message : "浏览器钱包实盘报价失败。";

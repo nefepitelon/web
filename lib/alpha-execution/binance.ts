@@ -33,6 +33,19 @@ export type BinanceOrderResult = {
   raw: Record<string, unknown>;
 };
 
+export type AutomationAccountSnapshot = {
+  availableMargin: number; equity: number; unrealizedPnl: number; observedAt: string;
+  positions: Array<{ symbol: string; side: "long" | "short"; quantity: number; entryPrice: number; markPrice: number; notional: number }>;
+  openEntryOrders: Array<{ id: string; clientOrderId: string; symbol: string; side: "buy" | "sell"; quantity: number; remainingQuantity: number; price: number; notional: number; conditional: boolean }>;
+};
+
+function requiredNumber(value: unknown, label: string) {
+  if ((typeof value !== "string" && typeof value !== "number") || String(value).trim() === "" || !Number.isFinite(Number(value))) {
+    throw new Error(`Binance 账户快照缺少有效 ${label}`);
+  }
+  return Number(value);
+}
+
 type SymbolRules = {
   quantityStep: number;
   priceStep: number;
@@ -77,6 +90,18 @@ export function floorToBinanceStep(value: number, step: number) {
 export function signBinanceQuery(params: Record<string, string | number | boolean>, secret: string) {
   const query = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)])).toString();
   return { query, signature: createHmac("sha256", secret).update(query).digest("hex") };
+}
+
+/** Preserve integer tokens that JSON's Number representation cannot represent.
+ * Only the income endpoint opts into this parser, so order-response contracts stay
+ * unchanged. Tokenizing quoted strings first leaves IDs mentioned in text intact.
+ */
+export function parseBinanceIncomeJson(text: string): unknown {
+  const lossless = text.replace(/"(?:\\[\s\S]|[^"\\])*"|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/g, (token) => {
+    if (token.startsWith('"') || !/^-?\d+$/.test(token) || Number.isSafeInteger(Number(token))) return token;
+    return JSON.stringify(token);
+  });
+  return JSON.parse(lossless);
 }
 
 function responseStatus(raw: Record<string, unknown>) {
@@ -162,7 +187,7 @@ export class AlphaBinanceClient {
     method: "GET" | "POST" | "DELETE" | "PUT",
     path: string,
     params: Record<string, string | number | boolean> = {},
-    options: { signed?: boolean; apiKey?: boolean; retryTime?: boolean } = {}
+    options: { signed?: boolean; apiKey?: boolean; retryTime?: boolean; losslessIncome?: boolean } = {}
   ): Promise<Record<string, unknown>> {
     const values = { ...params };
     if (options.signed) {
@@ -184,7 +209,7 @@ export class AlphaBinanceClient {
       throw new BinanceRequestError(`Binance 网络请求失败：${message}`, 503, null, method === "POST");
     }
 
-    const raw = await response.json().catch(() => ({})) as Record<string, unknown>;
+    const raw = await (options.losslessIncome ? response.text().then(parseBinanceIncomeJson) : response.json()).catch(() => ({})) as Record<string, unknown>;
     const code = typeof raw.code === "number" ? raw.code : null;
     if (!response.ok || (code != null && code < 0)) {
       if (options.signed && options.retryTime !== false && code === -1021) {
@@ -207,6 +232,108 @@ export class AlphaBinanceClient {
     const path = this.market === "spot" ? "/api/v3/time" : "/fapi/v1/time";
     const raw = await this.rawRequest("GET", path);
     this.timeOffset = Number(raw.serverTime ?? Date.now()) - Date.now();
+  }
+
+  async getIncomeHistoryPage(input: { startTime: number; endTime: number; page: number; limit?: number }) {
+    if (this.market !== "futures") throw new Error("Binance Spot does not provide futures income history");
+    const { startTime, endTime, page } = input;
+    const limit = input.limit ?? 1000;
+    if (!Number.isSafeInteger(startTime) || !Number.isSafeInteger(endTime) || startTime > endTime
+      || !Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1 || limit > 1000) {
+      throw new Error("Invalid Binance income history interval or page");
+    }
+    // Read all income types to expose transfers separately from trading PnL.
+    // Official USER_DATA endpoint: last 3 months, page-based, at most 1,000 rows.
+    const raw = await this.rawRequest("GET", "/fapi/v1/income", { startTime, endTime, page, limit }, { signed: true, losslessIncome: true });
+    if (!Array.isArray(raw)) throw new Error("Binance income history returned an invalid response");
+    return raw as Array<Record<string, unknown>>;
+  }
+
+  /** Account-wide, read-only exposure; never substitute local Alpha positions for it. */
+  async getAutomationAccountSnapshot(): Promise<AutomationAccountSnapshot> {
+    if (this.environment !== "live" || this.market !== "futures") throw new Error("自动账户风险快照仅支持 LIVE USDⓈ-M 合约");
+    // accountConfig checks empty hedge accounts too. Both order services must be read:
+    // conditional entries moved to /openAlgoOrders and are absent from /openOrders.
+    const [config, account, risk, regular, conditional] = await Promise.all([
+      this.rawRequest("GET", "/fapi/v1/accountConfig", {}, { signed: true }),
+      this.rawRequest("GET", "/fapi/v3/account", {}, { signed: true }),
+      this.rawRequest("GET", "/fapi/v3/positionRisk", {}, { signed: true }),
+      this.rawRequest("GET", "/fapi/v1/openOrders", {}, { signed: true }),
+      this.rawRequest("GET", "/fapi/v1/openAlgoOrders", {}, { signed: true }),
+    ]);
+    if (config.dualSidePosition !== false || config.multiAssetsMargin !== false || config.canTrade !== true) {
+      throw new Error("自动交易需要已确认的单向持仓、单资产且可交易的合约账户");
+    }
+    if (!Array.isArray(account.assets) || !Array.isArray(account.positions) || !Array.isArray(risk) || !Array.isArray(regular) || !Array.isArray(conditional)) {
+      throw new Error("Binance 账户、仓位或挂单快照不完整");
+    }
+    const usdt = account.assets.find((asset: Record<string, unknown>) => asset.asset === "USDT");
+    if (!usdt) throw new Error("Binance 未返回 USDT 保证金账户");
+    const availableMargin = requiredNumber(usdt.availableBalance, "USDT availableBalance");
+    const equity = requiredNumber(usdt.marginBalance, "USDT marginBalance");
+    const unrealizedPnl = requiredNumber(usdt.unrealizedProfit, "USDT unrealizedProfit");
+    if (availableMargin < 0 || equity <= 0) throw new Error("USDT 保证金账户权益或可用保证金不足");
+    const positions: AutomationAccountSnapshot["positions"] = [];
+    const markPrices = new Map<string, number>();
+    const amounts = new Map<string, number>();
+    for (const row of risk as Array<Record<string, unknown>>) {
+      const symbol = String(row.symbol || "");
+      if (!symbol || row.positionSide !== "BOTH" || amounts.has(symbol)) throw new Error("仓位模式或仓位快照无法确认");
+      const amount = requiredNumber(row.positionAmt, `${symbol} positionAmt`);
+      amounts.set(symbol, amount);
+      const markPrice = requiredNumber(row.markPrice, `${symbol} markPrice`);
+      if (markPrice > 0) markPrices.set(symbol, markPrice);
+      if (amount === 0) continue;
+      if (row.marginAsset !== "USDT") throw new Error("存在非 USDT 保证金持仓，无法统一计算自动风险额度");
+      const entryPrice = requiredNumber(row.entryPrice, `${symbol} entryPrice`);
+      const notional = Math.abs(requiredNumber(row.notional, `${symbol} notional`));
+      if (markPrice <= 0 || entryPrice <= 0 || notional <= 0) throw new Error("持仓价格或名义敞口无效");
+      positions.push({ symbol, side: amount > 0 ? "long" : "short", quantity: Math.abs(amount), entryPrice, markPrice, notional });
+    }
+    // A missing positionRisk row must not be interpreted as an empty account.
+    const accountAmounts = new Map<string, number>();
+    for (const row of account.positions as Array<Record<string, unknown>>) {
+      const symbol = String(row.symbol || "");
+      const amount = requiredNumber(row.positionAmt, `${symbol} account positionAmt`);
+      if (row.positionSide !== "BOTH" || !symbol || accountAmounts.has(symbol)) throw new Error("账户持仓模式或重复仓位无法确认");
+      accountAmounts.set(symbol, amount);
+      if (amount !== 0 && amounts.get(symbol) !== amount) throw new Error("账户与持仓数量不同步，请等待下一轮风险快照");
+    }
+    for (const [symbol, amount] of amounts) if (amount !== 0 && accountAmounts.get(symbol) !== amount) throw new Error("持仓与账户数量不同步，请等待下一轮风险快照");
+    const openEntryOrders: AutomationAccountSnapshot["openEntryOrders"] = [];
+    for (const [rows, isConditional] of [[regular, false], [conditional, true]] as const) {
+      for (const row of rows as Array<Record<string, unknown>>) {
+        if (row.positionSide !== "BOTH") throw new Error("存在无法确认持仓模式的挂单");
+        if (row.reduceOnly === true || row.reduceOnly === "true" || row.closePosition === true || row.closePosition === "true") continue;
+        const symbol = String(row.symbol || "");
+        if (!/USDT$/.test(symbol) || !["BUY", "SELL"].includes(String(row.side))) throw new Error("存在非 USDT 或方向未知的开仓挂单");
+        const quantity = requiredNumber(isConditional ? row.quantity : row.origQty, `${symbol} order quantity`);
+        // Open conditional orders reserve their full quantity until their child order
+        // disappears from this endpoint. Double counting during transition is safer.
+        const executed = isConditional ? 0 : requiredNumber(row.executedQty, `${symbol} executedQty`);
+        if (!(quantity > 0) || executed < 0 || executed > quantity) throw new Error("开仓挂单剩余数量无效");
+        const remainingQuantity = quantity - executed;
+        if (remainingQuantity === 0) continue;
+        const clientOrderId = String((isConditional ? row.clientAlgoId : row.clientOrderId) || "");
+        const id = row[isConditional ? "algoId" : "orderId"];
+        if (id == null || !clientOrderId || (typeof id === "number" && !Number.isSafeInteger(id))) throw new Error("开仓挂单标识不完整");
+        let markPrice = markPrices.get(symbol);
+        if (!(markPrice && markPrice > 0)) {
+          const priceData = await this.rawRequest("GET", "/fapi/v1/premiumIndex", { symbol });
+          markPrice = requiredNumber(priceData.markPrice, `${symbol} order markPrice`);
+          if (!(markPrice > 0)) throw new Error("开仓挂单标记价格不可用");
+          markPrices.set(symbol, markPrice);
+        }
+        const orderPrice = requiredNumber(row.price, `${symbol} order price`);
+        const triggerPrice = isConditional ? requiredNumber(row.triggerPrice, `${symbol} triggerPrice`) : 0;
+        if (orderPrice < 0 || triggerPrice < 0) throw new Error("开仓挂单价格无效");
+        const price = Math.max(markPrice, orderPrice, triggerPrice);
+        const notional = remainingQuantity * price;
+        if (!Number.isFinite(notional)) throw new Error("开仓挂单名义敞口无效");
+        openEntryOrders.push({ id: String(id), clientOrderId, symbol, side: row.side === "BUY" ? "buy" : "sell", quantity, remainingQuantity, price, notional, conditional: isConditional });
+      }
+    }
+    return { availableMargin, equity, unrealizedPnl, positions, openEntryOrders, observedAt: new Date().toISOString() };
   }
 
   async loadSymbolRules(symbol: string) {
@@ -282,9 +409,12 @@ export class AlphaBinanceClient {
     if (this.market !== "futures") return null;
     const normalized = symbol.toUpperCase();
     const raw = await this.rawRequest("GET", "/fapi/v3/positionRisk", { symbol: normalized }, { signed: true }) as unknown;
-    const rows = Array.isArray(raw) ? raw as Array<Record<string, unknown>> : [];
+    if (!Array.isArray(raw)) throw new Error("Binance 持仓响应不完整，不能判定持仓归零");
+    const rows = raw as Array<Record<string, unknown>>;
     const position = rows.find((item) => String(item.symbol).toUpperCase() === normalized);
     const signedQuantity = Number(position?.positionAmt ?? 0);
+    if ((rows.length && !position) || (position && (position.positionAmt == null || !Number.isFinite(signedQuantity))))
+      throw new Error("Binance 持仓数量缺失或无效，停止持仓同步");
     const entryPrice = Number(position?.entryPrice ?? 0);
     const markPrice = Number(position?.markPrice ?? 0);
     const unrealizedPnl = Number(position?.unRealizedProfit ?? position?.unrealizedProfit ?? 0);

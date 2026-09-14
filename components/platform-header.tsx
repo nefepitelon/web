@@ -10,6 +10,11 @@ import {
   Crosshair,
   ExternalLink,
   Grid3X3,
+  Bot,
+  Braces,
+  FlaskConical,
+  Layers3,
+  Network,
   Handshake,
   LifeBuoy,
   Languages,
@@ -96,6 +101,23 @@ const productLinks: readonly MoreLink[] = [
     icon: Store,
     external: true,
   },
+  {
+    href: "/box-breakout",
+    zh: "A股&加密箱体突破看板",
+    en: "A-share & Crypto Breakouts",
+    zhDescription: "箱体试盘、倍量共振与跨市场突破扫描",
+    enDescription: "Box tests, volume resonance and breakout screening",
+    icon: ChartCandlestick,
+  },
+];
+
+const quantLinks: readonly MoreLink[] = [
+  { href: "/quant-suite/freqtrade", zh: "Freqtrade", en: "Freqtrade", zhDescription: "趋势交易、回测与策略优化", enDescription: "Trend trading, backtesting and optimization", icon: ChartCandlestick },
+  { href: "/quant-suite/nautilus", zh: "NautilusTrader", en: "NautilusTrader", zhDescription: "事件驱动、跨市场与订单执行", enDescription: "Event-driven research and execution", icon: Network },
+  { href: "/quant-suite/hummingbot", zh: "Hummingbot", en: "Hummingbot", zhDescription: "做市、套利与流动性策略", enDescription: "Market making and arbitrage", icon: Bot },
+  { href: "/quant-suite/lean", zh: "QuantConnect LEAN", en: "QuantConnect LEAN", zhDescription: "多资产组合与量化研究", enDescription: "Multi-asset portfolios and research", icon: Layers3 },
+  { href: "/quant-suite/jesse", zh: "Jesse", en: "Jesse", zhDescription: "策略研究、参数优化与验证", enDescription: "Strategy research and validation", icon: FlaskConical },
+  { href: "/quant-suite/octobot", zh: "OctoBot", en: "OctoBot", zhDescription: "低代码交易、网格与定投", enDescription: "Low-code trading, grid and DCA", icon: Braces },
 ];
 
 const collaborationLinks: readonly MoreLink[] = [
@@ -224,7 +246,6 @@ function notifyPreferences(preferences: { theme?: Theme; language?: Language }) 
 
 export function PlatformHeader({ viewer }: { viewer: Viewer | null }) {
   const pathname = usePathname();
-  const bstockContext = pathname.startsWith("/bstock-alpha");
   const [theme, setTheme] = useState<Theme>("dark");
   const [language, setLanguage] = useState<Language>("zh");
   const productRef = useRef<HTMLDetailsElement>(null);
@@ -302,12 +323,11 @@ export function PlatformHeader({ viewer }: { viewer: Viewer | null }) {
   const currentThemeLabel = theme === "dark"
     ? (language === "zh" ? "深色" : "Dark")
     : (language === "zh" ? "浅色" : "Light");
-  const currentLanguageLabel = language === "zh" ? "中文" : "EN";
   const themeActionLabel = language === "zh" ? `当前${currentThemeLabel}，切换为${themeLabel}模式` : `Currently ${currentThemeLabel}; switch to ${themeLabel} mode`;
   const languageActionLabel = language === "zh" ? "当前中文，切换为 English" : "Currently English; switch to 中文";
 
   return (
-    <header className={`platform-shell-header${bstockContext ? " platform-shell-header--bstock" : ""}`}>
+    <header className="platform-shell-header">
       <Link className="platform-brand" href="/" aria-label={language === "zh" ? "WELINKBTC 首页" : "WELINKBTC Home"} prefetch={false}>
         <span className="platform-brand-mark platform-brand-mark--orbit" aria-hidden="true">
           <span className="platform-brand-orbit-disc">
@@ -351,6 +371,15 @@ export function PlatformHeader({ viewer }: { viewer: Viewer | null }) {
                 {productLinks.map((item) => <MoreMenuLink item={item} language={language} key={item.href} />)}
               </div>
             </section>
+            <section className="platform-more-group platform-more-group--resources platform-quant-group" aria-labelledby="platform-quant-title">
+              <div className="platform-more-group-title" id="platform-quant-title">
+                <ChartCandlestick aria-hidden="true" />
+                <Link href="/quant-suite" prefetch={false}>{language === "zh" ? "量化交易集" : "Quant Trading Suite"}</Link>
+              </div>
+              <div className="platform-more-links">
+                {quantLinks.map((item) => <MoreMenuLink item={item} language={language} key={item.href} />)}
+              </div>
+            </section>
           </div>
         </details>
         <details
@@ -389,11 +418,11 @@ export function PlatformHeader({ viewer }: { viewer: Viewer | null }) {
 
       <div className="platform-header-right">
         <div className="platform-tools platform-tools--desktop" aria-label={language === "zh" ? "站点工具" : "Site tools"}>
-          <button className="platform-tool platform-tool--preference" type="button" onClick={toggleTheme} aria-label={bstockContext ? themeActionLabel : themeLabel} title={bstockContext ? themeActionLabel : undefined} data-preference={bstockContext ? "theme" : undefined} data-current={bstockContext ? theme : undefined}>
-            {bstockContext ? <><span className="platform-preference-icon" aria-hidden="true">{theme === "dark" ? <Moon /> : <Sun />}</span><span className="platform-preference-copy"><small>{language === "zh" ? "外观" : "Theme"}</small><strong>{currentThemeLabel}</strong></span></> : themeLabel}
+          <button className="platform-tool platform-tool--preference" type="button" onClick={toggleTheme} aria-label={themeActionLabel} title={themeActionLabel} data-preference="theme" data-current={theme}>
+            <span className="platform-preference-icon" aria-hidden="true">{theme === "dark" ? <Moon /> : <Sun />}</span>
           </button>
-          <button className="platform-tool platform-tool--preference" type="button" onClick={toggleLanguage} aria-label={bstockContext ? languageActionLabel : (language === "zh" ? "Switch to English" : "切换到中文")} title={bstockContext ? languageActionLabel : undefined} data-preference={bstockContext ? "language" : undefined} data-current={bstockContext ? language : undefined}>
-            {bstockContext ? <><span className="platform-preference-icon" aria-hidden="true"><Languages /></span><span className="platform-preference-copy"><small>{language === "zh" ? "语言" : "Language"}</small><strong>{currentLanguageLabel}</strong></span></> : (language === "zh" ? "EN" : "中")}
+          <button className="platform-tool platform-tool--preference" type="button" onClick={toggleLanguage} aria-label={languageActionLabel} title={languageActionLabel} data-preference="language" data-current={language}>
+            <span className="platform-preference-icon" aria-hidden="true"><Languages /></span>
           </button>
         </div>
 

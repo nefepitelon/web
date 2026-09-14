@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "patches": [
+    {
+      "path": "index.html",
+      "reason": "Serve original assets under the local subpath and await authenticated host metadata.",
+      "upstreamSha256": "50af00146d9b01325beb6a6c322afe448c58208a86b6b3b980a6b791944bcf7b",
+      "hostedSha256": "67838846b3a2da477e14d3c18455d68056e04eb19efaa83eefcb2304c1ca0ebc"
+    },
+    {
+      "path": "200.html",
+      "reason": "Serve original assets under the local subpath and await authenticated host metadata.",
+      "upstreamSha256": "24d9e82146c2e64514f1b93384b0cafed746af202e34ddb97b6f2df12641dedc",
+      "hostedSha256": "fa31a18640c72386048bc1908826090c2da0d8fcaaa2d9c91506506457e1e160"
+    },
+    {
+      "path": "404.html",
+      "reason": "Serve original assets under the local subpath and await authenticated host metadata.",
+      "upstreamSha256": "50af00146d9b01325beb6a6c322afe448c58208a86b6b3b980a6b791944bcf7b",
+      "hostedSha256": "67838846b3a2da477e14d3c18455d68056e04eb19efaa83eefcb2304c1ca0ebc"
+    },
+    {
+      "path": "_nuxt/CuBS5wk3.js",
+      "reason": "Disable the original hard-coded same-origin trading WebSocket and localhost Pyright socket until a verified native WebSocket gateway exists. No replacement data is generated.",
+      "upstreamSha256": "da8852ebcf9dd1a7ae125495a3d07acbbacc68c0e5963fdf7ba00390d87edb9c",
+      "hostedSha256": "1ea21fa7edee81bcc97fb73c644a9a1719b90557d2e12cc24aa89b0c2bd0afe2"
+    },
+    {
+      "path": "_nuxt/CE0DBSD2.js",
+      "reason": "Isolate original auth/account cache storage from other same-origin applications; host bootstrap resets this cache each visit.",
+      "upstreamSha256": "4e5b2e0c7330bbcad59a9f2ceb886c3a9b6113534a0acda4d617f2bb1526e5cf",
+      "hostedSha256": "9390b990494dcf654b91bae0305d271dbda1dcf3492fbdac2d5dae8785bddeb2"
+    }
+  ]
+}

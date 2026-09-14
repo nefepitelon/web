@@ -2,7 +2,8 @@ const {
   RECENT_SIGNAL_LIMIT,
   collectPublicPreviewSignals,
   collectTelegramSignals,
-  createStoreFromEnv
+  createStoreFromEnv,
+  verifiedSignalTime
 } = require("../workers/telegram_signal_collector");
 const telegramSignalSnapshot = require("../data/telegram-signals-snapshot");
 
@@ -24,6 +25,7 @@ function sendJson(response, status, payload, cacheControl = "no-store") {
 }
 
 function toPublicSignal(signal) {
+  const signalTime = verifiedSignalTime(signal);
   return {
     dedupe_hash: signal.dedupe_hash,
     telegram_message_id: signal.telegram_message_id,
@@ -35,7 +37,8 @@ function toPublicSignal(signal) {
     price_change_pct: signal.price_change_pct,
     oi_change_pct: signal.oi_change_pct,
     trigger_type: signal.trigger_type,
-    signal_time: signal.signal_time,
+    signal_time: signalTime,
+    signal_time_source: signalTime ? signal.signal_time_source || "legacy_source" : "unknown",
     confidence: signal.confidence,
     parse_status: signal.parse_status,
     source_mode: signal.source_mode,
@@ -82,7 +85,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
     if (!refreshRequested) {
       let cached = [];
       try {
-        cached = await store.listRecent(RECENT_SIGNAL_LIMIT);
+        cached = (await store.listRecent(RECENT_SIGNAL_LIMIT)).filter((signal) => signal.source_mode !== "mock");
       } catch {
         cached = [];
       }
@@ -123,13 +126,13 @@ module.exports = async function telegramSignalCollectorHandler(request, response
         stale: false,
         storage: result.storage,
         storage_degraded: result.storage_degraded,
-        latest: result.latest.map(toPublicSignal),
+        latest: result.latest.filter((signal) => signal.source_mode !== "mock").map(toPublicSignal),
         ...(debugRequested ? { attempts: result.attempts, storage_error: result.storage_error } : {})
       }, "public, s-maxage=15, stale-while-revalidate=45");
     } catch (error) {
       let cached = [];
       try {
-        cached = await store.listRecent(RECENT_SIGNAL_LIMIT);
+        cached = (await store.listRecent(RECENT_SIGNAL_LIMIT)).filter((signal) => signal.source_mode !== "mock");
       } catch {
         cached = [];
       }

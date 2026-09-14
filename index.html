@@ -14,7 +14,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260906-trend-intro-v1" />
+  <link rel="stylesheet" href="styles.css?v=20260913-utxo-age-rp-v1" />
+    <link rel="stylesheet" href="/home-button-glow.css?v=20260906-content-only-v2" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
   </head>
@@ -248,13 +249,13 @@
 
       <section class="power-law-section" id="power-law">
         <div class="power-law-copy">
-          <div class="power-copy-visual" aria-hidden="true">
-            <div class="power-copy-orbit"><strong>30</strong></div>
-            <p>ON-CHAIN MODELS</p>
-            <small>ONE BTC POSITION</small>
-          </div>
           <div class="power-copy-statement">
             <div class="power-copy-heading">
+              <div class="power-copy-visual" aria-hidden="true">
+                  <div class="power-copy-orbit"><strong>32</strong></div>
+                <p>ON-CHAIN MODELS</p>
+                <small>ONE BTC POSITION</small>
+              </div>
               <p class="eyebrow" data-i18n="power.eyebrow">链上数据指标</p>
               <span><i></i> LIVE · DAILY</span>
             </div>
@@ -441,6 +442,16 @@
                   <span><strong>短期持有者 MVRV</strong><small>Short Term Holder MVRV</small></span>
                   <em>✓</em>
                 </button>
+                <button type="button" data-model-option="under-3m-heat" role="menuitem">
+                  <i class="model-dot model-under-3m-heat"></i>
+                  <span><strong>小于 3 个月热钱周期</strong><small>&lt;3m Hot-Capital Cycle</small></span>
+                  <em>✓</em>
+                </button>
+                <button type="button" data-model-option="utxo-age-rp" role="menuitem">
+                  <i class="model-dot model-utxo-age-rp"></i>
+                  <span><strong>UTXO 年龄段已实现价格</strong><small>Realized Price by UTXO Age Bands</small></span>
+                  <em>✓</em>
+                </button>
               </div>
             </div>
           </div>
@@ -456,6 +467,7 @@
             </div>
           </div>
           <div class="power-law-actions">
+            <button class="power-cycle-toggle" id="power-cycle-toggle" type="button" aria-pressed="true" disabled>25秒轮播 · 暂停</button>
             <label class="glow-toggle">
               <span>Glow 光芒</span>
               <input id="power-glow" type="checkbox" />
@@ -613,7 +625,12 @@
       </section>
 
 
-      <section class="research-section content-section" id="research">
+      <section class="research-section content-section" id="research" aria-labelledby="research-summary-title">
+        <div class="research-inner">
+          <header class="research-promise">
+            <p class="eyebrow" data-i18n="research.eyebrow">Research Desk</p>
+            <h2 id="research-summary-title" data-i18n="research.listTitle">让研究内容像产品一样可信。</h2>
+          </header>
         <div class="research-showcase">
           <div class="research-copy">
             <p class="research-pill" data-i18n="research.pill">Expert Insights</p>
@@ -664,10 +681,7 @@
               <em>Guide</em>
             </a>
           </div>
-          <div class="research-promise">
-            <p class="eyebrow" data-i18n="research.eyebrow">Research Desk</p>
-            <h2 data-i18n="research.listTitle">让研究内容像产品一样可信。</h2>
-          </div>
+        </div>
         </div>
       </section>
 
@@ -722,7 +736,8 @@
     <script src="script.js?v=20260906-network-visual-v1"></script>
     <script src="home-market.js?v=20260905-live-v1" defer></script>
     <script src="home-product-demo.js?v=20260906-v1" defer></script>
-    <script src="product-dashboard.js?v=20260906-auto3d-v1"></script>
+  <script src="trend-indicator-cycle.js?v=20260913-utxo-age-rp-v1"></script>
+  <script src="product-dashboard.js?v=20260913-utxo-age-rp-v1"></script>
     <script src="surf-assistant.js"></script>
   </body>
 </html>

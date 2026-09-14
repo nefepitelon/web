@@ -1,0 +1,30 @@
+{
+  "services": {
+    "dashboard": {
+      "image": "hummingbot/dashboard@sha256:fd28cc85ec0e8014a2cc7cf246acc932a41727dd4e6b5262d19c29a82400d80a",
+      "restart": "unless-stopped", "ports": ["127.0.0.1:${UI_PORT}:8501"],
+      "environment": { "AUTH_SYSTEM_ENABLED": "False", "BACKEND_API_HOST": "api", "BACKEND_API_PORT": "8000", "BACKEND_API_USERNAME": "welink", "BACKEND_API_PASSWORD": "${NATIVE_PASSWORD}" },
+      "depends_on": ["api"]
+    },
+    "api": {
+      "image": "${ENGINE_IMAGE}", "restart": "unless-stopped", "ports": ["127.0.0.1:${API_PORT}:8000"],
+      "volumes": ["./native/bots:/hummingbot-api/bots", "/var/run/docker.sock:/var/run/docker.sock"],
+      "environment": { "USERNAME": "welink", "PASSWORD": "${NATIVE_PASSWORD}", "CONFIG_PASSWORD": "${CONFIG_PASSWORD}", "DATABASE_URL": "postgresql+asyncpg://hbot:${DATABASE_PASSWORD}@postgres:5432/hummingbot_api", "BROKER_HOST": "emqx", "BROKER_PORT": "1883", "BROKER_USERNAME": "welink", "BROKER_PASSWORD": "${BROKER_PASSWORD}", "BOTS_PATH": "${BOTS_HOST_PARENT}" },
+      "depends_on": { "postgres": { "condition": "service_healthy" }, "emqx": { "condition": "service_healthy" } },
+      "stop_grace_period": "60s"
+    },
+    "postgres": {
+      "image": "postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685", "restart": "unless-stopped",
+      "environment": { "POSTGRES_USER": "hbot", "POSTGRES_DB": "hummingbot_api", "POSTGRES_PASSWORD": "${DATABASE_PASSWORD}" },
+      "volumes": ["database:/var/lib/postgresql/data"],
+      "healthcheck": { "test": ["CMD-SHELL", "pg_isready -U hbot -d hummingbot_api"], "interval": "5s", "timeout": "3s", "retries": 30 }
+    },
+    "emqx": {
+      "image": "emqx@sha256:11efadd3e7ae665d39a7a7838ac0c783bb7bb80abb3c0efcc8fd8f80c45b0209", "restart": "unless-stopped",
+      "environment": { "EMQX_NAME": "emqx", "EMQX_HOST": "node1.emqx.local", "EMQX_AUTHENTICATION__1__MECHANISM": "password_based", "EMQX_AUTHENTICATION__1__BACKEND": "built_in_database", "EMQX_AUTHENTICATION__1__USER_ID_TYPE": "username", "EMQX_AUTHENTICATION__1__BOOTSTRAP_FILE": "/opt/emqx/etc/auth-bootstrap.csv", "EMQX_AUTHENTICATION__1__BOOTSTRAP_TYPE": "plain", "EMQX_DASHBOARD__DEFAULT_PASSWORD": "${BROKER_ADMIN_PASSWORD}", "EMQX_AUTHORIZATION__NO_MATCH": "deny" },
+      "volumes": ["./native/acl.conf:/opt/emqx/etc/acl.conf:ro", "./native/auth-bootstrap.csv:/opt/emqx/etc/auth-bootstrap.csv:ro", "broker:/opt/emqx/data"],
+      "healthcheck": { "test": ["CMD", "/opt/emqx/bin/emqx_ctl", "status"], "interval": "10s", "timeout": "5s", "retries": 30 }
+    }
+  },
+  "volumes": { "database": {}, "broker": {} }
+}

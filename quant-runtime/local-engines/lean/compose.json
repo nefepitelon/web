@@ -1,0 +1,9 @@
+{
+  "services": {
+    "sdk": {
+      "image": "${ENGINE_IMAGE}", "profiles": ["sdk"],
+      "entrypoint": ["dotnet"], "command": ["--info"],
+      "network_mode": "none", "read_only": true
+    }
+  }
+}

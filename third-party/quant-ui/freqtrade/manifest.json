@@ -1,0 +1,39 @@
+{
+  "project": "FreqUI",
+  "release": "3.1.2",
+  "publishedAt": "2026-08-30T17:54:24Z",
+  "repository": "https://github.com/freqtrade/frequi",
+  "commit": "f76ad9e7f8b6ee8e2d1f214a484d6182393be717",
+  "license": "GPL-3.0",
+  "releaseUrl": "https://github.com/freqtrade/frequi/releases/download/3.1.2/freqUI.zip",
+  "releaseArchive": "freqUI-3.1.2.zip",
+  "releaseSha256": "5dcd08baf66ff5323e2170dd256fbe191344b4fb61afcc72fb1b0cb2d83c4c88",
+  "sourceUrl": "https://codeload.github.com/freqtrade/frequi/zip/f76ad9e7f8b6ee8e2d1f214a484d6182393be717",
+  "sourceArchive": "frequi-source-f76ad9e7.zip",
+  "sourceSha256": "991775fdbf2f9934002c17d4735b41070ae2d182788527f926a37d578dee3e9a",
+  "publicBase": "/quant-native/freqtrade/",
+  "apiBase": "/api/quant-suite/native/freqtrade/api/v1",
+  "entryAsset": "assets/index-wxgNlDZx.js",
+  "apiAsset": "assets/ftbotwrapper-CsygLSOt.js",
+  "icons": {
+    "package": "@iconify-json/mdi",
+    "version": "1.2.3",
+    "license": "Apache-2.0",
+    "url": "https://registry.npmjs.org/@iconify-json/mdi/-/mdi-1.2.3.tgz",
+    "archive": "iconify-mdi-1.2.3.tgz",
+    "archiveSha256": "ddd817a7213f91de51147943915c0cda8c8b818a53c92b5c068cfa9883c6d7ac",
+    "json": "mdi-1.2.3.json",
+    "jsonSha256": "f38bcea6e945f01004384c1dbb66ddb2a538d81b7f6af3cf6b95fc603603833a"
+  },
+  "lucide": {
+    "package": "@iconify-json/lucide",
+    "version": "1.2.129",
+    "license": "ISC",
+    "url": "https://registry.npmjs.org/@iconify-json/lucide/-/lucide-1.2.129.tgz",
+    "archive": "iconify-lucide.tgz",
+    "archiveSha256": "c6f4164a0ca06c47292eed18fb49485c984be1bdebd8dfcff87516fdf9fcfe70",
+    "json": "lucide-icons.json",
+    "jsonSha256": "820b1a78f1d22c1953d77edf32e028e66bcdb080136e8575b49a316ddf5120aa"
+  },
+  "integration": "Official upstream production UI with documented hosting, same-origin session and request-control adaptations. The native trade, backtest, chart, analysis, history and settings views are retained."
+}

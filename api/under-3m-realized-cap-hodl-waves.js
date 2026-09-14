@@ -163,6 +163,7 @@ function detectCycleLows(series) {
 }
 
 export {
+  buildUnder3mPayload,
   buildUnder3mSeries,
   calculateUnder3mSnapshot,
   classifyUnder3mZone,

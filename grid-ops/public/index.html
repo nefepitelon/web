@@ -7,6 +7,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
+  --ops-header-height: 52px;
+  --ops-primary-nav-height: 49px;
+  --ops-sidebar-width: 218px;
   --bg: #0a0e17;
   --bg2: #0f1420;
   --panel: #141924;
@@ -44,7 +47,7 @@ body {
 
 /* ── Header ── */
 .header {
-  display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto;
+  display: grid; grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center; gap: 14px;
   padding: 0 20px; min-height: 52px;
   background: var(--panel);
@@ -60,19 +63,12 @@ body {
   scrollbar-color: var(--border2) transparent; scrollbar-width: thin;
 }
 .header-status-strip .hdot, .header-status-strip .badge { flex: 0 0 auto; }
-.header-right {
-  display: flex; min-width: 0; max-width: 100%; align-items: center; gap: 10px;
-  margin-left: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-inline: contain;
-  scrollbar-color: var(--border2) transparent; scrollbar-width: thin;
-}
-.header-right > * { flex: 0 0 auto; }
-.header-status-strip::-webkit-scrollbar, .header-right::-webkit-scrollbar { height: 4px; }
-.header-status-strip::-webkit-scrollbar-thumb, .header-right::-webkit-scrollbar-thumb { border-radius: 999px; background: var(--border2); }
+.header-status-strip::-webkit-scrollbar { height: 4px; }
+.header-status-strip::-webkit-scrollbar-thumb { border-radius: 999px; background: var(--border2); }
 @media (max-width: 1400px) {
   .header { grid-template-columns: auto minmax(0, 1fr); gap: 5px 10px; padding-block: 6px; }
   .header-sep { display: none; }
   .header-status-strip { grid-column: 2; padding-block: 3px; }
-  .header-right { grid-column: 1 / -1; width: 100%; justify-content: flex-end; padding-bottom: 3px; }
 }
 .overview-filter {
   display:inline-flex; align-items:center; gap:6px; flex:0 0 auto;
@@ -265,22 +261,76 @@ body.startup-modal-open { overflow:hidden; }
   .guide-manual-content h2 { font-size:16px; }
 }
 
-/* ── Tabs ── */
+/* ── 主功能导航 + 左侧交易所控制台 ── */
 .main-tabs {
-  display: flex; gap: 0;
+  display: flex; align-items:center; gap: 4px;
   border-bottom: 1px solid var(--border);
-  background: var(--panel);
-  padding: 0 20px;
+  background: rgba(20,25,36,.96);
+  padding: 6px 18px;
+  min-height:49px;
   overflow-x: auto;
+  overflow-y:hidden;
+  position:sticky;
+  top:var(--ops-header-height);
+  z-index:96;
+  box-shadow:0 8px 22px rgba(2,6,15,.22);
+  backdrop-filter:blur(12px);
+  scrollbar-width:thin;
+  scrollbar-color:var(--border2) transparent;
 }
 .tab-btn {
-  padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 500;
-  color: var(--mut2); border: none; background: none;
-  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  padding: 8px 13px; cursor: pointer; font-size: 12px; font-weight: 650;
+  color: var(--mut2); border: 1px solid transparent; border-radius:7px; background: none;
   transition: all .15s; white-space: nowrap; flex: 0 0 auto;
 }
-.tab-btn:hover { color: var(--txt); }
-.tab-btn.active { color: var(--txt); border-bottom-color: var(--pur); }
+.tab-btn:hover { color: var(--txt); background:#ffffff08; }
+.main-tabs .tab-btn.active { color:#f5f3ff; border-color:#8b5cf65c; background:#8b5cf622; box-shadow:inset 0 -2px 0 var(--pur); }
+.main-nav-status {
+  display:flex; align-items:center; gap:8px; flex:0 0 auto;
+  margin-left:auto; padding:0 10px; white-space:nowrap;
+}
+.main-nav-status > * { flex:0 0 auto; }
+.main-nav-status #hdr-time { min-width:54px; font-variant-numeric:tabular-nums; }
+.main-nav-actions {
+  display:flex; align-items:center; gap:8px; flex:0 0 auto;
+  padding-left:10px; border-left:1px solid var(--border2);
+}
+.workspace-shell {
+  display:grid;
+  grid-template-columns:var(--ops-sidebar-width) minmax(0,1fr);
+  min-height:calc(100vh - var(--ops-header-height) - var(--ops-primary-nav-height));
+}
+.workspace-main { min-width:0; }
+.exchange-sidebar {
+  position:sticky;
+  top:calc(var(--ops-header-height) + var(--ops-primary-nav-height));
+  align-self:start;
+  height:calc(100vh - var(--ops-header-height) - var(--ops-primary-nav-height));
+  overflow-x:hidden; overflow-y:auto;
+  padding:15px 11px 22px;
+  border-right:1px solid var(--border);
+  background:linear-gradient(180deg,#111724 0%,#0d121d 100%);
+  box-shadow:8px 0 24px rgba(2,6,15,.16);
+  scrollbar-width:thin;
+  scrollbar-color:var(--border2) transparent;
+}
+.exchange-sidebar-head { padding:2px 8px 13px; border-bottom:1px solid var(--border); margin-bottom:9px; }
+.exchange-sidebar-title { display:flex; align-items:center; gap:7px; color:#eef2ff; font-size:12px; font-weight:800; letter-spacing:.2px; }
+.exchange-sidebar-title::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--grn); box-shadow:0 0 9px #22c55e99; }
+.exchange-sidebar-hint { display:block; margin-top:5px; color:var(--mut); font-size:10px; line-height:1.45; }
+.exchange-sidebar .tab-btn {
+  display:flex; align-items:center; gap:7px; width:100%; min-height:39px;
+  margin:4px 0; padding:8px 9px;
+  border:1px solid transparent; border-left:3px solid transparent; border-radius:7px;
+  text-align:left; overflow:hidden;
+}
+.exchange-sidebar .tab-btn > span:last-child { overflow:hidden; text-overflow:ellipsis; }
+.exchange-sidebar .tab-btn:hover { border-color:var(--border2); border-left-color:var(--exchange-color,var(--pur)); background:#ffffff08; }
+.exchange-sidebar .tab-btn.active {
+  color:#f8fafc; border-color:var(--border2); border-left-color:var(--exchange-color,var(--pur));
+  background:linear-gradient(90deg,color-mix(in srgb,var(--exchange-color,var(--pur)) 18%,transparent),#ffffff04);
+  box-shadow:0 7px 18px rgba(2,6,15,.2);
+}
 .tab-btn .filter-check { display:none; width:15px; height:15px; align-items:center; justify-content:center; border:1px solid var(--border2); border-radius:4px; color:transparent; font-size:10px; line-height:1; }
 body.exchange-select-mode .tab-btn[data-exchange-tab="true"] .filter-check { display:inline-flex; }
 body.exchange-select-mode .tab-btn[data-exchange-tab="true"] { border-bottom-color:transparent; }
@@ -292,6 +342,33 @@ body.exchange-select-mode .tab-btn[data-exchange-tab="true"].filter-selected .fi
 .tab-btn .dot-bn { color: var(--bn-color); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
+
+@media (max-width:1180px) {
+  .workspace-shell { display:block; min-height:0; }
+  .exchange-sidebar {
+    display:flex; align-items:center; gap:5px;
+    position:sticky; top:calc(var(--ops-header-height) + var(--ops-primary-nav-height)); z-index:92;
+    width:100%; height:auto; padding:7px 10px;
+    overflow-x:auto; overflow-y:hidden;
+    border-right:0; border-bottom:1px solid var(--border);
+    box-shadow:0 7px 18px rgba(2,6,15,.18);
+  }
+  .exchange-sidebar-head { display:none; }
+  .exchange-sidebar .tab-btn { flex:0 0 auto; width:auto; min-height:34px; margin:0; border-left-width:1px; }
+  .exchange-sidebar .tab-btn.active { border-left-color:var(--border2); box-shadow:inset 0 -2px 0 var(--exchange-color,var(--pur)); }
+}
+
+@media (max-width:720px) {
+  .main-tabs { padding-inline:9px; }
+  .main-nav-status { gap:6px; padding-inline:8px; }
+  .main-nav-status .conn { padding-inline:8px; font-size:11px; }
+  .main-nav-actions { padding-left:8px; }
+  .main-nav-actions .overview-filter > span,
+  .main-nav-actions .guide-trigger span:last-child { display:none; }
+  .main-nav-actions .overview-filter { padding-left:3px; }
+  .main-nav-actions .overview-filter select { min-width:92px; }
+  .main-nav-actions .guide-trigger { padding-inline:9px; }
+}
 
 /* ── Layout ── */
 .wrap { padding: 16px 20px; max-width: 1600px; margin: 0 auto; }
@@ -772,7 +849,8 @@ th { color: var(--mut2); font-weight: 600; font-size: 10px; text-transform: uppe
 .ops-mode-btn.active { background:#8b5cf62a; color:#ddd6fe; box-shadow:inset 0 0 0 1px #8b5cf666; }
 .ops-mode-btn:hover { color:#fff; }
 body.hedge-mode .overview-filter { display:none; }
-body.hedge-mode #main-tabs, body.hedge-mode .tab-panel { display:none !important; }
+body.hedge-mode #main-tabs, body.hedge-mode .exchange-sidebar, body.hedge-mode .tab-panel { display:none !important; }
+body.hedge-mode .workspace-shell { grid-template-columns:minmax(0,1fr); }
 .hedge-panel { display:none; padding:18px 20px 34px; }
 body.hedge-mode .hedge-panel { display:block; }
 .hedge-shell { width:min(1480px,100%); margin:0 auto; display:grid; gap:14px; }
@@ -991,9 +1069,8 @@ body.hedge-mode .hedge-panel { display:block; }
   .startup-command code { flex-basis:calc(100% - 30px); }
   .startup-copy { margin-left:27px; }
   .header { grid-template-columns:minmax(0,1fr); padding:6px 10px; gap:5px; }
-  .ops-mode-switch, .header-status-strip, .header-right { grid-column:1; }
+  .ops-mode-switch, .header-status-strip { grid-column:1; }
   .header-status-strip { width:100%; }
-  .header-right { width:100%; justify-content:flex-start; gap:6px; padding-bottom:3px; }
   .overview-filter > span { display:none; }
   .overview-filter { padding-left:4px; }
   .guide-trigger span:last-child { display:none; }
@@ -1029,24 +1106,6 @@ body.hedge-mode .hedge-panel { display:block; }
     <span class="hdot idle" id="hdr-ex-dot" title=""></span><span id="hdr-ex" class="badge badge-paper">EX: PAPER</span>
     <span class="hdot idle" id="hdr-rs-dot" title=""></span><span id="hdr-rs" class="badge badge-paper">RS: PAPER</span>
   </div>
-  <div class="header-right">
-    <label class="overview-filter" for="overview-filter-mode"><span>筛选</span>
-      <select id="overview-filter-mode" aria-label="总览交易所筛选" onchange="setOverviewFilter(this.value)">
-        <option value="all">全部</option>
-        <option value="live-running">仅运行实盘</option>
-        <option value="selected">选择交易所</option>
-      </select>
-    </label>
-    <button type="button" class="guide-trigger" id="guide-trigger" aria-haspopup="dialog" aria-controls="guide-modal" onclick="openGuideModal()">
-      <span aria-hidden="true">?</span><span>使用指南支持</span>
-    </button>
-    <button type="button" class="startup-trigger" id="startup-trigger" aria-haspopup="dialog" aria-controls="startup-modal" onclick="openStartupModal()">
-      <span class="startup-trigger-icon" aria-hidden="true">◉</span><span>启动项</span>
-    </button>
-    <span id="hdr-proxy" class="conn" title="全局代理状态"><span class="cdot"></span><span id="hdr-proxy-txt">代理检测中…</span></span>
-    <span id="hdr-conn" class="conn warn" title="后端连接状态"><span class="cdot"></span><span id="hdr-conn-txt">连接中…</span></span>
-    <span class="muted" id="hdr-time"></span>
-  </div>
 </div>
 
 <!-- ── 使用指南支持 ── -->
@@ -1055,7 +1114,7 @@ body.hedge-mode .hedge-panel { display:block; }
   <section class="startup-dialog guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guide-title" tabindex="-1">
     <button type="button" class="startup-close" aria-label="关闭使用指南支持" onclick="closeGuideModal()">×</button>
     <h2 id="guide-title">使用指南支持</h2>
-    <p class="guide-intro">一个跑在你自己电脑上的加密货币永续合约网格交易机器人，支持 Decibel（Aptos 链）、Extended（Starknet 链）、RISEx、Binance、Ondo Perps、Phoenix、Nado、OKX、GRVT 与 RHC Lighter 等多家交易所。多个交易所可以同时各跑一个网格策略，统一在一个浏览器仪表盘里监控和操控。</p>
+    <p class="guide-intro">一个跑在你自己电脑上的永续合约网格交易机器人，支持 Decibel（Aptos 链）、Extended（Starknet 链）、RISEx、Binance、Ondo Perps、Phoenix、Nado、OKX、GRVT、Arcus、Entropy（仅 PAPER）与 RHC Lighter。多个交易所可以同时各跑一个网格策略，统一在一个浏览器仪表盘里监控和操控。</p>
     <section class="guide-manual" aria-labelledby="guide-manual-title">
       <div class="guide-manual-head">
         <div>
@@ -1135,16 +1194,45 @@ body.hedge-mode .hedge-panel { display:block; }
   </section>
 </div>
 
-<!-- ── Tabs ── -->
-<div class="main-tabs" id="main-tabs">
-  <button class="tab-btn active" onclick="switchTab('overview')">📊 总览</button>
-  <button class="tab-btn" onclick="switchTab('de')"><span class="dot-de">●</span> Decibel</button>
-  <button class="tab-btn" onclick="switchTab('ex')"><span class="dot-ex">●</span> Extended</button>
-  <button class="tab-btn" onclick="switchTab('rs')"><span class="dot-rs">●</span> RISEx</button>
-  <button class="tab-btn" onclick="switchTab('ai')">🤖 AI助手</button>
-  <button class="tab-btn" onclick="switchTab('env')">🧩 环境设置</button>
-  <button class="tab-btn" onclick="switchTab('settings')">⚙ IP配置</button>
-</div>
+<!-- ── 主功能导航：页面入口、连接状态与总览辅助操作 ── -->
+<nav class="main-tabs" id="main-tabs" aria-label="AI 网格交易主要功能">
+  <button type="button" class="tab-btn active" data-tab="overview" onclick="switchTab('overview')">📊 总览</button>
+  <button type="button" class="tab-btn" data-tab="ai" onclick="switchTab('ai')">🤖 AI助手</button>
+  <button type="button" class="tab-btn" data-tab="env" onclick="switchTab('env')">🧩 环境设置</button>
+  <button type="button" class="tab-btn" data-tab="settings" onclick="switchTab('settings')">⚙ IP配置</button>
+  <div class="main-nav-status" role="group" aria-label="网络、后端连接与当前时间">
+    <span id="hdr-proxy" class="conn" title="全局代理状态"><span class="cdot"></span><span id="hdr-proxy-txt">代理检测中…</span></span>
+    <span id="hdr-conn" class="conn warn" title="后端连接状态"><span class="cdot"></span><span id="hdr-conn-txt">连接中…</span></span>
+    <span class="muted" id="hdr-time" aria-label="当前时间"></span>
+  </div>
+  <div class="main-nav-actions" aria-label="总览辅助操作">
+    <label class="overview-filter" for="overview-filter-mode"><span>筛选</span>
+      <select id="overview-filter-mode" aria-label="总览交易所筛选" onchange="setOverviewFilter(this.value)">
+        <option value="all">全部</option>
+        <option value="live-running">仅运行实盘</option>
+        <option value="selected">选择交易所</option>
+      </select>
+    </label>
+    <button type="button" class="guide-trigger" id="guide-trigger" aria-haspopup="dialog" aria-controls="guide-modal" onclick="openGuideModal()">
+      <span aria-hidden="true">?</span><span>使用指南支持</span>
+    </button>
+    <button type="button" class="startup-trigger" id="startup-trigger" aria-haspopup="dialog" aria-controls="startup-modal" onclick="openStartupModal()">
+      <span class="startup-trigger-icon" aria-hidden="true">◉</span><span>启动项</span>
+    </button>
+  </div>
+</nav>
+
+<div class="workspace-shell">
+  <aside class="exchange-sidebar" id="exchange-tabs" aria-label="交易所控制台导航">
+    <div class="exchange-sidebar-head">
+      <div class="exchange-sidebar-title">交易所控制台</div>
+      <span class="exchange-sidebar-hint">选择交易所或账号，进入独立网格控制台</span>
+    </div>
+    <button type="button" class="tab-btn exchange-tab" data-tab="de" style="--exchange-color:var(--de-color)" onclick="switchTab('de')"><span class="dot-de">●</span><span>Decibel</span></button>
+    <button type="button" class="tab-btn exchange-tab" data-tab="ex" style="--exchange-color:var(--ex-color)" onclick="switchTab('ex')"><span class="dot-ex">●</span><span>Extended</span></button>
+    <button type="button" class="tab-btn exchange-tab" data-tab="rs" style="--exchange-color:var(--rs-color)" onclick="switchTab('rs')"><span class="dot-rs">●</span><span>RISEx</span></button>
+  </aside>
+  <main class="workspace-main">
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- AI 对冲交易 Ops：与网格策略完全隔离，共用账号与适配器能力 -->
@@ -2155,6 +2243,9 @@ body.hedge-mode .hedge-panel { display:block; }
 </div>
 </div>
 
+  </main>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- JavaScript -->
 <!-- ═══════════════════════════════════════════════════════════ -->
@@ -2374,6 +2465,23 @@ const EXCHANGE_FALLBACK = [
     { env:'NADO_ORDER_GAP_MS', label:'连续下单间隔（毫秒）', type:'integer', default:'200', min:200, max:30000, step:100 },
     { env:'NADO_LEVERAGE', label:'Nado 专属杠杆（可留空）', type:'number', min:1, max:100, step:1, placeholder:'留空使用策略杠杆' },
   ], networks:['mainnet','testnet'], networkLabels:{mainnet:'mainnet Ink 主网',testnet:'testnet Ink 测试网'}, docsUrl:'https://docs.nado.xyz/developer-resources/typescript-sdk', liveGuide:{ summary:'实盘模式：Nado Ink 账户与 Linked Signer 配置（详细说明）', url:'https://app.nado.xyz', steps:['在 Nado 完成 Ink 账户开户并存入 USDT0 保证金。','推荐创建专用 Linked Signer；私钥或本地 key 文件二选一。','Linked Signer 模式需填写主账户 NADO_ADDRESS；子账户默认 default。','BTC-PERP 官方产品号为 2，全部交易对会从官方接口动态加载。','主网使用官方 Ink RPC；Gateway 与 RPC 会一起参与自动网络选路。','先在 paper 验证，再切 live；Post-Only 与撤单签名只在本机完成。'], warning:'不要填写主钱包助记词；推荐最小权限 linked signer，首次实盘使用小额与低杠杆。' } },
+  { key:'ar', shortCode:'AR', name:'Arcus', chain:'Robinhood Chain · Perpetuals', color:'#a78bfa', modeEnv:'AR_MODE', networkEnv:'AR_NETWORK', proxyEnv:'ARCUS_PROXY', supportsDirectProxy:true, requiredLiveAnyOf:[['ARCUS_API_PRIVATE_KEY','ARCUS_API_PRIVATE_KEY_FILE']], capabilities:['官方实时行情','模拟网格','Ed25519 本机签名实盘','ALO Post-Only','分层 Tick','独立代理'], fields:[
+    { env:'ARCUS_ADDRESS', label:'Arcus 主钱包公开地址', requiredLive:true, placeholder:'0x...；绝不填主钱包私钥' },
+    { env:'ARCUS_ACCOUNT_INDEX', label:'Arcus Subaccount Index', type:'integer', default:'0', min:0, max:9, step:1 },
+    { env:'ARCUS_API_KEY', label:'Arcus Ed25519 API 公钥', secret:true, requiredLive:true, placeholder:'64 位 Hex；留空表示不修改' },
+    { env:'ARCUS_API_PRIVATE_KEY', label:'Arcus API 签名私钥', secret:true, placeholder:'64 位 seed Hex / PKCS#8；留空表示不修改' },
+    { env:'ARCUS_API_PRIVATE_KEY_FILE', label:'Arcus API 私钥文件', default:'secrets/arcus-private.pem', placeholder:'与直接私钥二选一' },
+    { env:'ARCUS_GOOD_TIL_DAYS', label:'挂单有效天数', type:'integer', default:'40', min:32, max:180, step:1 },
+    { env:'ARCUS_FEE_RATE', label:'Maker Fee 保守回退值', type:'number', default:'0.0005', min:0, max:0.05, step:0.000001 },
+    { env:'ARCUS_ORDER_GAP_MS', label:'连续下单间隔（毫秒）', type:'integer', default:'250', min:100, max:30000, step:50 },
+    { env:'ARCUS_POLL_MS', label:'账户与订单轮询间隔（毫秒）', type:'integer', default:'4000', min:2000, max:30000, step:500 },
+    { env:'ARCUS_API_URL', label:'Arcus REST API', type:'url', placeholder:'留空使用当前网络官方地址' },
+    { env:'ARCUS_WS_URL', label:'Arcus WebSocket API', type:'wsurl', placeholder:'留空使用当前网络官方地址' },
+  ], networks:['mainnet','testnet'], networkLabels:{mainnet:'mainnet Arcus 主网',testnet:'testnet Arcus 测试网'}, docsUrl:'https://docs.arcus.xyz/', liveGuide:{ summary:'实盘模式：Arcus Perps Beta 与 Ed25519 API Key 配置', url:'https://app.arcus.xyz', steps:['确认 Arcus Perps Beta 已向账户开放。','注册专用 Ed25519 API key，只填写 API 签名私钥，不填写主钱包私钥。','先在 testnet 完成挂单、撤单、杠杆和恢复验证，再切换 mainnet。'], warning:'Arcus Perps 仍分批开放；API 私钥只保存在本机。' } },
+  { key:'en', shortCode:'ET', name:'Entropy', chain:'Hyperliquid HIP-3 · io', color:'#14b8a6', modeEnv:'ENTROPY_MODE', networkEnv:'ENTROPY_NETWORK', proxyEnv:'ENTROPY_PROXY', supportsDirectProxy:true, liveAvailable:false, liveUnavailableReason:'当前仅开放 Entropy 官方实时行情驱动的 PAPER 网格；LIVE 会在 Hyperliquid agent-wallet、nonce、EIP-712 与 isolated collateral 完成端到端验收后开放。', capabilities:['Hyperliquid 官方实时行情','Entropy io 市场','模拟网格','动态 Asset ID','自动过滤退市','LIVE 安全禁用'], fields:[
+    { env:'ENTROPY_DEX', label:'Entropy HIP-3 DEX 标识', default:'io', placeholder:'固定为 io' },
+    { env:'ENTROPY_API_URL', label:'Hyperliquid 官方 API', type:'url', default:'https://api.hyperliquid.xyz' },
+  ], networks:['mainnet'], networkLabels:{mainnet:'mainnet Hyperliquid 主网'}, docsUrl:'https://docs.entropy.io/', liveGuide:{ summary:'当前版本仅开放真实行情驱动的 PAPER 网格', url:'https://entropy.io', steps:['通过 Hyperliquid 官方 /info 动态读取 dex=io，不使用臆造的 Entropy API 地址。','PAPER 使用真实标记价格和 K 线，订单、余额与盈亏均为本地模拟。'], warning:'LIVE 被刻意安全禁用，PAPER 订单不会伪装成实盘成交。' } },
 ];
 const exchangeKeys = () => EXCHANGE_DEFS.map((definition) => definition.key);
 const exchangeMeta = (key) => EXCHANGE_DEFS.find((definition) => definition.key === key) || EXCHANGE_FALLBACK.find((definition) => definition.key === key) || { key, shortCode:key.toUpperCase(), name:key.toUpperCase(), color:'#8b5cf6' };
@@ -2430,9 +2538,11 @@ function updateOverviewFilterUi() {
   if (select) select.value = overviewFilterMode;
   document.body.classList.toggle('exchange-select-mode', overviewFilterMode === 'selected');
   for (const definition of EXCHANGE_DEFS) {
-    const tab = document.querySelector(`#main-tabs .tab-btn[data-tab="${CSS.escape(definition.key)}"]`);
+    const tab = document.querySelector(`#exchange-tabs .tab-btn[data-tab="${CSS.escape(definition.key)}"]`);
     if (!tab) continue;
     tab.dataset.exchangeTab = 'true';
+    tab.classList.add('exchange-tab');
+    tab.style.setProperty('--exchange-color', definition.color);
     tab.classList.toggle('filter-selected', selectedExchangeKeys.has(definition.key));
     const family = familyInstances(definition);
     const familyName = definition.familyName || definition.name;
@@ -3081,10 +3191,25 @@ function switchTab(name) {
   const panel = $('tab-' + name);
   if (!panel) return;
   panel.classList.add('active');
-  const button = [...document.querySelectorAll('#main-tabs .tab-btn')].find((item) => item.dataset.tab === name || item.getAttribute('onclick') === `switchTab('${name}')`);
+  const button = [...document.querySelectorAll('.tab-btn')].find((item) => item.dataset.tab === name || item.getAttribute('onclick') === `switchTab('${name}')`);
   if (button) button.classList.add('active');
   if (name === 'ai') aiRefreshStatus();
   if (name === 'env') loadEnvConfig();
+}
+
+function syncNavigationOffsets() {
+  const headerHeight = Math.ceil(document.querySelector('.header')?.getBoundingClientRect().height || 52);
+  const navHeight = Math.ceil($('main-tabs')?.getBoundingClientRect().height || 49);
+  document.documentElement.style.setProperty('--ops-header-height', `${headerHeight}px`);
+  document.documentElement.style.setProperty('--ops-primary-nav-height', `${navHeight}px`);
+}
+
+syncNavigationOffsets();
+window.addEventListener('resize', syncNavigationOffsets, { passive:true });
+if (typeof ResizeObserver === 'function') {
+  const navigationResizeObserver = new ResizeObserver(syncNavigationOffsets);
+  navigationResizeObserver.observe(document.querySelector('.header'));
+  navigationResizeObserver.observe($('main-tabs'));
 }
 
 // ── 时钟 ────────────────────────────────────────────────────────────────────
@@ -3098,6 +3223,9 @@ function makeExchangeCtrl(prefix, chartId) {
   let riskProfile = 'steady';
   let markets = [];
   let curTrend = null;
+  let curTrendMarketId = null;
+  let trendRequestSeq = 0;
+  let trendAbortController = null;
   let lastState = null;
   let chart = null;
 
@@ -3120,7 +3248,12 @@ function makeExchangeCtrl(prefix, chartId) {
   });
 
   function sizeByBalance() {
-    const p = lastState?.lastPrice || curTrend?.price;
+    const selectedMarketId = String(P('market').value);
+    const stateMatchesSelection = lastState?.config?.marketId != null
+      && String(lastState.config.marketId) === selectedMarketId;
+    const trendMatchesSelection = curTrendMarketId === selectedMarketId;
+    const p = (stateMatchesSelection ? lastState?.lastPrice : null)
+      || (trendMatchesSelection ? curTrend?.price : null);
     if (p) autoSizePerGrid(p, +P('leverage').value || 3);
   }
 
@@ -3171,18 +3304,35 @@ function makeExchangeCtrl(prefix, chartId) {
 
   async function refreshTrend() {
     const marketId = P('market').value;
+    const requestSeq = ++trendRequestSeq;
+    trendAbortController?.abort();
+    const controller = new AbortController();
+    trendAbortController = controller;
+    curTrend = null;
+    curTrendMarketId = null;
     P('rec-tag').textContent = '分析中…';
     try {
-      const r = await fetch(`/api/${prefix}/trend?marketId=${marketId}&intervalSec=${P('interval').value}`);
+      const r = await fetch(`/api/${prefix}/trend?marketId=${marketId}&intervalSec=${P('interval').value}`, {
+        cache:'no-store', signal:controller.signal,
+      });
       const j = await r.json();
       if (j.error) throw new Error(j.error);
+      if (requestSeq !== trendRequestSeq || String(P('market').value) !== String(marketId)) return false;
       curTrend = j.analysis;
+      curTrendMarketId = String(marketId);
       renderTrend(j.analysis);
       drawChart(j.candles || []);
       if (!P('lower').value) applyAutoRange();
+      return true;
     } catch (e) {
+      if (requestSeq !== trendRequestSeq || e?.name === 'AbortError') return false;
+      curTrend = null;
+      curTrendMarketId = null;
       P('rec-tag').textContent = '趋势数据暂不可用';
       P('rec-detail').textContent = '手动填上下边界即可启动。(' + e.message + ')';
+      return false;
+    } finally {
+      if (requestSeq === trendRequestSeq) trendAbortController = null;
     }
   }
 
@@ -3241,15 +3391,23 @@ function makeExchangeCtrl(prefix, chartId) {
 
   function autoSizePerGrid(price, lev) {
     const mkt = markets.find(m => String(m.marketId) === String(P('market').value));
-    const bal = lastState && typeof lastState.balance === 'number' ? lastState.balance : null;
-    if (!mkt || !bal || !price) return;
-    const step = mkt.stepSize || 0.0001;
-    const minSz = mkt.minOrderSize || step;
+    const equity = Number(lastState?.equity);
+    const balance = Number(lastState?.balance);
+    const availableFunds = Number.isFinite(equity) && equity > 0
+      ? equity
+      : Number.isFinite(balance) && balance > 0 ? balance : null;
+    if (!mkt || !availableFunds || !price) return;
+    const step = Number(mkt.sizeIncrement || mkt.stepSize) || 0.0001;
+    const minNotional = Math.max(0, Number(mkt.minNotional) || 0);
+    const notionalFloorSize = minNotional > 0
+      ? Math.ceil((minNotional / price) / step - 1e-10) * step
+      : 0;
+    const minSz = Math.max(Number(mkt.minOrderSize) || step, notionalFloorSize);
     let n = +P('grid-count').value || 20;
-    const budgetNotional = bal * lev * (RISK[riskProfile]?.budget || 0.4);
+    const budgetNotional = availableFunds * lev * (RISK[riskProfile]?.budget || 0.4);
     let size = Math.floor((budgetNotional / n / price) / step) * step;
     if (size < minSz) { size = minSz; const maxN = Math.max(2, Math.floor(budgetNotional / (minSz * price))); n = Math.min(n, maxN); P('grid-count').value = n; }
-    P('size-base').value = +size.toFixed(8);
+    P('size-base').value = +size.toFixed(12);
   }
 
   function applyAutoRange() {
@@ -3349,7 +3507,20 @@ function makeExchangeCtrl(prefix, chartId) {
     if (j.error) alert('平仓失败：' + j.error);
   };
 
-  P('market').onchange = refreshTrend;
+  P('market').onchange = async () => {
+    // A range and size belong to one exact market. Never carry them across a
+    // market switch: fetch the new live quote, rebuild the range, then resize.
+    curTrend = null;
+    curTrendMarketId = null;
+    P('lower').value = '';
+    P('upper').value = '';
+    P('smart-note').textContent = '';
+    const market = markets.find((item) => String(item.marketId) === String(P('market').value));
+    if (market) P('size-base').value = market.minOrderSize || market.stepSize || 0.001;
+    await refreshTrend();
+    if (curTrend?.price) autoSizePerGrid(curTrend.price, +P('leverage').value || 3);
+    updateRiskPreview();
+  };
   P('interval').onchange = refreshTrend;
   P('refresh-trend').onclick = refreshTrend;
 
@@ -3358,7 +3529,7 @@ function makeExchangeCtrl(prefix, chartId) {
   // 把行情/趋势请求全部堵住。这里改为短连接轮询，保留一个总览 SSE 即可。
   let statePollBusy = false;
   async function pollState() {
-    if (statePollBusy) return;
+    if (statePollBusy || document.hidden) return;
     statePollBusy = true;
     try {
       const response = await fetch(`/api/${prefix}/state`, { cache:'no-store' });
@@ -3373,6 +3544,13 @@ function makeExchangeCtrl(prefix, chartId) {
   function render(s) {
     lastState = s;
     const run = s.running;
+    if (run && s.config?.marketId != null) {
+      const runningMarketId = String(s.config.marketId);
+      if ([...P('market').options].some((option) => option.value === runningMarketId)) {
+        P('market').value = runningMarketId;
+      }
+    }
+    P('market').disabled = run;
     P('start-btn').disabled = run;
     P('stop-btn').disabled = !run;
     if (P('adjust-btn')) P('adjust-btn').disabled = !run;
@@ -3421,6 +3599,7 @@ function makeExchangeCtrl(prefix, chartId) {
       id: 'gridLines',
       afterDraw(c) {
         const s = lastState; if (!s?.grid?.levels || !s.config) return;
+        if (String(s.config.marketId) !== String(P('market').value)) return;
         const { ctx, chartArea: {left,right}, scales: {y} } = c;
         ctx.save();
         s.grid.levels.forEach((lvl, i) => {
@@ -3518,14 +3697,14 @@ function ensureExchangeUi(definition) {
     $('tab-ai').before(panel);
   }
 
-  const mainTabs = $('main-tabs');
-  const existingTab = [...mainTabs.querySelectorAll('.tab-btn')].find((item) => item.getAttribute('onclick') === `switchTab('${key}')`);
+  const exchangeTabs = $('exchange-tabs');
+  const existingTab = [...exchangeTabs.querySelectorAll('.tab-btn')].find((item) => item.getAttribute('onclick') === `switchTab('${key}')`);
   if (!existingTab) {
     const button = document.createElement('button');
-    button.className = 'tab-btn'; button.dataset.tab = key; button.onclick = () => switchTab(key);
-    button.innerHTML = `<span style="color:${color}">●</span> ${name}`;
-    const aiTab = [...mainTabs.querySelectorAll('.tab-btn')].find((item) => item.getAttribute('onclick') === "switchTab('ai')");
-    mainTabs.insertBefore(button, aiTab);
+    button.type = 'button'; button.className = 'tab-btn exchange-tab'; button.dataset.tab = key; button.onclick = () => switchTab(key);
+    button.style.setProperty('--exchange-color', color);
+    button.innerHTML = `<span style="color:${color}">●</span><span>${escapeHtml(name)}</span>`;
+    exchangeTabs.appendChild(button);
   }
 
   if (!$(`ov-${key}-dot`)) {
@@ -3550,14 +3729,20 @@ function ensureExchangeUi(definition) {
     const guide = definition.liveGuide || {};
     const card = document.createElement('section');
     card.className = 'env-card'; card.id = `env-card-${key}`; card.style.borderTopColor = color;
+    const liveOption = definition.liveAvailable === false
+      ? '<option value="live" disabled>live 暂未开放</option>'
+      : '<option value="live">live 实盘</option>';
+    const liveHelp = definition.liveAvailable === false
+      ? definition.liveUnavailableReason
+      : `切换 live 前必须填写：${liveRequirementLabels(definition).join('、') || '无额外凭据'}。`;
     card.innerHTML = `
       <div class="env-card-head"><span>${name}${definition.chain ? ' · ' + definition.chain : ''}</span><span class="env-live-badge" id="env-badge-${key}">PAPER 模拟</span></div>
       <div class="row">
-        <div><label>运行模式</label><select id="env-${key}-mode" onchange="envModeChanged('${key}')"><option value="paper">paper 模拟盘</option><option value="live">live 实盘</option></select></div>
+        <div><label>运行模式</label><select id="env-${key}-mode" onchange="envModeChanged('${key}')"><option value="paper">paper 模拟盘</option>${liveOption}</select></div>
         <div><label>网络</label><select id="env-${key}-network">${(definition.networks || ['mainnet','testnet']).map((network) => `<option value="${network}">${definition.networkLabels?.[network] || (network === 'mainnet' ? 'mainnet 主网' : 'testnet 测试网')}</option>`).join('')}</select></div>
       </div>${fields}
       ${(definition.capabilities || []).length ? `<div style="margin-top:9px">${definition.capabilities.map((cap) => `<span class="exchange-cap">${cap}</span>`).join('')}</div>` : ''}
-      <div class="env-secret-help">切换 live 前必须填写：${liveRequirementLabels(definition).join('、') || '无额外凭据'}。</div>
+      <div class="env-secret-help">${liveHelp}</div>
       <details class="env-live-guide"><summary>${guide.summary || '实盘模式配置说明'}</summary><div class="env-guide-body"><ol>${(guide.steps || []).map((step) => `<li>${step}</li>`).join('')}</ol>${guide.url ? `<p style="margin-top:8px"><a href="${guide.url}" target="_blank" rel="noopener noreferrer">打开官方配置页面 ↗</a>${definition.docsUrl ? ` · <a href="${definition.docsUrl}" target="_blank" rel="noopener noreferrer">查看官方 API 文档 ↗</a>` : ''}</p>` : ''}${guide.warning ? `<div class="env-guide-warning">⚠ ${guide.warning}</div>` : ''}</div></details>`;
     document.querySelector('.env-exchange-grid').appendChild(card);
     ENV_VALUE_FIELDS[`env-${key}-mode`] = definition.modeEnv;
@@ -3631,8 +3816,7 @@ function renderOverviewPosition(key, data) {
 }
 
 function arrangeExchangeInstanceUi() {
-  const mainTabs = $('main-tabs');
-  const aiTab = [...mainTabs.querySelectorAll('.tab-btn')].find((item) => item.getAttribute('onclick') === "switchTab('ai')" || item.dataset.tab === 'ai');
+  const exchangeTabs = $('exchange-tabs');
   const overviewGrid = $('overview-grid');
   const envGrid = document.querySelector('.env-exchange-grid');
   const aiPanel = $('tab-ai');
@@ -3641,11 +3825,13 @@ function arrangeExchangeInstanceUi() {
     const family = familyInstances(definition);
     const familyName = definition.familyName || definition.name;
     const slot = Number(definition.instanceIndex || 1);
-    const tab = [...mainTabs.querySelectorAll('.tab-btn')].find((item) => item.dataset.tab === definition.key || item.getAttribute('onclick') === `switchTab('${definition.key}')`);
+    const tab = [...exchangeTabs.querySelectorAll('.tab-btn')].find((item) => item.dataset.tab === definition.key || item.getAttribute('onclick') === `switchTab('${definition.key}')`);
     if (tab) {
       tab.dataset.tab = definition.key;
-      tab.innerHTML = `<span style="color:${definition.color}">●</span> ${escapeHtml(family.length > 1 ? `${familyName} · 账号 ${slot}` : definition.name)}`;
-      if (aiTab) mainTabs.insertBefore(tab, aiTab);
+      tab.classList.add('exchange-tab');
+      tab.style.setProperty('--exchange-color', definition.color);
+      tab.innerHTML = `<span style="color:${definition.color}">●</span><span>${escapeHtml(family.length > 1 ? `${familyName} · 账号 ${slot}` : definition.name)}</span>`;
+      exchangeTabs.appendChild(tab);
     }
 
     const panel = $(`tab-${definition.key}`);
@@ -3854,6 +4040,7 @@ updateConnStatus();
 // ── 网络路由状态 ──────────────────────────────────────────────────────────────
 // 顶栏显示全局通道诊断状态；失败仅告警，各服务最终路线在 IP 页逐项展示。
 async function refreshProxyStatus() {
+  if (document.hidden) return;
   const el = $('hdr-proxy'), txt = $('hdr-proxy-txt');
   if (!el || !txt) return;
   let cfg = {};
@@ -4582,9 +4769,13 @@ const ENV_SECRET_FIELDS = {
 let envConfigLoaded = false;
 
 function envModeChanged(prefix) {
-  const live = $(`env-${prefix}-mode`).value === 'live';
+  const definition = exchangeMeta(prefix);
+  const select = $(`env-${prefix}-mode`);
+  const live = select.value === 'live';
   $(`env-card-${prefix}`).classList.toggle('is-live', live);
-  $(`env-badge-${prefix}`).textContent = live ? 'LIVE 实盘' : 'PAPER 模拟';
+  $(`env-badge-${prefix}`).textContent = definition.liveAvailable === false
+    ? (live ? 'LIVE 不可用' : 'PAPER 模拟')
+    : (live ? 'LIVE 实盘' : 'PAPER 模拟');
 }
 
 async function loadEnvConfig(force = false) {

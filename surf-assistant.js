@@ -39,6 +39,11 @@
   }
 
   const root = document.getElementById("surf-assistant") || createAssistant();
+  const tuckToggle = document.createElement("button");
+  tuckToggle.className = "surf-edge-toggle";
+  tuckToggle.type = "button";
+  tuckToggle.innerHTML = '<span aria-hidden="true">›</span>';
+  root.insertBefore(tuckToggle, root.firstChild);
 
   const panel = document.getElementById("surf-bot-panel");
   const toggle = document.getElementById("surf-bot-toggle");
@@ -54,6 +59,7 @@
   const copy = document.getElementById("surf-bot-copy");
   const initialMessage = messages.firstElementChild;
   const POSITION_KEY = "welinkbtc-surf-bot-top";
+  const TUCKED_KEY = "welinkbtc-surf-bot-tucked";
   let configured = false;
   let surfPreviousResponseId = "";
   let openaiPreviousResponseId = "";
@@ -169,6 +175,11 @@
     toggle.querySelector("small").textContent = english ? "AI Research" : "双擎深研";
     document.getElementById("surf-bot-title").textContent = english ? "Xiaowei Research" : "小微深度研究";
     close.setAttribute("aria-label", english ? "Close Xiaowei" : "关闭小微助手");
+    const tucked = root.classList.contains("is-tucked");
+    tuckToggle.setAttribute("aria-label", tucked
+      ? (english ? "Show Xiaowei icon" : "显示小微图标")
+      : (english ? "Hide Xiaowei at the right edge" : "将小微隐藏到右侧"));
+    tuckToggle.title = tucked ? (english ? "Show icon" : "显示图标") : (english ? "Hide at right edge" : "隐藏到右侧");
     initialMessage.querySelector("strong").textContent = english ? "Xiaowei" : "小微";
     initialMessage.querySelector("p").textContent = english
       ? "Tell me what asset, project, on-chain metric, market signal, or draft you want to research. I will organize evidence, sources, and a verification checklist for the current context."
@@ -191,6 +202,15 @@
     panel.setAttribute("aria-hidden", String(!open));
     updatePlatform();
     if (open) setTimeout(() => query.focus(), 180);
+  }
+
+  function setTucked(tucked, persist = true) {
+    if (tucked) setOpen(false);
+    root.classList.toggle("is-tucked", tucked);
+    tuckToggle.setAttribute("aria-pressed", String(tucked));
+    tuckToggle.querySelector("span").textContent = tucked ? "‹" : "›";
+    if (persist) localStorage.setItem(TUCKED_KEY, String(tucked));
+    applyAssistantLanguage();
   }
 
   function setConnection(isReady, label) {
@@ -417,7 +437,9 @@
 
   const savedTop = Number(localStorage.getItem(POSITION_KEY));
   if (Number.isFinite(savedTop) && savedTop > 40) root.style.setProperty("--surf-bot-top", `${Math.min(savedTop, window.innerHeight - 40)}px`);
+  setTucked(localStorage.getItem(TUCKED_KEY) === "true", false);
   updateQuickPrompts();
+  tuckToggle.addEventListener("click", () => setTucked(!root.classList.contains("is-tucked")));
   toggle.addEventListener("click", () => { if (!suppressToggle) setOpen(!root.classList.contains("is-open")); });
   close.addEventListener("click", () => setOpen(false));
   form.addEventListener("submit", (event) => { event.preventDefault(); runResearch(); });

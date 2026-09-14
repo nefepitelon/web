@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "requestConfig": {
+    "mode": "paper",
+    "exchange": "binance",
+    "symbols": ["BTC/USDT:USDT"],
+    "timeframe": "1h",
+    "strategy": "EMACrossResearch",
+    "stakeAmount": 100,
+    "maxOpenTrades": 1,
+    "stopLossPct": 2
+  },
+  "node": {
+    "trader_id": "WELINK-PAPER001",
+    "logging": { "log_level": "INFO", "log_colors": false },
+    "exec_engine": { "reconciliation": true, "reconciliation_lookback_mins": 1440 },
+    "strategies": [{
+      "strategy_path": "nautilus_trader.examples.strategies.ema_cross:EMACross",
+      "config_path": "nautilus_trader.examples.strategies.ema_cross:EMACrossConfig",
+      "config": {
+        "instrument_id": "BTCUSDT-PERP.BINANCE",
+        "bar_type": "BTCUSDT-PERP.BINANCE-1-HOUR-LAST-EXTERNAL",
+        "trade_size": "0.001",
+        "fast_ema_period": 12,
+        "slow_ema_period": 26,
+        "subscribe_trade_ticks": false,
+        "close_positions_on_stop": true
+      }
+    }],
+    "data_clients": {
+      "BINANCE": {
+        "path": "nautilus_trader.adapters.binance.config:BinanceDataClientConfig",
+        "config": {
+          "account_type": "USDT_FUTURES",
+          "environment": "LIVE",
+          "instrument_provider": { "load_ids": ["BTCUSDT-PERP.BINANCE"] }
+        }
+      }
+    },
+    "exec_clients": {
+      "BINANCE": {
+        "path": "nautilus_trader.adapters.sandbox.config:SandboxExecutionClientConfig",
+        "config": {
+          "venue": "BINANCE",
+          "account_type": "MARGIN",
+          "starting_balances": ["10000 USDT"],
+          "default_leverage": "1"
+        }
+      }
+    }
+  }
+}

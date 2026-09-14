@@ -88,7 +88,7 @@ test("Secret Garden player supports compact, expanded, draggable and accessible 
   assert.match(source, /onPointerDown={startDrag}/);
   assert.match(source, /welinkbtc-secret-garden-top:v1/);
   assert.match(styles, /position:\s*fixed/);
-  assert.match(styles, /right:\s*max\(16px/);
+  assert.match(styles, /right:\s*max\(12px/);
   assert.match(styles, /\.expanded/);
   assert.match(styles, /@media \(max-width: 660px\)/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);

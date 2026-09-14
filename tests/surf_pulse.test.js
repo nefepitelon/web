@@ -5,6 +5,7 @@ const {
   SYNC_INTERVAL_MS,
   collectSurfItems,
   freshnessFor,
+  mergeFeedItems,
   normalizeSurfItem,
   scoreSurfItem
 } = require("../api/surf-pulse");
@@ -97,4 +98,15 @@ test("collects and dedupes three Surf pages into ninety real-shaped items", asyn
   assert.equal(requestedUrls.length, 3);
   assert.match(requestedUrls[1], /[?&]ts=\d+/);
   assert.equal(SYNC_INTERVAL_MS, 10 * 60 * 1000);
+});
+
+test("merges multiple realtime sources in chronological order", () => {
+  const surf = normalizeSurfItem(item(), NOW);
+  const telegram = {
+    id: "aicoin2021-1",
+    title: "New AiCoin update",
+    url: "https://t.me/aicoin2021/1",
+    publishedAt: "2026-08-02T11:00:00Z"
+  };
+  assert.deepEqual(mergeFeedItems([[surf], [telegram]], 2).map((entry) => entry.id), ["aicoin2021-1", "pulse-1"]);
 });

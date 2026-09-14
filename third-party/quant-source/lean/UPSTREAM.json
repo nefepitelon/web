@@ -1,0 +1,30 @@
+{
+  "repository": "https://github.com/QuantConnect/Lean",
+  "license": "Apache-2.0",
+  "commit": "23b735d99a357807dc0df9f4c51d30f05fe0d277",
+  "retrievedAt": "2026-09-07",
+  "kind": "Unmodified original upstream SDK examples; not a native graphical user interface",
+  "files": [
+    {
+      "name": "LICENSE",
+      "url": "https://raw.githubusercontent.com/QuantConnect/Lean/23b735d99a357807dc0df9f4c51d30f05fe0d277/LICENSE",
+      "upstreamPath": "LICENSE",
+      "sha256": "522cf0a716ce03f67d46f8fceb5bf78c5b84400ec5cd8d14bf9f02cddc1cb6ba"
+    },
+    {
+      "name": "BasicTemplateAlgorithm.py",
+      "url": "https://raw.githubusercontent.com/QuantConnect/Lean/23b735d99a357807dc0df9f4c51d30f05fe0d277/Algorithm.Python/BasicTemplateAlgorithm.py",
+      "upstreamPath": "Algorithm.Python/BasicTemplateAlgorithm.py",
+      "sha256": "6494f3c2779fb1b59b140408b3291600694cb32816dc1271289c4d3e66c430a9"
+    },
+    {
+      "name": "BasicTemplateAlgorithm.cs",
+      "url": "https://raw.githubusercontent.com/QuantConnect/Lean/23b735d99a357807dc0df9f4c51d30f05fe0d277/Algorithm.CSharp/BasicTemplateAlgorithm.cs",
+      "upstreamPath": "Algorithm.CSharp/BasicTemplateAlgorithm.cs",
+      "sha256": "3b230919f77f1dc10397b8aa7cf8f546d421f79cc8c72cf7d461a8950b928f42"
+    }
+  ],
+  "version": "source snapshot",
+  "ref": "master",
+  "project": "lean"
+}

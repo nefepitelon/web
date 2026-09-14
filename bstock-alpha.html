@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="bstock-alpha.css?v=20260826-ledger-reports-v3" />
     <link rel="stylesheet" href="bstock-alpha-ui.css?v=20260904-ui-system-v1" />
+    <link rel="stylesheet" href="bstock-autotrade.css?v=20260909-manual-ignore-v1" />
     <link rel="stylesheet" href="bstock-equity-panel.css?v=20260904-equity-panel-v2" />
   </head>
   <body data-theme="dark">
@@ -223,6 +224,45 @@
         </ol>
       </section>
 
+      <section class="autotrade-panel panel" id="bstock-autotrade" aria-labelledby="autotrade-title" translate="no">
+        <header class="autotrade-head">
+          <div class="autotrade-identity"><span class="autotrade-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 3 7-10M15 5h5v5M4 6v3M2.5 7.5h3" /></svg></span><div><span class="panel-kicker">AUTOMATED EXECUTION</span><h2 id="autotrade-title">自动交易</h2><p data-auto-text="subtitle">从 bStock 机会池筛选标的，按策略与预算持续执行。</p></div></div>
+          <div class="autotrade-master"><span class="autotrade-status" id="autotrade-status" data-state="syncing" role="status">同步中</span><button class="autotrade-switch" id="autotrade-toggle" type="button" role="switch" aria-checked="false" aria-label="开启自动交易" aria-controls="autotrade-settings" disabled><span aria-hidden="true"></span></button></div>
+        </header>
+        <div class="autotrade-body">
+          <div class="autotrade-message" id="autotrade-message" role="status" aria-live="polite" hidden></div>
+          <div class="autotrade-overview">
+            <div class="autotrade-brief"><div class="autotrade-eyebrow" data-auto-text="strategyLabel">当前策略</div><strong id="autotrade-strategy">自适应策略</strong><p id="autotrade-capability">正在读取后台状态…</p><div class="autotrade-flow" aria-hidden="true"><span data-auto-text="selectStep">选标的</span><i>→</i><span data-auto-text="riskStep">核对风控</span><i>→</i><span data-auto-text="executeStep">执行与对账</span></div></div>
+            <div class="autotrade-metrics"><article><span data-auto-text="budget">资金预算</span><strong id="autotrade-budget">—</strong><small id="autotrade-order-size">—</small></article><article><span data-auto-text="realized">策略已实现 PnL</span><strong id="autotrade-realized">—</strong><small data-auto-text="confirmedOnly">仅确认成交 · 不含 Gas</small></article><article><span data-auto-text="positions">策略持仓</span><strong id="autotrade-positions">—</strong><small id="autotrade-last-scan">—</small></article></div>
+          </div>
+          <div class="autotrade-toolbar"><p id="autotrade-run-summary" data-auto-text="idleSummary">启用后由后台持续运行，关闭页面也会继续。</p><div><button type="button" class="autotrade-button" id="autotrade-configure" aria-expanded="false" aria-controls="autotrade-settings" data-auto-text="configure">策略与预算</button><button type="button" class="autotrade-button" id="autotrade-scan" data-auto-text="scan">仅扫描机会</button><button type="button" class="autotrade-button autotrade-button--quiet" id="autotrade-refresh" data-auto-text="refresh">刷新</button></div></div>
+          <form class="autotrade-settings" id="autotrade-settings" hidden>
+            <div class="autotrade-settings-heading"><div><h3 data-auto-text="settingsTitle">设置本次自动交易</h3><p data-auto-text="settingsNote">按实时价格使用 USDT 买入；预算仅用于本策略持仓，不自动卖出原有资产。</p></div><button class="autotrade-button autotrade-button--quiet" id="autotrade-hide-settings" type="button" data-auto-text="collapse">收起</button></div>
+            <div class="autotrade-fields">
+              <label class="autotrade-field autotrade-field--strategy"><span data-auto-text="strategyLabel">当前策略</span><select name="strategy"><option value="adaptive" data-auto-text="adaptive">自适应策略</option><option value="trend" data-auto-text="trend">趋势跟随</option><option value="mean_reversion" data-auto-text="mean_reversion">均值回归</option></select></label>
+              <label class="autotrade-field"><span data-auto-text="budgetUsd">最大投入（USD）</span><input name="budgetUsd" type="number" min="20" max="2000" step="1" value="100" required /></label>
+              <label class="autotrade-field"><span data-auto-text="orderUsd">每笔买入（USD）</span><input name="orderUsd" type="number" min="5" max="500" step="1" value="20" required /></label>
+              <label class="autotrade-field"><span data-auto-text="maxPositions">最多持仓数</span><input name="maxPositions" type="number" min="1" max="5" step="1" value="3" required /></label>
+              <label class="autotrade-field"><span data-auto-text="stopLossPct">单笔止损（%）</span><input name="stopLossPct" type="number" min="1" max="10" step="0.1" value="3" required /></label>
+              <label class="autotrade-field"><span data-auto-text="takeProfitPct">单笔止盈（%）</span><input name="takeProfitPct" type="number" min="2" max="30" step="0.1" value="6" required /></label>
+              <label class="autotrade-field"><span data-auto-text="maxDrawdownPct">回撤减仓暂停（%）</span><input name="maxDrawdownPct" type="number" min="2" max="25" step="0.1" value="10" required /></label>
+              <label class="autotrade-field"><span data-auto-text="dailyLossPct">日亏减仓暂停（%）</span><input name="dailyLossPct" type="number" min="1" max="15" step="0.1" value="5" required /></label>
+              <label class="autotrade-field"><span data-auto-text="intervalSeconds">扫描间隔（秒）</span><input name="intervalSeconds" type="number" min="60" max="900" step="1" value="60" required /></label>
+            </div>
+            <p class="autotrade-strategy-help" id="autotrade-strategy-help"></p>
+            <div class="autotrade-consent"><label><input id="autotrade-acknowledged" type="checkbox" /><span data-auto-text="acknowledgement">我授权机器人在以上预算和风控范围内，通过当前 Agentic Wallet 会话自动提交真实买卖订单。</span></label><button class="autotrade-button autotrade-button--primary" id="autotrade-start" type="submit" disabled data-auto-text="start">确认并开启</button></div>
+            <p class="autotrade-active-note" id="autotrade-active-note" hidden data-auto-text="activeSettings">运行中设置已锁定。关闭开关停止后，可调整预算并重新开启。</p>
+          </form>
+          <p class="autotrade-research-note" data-auto-text="researchNote">自动从已有有效研报的机会池标的中筛选；无合格信号时等待。</p>
+          <div class="autotrade-disclosure"><span aria-hidden="true">i</span><p data-auto-text="disclosure">策略不保证盈利或资金翻倍。止损由后台定时检查，成交可能产生滑点；达到亏损上限后尝试退出策略持仓并暂停。手动关闭只停止后续自动下单，不自动清仓。每次授权最长 24 小时，钱包会话更早到期则提前暂停。风控权益计入 Gas，展示 PnL 不含 Gas。</p></div>
+          <details class="autotrade-trace" id="autotrade-trace" open>
+            <summary><span><strong data-auto-text="traceTitle">策略与订单追踪</strong><small id="autotrade-event-count">0</small></span><span class="autotrade-details-chevron" aria-hidden="true">⌄</span></summary>
+            <div class="autotrade-trace-tools"><p data-auto-text="traceNote">导出包含完整事件历史与最近 1,000 笔订单；更早订单凭证保留在事件中。</p><button type="button" class="autotrade-button autotrade-button--quiet" id="autotrade-export" data-auto-text="export">导出记录 ↓</button></div>
+            <div class="autotrade-events" id="autotrade-events"><p class="autotrade-empty" data-auto-text="empty">暂无策略记录。开启或扫描后，将显示真实决策与执行结果。</p></div>
+          </details>
+        </div>
+      </section>
+
       <section class="portfolio-panel panel">
         <header class="portfolio-head">
           <div><span class="panel-kicker">PORTFOLIO &amp; ATTRIBUTION</span><h2>组合与 Realized PnL</h2></div>
@@ -413,5 +453,6 @@
   <script src="bstock-alpha-storage.js?v=20260902-dual-wallet-v4"></script>
   <script src="bstock-alpha.js?v=20260904-ui-system-v1"></script>
   <script src="bstock-equity-panel.js?v=20260904-equity-panel-v2"></script>
+  <script src="bstock-autotrade.js?v=20260909-manual-ignore-v1"></script>
   </body>
 </html>

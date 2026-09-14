@@ -1,113 +1,4 @@
-let tokenUniverse = [
-  {
-    symbol: "POPCAT", name: "Popcat", type: "MEME", market: "perp", price: "$0.6412", change: 38.6,
-    volume: 4.2, funding: -0.018, oi: 31.8, score: 91, bias: "long", watched: true,
-    dimensions: [96, 94, 82, 86, 89, 93, 88],
-    reason: "价格、OI 与量能同向扩张，资金费率逆向，存在空头回补动能。",
-    heat: 164, kols: ["@lookonchain", "@0xSun", "@defioasis"],
-    risks: ["24H 涨幅过高", "MEME 高波动", "追价保护 -40% 仓位"],
-    headlines: ["POPCAT 永续成交额跃居 Binance MEME 板块前三", "Solana MEME 板块出现同步资金轮动"]
-  },
-  {
-    symbol: "ORDI", name: "ORDI", type: "BRC-20", market: "both", price: "$36.76", change: -18.2,
-    volume: 3.8, funding: 0.041, oi: 22.4, score: 88, bias: "short", watched: true,
-    dimensions: [90, 86, 72, 81, 94, 63, 68],
-    reason: "OI 在价格走弱时持续增加，正资金费率显示多头仍拥挤，空头共振占优。",
-    heat: 83, kols: ["@ordinalsdata", "@BTCeco", "@chainfeeds"],
-    risks: ["短时跌幅过大", "空头回补风险", "BTC 波动联动"],
-    headlines: ["BRC-20 板块成交量放大，ORDI 跌破关键支撑", "永续未平仓量逆势上升引发多头风险"]
-  },
-  {
-    symbol: "WIF", name: "dogwifhat", type: "MEME", market: "both", price: "$2.284", change: 24.1,
-    volume: 3.4, funding: -0.006, oi: 19.6, score: 84, bias: "long", watched: false,
-    dimensions: [88, 86, 77, 79, 73, 90, 84],
-    reason: "价格突破日内高点，量能和社交热度共振，负资金费率降低多头拥挤担忧。",
-    heat: 127, kols: ["@solanafloor", "@moonoverlord", "@blocmates"],
-    risks: ["MEME 板块集中", "日内波动偏高"],
-    headlines: ["WIF 重回 Solana MEME 交易热度首位", "现货与永续成交同步放大"]
-  },
-  {
-    symbol: "ENA", name: "Ethena", type: "DEFI", market: "both", price: "$0.4418", change: -14.7,
-    volume: 3.1, funding: 0.058, oi: 17.9, score: 82, bias: "short", watched: false,
-    dimensions: [84, 80, 91, 78, 88, 55, 71],
-    reason: "价格跌破结构位、资金费率偏高且多头爆仓增强，反弹抛压仍需消化。",
-    heat: 61, kols: ["@ethena_labs", "@defillama", "@WuBlockchain"],
-    risks: ["协议消息敏感", "下跌尾部流动性"],
-    headlines: ["ENA 多头清算量升至日内高位", "Ethena 生态资金流出现短时回落"]
-  },
-  {
-    symbol: "TURBO", name: "Turbo", type: "AI MEME", market: "perp", price: "$0.00684", change: 18.4,
-    volume: 2.9, funding: 0.072, oi: 15.6, score: 79, bias: "neutral", watched: false,
-    dimensions: [82, 78, 61, 68, 67, 94, 86],
-    reason: "媒体与社交热度领先，但资金费率和量价背离正在升温，等待二次确认。",
-    heat: 194, kols: ["@turbotoadtoken", "@coinbureau", "@WhaleChart"],
-    risks: ["社交过热", "资金费率偏高", "量价背离"],
-    headlines: ["AI MEME 叙事再度升温，TURBO 搜索量激增", "高资金费率令追多性价比下降"]
-  },
-  {
-    symbol: "PEOPLE", name: "ConstitutionDAO", type: "DAO", market: "perp", price: "$0.0821", change: 14.8,
-    volume: 2.7, funding: 0.012, oi: 12.8, score: 78, bias: "long", watched: false,
-    dimensions: [81, 76, 74, 72, 69, 85, 80],
-    reason: "量价同向上行，社交与媒体提及同步抬升，但 OI 强度尚未达到强信号阈值。",
-    heat: 112, kols: ["@DAOResearch", "@cointelegraph", "@cryptokoryo"],
-    risks: ["叙事驱动", "盘口深度一般"],
-    headlines: ["PEOPLE 日内成交量放大至 30 日分位高位", "DAO 板块轮动获得交易者关注"]
-  },
-  {
-    symbol: "NEIRO", name: "Neiro", type: "MEME", market: "both", price: "$0.00172", change: 12.7,
-    volume: 2.5, funding: -0.003, oi: 9.8, score: 75, bias: "long", watched: false,
-    dimensions: [76, 73, 78, 70, 62, 82, 74],
-    reason: "价格与量能温和共振，负资金费率提供反指支撑，清算强度仍不足。",
-    heat: 89, kols: ["@neiro", "@MemeCoinDAO", "@CoinMarketCap"],
-    risks: ["流动性分散", "MEME 高波动"],
-    headlines: ["NEIRO 在亚洲时段出现持续买盘", "永续资金费率维持小幅负值"]
-  },
-  {
-    symbol: "1000SATS", name: "SATS", type: "BRC-20", market: "perp", price: "$0.000221", change: -12.1,
-    volume: 2.4, funding: 0.027, oi: 11.3, score: 74, bias: "short", watched: false,
-    dimensions: [78, 72, 82, 70, 73, 47, 59],
-    reason: "下跌过程中 OI 增加且资金费率维持正值，短线多头承压。",
-    heat: 52, kols: ["@ord_io", "@brc20_news", "@BTCMagazine"],
-    risks: ["低价高弹性", "BTC 联动强"],
-    headlines: ["BRC-20 代币普遍回落，SATS 成交放大", "多头未平仓合约仍处于高位"]
-  },
-  {
-    symbol: "PENDLE", name: "Pendle", type: "DEFI", market: "both", price: "$4.118", change: -9.4,
-    volume: 1.9, funding: -0.014, oi: -3.2, score: 68, bias: "neutral", watched: false,
-    dimensions: [61, 58, 75, 64, 55, 66, 72],
-    reason: "价格与 OI 同步回落更接近多头平仓而非主动做空，暂不追空。",
-    heat: 48, kols: ["@pendle_fi", "@DefiIgnas", "@thedefiedge"],
-    risks: ["趋势未确认", "临近支撑区"],
-    headlines: ["PENDLE 随 DeFi 板块回调，未平仓量下降", "收益率交易板块基本面仍获关注"]
-  },
-  {
-    symbol: "NOT", name: "Notcoin", type: "GAMEFI", market: "both", price: "$0.0092", change: -8.7,
-    volume: 1.8, funding: -0.021, oi: -6.4, score: 66, bias: "neutral", watched: false,
-    dimensions: [58, 55, 79, 61, 52, 69, 63],
-    reason: "负资金费率与 OI 回落削弱继续追空逻辑，等待新的成交放大。",
-    heat: 57, kols: ["@thenotcoin", "@ton_blockchain", "@Coin98Analytics"],
-    risks: ["趋势动能不足", "低流动性时段"],
-    headlines: ["NOT 回落但永续杠杆同步出清", "TON 生态热度保持平稳"]
-  },
-  {
-    symbol: "DOGE", name: "Dogecoin", type: "MEME", market: "both", price: "$0.1428", change: 7.6,
-    volume: 1.7, funding: 0.021, oi: 7.8, score: 64, bias: "neutral", watched: false,
-    dimensions: [62, 59, 67, 66, 51, 72, 70],
-    reason: "大盘跟随属性较强，七维信号尚未形成独立共振。",
-    heat: 73, kols: ["@dogecoin", "@BillyM2k", "@santimentfeed"],
-    risks: ["大盘相关性高", "信号独立性不足"],
-    headlines: ["DOGE 跟随市场反弹，独立催化有限", "社交提及温和抬升"]
-  },
-  {
-    symbol: "PEPE", name: "Pepe", type: "MEME", market: "both", price: "$0.0000128", change: 6.9,
-    volume: 1.6, funding: 0.016, oi: 5.1, score: 62, bias: "neutral", watched: false,
-    dimensions: [60, 57, 65, 63, 49, 75, 68],
-    reason: "社交热度领先于价格和 OI，当前更像观察信号而非执行信号。",
-    heat: 81, kols: ["@pepecoineth", "@lunarcrush", "@WhaleStats"],
-    risks: ["社交领先未确认", "MEME 板块拥挤"],
-    headlines: ["PEPE 社交提及回升，价格反应相对温和", "链上大额转账数量增加"]
-  }
-];
+let tokenUniverse = [];
 
 const dimensionNames = ["价格动量", "成交异动", "资金费率", "多空比", "爆仓强度", "社交情绪", "媒体热度"];
 const rowsRoot = document.querySelector("#token-rows");
@@ -245,9 +136,9 @@ const telegramSignalRefreshMs = 5 * 60_000;
 const surfPulseRefreshMs = 10 * 60_000;
 const paperMonitorRefreshMs = 15_000;
 const alphaExecutionRefreshMs = 15_000;
+const alphaExecutionIdleRefreshMs = 5 * 60_000;
 const livePortfolioPullMs = 30_000;
 const strongTradeIntentWindowMs = 3 * 60_000;
-const liveUnlockPhrase = "ENABLE LIVE TRADING";
 const paperRiskStorageKey = "alpha-radar-paper-risk-v1";
 const paperHistoryStorageKey = "alpha-radar-paper-history-v1";
 const strongTradeIntentSeenStorageKey = "alpha-radar-strong-intent-seen-v1";
@@ -310,6 +201,13 @@ let alphaExecutionConfigDirty = false;
 let alphaExecutionConfigSaveTimer = null;
 let livePortfolioPullTimer = null;
 let livePortfolioPulling = false;
+const livePnlRefreshMs = 5 * 60_000;
+let livePnlSnapshot = null;
+let livePnlMarket = null;
+let livePnlLoading = false;
+let livePnlLastAttempt = 0;
+let livePnlTimer = null;
+let liveAuditExporting = false;
 let alphaExecutionConfig = {
   activeMode: "paper",
   defaultMarket: "futures",
@@ -348,6 +246,128 @@ function createInitialPaperRiskState() {
 }
 
 let paperRiskState = createInitialPaperRiskState();
+
+const sourceHealth = new Map();
+function updateSourceHealth(key, state = "live", timestamp = Date.now()) {
+  sourceHealth.set(key, { state, timestamp });
+  renderSourceHealth();
+}
+
+function renderSourceHealth() {
+  let healthy = 0;
+  document.querySelectorAll("[data-source-health]").forEach((row) => {
+    const key = row.dataset.sourceHealth;
+    const source = sourceHealth.get(key);
+    const ttl = key === "signals" ? telegramSignalRefreshMs + 60_000 : key === "momentum" ? cryptoBubblesRefreshMs + 60_000 : 120_000;
+    const fresh = source && source.state === "live" && Date.now() - source.timestamp < ttl;
+    if (fresh) healthy += 1;
+    row.querySelector("i").className = `source-dot${fresh ? " live" : ""}`;
+    row.querySelector("em").textContent = fresh ? "LIVE" : source ? source.state === "error" ? "重连" : "缓存" : "等待";
+    row.title = source ? `最近同步 ${new Date(source.timestamp).toLocaleTimeString("zh-CN", { hour12: false })}` : "尚未收到数据";
+  });
+  const count = document.querySelector("#source-health-count");
+  if (count) count.textContent = `${healthy} / 4`;
+}
+
+function renderLiveSummaryMetrics() {
+  const count = document.querySelector("#risk-rejected-count");
+  const detail = document.querySelector("#risk-rejected-detail");
+  const metrics = alphaExecutionAuthorized && alphaExecutionSnapshot?.riskMetrics;
+  if (count) count.textContent = metrics
+    ? String(metrics.rejectedIntents.filter((item) => item.environment === alphaExecutionConfig.activeMode && item.market === alphaExecutionConfig.defaultMarket).reduce((sum, item) => sum + item.count, 0))
+    : "—";
+  if (detail) detail.textContent = metrics
+    ? `${executionModeLabel()} · ${executionMarketLabel()} · 24 小时拒绝意图`
+    : "账户风控记录尚未同步";
+  const pnl = alphaExecutionAuthorized && livePnlMarket === alphaExecutionConfig.defaultMarket ? livePnlSnapshot : null;
+  const known = pnl?.status === "ready" && pnl.coverageComplete === true && pnl.asset === "USDT"
+    && pnl.amount != null && Number.isFinite(Number(pnl.amount));
+  const result = document.querySelector("#live-realized-metric");
+  const pnlDetail = document.querySelector("#live-realized-detail");
+  if (result) {
+    result.textContent = known ? formatSignedMoney(pnl.amount) : "—";
+    result.className = known ? Number(pnl.amount) >= 0 ? "green" : "down" : "";
+    result.title = known ? `LIVE ${executionMarketLabel()} · ${pnl.periodStart || ""} 至 ${pnl.periodEnd || ""} · 已实现盈亏、手续费和资金费的 USDT 净额` : "仅展示交易所核验完成的 LIVE 结算记录";
+  }
+  if (pnlDetail) pnlDetail.textContent = known
+    ? `近 89 天 · ${executionMarketLabel()} · ${Number(pnl.recordCount) || 0} 条结算记录`
+    : pnl?.message || (alphaExecutionAuthorized ? "正在同步 LIVE 历史结算记录" : "请登录后读取实盘历史结算记录");
+  if (alphaExecutionConfig.activeMode === "live") {
+    if (portfolioRealizedPnl) {
+      portfolioRealizedPnl.textContent = known ? formatSignedMoney(pnl.amount) : "—";
+      portfolioRealizedPnl.className = known ? Number(pnl.amount) >= 0 ? "up" : "down" : "";
+    }
+    if (portfolioRealizedCount) portfolioRealizedCount.textContent = known ? `近 89 天 · ${Number(pnl.recordCount) || 0} 条结算记录` : "等待完整实盘结算记录";
+  }
+  const auditButton = document.querySelector("#export-audit");
+  if (auditButton) auditButton.disabled = !alphaExecutionAuthorized || liveAuditExporting;
+  const equity = currentPaperEquity(true);
+  const sidebarEquity = document.querySelector("#sidebar-equity");
+  if (sidebarEquity) sidebarEquity.textContent = `本机 PAPER · ${equity.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDT`;
+}
+
+function ensureLivePnlSchedule() {
+  window.clearTimeout(livePnlTimer);
+  if (document.hidden || !alphaExecutionAuthorized || livePnlLoading) return;
+  const elapsed = Date.now() - livePnlLastAttempt;
+  if (livePnlMarket !== alphaExecutionConfig.defaultMarket || elapsed >= livePnlRefreshMs) {
+    void hydrateLivePnl();
+    return;
+  }
+  livePnlTimer = window.setTimeout(() => hydrateLivePnl(), Math.max(1000, livePnlRefreshMs - elapsed));
+}
+
+async function hydrateLivePnl() {
+  if (livePnlLoading || !alphaExecutionAuthorized || document.hidden) return;
+  const market = alphaExecutionConfig.defaultMarket;
+  livePnlLoading = true;
+  livePnlLastAttempt = Date.now();
+  if (livePnlMarket !== market) livePnlSnapshot = null;
+  livePnlMarket = market;
+  renderLiveSummaryMetrics();
+  try {
+    const snapshot = await executionRequest(`/pnl?${new URLSearchParams({ market })}`);
+    if (alphaExecutionAuthorized && alphaExecutionConfig.defaultMarket === market) livePnlSnapshot = snapshot;
+  } catch (error) {
+    if (alphaExecutionConfig.defaultMarket === market) livePnlSnapshot = { status: "unavailable", amount: null, message: error.message || "实盘结算数据暂时不可用" };
+  } finally {
+    livePnlLoading = false;
+    renderLiveSummaryMetrics();
+    ensureLivePnlSchedule();
+  }
+}
+
+async function exportLiveAudit() {
+  if (!alphaExecutionAuthorized || liveAuditExporting) return;
+  liveAuditExporting = true;
+  const button = document.querySelector("#export-audit");
+  const original = button?.innerHTML;
+  if (button) { button.disabled = true; button.textContent = "正在导出实盘审计…"; }
+  const market = alphaExecutionConfig.defaultMarket;
+  try {
+    const query = new URLSearchParams({ mode: "live", format: "csv", market });
+    const response = await fetch(`/api/alpha-execution/audits?${query}`, { cache: "no-store", credentials: "same-origin" });
+    if (!response.ok) {
+      let payload = null;
+      try { payload = await response.json(); } catch {}
+      throw new Error(executionErrorMessage(payload, "实盘审计导出失败，请稍后重试"));
+    }
+    if (!response.headers.get("content-type")?.includes("text/csv")) throw new Error("实盘审计返回格式异常，未生成导出文件");
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `alpha-radar-live-${market}-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast("服务端 LIVE 实盘审计记录已导出");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    liveAuditExporting = false;
+    if (button) button.innerHTML = original;
+    renderLiveSummaryMetrics();
+  }
+}
 
 function setScanButtonLoading(loading) {
   const button = document.querySelector("#refresh-scan");
@@ -431,6 +451,7 @@ async function hydrateAlphaScan({ announce = false } = {}) {
 }
 
 function setBubbleLiveState(state, message) {
+  updateSourceHealth("momentum", state);
   if (!bubbleLiveState) return;
   bubbleLiveState.className = `bubble-live-state ${state}`;
   bubbleLiveState.querySelector("span").textContent = message;
@@ -894,6 +915,7 @@ function applyMarketTicker(ticker) {
   const price = Number(ticker.c ?? ticker.lastPrice);
   const change = Number(ticker.P ?? ticker.priceChangePercent);
   if (!Number.isFinite(price) || !Number.isFinite(change)) return;
+  updateSourceHealth(futuresMarketSymbols.includes(symbol) ? "futures" : "spot");
 
   const priceElements = document.querySelectorAll(`[data-market-price="${symbol}"]`);
   const changeElements = document.querySelectorAll(`[data-market-change="${symbol}"]`);
@@ -1065,27 +1087,25 @@ function biasLabel(bias) {
 
 function createMainstreamFallbackToken(symbol, index) {
   const meta = featuredMarketMeta[symbol];
-  const baseScore = Math.max(58, 72 - index);
-  const dimensions = [64, 58, 52, 50, 48, 55, 52].map((value, dimensionIndex) => Math.max(35, value - index % 4 + dimensionIndex % 2));
   return {
     symbol,
     name: meta.name,
     type: "中性观察",
     market: meta.market,
     price: "$—",
-    change: 0,
-    volume: 1,
-    funding: 0,
-    fundingAvailable: meta.market !== "spot",
+    change: null,
+    volume: null,
+    funding: null,
+    fundingAvailable: false,
     oi: null,
-    score: baseScore,
+    score: null,
     bias: "neutral",
     signalType: "中性观察",
     watched: false,
-    dimensions,
-    dimensionAvailability: [true, true, meta.market !== "spot", meta.market !== "spot", meta.market !== "spot", false, false],
+    dimensions: Array(7).fill(null),
+    dimensionAvailability: Array(7).fill(false),
     reason: `${symbol} 属于顶部实时行情的热门精选主流标的；等待当前两小时七维快照完成后再判断共振方向。`,
-    heat: 50,
+    heat: null,
     kols: ["Binance 实时行情", "热门精选主流"],
     risks: ["主流资产仍可能出现高波动", "中性标的必须人工选择方向并经过风控审批"],
     headlines: [`${symbol} 已纳入顶部 13 个实时行情标的`, "价格与 24H 涨跌幅由 Binance 实时行情持续更新"],
@@ -1198,7 +1218,7 @@ function renderRows() {
     const marketMeta = marketLabels
       .map((item) => `<i class="token-meta-market ${item.className}">${item.label}</i>`)
       .join('<b class="token-meta-separator">·</b>');
-    const fundingCell = token.fundingAvailable === false
+    const fundingCell = token.fundingAvailable === false || token.funding == null
       ? '<td class="dim">—</td>'
       : `<td class="${token.funding < 0 ? "up" : token.funding > 0.04 ? "down" : ""}">${token.funding > 0 ? "+" : ""}${token.funding.toFixed(3)}%</td>`;
     const oiCell = token.oi == null
@@ -1207,11 +1227,11 @@ function renderRows() {
     return `
       <tr tabindex="0" data-symbol="${escapeHtml(token.symbol)}" aria-label="查看 ${escapeHtml(token.symbol)} 七维信号明细">
         <td><div class="token-cell"><span class="token-rank">${String(rank).padStart(2, "0")}</span><span class="token-avatar ${avatarClass(token.symbol)}">${escapeHtml(token.symbol[0])}</span><span><strong>${escapeHtml(token.symbol)}</strong><small>${marketMeta}<b class="token-meta-separator">·</b><i class="token-meta-signal ${token.bias}">${escapeHtml(token.type)}</i></small></span></div></td>
-        <td class="${deltaClass}" data-ranking-change="${escapeHtml(token.symbol)}">${token.change > 0 ? "+" : ""}${token.change.toFixed(1)}%</td>
-        <td><span class="volume-cell"><i style="--volume:${Math.min(100, token.volume * 22)}%"></i>${token.volume.toFixed(1)}×</span></td>
+        <td class="${token.change == null ? "dim" : deltaClass}" data-ranking-change="${escapeHtml(token.symbol)}">${formatSignalPercent(token.change)}</td>
+        <td>${token.volume == null ? '<span class="dim">—</span>' : `<span class="volume-cell"><i style="--volume:${Math.min(100, token.volume * 22)}%"></i>${token.volume.toFixed(1)}×</span>`}</td>
         ${fundingCell}
         ${oiCell}
-        <td><span class="score-cell" style="--score:${token.score};--score-color:${scoreColor(token.score)}"><i><strong>${token.score}</strong></i></span></td>
+        <td><span class="score-cell" style="--score:${token.score ?? 0};--score-color:${scoreColor(token.score)}"><i><strong>${token.score ?? "—"}</strong></i></span></td>
         <td><span class="bias-tag ${token.bias}">${biasLabel(token.bias)}</span></td>
         <td><button class="row-open" type="button" data-open="${escapeHtml(token.symbol)}" aria-label="打开 ${escapeHtml(token.symbol)} 详情">›</button></td>
       </tr>`;
@@ -1220,7 +1240,7 @@ function renderRows() {
   emptyState.hidden = visible.length > 0;
   renderRankingPagination(visible.length, totalPages);
   watchCount.textContent = rankingTokens.filter((token) => token.watched).length;
-  document.querySelector("#strong-count").textContent = tokenUniverse.filter((token) => token.score >= 80).length;
+  document.querySelector("#strong-count").textContent = alphaScanHasData ? tokenUniverse.filter((token) => token.score >= 80).length : "—";
   directionTabs.forEach((tab) => {
     const filter = tab.dataset.filter;
     const count = filter === "all"
@@ -1289,9 +1309,9 @@ function openDrawer(token) {
   document.querySelector("#detail-subtitle").textContent = token.detailSubtitle || `${token.type} · Binance ${token.market === "spot" ? "现货" : token.market === "both" ? "现货 / 永续" : "永续"}`;
   document.querySelector("#detail-price").textContent = token.price;
   const change = document.querySelector("#detail-change");
-  change.textContent = `${token.change > 0 ? "+" : ""}${token.change.toFixed(1)}%`;
-  change.className = token.change >= 0 ? "up" : "down";
-  document.querySelector("#detail-score").textContent = token.score;
+  change.textContent = formatSignalPercent(token.change);
+  change.className = token.change == null ? "dim" : token.change >= 0 ? "up" : "down";
+  document.querySelector("#detail-score").textContent = token.score ?? "—";
   document.querySelector("#detail-score-label").textContent = token.scoreLabel || (momentumOnly ? "1D" : "ALPHA");
   document.querySelector("#detail-bias").textContent = token.signalType || (token.bias === "long" ? "偏多共振" : token.bias === "short" ? "偏空共振" : "中性观察");
   document.querySelector("#detail-signal").textContent = token.detailSignal || (token.bias === "long" ? "LONG BIAS" : token.bias === "short" ? "SHORT BIAS" : "NEUTRAL");
@@ -1303,13 +1323,13 @@ function openDrawer(token) {
   document.querySelector("#detail-dimension-title").textContent = token.dimensionTitle || (momentumOnly ? "动量维度与待补充项" : "七维雷达");
   document.querySelector("#detail-dimension-window").textContent = token.dimensionWindow || (momentumDetail ? "Crypto Bubbles · Binance 1D" : "当前窗口 · 15m / 4h");
   document.querySelector("#detail-heat-title").textContent = token.heatTitle || (momentumOnly ? "数据来源与覆盖" : "X / 媒体热度");
-  document.querySelector("#heat-label").textContent = token.heatLabel || (momentumOnly ? `价格 / 成交量覆盖 ${token.heat}/100` : `公开趋势热度 ${token.heat}/100`);
+  document.querySelector("#heat-label").textContent = token.heatLabel || (token.heat == null ? "暂无评分" : momentumOnly ? `价格 / 成交量覆盖 ${token.heat}/100` : `公开趋势热度 ${token.heat}/100`);
   document.querySelector("#detail-headline-title").textContent = token.headlineTitle || (momentumDetail ? "动量数据摘要" : "媒体头条");
   document.querySelector("#detail-headline-window").textContent = token.headlineWindow || (momentumDetail ? "当前 1D 快照" : "近 6 小时");
   document.querySelector("#dimension-list").innerHTML = dimensionNames.map((name, index) => `
-    <div class="dimension-item ${token.dimensionAvailability?.[index] === false ? "pending" : ""}"><span>${name}</span><i style="--dimension:${token.dimensions[index]}%"></i><strong>${token.dimensionAvailability?.[index] === false ? "—" : token.dimensions[index]}</strong></div>
+    <div class="dimension-item ${token.dimensionAvailability?.[index] === false || token.dimensions[index] == null ? "pending" : ""}"><span>${name}</span><i style="--dimension:${token.dimensionAvailability?.[index] === false ? 0 : token.dimensions[index] ?? 0}%"></i><strong>${token.dimensionAvailability?.[index] === false ? "—" : token.dimensions[index] ?? "—"}</strong></div>
   `).join("");
-  document.querySelector("#kol-row").innerHTML = `<span>${token.kolLabel || (momentumOnly ? "数据来源" : "社交趋势")}</span>${token.kols.map((kol) => `<i>${escapeHtml(kol)}</i>`).join("")}<em>${token.kolMetric || (momentumOnly ? "1D" : `${token.heat}/100`)}</em>`;
+  document.querySelector("#kol-row").innerHTML = `<span>${token.kolLabel || (momentumOnly ? "数据来源" : "社交趋势")}</span>${token.kols.map((kol) => `<i>${escapeHtml(kol)}</i>`).join("")}<em>${token.kolMetric || (momentumOnly ? "1D" : token.heat == null ? "—" : `${token.heat}/100`)}</em>`;
   document.querySelector("#headline-list").innerHTML = token.headlines.map((headline, index) => `
     <article><i></i><strong>${escapeHtml(headline)}</strong><span>${detailMode === "signal" ? index ? "Telegram" : "风控池" : momentumDetail ? index ? "Binance" : "1D 排名" : index ? "扫描" : "实时源"}</span></article>
   `).join("");
@@ -1320,7 +1340,7 @@ function openDrawer(token) {
   drawer.setAttribute("aria-hidden", "false");
   requestAnimationFrame(() => {
     drawer.classList.add("open");
-    drawRadar(token.dimensions, token.bias);
+    drawRadar(token.dimensions.map((value, index) => token.dimensionAvailability?.[index] === false ? null : value), token.bias);
     drawHeat(token);
   });
 }
@@ -1372,21 +1392,24 @@ function drawRadar(values, bias) {
     ctx.fillText(name, cx + Math.cos(angle) * labelRadius, cy + Math.sin(angle) * labelRadius);
   });
 
-  ctx.beginPath();
+  if (values.every((value) => value != null && Number.isFinite(Number(value)))) {
+    ctx.beginPath();
+    values.forEach((value, index) => {
+      const angle = -Math.PI / 2 + (index * Math.PI * 2) / count;
+      const pointRadius = radius * value / 100;
+      const x = cx + Math.cos(angle) * pointRadius;
+      const y = cy + Math.sin(angle) * pointRadius;
+      index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = `${color}24`;
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
   values.forEach((value, index) => {
-    const angle = -Math.PI / 2 + (index * Math.PI * 2) / count;
-    const pointRadius = radius * value / 100;
-    const x = cx + Math.cos(angle) * pointRadius;
-    const y = cy + Math.sin(angle) * pointRadius;
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.closePath();
-  ctx.fillStyle = `${color}24`;
-  ctx.fill();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  values.forEach((value, index) => {
+    if (value == null || !Number.isFinite(Number(value))) return;
     const angle = -Math.PI / 2 + (index * Math.PI * 2) / count;
     const pointRadius = radius * value / 100;
     ctx.beginPath();
@@ -1399,42 +1422,26 @@ function drawRadar(values, bias) {
 function drawHeat(token) {
   const canvas = document.querySelector("#heat-canvas");
   const ctx = canvas.getContext("2d");
-  const width = canvas.width;
-  const height = canvas.height;
-  const base = token.heat / 10;
-  const values = [18, 20, 19, 24, 22, 28, 31, 29, 36, 42, 39, 51, 49, 62, 67, 58, 73, 79, 76, 91, 86, 101, 112, 105].map((value, index) => value + base * Math.sin(index * 1.7));
-  const max = Math.max(...values);
-  const pad = 12;
-  ctx.clearRect(0, 0, width, height);
-  ctx.strokeStyle = "#222a2e";
-  ctx.lineWidth = 1;
-  for (let line = 1; line <= 3; line += 1) {
-    const y = pad + ((height - pad * 2) * line) / 4;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(width - pad, y); ctx.stroke();
-  }
-  const gradient = ctx.createLinearGradient(0, pad, 0, height);
-  gradient.addColorStop(0, "rgba(71,231,163,.28)");
-  gradient.addColorStop(1, "rgba(71,231,163,0)");
-  ctx.beginPath();
-  values.forEach((value, index) => {
-    const x = pad + (index * (width - pad * 2)) / (values.length - 1);
-    const y = height - pad - (value / max) * (height - pad * 2);
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  const dimension = (index) => token.dimensionAvailability?.[index] === false ? null : token.dimensions?.[index];
+  const entries = token.detailMode === "momentum"
+    ? [["价格动量", dimension(0)], ["成交量", dimension(1)]]
+    : [["社交评分", dimension(5)], ["媒体评分", dimension(6)]];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "16px sans-serif";
+  entries.forEach(([label, value], index) => {
+    const y = 26 + index * 52;
+    const available = value != null && Number.isFinite(Number(value));
+    ctx.fillStyle = "#91a79e";
+    ctx.fillText(label, 12, y);
+    ctx.fillStyle = "#24322d";
+    ctx.fillRect(110, y - 14, 340, 18);
+    if (available) {
+      ctx.fillStyle = "#72dbaa";
+      ctx.fillRect(110, y - 14, 340 * Math.max(0, Math.min(100, Number(value))) / 100, 18);
+    }
+    ctx.fillStyle = "#b5c9bf";
+    ctx.fillText(available ? `${Math.round(Number(value))}/100` : "暂无", 468, y);
   });
-  ctx.lineTo(width - pad, height - pad);
-  ctx.lineTo(pad, height - pad);
-  ctx.closePath();
-  ctx.fillStyle = gradient;
-  ctx.fill();
-  ctx.beginPath();
-  values.forEach((value, index) => {
-    const x = pad + (index * (width - pad * 2)) / (values.length - 1);
-    const y = height - pad - (value / max) * (height - pad * 2);
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.strokeStyle = "#47e7a3";
-  ctx.lineWidth = 1.7;
-  ctx.stroke();
 }
 
 function showToast(message, warning = false) {
@@ -1454,8 +1461,9 @@ function formatSignalPercent(value) {
 }
 
 function formatSignalTimestamp(value) {
+  if (!value) return "时间未知";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "--:--:--";
+  if (Number.isNaN(date.getTime())) return "时间未知";
   return date.toLocaleTimeString("zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
@@ -1498,6 +1506,7 @@ function renderSignalMetrics(signal, direction) {
 }
 
 function setTriggerLive(state, label) {
+  updateSourceHealth("signals", state);
   if (!triggerLive) return;
   triggerLive.className = `trigger-live ${state}`;
   triggerLive.querySelector("span").textContent = label;
@@ -1520,6 +1529,7 @@ function strongSignalIdentity(signal) {
 
 function detectStrongTradeIntent(signals, symbolCounts, nowMs = Date.now()) {
   const timedSignals = (Array.isArray(signals) ? signals : [])
+    .filter((signal) => signal?.signal_time && signal?.source_mode !== "public_preview_markdown")
     .map((signal) => ({ signal, timestamp: new Date(signal?.signal_time).getTime() }))
     .filter((item) => Number.isFinite(item.timestamp))
     .sort((left, right) => right.timestamp - left.timestamp);
@@ -1549,6 +1559,7 @@ function scheduleStrongTradeIntentExpiry(meta) {
 
 async function createStrongTradeIntentOrder(meta) {
   if (!meta || strongTradeIntentProcessing.has(meta.identity) || strongTradeIntentWasHandled(meta.identity)) return;
+  if (!meta.signal?.signal_time || meta.signal.source_mode === "public_preview_markdown") return;
   strongTradeIntentProcessing.add(meta.identity);
   try {
     if (!alphaExecutionAuthorized) await hydrateAlphaExecution();
@@ -1763,6 +1774,8 @@ function renderSurfPulse() {
     const score = Math.max(0, Math.min(100, Math.round(Number(item.score) || 0)));
     const newClass = surfPulseNewIds.has(String(item.id)) ? " new" : "";
     const sourceCount = Math.max(1, Number(item.sourceCount) || 1);
+    const sourceHubUrl = item.sourceHubUrl || item.surfUrl || "https://asksurf.ai/pulse";
+    const sourceHubName = item.sourceHubName || "Surf";
     return `
       <article class="surf-feed-card${newClass}" style="--score-color:${surfScoreColor(score)}">
         <div class="surf-card-top">
@@ -1776,7 +1789,7 @@ function renderSurfPulse() {
         <p class="surf-card-summary">${escapeHtml(item.summary || "Surf 已捕获该市场事件，等待更多摘要信息。")}</p>
         <div class="surf-card-source">
           <span>${escapeHtml(item.sourceName)} · ${sourceCount} ${sourceCount > 1 ? "SOURCES" : "SOURCE"}</span>
-          <span><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">原文 ↗</a> · <a href="${escapeHtml(item.surfUrl || "https://asksurf.ai/pulse")}" target="_blank" rel="noopener noreferrer">Surf</a></span>
+          <span><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">原文 ↗</a> · <a href="${escapeHtml(sourceHubUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceHubName)}</a></span>
         </div>
       </article>`;
   }).join("");
@@ -1817,13 +1830,13 @@ async function hydrateSurfPulse({ announce = false } = {}) {
     const fetchedAt = new Date(payload.fetchedAt);
     const time = Number.isNaN(fetchedAt.getTime()) ? "实时" : fetchedAt.toLocaleTimeString("zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
     setSurfLiveState("live", `实时 · ${time}`);
-    if (announce) showToast(`Surf Pulse 已更新 ${incoming.length} 条 15 日内信息`);
+    if (announce) showToast(`实时情报流已更新 ${incoming.length} 条 15 日内信息`);
   } catch (error) {
     if (!surfPulseItems.length) {
-      surfPulseFeed.innerHTML = `<div class="surf-feed-state"><strong>Surf Pulse 暂时不可用</strong><span>系统将在 10 分钟后自动重试</span></div>`;
+      surfPulseFeed.innerHTML = `<div class="surf-feed-state"><strong>实时情报源暂时不可用</strong><span>系统将在 10 分钟后自动重试</span></div>`;
     }
     setSurfLiveState("error", "重试中");
-    if (announce) showToast("Surf Pulse 暂时不可用，正在自动重试", true);
+    if (announce) showToast("实时情报源暂时不可用，正在自动重试", true);
   } finally {
     surfPulseFeed.setAttribute("aria-busy", "false");
     surfPulseLoading = false;
@@ -2019,7 +2032,7 @@ function formatSignedMoney(value) {
 }
 
 function executionModeLabel(mode = alphaExecutionConfig.activeMode) {
-  return ({ paper: "PAPER", mock_exchange: "MOCK EXCHANGE", testnet: "BINANCE TESTNET", live: "PRODUCTION LIVE" })[mode] || "PAPER";
+  return ({ paper: "PAPER", live: "LIVE" })[mode] || "PAPER";
 }
 
 function executionMarketLabel(market = alphaExecutionConfig.defaultMarket) {
@@ -2064,7 +2077,7 @@ function setExecutionOperationState(element, message, tone = "") {
 
 function credentialSelection() {
   return {
-    environment: document.querySelector("#execution-credential-environment")?.value || "testnet",
+    environment: document.querySelector("#execution-credential-environment")?.value || "live",
     market: document.querySelector("#execution-credential-market")?.value || "futures"
   };
 }
@@ -2075,7 +2088,7 @@ function selectedCredential() {
 }
 
 function renderExecutionCredentials() {
-  const credentials = alphaExecutionSnapshot?.credentials || [];
+  const credentials = (alphaExecutionSnapshot?.credentials || []).filter((credential) => executionEnum(credential.environment) === "live");
   const selected = selectedCredential();
   if (executionCredentialState) {
     executionCredentialState.classList.toggle("verified", Boolean(selected?.verifiedAt));
@@ -2091,7 +2104,7 @@ function renderExecutionCredentials() {
   }
   if (!executionCredentialList) return;
   if (!credentials.length) {
-    executionCredentialList.innerHTML = "<span>尚无凭据 · Paper / Mock 可直接使用</span>";
+    executionCredentialList.innerHTML = "<span>尚无实盘凭据 · PAPER 无需 API Key</span>";
     return;
   }
   executionCredentialList.innerHTML = credentials.map((credential) => {
@@ -2099,6 +2112,21 @@ function renderExecutionCredentials() {
     const market = executionEnum(credential.market);
     return `<article><strong>${escapeHtml(environment.toUpperCase())} · ${escapeHtml(market.toUpperCase())}</strong><span>${escapeHtml(credential.apiKeyHint || "***")}${credential.proxyConfigured ? " · PROXY" : ""}</span><em>${credential.verifiedAt ? "VERIFIED" : credential.lastError ? "ERROR" : "PENDING"}</em></article>`;
   }).join("");
+}
+
+function automationTradeBadge(record) {
+  const binding = record?.automationOrder;
+  if (executionEnum(record?.environment) !== "live" || record?.isAutomation !== true
+    || !binding || typeof binding.reservationId !== "string" || !binding.reservationId.trim()
+    || typeof binding.entryOrderId !== "string" || !binding.entryOrderId.trim()
+    || binding.source !== `alpha-auto:${binding.reservationId}`
+    || (record.plan?.intent?.source != null && record.plan.intent.source !== binding.source)
+    || (record.role != null && !(Number(record.filledQuantity) > 0))) return "";
+  return '<em class="automation-fill-badge" title="服务端已核验的自动策略实盘成交" aria-label="自成交：自动策略实盘成交">自成交</em>';
+}
+
+function activePortfolioSource(record) {
+  return automationTradeBadge(record) ? "alpha-auto" : (record?.plan?.intent?.source || "execution-engine");
 }
 
 function renderExecutionOrders() {
@@ -2121,7 +2149,7 @@ function renderExecutionOrders() {
     const quantity = Number(order.filledQuantity || order.quantity || 0);
     const price = Number(order.averagePrice || order.price || order.stopPrice || 0);
     return `<article class="execution-order-row">
-      <span><strong>${escapeHtml(order.symbol)} · ${escapeHtml(order.role)}</strong><em>${escapeHtml(order.clientOrderId || "NO CLIENT ID")}</em></span>
+      <span><strong>${escapeHtml(order.symbol)} · ${escapeHtml(order.role)} ${automationTradeBadge(order)}</strong><em>${escapeHtml(order.clientOrderId || "NO CLIENT ID")}</em></span>
       <span class="mode-${escapeHtml(mode)}"><em>环境</em><strong>${escapeHtml(executionModeLabel(mode))}</strong></span>
       <span><em>市场 / 方向</em><strong>${escapeHtml(market.toUpperCase())} · ${escapeHtml(order.side)}</strong></span>
       <span><em>数量 / 价格</em><strong>${formatRiskPrice(quantity)} / ${formatRiskPrice(price)}</strong></span>
@@ -2200,8 +2228,6 @@ function activeExecutionPortfolioStats() {
 function executionPortfolioCopy() {
   const mode = alphaExecutionConfig.activeMode;
   if (mode === "live") return { title: "生产实盘组合", kicker: "PRODUCTION LIVE PORTFOLIO", nav: "实盘组合", navSub: "Live Portfolio", monitor: "实盘持仓监控", foot: "生产实盘订单来自 Binance；持仓、保护单与成交状态以交易所对账为准", exportLabel: "导出实盘记录" };
-  if (mode === "testnet") return { title: "Testnet 测试组合", kicker: "BINANCE TESTNET PORTFOLIO", nav: "Testnet 组合", navSub: "Testnet Portfolio", monitor: "Testnet 持仓监控", foot: "Testnet 订单使用 Binance 测试资金；状态由测试网回报与对账同步", exportLabel: "导出测试网记录" };
-  if (mode === "mock_exchange") return { title: "Mock Exchange 组合", kicker: "MOCK EXCHANGE PORTFOLIO", nav: "Mock 交易", navSub: "Mock Portfolio", monitor: "Mock 持仓监控", foot: "Mock Exchange 不访问 Binance，用于状态机与异常场景测试", exportLabel: "导出 Mock 记录" };
   return { title: "纸面交易", kicker: "PAPER PORTFOLIO", nav: "纸面交易", navSub: "Paper Trading Only", monitor: "持仓监控", foot: "Paper Executor 不连接 Binance；所有盈亏均为模拟计算", exportLabel: "导出纸面记录" };
 }
 
@@ -2253,7 +2279,6 @@ function renderExecutionControl() {
     if (field && document.activeElement !== field) field.value = String(value);
   });
   const checks = {
-    "execution-testnet-enabled": config.testnetEnabled,
     "execution-auto": config.autoExecuteEnabled,
     "execution-manual-confirm": config.requireManualConfirmation
   };
@@ -2307,16 +2332,23 @@ function renderExecutionControl() {
   renderExecutionPositions();
   renderExecutionAudits();
   renderPaperWorkspace();
+  ensureLivePnlSchedule();
+}
+
+function alphaExecutionHasActiveWork(snapshot = alphaExecutionSnapshot) {
+  return (snapshot?.positions || []).some(position => !["CLOSED", "CANCELED", "KILLED"].includes(String(position.state).toUpperCase()))
+    || (snapshot?.orders || []).some(order => ["PENDING", "NEW", "PARTIALLY_FILLED", "UNKNOWN"].includes(String(order.status).toUpperCase()));
 }
 
 function scheduleAlphaExecutionRefresh(delay = alphaExecutionRefreshMs) {
   window.clearTimeout(alphaExecutionTimer);
   if (document.hidden || !alphaExecutionAuthorized) return;
+  if (!alphaExecutionHasActiveWork()) delay = Math.max(delay, alphaExecutionIdleRefreshMs);
   alphaExecutionTimer = window.setTimeout(() => hydrateAlphaExecution(), delay);
 }
 
 async function hydrateAlphaExecution({ announce = false } = {}) {
-  if (alphaExecutionLoading) return;
+  if (alphaExecutionLoading || document.hidden) return;
   alphaExecutionLoading = true;
   try {
     const snapshot = await executionRequest("/status");
@@ -2327,12 +2359,16 @@ async function hydrateAlphaExecution({ announce = false } = {}) {
     if (announce) showToast("交易执行中心已同步服务端状态");
   } catch (error) {
     alphaExecutionAuthorized = false;
+    livePnlSnapshot = null;
+    livePnlLastAttempt = 0;
+    window.clearTimeout(livePnlTimer);
     if (executionHealth) {
       executionHealth.classList.remove("healthy");
       executionHealth.classList.add("danger");
       executionHealth.innerHTML = `<i></i><span>${escapeHtml(error.status === 401 ? "请登录后使用交易执行中心" : error.status === 403 ? "当前账户没有交易执行权限" : error.message)}</span><strong>NO EXECUTION ACCESS</strong>`;
     }
     if (riskSubmit) riskSubmit.disabled = true;
+    renderLiveSummaryMetrics();
     if (announce) showToast(error.message, true);
   } finally {
     alphaExecutionLoading = false;
@@ -2344,7 +2380,7 @@ function executionConfigPayload(overrides = {}) {
   return {
     activeMode: overrides.activeMode || document.querySelector("#execution-mode").value,
     defaultMarket: overrides.defaultMarket || document.querySelector("#execution-market").value,
-    testnetEnabled: document.querySelector("#execution-testnet-enabled").checked,
+    testnetEnabled: false,
     autoExecuteEnabled: document.querySelector("#execution-auto").checked,
     requireManualConfirmation: document.querySelector("#execution-manual-confirm").checked,
     requireProtectionOrders: true,
@@ -2482,10 +2518,11 @@ async function reconcileAlphaExecution({ announce = true } = {}) {
 }
 
 function ensureLivePortfolioPullSchedule() {
-  const enabled = alphaExecutionAuthorized && alphaExecutionConfig.activeMode === "live" && !document.hidden;
+  const enabled = alphaExecutionAuthorized && alphaExecutionConfig.activeMode === "live" && alphaExecutionHasActiveWork() && !document.hidden;
   if (!enabled) {
     window.clearTimeout(livePortfolioPullTimer);
     livePortfolioPullTimer = null;
+    if (livePortfolioPullState && alphaExecutionConfig.activeMode === "live") livePortfolioPullState.textContent = "当前无活动订单或持仓 · 可手动回捞";
     return;
   }
   if (!livePortfolioPullTimer && !livePortfolioPulling) {
@@ -2507,7 +2544,7 @@ async function pullLivePortfolioData({ announce = false } = {}) {
     const result = await executionRequest("/reconcile", { method: "POST", body: JSON.stringify({ environment: "live", market: alphaExecutionConfig.defaultMarket }) });
     await hydrateAlphaExecution();
     const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
-    if (livePortfolioPullState) livePortfolioPullState.textContent = `${time} · 账户全量已同步 · 30s`;
+    if (livePortfolioPullState) livePortfolioPullState.textContent = `${time} · 账户全量已同步${alphaExecutionHasActiveWork() ? " · 30s" : " · 当前空闲"}`;
     if (announce) showToast(result.ok ? `实盘权益、风险、盈亏及订单已回捞 · ${result.reconciled} 笔订单` : `实盘回捞发现 ${result.errors?.length || 0} 项异常`, !result.ok);
   } catch (error) {
     if (livePortfolioPullState) livePortfolioPullState.textContent = "回捞失败 · 30s 后重试";
@@ -2520,7 +2557,7 @@ async function pullLivePortfolioData({ announce = false } = {}) {
 }
 
 async function connectAlphaExecutionStream() {
-  if (!["testnet", "live"].includes(alphaExecutionConfig.activeMode)) return showToast("WebSocket 成交回报仅用于 Testnet / Live", true);
+  if (alphaExecutionConfig.activeMode !== "live") return showToast("WebSocket 成交回报仅用于 LIVE", true);
   const button = document.querySelector("#execution-stream");
   button.disabled = true;
   try {
@@ -2541,51 +2578,51 @@ async function connectAlphaExecutionStream() {
   } finally { button.disabled = false; }
 }
 
+function syncLiveUnlockAcknowledgements() {
+  const button = document.querySelector("#unlock-live");
+  if (button) button.disabled = button.dataset.pending === "true" || !document.querySelector("#live-ack-funds")?.checked || !document.querySelector("#live-ack-withdraw")?.checked;
+}
+
+function initializeLiveUnlockHelp() {
+  const button = document.querySelector("#live-lock-help-toggle"), panel = document.querySelector("#live-lock-help");
+  if (!button || !panel) return;
+  const position = () => {
+    const anchor = button.getBoundingClientRect(), bounds = panel.getBoundingClientRect();
+    const cardRight = button.closest(".execution-control-panel")?.getBoundingClientRect().right ?? window.innerWidth;
+    panel.style.left = `${Math.max(12, Math.min(anchor.left, Math.min(window.innerWidth, cardRight) - bounds.width - 12))}px`;
+    panel.style.top = `${Math.max(12, anchor.bottom + 8 + bounds.height <= window.innerHeight - 12 ? anchor.bottom + 8 : anchor.top - bounds.height - 8)}px`;
+  };
+  panel.addEventListener("toggle", (event) => { const open = event.newState === "open"; button.setAttribute("aria-expanded", String(open)); if (open) position(); });
+  panel.querySelector("button").addEventListener("click", () => button.focus({ preventScroll: true }));
+  window.addEventListener("resize", () => { if (panel.matches(":popover-open")) position(); });
+}
+
 async function unlockAlphaLive() {
-  const phraseInput = document.querySelector("#live-unlock-phrase");
   const fundsAcknowledgement = document.querySelector("#live-ack-funds");
   const withdrawalAcknowledgement = document.querySelector("#live-ack-withdraw");
   const unlockButton = document.querySelector("#unlock-live");
-  const phrase = String(phraseInput?.value || "").trim().replace(/\s+/g, " ").toUpperCase();
-  if (phrase !== liveUnlockPhrase) {
-    phraseInput?.setAttribute("aria-invalid", "true");
-    phraseInput?.focus();
-    showToast(`请输入完整的实盘解锁确认短语：${liveUnlockPhrase}`, true);
-    return;
-  }
+  if (unlockButton?.dataset.pending === "true") return;
   if (!fundsAcknowledgement?.checked || !withdrawalAcknowledgement?.checked) {
     showToast("解锁实盘前，请先勾选两项资金与 API 安全确认", true);
     return;
   }
+  unlockButton.dataset.pending = "true";
   unlockButton.disabled = true;
   try {
     await executionRequest("/live-unlock", { method: "POST", body: JSON.stringify({
-      phrase,
       acknowledgeRealFunds: fundsAcknowledgement.checked,
       acknowledgeNoWithdrawPermission: withdrawalAcknowledgement.checked
     }) });
-    phraseInput.value = "";
-    phraseInput.removeAttribute("aria-invalid");
     fundsAcknowledgement.checked = false;
     withdrawalAcknowledgement.checked = false;
-    await hydrateAlphaExecution();
-    document.querySelector("#execution-mode").value = "live";
-    await persistExecutionConfig({ overrides: { activeMode: "live" } });
     await hydrateAlphaExecution();
     showToast("生产实盘已由双重验证管理员显式解锁", true);
   } catch (error) {
     showToast(error.message, true);
   } finally {
-    unlockButton.disabled = false;
+    delete unlockButton.dataset.pending;
+    syncLiveUnlockAcknowledgements();
   }
-}
-
-function fillLiveUnlockPhrase() {
-  const phraseInput = document.querySelector("#live-unlock-phrase");
-  if (!phraseInput) return;
-  phraseInput.value = liveUnlockPhrase;
-  phraseInput.removeAttribute("aria-invalid");
-  phraseInput.focus();
 }
 
 async function relockAlphaLive() {
@@ -3090,9 +3127,9 @@ function renderActiveExecutionPortfolio() {
     const pnlPct = notional > 0 ? pnl / notional * 100 : 0;
     const orderTime = formatPaperOrderTime(position.openedAt || position.createdAt);
     const leverage = Number(position.plan?.intent?.leverage) || 1;
-    const source = position.plan?.intent?.source || "execution-engine";
+    const source = activePortfolioSource(position);
     return `<tr>
-      <td><span class="paper-symbol-title"><strong>${escapeHtml(position.symbol)}</strong></span><span>${escapeHtml(executionMarketLabel(executionEnum(position.market)))} · ${leverage}× · ${escapeHtml(executionModeLabel(mode))}</span></td>
+      <td><span class="paper-symbol-title"><strong>${escapeHtml(position.symbol)}</strong>${automationTradeBadge(position)}</span><span>${escapeHtml(executionMarketLabel(executionEnum(position.market)))} · ${leverage}× · ${escapeHtml(executionModeLabel(mode))}</span></td>
       <td><time class="paper-order-time" datetime="${escapeHtml(orderTime.iso)}" title="${escapeHtml(orderTime.full)}"><strong>${escapeHtml(orderTime.date)}</strong><span>${escapeHtml(orderTime.time)}</span></time></td>
       <td><em class="${position.side === "LONG" ? "long-tag" : "short-tag"}">${escapeHtml(position.side)}</em></td>
       <td><strong>${formatRiskPrice(entry)}</strong><span>${formatRiskPrice(position.markPrice)}</span></td>
@@ -3145,6 +3182,7 @@ async function replaceActiveLiveProtection(positionId, button) {
 }
 
 function renderPaperWorkspace() {
+  renderLiveSummaryMetrics();
   if (alphaExecutionAuthorized && alphaExecutionConfig.activeMode !== "paper") {
     const positions = activeExecutionPositions();
     const portfolioStats = activeExecutionPortfolioStats();
@@ -3163,12 +3201,6 @@ function renderPaperWorkspace() {
       paperPnl.className = unrealized >= 0 ? "up" : "down";
     }
     if (paperExposure) paperExposure.textContent = Number.isFinite(equity) && equity > 0 ? `${(exposure / equity * 100).toFixed(1)}%` : `${exposure.toFixed(2)} USDT`;
-    if (portfolioRealizedPnl) {
-      const realized = Number(portfolioStats?.historicalRealizedPnl) || 0;
-      portfolioRealizedPnl.textContent = formatSignedMoney(realized);
-      portfolioRealizedPnl.className = realized >= 0 ? "up" : "down";
-    }
-    if (portfolioRealizedCount) portfolioRealizedCount.textContent = `${Number(portfolioStats?.closedTradeCount) || 0} 笔已完结`;
     if (document.querySelector("#intent-equity")) document.querySelector("#intent-equity").textContent = Number.isFinite(equity) ? `${equity.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDT` : "服务端实时读取";
     renderExecutionPositions();
     renderActiveExecutionPortfolio();
@@ -3185,8 +3217,6 @@ function renderPaperWorkspace() {
     paperPnl.className = unrealized >= 0 ? "up" : "down";
   }
   if (paperExposure) paperExposure.textContent = `${currentPaperEquity() > 0 ? (exposure / currentPaperEquity() * 100).toFixed(1) : "0.0"}%`;
-  if (portfolioRealizedPnl) portfolioRealizedPnl.textContent = formatSignedMoney(paperRiskState.realizedPnl);
-  if (portfolioRealizedCount) portfolioRealizedCount.textContent = `${paperRiskState.positions.filter((position) => position.status === "CLOSED").length} 笔已完结`;
   if (document.querySelector("#intent-equity")) document.querySelector("#intent-equity").textContent = `${currentPaperEquity().toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
 
   const killActive = alphaExecutionAuthorized ? alphaExecutionConfig.killSwitchActive : paperRiskState.killSwitch;
@@ -3559,36 +3589,6 @@ function queueTrade(token) {
   showToast(`${token.symbol} ${side === "LONG" ? "做多" : "做空"}意图已载入，等待提交 Risk Engine 审批`);
 }
 
-function parseSignal() {
-  const input = document.querySelector("#signal-text").value.trim();
-  const result = document.querySelector("#parse-result");
-  if (!input) {
-    showToast("请先粘贴 Telegram 信号文本", true);
-    return;
-  }
-  result.classList.add("parsing");
-  window.setTimeout(() => {
-    const symbolMatch = input.toUpperCase().match(/#?([A-Z0-9]{2,12})(?:USDT)?/);
-    const symbol = symbolMatch ? symbolMatch[1].replace(/USDT$/, "") : "UNKNOWN";
-    const known = findToken(symbol);
-    const oiMatch = input.match(/OI[^+\-\d]*([+\-]?\d+(?:\.\d+)?)%/i);
-    const priceMatch = input.match(/(?:PRICE|价格)[^+\-\d]*([+\-]?\d+(?:\.\d+)?)%/i);
-    const fundingMatch = input.match(/(?:FUNDING|资金费率)[^+\-\d]*([+\-]?\d+(?:\.\d+)?)%/i);
-    const oi = oiMatch ? Number(oiMatch[1]) : known?.oi || 0;
-    const priceMove = priceMatch ? Number(priceMatch[1]) : known?.change || 0;
-    const funding = fundingMatch ? Number(fundingMatch[1]) : known?.funding || 0;
-    const bias = priceMove > 0 && oi > 0 ? (funding < 0 ? "偏多共振" : "多头动量") : priceMove < 0 && oi > 0 ? "偏空共振" : "中性观察";
-    const toneClass = bias.includes("偏空") ? "short-text" : bias.includes("中性") ? "neutral-text" : "long-text";
-    const confidence = Math.max(55, Math.min(96, Math.round(66 + Math.abs(oi) * 0.45 + Math.abs(priceMove) * 0.5)));
-    const safeSymbol = escapeHtml(symbol);
-    result.innerHTML = `
-      <div class="parse-top"><span class="token-avatar ${avatarClass(symbol)}">${safeSymbol[0] || "?"}</span><div><strong>${safeSymbol} / USDT</strong><em>已提取 OI、价格与资金费率因子</em></div><span class="confidence">${confidence}% 置信</span></div>
-      <div class="factor-chips"><span><em>价格</em>${priceMove > 0 ? "+" : ""}${priceMove.toFixed(1)}%</span><span><em>OI</em>${oi > 0 ? "+" : ""}${oi.toFixed(1)}%</span><span><em>资金费率</em>${funding > 0 ? "+" : ""}${funding.toFixed(3)}%</span><span><em>触发源</em>Telegram</span></div>
-      <div class="explain-callout"><div class="callout-icon">↗</div><div><span class="${toneClass}">模型结论 · ${bias}</span><p>${bias === "偏多共振" ? "价格与 OI 同步增长，且资金费率为负，可能存在空头拥挤后的回补动能。" : bias === "偏空共振" ? "价格下跌但 OI 增长，显示新空头进入或多头被动承压，需结合清算强度确认。" : "关键因子尚未形成同向共振，仅保留为观察信号，不进入执行队列。"} 外部消息不会直接触发下单。</p></div></div>`;
-    result.classList.remove("parsing");
-  }, 420);
-}
-
 rowsRoot.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-open]");
   const row = event.target.closest("tr[data-symbol]");
@@ -3719,7 +3719,6 @@ document.querySelector("#close-drawer").addEventListener("click", closeDrawer);
 drawerBackdrop.addEventListener("click", closeDrawer);
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeDrawer();
-  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") parseSignal();
 });
 
 document.querySelector("#watch-button").addEventListener("click", () => toggleWatch(activeToken));
@@ -3767,11 +3766,6 @@ paperViewTabs.forEach((tab, index) => {
   setRiskPipeline("CLOSED");
   showToast("纸面持仓已人工平仓");
 }));
-document.querySelector("#parse-signal").addEventListener("click", parseSignal);
-document.querySelector("#clear-signal").addEventListener("click", () => {
-  document.querySelector("#signal-text").value = "";
-  document.querySelector("#signal-text").focus();
-});
 
 document.querySelector("#refresh-scan").addEventListener("click", () => hydrateAlphaScan({ announce: true }));
 refreshTriggers?.addEventListener("click", () => hydrateRecentSignals({ announce: true, force: true }));
@@ -3795,7 +3789,7 @@ executionModeButtons.forEach((button) => {
     try {
       await persistExecutionConfig({ overrides: { activeMode: mode } });
       const credentialEnvironment = document.querySelector("#execution-credential-environment");
-      if (credentialEnvironment && ["testnet", "live"].includes(mode)) credentialEnvironment.value = mode;
+      if (credentialEnvironment && mode === "live") credentialEnvironment.value = mode;
       renderExecutionCredentials();
       showToast(`执行环境已切换为 ${executionModeLabel()}`);
     } catch {
@@ -3817,7 +3811,8 @@ document.querySelector("#execution-reconcile")?.addEventListener("click", () => 
 livePortfolioPullButton?.addEventListener("click", () => pullLivePortfolioData({ announce: true }));
 document.querySelector("#execution-stream")?.addEventListener("click", connectAlphaExecutionStream);
 document.querySelector("#unlock-live")?.addEventListener("click", unlockAlphaLive);
-document.querySelector("#fill-live-phrase")?.addEventListener("click", fillLiveUnlockPhrase);
+document.querySelectorAll("#live-ack-funds, #live-ack-withdraw").forEach((input) => input.addEventListener("change", syncLiveUnlockAcknowledgements));
+initializeLiveUnlockHelp();
 document.querySelector("#live-unlock-phrase")?.addEventListener("input", (event) => event.currentTarget.removeAttribute("aria-invalid"));
 document.querySelector("#relock-live")?.addEventListener("click", relockAlphaLive);
 document.querySelector("#intent-market")?.addEventListener("change", (event) => {
@@ -3873,26 +3868,39 @@ document.querySelector("#export-trades").addEventListener("click", () => {
   showToast("纸面交易记录已导出");
 });
 
-document.querySelector("#export-audit")?.addEventListener("click", () => {
-  downloadCsv("alpha-radar-risk-audit.csv", [
-    ["audit_id", "intent_id", "state", "status", "message", "timestamp"],
-    ...paperRiskState.audits.map((audit) => [audit.auditId, audit.intentId, audit.state, audit.status, audit.message, audit.timestamp])
-  ]);
-  showToast("风控审计日志已导出");
-});
+document.querySelector("#export-audit")?.addEventListener("click", exportLiveAudit);
 
 const mobileMenu = document.querySelector("#mobile-menu");
 const sidebar = document.querySelector("#sidebar");
-mobileMenu.addEventListener("click", () => {
-  const open = sidebar.classList.toggle("open");
-  mobileMenu.setAttribute("aria-expanded", String(open));
+const sidebarToggle = document.querySelector("#sidebar-toggle");
+const sidebarMedia = window.matchMedia("(max-width: 1440px)");
+let sidebarPreference = null;
+try { sidebarPreference = localStorage.getItem("alpha-radar-sidebar"); } catch {}
+function setSidebarCollapsed(collapsed, persist = false) {
+  document.querySelector(".app-shell").classList.toggle("sidebar-collapsed", collapsed);
+  [sidebarToggle, mobileMenu].forEach((button) => {
+    button?.setAttribute("aria-expanded", String(!collapsed));
+    button?.setAttribute("aria-label", collapsed ? "展开导航" : "收起导航");
+  });
+  sidebarToggle.querySelector("span").textContent = collapsed ? "›" : "‹";
+  if (persist) {
+    sidebarPreference = collapsed ? "collapsed" : "expanded";
+    try { localStorage.setItem("alpha-radar-sidebar", sidebarPreference); } catch {}
+  }
+}
+const toggleSidebar = () => setSidebarCollapsed(!document.querySelector(".app-shell").classList.contains("sidebar-collapsed"), true);
+sidebarToggle?.addEventListener("click", toggleSidebar);
+mobileMenu?.addEventListener("click", toggleSidebar);
+setSidebarCollapsed(sidebarPreference ? sidebarPreference === "collapsed" : sidebarMedia.matches);
+sidebarMedia.addEventListener("change", (event) => {
+  if (!sidebarPreference) setSidebarCollapsed(event.matches);
 });
-
 document.querySelectorAll(".side-nav a").forEach((link) => {
+  link.setAttribute("aria-label", link.querySelector("strong").textContent);
+  link.title = link.querySelector("strong").textContent;
   link.addEventListener("click", () => {
     document.querySelectorAll(".side-nav a").forEach((item) => item.classList.toggle("active", item === link));
-    sidebar.classList.remove("open");
-    mobileMenu.setAttribute("aria-expanded", "false");
+    if (window.innerWidth <= 820) setSidebarCollapsed(true);
   });
 });
 
@@ -3963,6 +3971,7 @@ applyPlatformLanguage();
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
+    window.clearTimeout(livePnlTimer);
     window.clearTimeout(marketReconnectTimer);
     window.clearTimeout(futuresReconnectTimer);
     window.clearTimeout(cryptoBubblesTimer);
@@ -3992,6 +4001,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.addEventListener("beforeunload", () => {
+  window.clearTimeout(livePnlTimer);
   window.clearTimeout(marketReconnectTimer);
   window.clearTimeout(futuresReconnectTimer);
   window.clearTimeout(cryptoBubblesTimer);
@@ -4008,6 +4018,7 @@ window.addEventListener("beforeunload", () => {
 });
 
 startMarketFeed();
+window.setInterval(renderSourceHealth, 30_000);
 hydrateCryptoBubbles();
 hydrateAlphaScan();
 hydrateRecentSignals({ force: true });

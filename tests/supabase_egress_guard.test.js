@@ -36,7 +36,10 @@ test("idle hosted bots stop instead of polling large snapshots", async () => {
   assert.match(runtime, /state\.status === "READY"\) return \{ stop: true, delayMs: 0 \}/);
   assert.match(runtime, /select: \{ id: true, status: true, configEncrypted: true, snapshot: true \}/);
   assert.match(runtime, /const \{ markets = \{\}, \.\.\.runtimeSnapshot \} = snapshot/);
-  assert.match(route, /select: \{ marketCatalog: true \}/);
+  assert.match(route, /readHostedGridOpsView\(viewer.id, bot.id, "markets", target\)/);
+  const readModel = await read("lib/grid-ops-hosted/read-model.ts");
+  assert.match(readModel, /"marketCatalog" ->/);
+  assert.match(readModel, /"userId" = \$\{userId\}/);
   assert.doesNotMatch(runtime, /return \{ stop: false, delayMs: 15_000 \}/);
 });
 

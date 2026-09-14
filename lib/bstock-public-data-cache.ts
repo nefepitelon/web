@@ -59,7 +59,8 @@ async function writeSnapshot<T extends Record<string, unknown>>(key: string, des
     await prisma.systemSetting.upsert({
       where: { key },
       update: { value, description },
-      create: { key, value, description }
+      create: { key, value, description },
+      select: { key: true }
     });
   } catch (error) {
     console.warn("[bstock:data-cache] write_failed", { key, error: error instanceof Error ? error.message : String(error) });

@@ -294,6 +294,18 @@ export class GridBot {
       await this.ex.preflightTrading(this.config.marketId, { config: this.config, risk: this.risk });
     }
 
+    // A range may have been calculated for a different market or from a
+    // delayed candle close. Validate it against a fresh venue quote before
+    // leverage changes, stale-order cancellation, or any new order write.
+    this.lastPrice = await this.ex.getPrice(market.marketId);
+    if (!Number.isFinite(this.lastPrice) || this.lastPrice <= 0) {
+      throw new Error('未能获取有效的最新价（行情中断），已取消启动且未挂出初始订单。请稍后重试。');
+    }
+    if (this.lastPrice <= this.config.lower || this.lastPrice >= this.config.upper) {
+      throw new Error(`最新价 ${this.lastPrice} 不在网格区间 [${this.config.lower}, ${this.config.upper}] 内，已取消启动且未挂出初始订单。请刷新行情或重新智能填充区间后再启动。`);
+    }
+    this.outOfRange = false;
+
     // start() always begins a new grid session; crash recovery uses resume()
     // and therefore never reaches this branch. Re-baseline here so statistics
     // from a previous stopped grid cannot appear as fills/PnL immediately after
@@ -304,15 +316,6 @@ export class GridBot {
     if (levOk === false) this._alert(`⚠️ 杠杆设置 ${leverage}x 未生效，将沿用交易所端该市场的当前杠杆，请在交易所网页端核实后再继续。`);
     await this.ex.cancelAll(market.marketId).catch(() => {});
 
-    this.lastPrice = await this.ex.getPrice(market.marketId);
-    if (!Number.isFinite(this.lastPrice) || this.lastPrice <= 0) {
-      throw new Error('未能获取有效的最新价（行情中断），已取消启动以免错挂网格单。请稍后重试。');
-    }
-    if (this.lastPrice < this.config.lower * 0.5 || this.lastPrice > this.config.upper * 2) {
-      throw new Error(`最新价 ${this.lastPrice} 与网格区间 [${this.config.lower}, ${this.config.upper}] 偏离过大，已取消启动。请刷新行情后重设区间。`);
-    }
-    this.outOfRange = this.lastPrice < this.config.lower || this.lastPrice > this.config.upper;
-
     this.ex.on('fill', this._onFill);
     this.ex.on('price', this._onPrice);
     if (typeof this.ex.start === 'function') this.ex.start();
@@ -321,6 +324,10 @@ export class GridBot {
     const seeds = seedOrders({ levels: this.grid.levels, price: this.lastPrice, mode: this.config.mode, spacing: this.grid.spacing });
     try {
       if (!seeds.length) throw new Error('当前价格与网格区间没有生成可挂的初始订单。');
+      if (this.config.mode === 'neutral'
+        && (!seeds.some((order) => order.side === 'buy') || !seeds.some((order) => order.side === 'sell'))) {
+        throw new Error('当前价格过于靠近网格边界，无法同时生成上下双向初始挂单。请刷新行情或重新智能填充区间。');
+      }
       if (seeds.length > 1 && typeof this.ex.placeLimitOrders === 'function') {
         this._alert(`正在按交易所批量接口分批挂出 ${seeds.length} 个初始网格单，请勿重复点击启动。`);
         await this._placeInitialBatch(seeds);

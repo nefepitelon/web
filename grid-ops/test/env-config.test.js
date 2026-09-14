@@ -27,6 +27,17 @@ test('live mode requires every exchange credential before writing', () => {
   assert.equal(result.merged.DE_MODE, 'live');
 });
 
+test('Entropy live remains fail-closed while Arcus paper defaults stay locally configurable', () => {
+  const view = createEnvView({});
+  assert.equal(view.values.ENTROPY_MODE, 'paper');
+  assert.equal(view.values.ENTROPY_API_URL, 'https://api.hyperliquid.xyz');
+  assert.equal(view.values.ARCUS_API_PRIVATE_KEY_FILE, 'secrets/arcus-private.pem');
+  assert.throws(
+    () => validateEnvUpdate({ ENTROPY_MODE: 'live' }, {}),
+    /Entropy 暂不支持 LIVE/,
+  );
+});
+
 test('blank secret fields preserve existing local credentials', () => {
   const result = validateEnvUpdate({ EX_MODE: 'live', EXTENDED_API_KEY: '' }, {
     EXTENDED_API_KEY: 'saved-key',

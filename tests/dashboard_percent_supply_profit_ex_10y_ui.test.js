@@ -17,7 +17,7 @@ test("dashboard exposes the 29th active profit-supply model with full controls",
   assert.match(html, /id="percent-profit-ex-10y-snapshot"/);
   assert.match(html, /id="percent-profit-ex-10y-download"/);
   assert.match(html, /id="percent-profit-ex-10y-fullscreen"/);
-  assert.match(html, /INDEX \/ 30/);
+  assert.match(html, /INDEX \/ 32/);
   assert.match(html, /剔除十年以上沉睡筹码后的比特币链上浮盈比例/);
 
   assert.match(js, /\/api\/percent-supply-profit-ex-10y\?schema=1/);
@@ -31,7 +31,7 @@ test("dashboard exposes the 29th active profit-supply model with full controls",
   assert.match(route, /"percent-supply-profit-ex-10y"/);
   assert.match(css, /\.percent-profit-ex-10y-stage/);
   assert.match(css, /\.legend-percent-profit-ex-10y-modern/);
-  assert.match(css, /grid-row: 1 \/ span 30/);
+  assert.match(css, /grid-row: 1 \/ span 32/);
 });
 
 test("homepage exposes the 29th model snapshot", () => {

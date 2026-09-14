@@ -96,6 +96,9 @@ export function validateEnvUpdate(input, current = {}) {
   const missing = [];
   for (const definition of buildExchangeInstanceManifest(merged[EXCHANGE_INSTANCE_ENV] || '')) {
     if (String(merged[definition.modeEnv]).toLowerCase() !== 'live') continue;
+    if (definition.liveAvailable === false) {
+      throw new Error(`${definition.name} 暂不支持 LIVE：${definition.liveUnavailableReason || '请切换为 paper。'}`);
+    }
     for (const field of definition.fields.filter((item) => item.requiredLive)) {
       if (!String(merged[field.env] || '').trim()) missing.push(field.env);
     }

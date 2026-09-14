@@ -1,0 +1,64 @@
+FreqUI 3.1.2 — original upstream user interface, self-hosted by WELINKBTC
+==================================================================
+
+Upstream project: https://github.com/freqtrade/frequi
+Release: https://github.com/freqtrade/frequi/releases/tag/3.1.2
+Commit: f76ad9e7f8b6ee8e2d1f214a484d6182393be717
+License: GNU General Public License version 3. See ./LICENSE.
+Original authors and copyright holders: FreqUI / Freqtrade contributors,
+as identified in the corresponding source files and repository history.
+
+This deployment uses the official freqUI.zip production release. It is the
+original Vue interface, not a recreation of its dashboards or trading tools.
+The upstream trading, charting, backtest, analysis, history and settings
+components are retained. Original upstream data requirements and limitations
+still apply; an available UI does not mean the native engine is connected.
+
+Modifications by WELINKBTC, 2026 (host integration code: GPL-3.0-or-later):
+- Asset and Vue Router bases changed to /quant-native/freqtrade/.
+- Native Axios password/JWT authentication replaced at the transport boundary
+  with same-origin tenant session authentication. No native password or token
+  is stored in the browser. Bot selection storage keys are namespaced.
+- A connection bar, access check, documented action request headers and a
+  Content Security Policy restrict this deployment to its same-origin BFF.
+- Original Material Design icons are preloaded through Iconify's supported
+  collection/provider globals from the bundled @iconify-json/mdi 1.2.3 package.
+  No external icon service is contacted. Icons are by Pictogrammers and their
+  contributors; see ./MDI-LICENSE, ./MDI-APACHE-2.0.txt and ./mdi-info.json.
+  The unmodified icon package is available as ./iconify-mdi-1.2.3.tgz.
+- Nuxt UI's Lucide icons are likewise hosted locally from the pinned
+  @iconify-json/lucide 1.2.129 package. See ./LUCIDE-LICENSE and
+  ./lucide-info.json; the original package is ./iconify-lucide.tgz.
+- Native bot credential form fields are hidden by host-integration.css and
+  replaced with a managed-connection explanation. Trading dialogs, validation,
+  views and other native forms have not been replaced.
+- Startup additionally requires typing LIVE freqtrade. All commands remain
+  subject to backend authentication, permission, preflight and idempotency
+  checks. Unsupported operations return backend errors; no successful result
+  or market/trade data is simulated by this integration.
+
+No affiliation, endorsement, or upstream support for these host adaptations
+is asserted. FreqUI is provided without warranty under its license.
+
+Corresponding source and installation scripts are available without charge:
+- ./frequi-3.1.2-upstream-source.zip — complete source for the pinned upstream
+  release, including its pnpm lockfile, configuration and original LICENSE.
+- ./host-integration.mjs and ./host-integration.css — complete host adapter.
+- ./package-native-quant-freqtrade.mjs — complete deterministic installer and
+  exact production bundle modifications, with fail-closed version checks.
+- ./provenance.json — archive URLs and SHA-256 values, and per-asset original
+  and deployed SHA-256 values. The unmodified official release archive can be
+  obtained from the pinned releaseUrl in that manifest.
+
+To reproduce this deployment, put the two FreqUI archives and icon files named
+in provenance.json plus the host adapter/NOTICE/manifest and icon licenses in
+third-party/quant-ui/freqtrade, then run
+node scripts/package-native-quant-freqtrade.mjs from the repository root.
+The installer is offline and never reads exchange or account credentials.
+To build the upstream interface from source, extract the source archive and
+follow its README using the pinned pnpm-lock.yaml and packageManager version:
+pnpm install --frozen-lockfile; pnpm run build. Review any rebuilt asset names
+before adapting a different build; the published installer intentionally only
+accepts the verified official 3.1.2 archive and its exact bundle layout.
+
+All runtime authentication and tenant configuration remain server-side.

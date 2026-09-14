@@ -6,7 +6,7 @@
 - 原项目名称：三交易所整合网格交易机器人
 - 原支持交易所：Decibel、Extended、RISEx
 
-在保留上游三所能力的基础上，本项目已内置 Binance USDⓈ-M Futures、Ondo Perps、Phoenix（Solana）、Nado（Ink L2）、OKX 永续、GRVT 永续与 RHC Lighter 适配器，并把交易所元数据、环境字段、代理、仪表盘与服务端路由重构为可扩展注册表；运行时仍不会读取或执行原 GitHub 仓库代码。
+在保留上游三所能力的基础上，本项目已内置 Binance USDⓈ-M Futures、Ondo Perps、Phoenix（Solana）、Nado（Ink L2）、OKX 永续、GRVT 永续、Arcus、Entropy（官方实时行情 PAPER）与 RHC Lighter 适配器，并把交易所元数据、环境字段、代理、仪表盘与服务端路由重构为可扩展注册表；运行时仍不会读取或执行原 GitHub 仓库代码。
 
 ## 当前交付方式
 

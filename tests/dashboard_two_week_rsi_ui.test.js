@@ -37,7 +37,7 @@ test("two-week RSI keeps the dashboard visual and responsive system", () => {
   assert.match(css, /\.two-week-rsi-stage/);
   assert.match(css, /\.legend-two-week-rsi/);
   assert.match(css, /\.two-week-rsi-snapshot/);
-  assert.match(css, /grid-row: 1 \/ span 30/);
+  assert.match(css, /grid-row: 1 \/ span 32/);
   assert.match(css, /@media \(min-width: 981px\)[\s\S]*\.two-week-rsi-stage,[\s\S]*height: 560px/);
   assert.match(css, /@media \(max-width: 980px\)[\s\S]*\.two-week-rsi-stage \{ min-height: 520px/);
 });

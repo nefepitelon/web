@@ -5,11 +5,7 @@ import { getOrCreateAlphaExecutionConfig, writeAlphaAudit } from "@/lib/alpha-ex
 import { prisma } from "@/lib/prisma";
 import { assertSameOrigin } from "@/lib/request-security";
 
-const LIVE_UNLOCK_PHRASE = "ENABLE LIVE TRADING";
 const schema = z.object({
-  phrase: z.unknown()
-    .transform((value) => typeof value === "string" ? value.trim().replace(/\s+/g, " ").toUpperCase() : "")
-    .refine((value) => value === LIVE_UNLOCK_PHRASE, { message: `请输入完整的实盘解锁确认短语：${LIVE_UNLOCK_PHRASE}` }),
   acknowledgeRealFunds: z.unknown()
     .refine((value) => value === true, { message: "请确认实盘会使用真实资金并接受风险额度限制" }),
   acknowledgeNoWithdrawPermission: z.unknown()
@@ -31,7 +27,7 @@ export async function POST(request: Request) {
       where: { userId: viewer.id },
       data: { activeMode: AlphaExecutionMode.LIVE, liveEnabled: true, liveUnlockedAt: new Date(), liveUnlockedBy: viewer.id }
     });
-    await writeAlphaAudit({ userId: viewer.id, state: AlphaExecutionState.RISK_APPROVED, status: "SECURITY", message: `生产实盘已由双重验证管理员显式解锁；默认单笔上限 ${updated.perOrderNotionalLimit} USDT。`, metadata: { defaultMarket: updated.defaultMarket } });
+    await writeAlphaAudit({ userId: viewer.id, state: AlphaExecutionState.RISK_APPROVED, status: "SECURITY", message: `生产实盘已由双重验证管理员勾选两项协议并显式解锁；默认单笔上限 ${updated.perOrderNotionalLimit} USDT。`, metadata: { defaultMarket: updated.defaultMarket, acknowledgeRealFunds: true, acknowledgeNoWithdrawPermission: true } });
     return Response.json({ ok: true, liveUnlockedAt: updated.liveUnlockedAt?.toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (caught) {
     return alphaExecutionErrorResponse(caught);

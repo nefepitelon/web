@@ -7,6 +7,7 @@
     ? new URL(".", loaderScript.src).pathname.replace(/\/$/, "")
     : "";
   const assetUrl = (file) => `${assetBase}/${file}`;
+  const experienceVersion = "20260914-system-ui-v1";
 
   const adaptCarouselForDashboard = (section) => {
     const brand = section.querySelector(".power-law-brand");
@@ -25,13 +26,13 @@
     brand.appendChild(titleLine);
   };
 
-  const loadDashboardController = () => new Promise((resolve, reject) => {
-    if (window.updateProductDashboardLanguage) {
+  const loadSharedScript = (file, marker, isReady) => new Promise((resolve, reject) => {
+    if (isReady()) {
       resolve();
       return;
     }
 
-    const existing = document.querySelector("script[data-dashboard-product-carousel]");
+    const existing = document.querySelector(`script[data-${marker}]`);
     if (existing) {
       existing.addEventListener("load", resolve, { once: true });
       existing.addEventListener("error", reject, { once: true });
@@ -39,8 +40,8 @@
     }
 
     const script = document.createElement("script");
-    script.src = assetUrl("product-dashboard.js?v=20260831-sthbands-v1");
-    script.dataset.dashboardProductCarousel = "true";
+    script.src = assetUrl(`${file}?v=${experienceVersion}`);
+    script.setAttribute(`data-${marker}`, "true");
     script.addEventListener("load", resolve, { once: true });
     script.addEventListener("error", reject, { once: true });
     document.body.appendChild(script);
@@ -63,7 +64,7 @@
 
   const mountCarousel = async () => {
     try {
-      const response = await fetch(assetUrl("index.html?v=20260831-sthbands-v1"), { cache: "no-cache" });
+      const response = await fetch(assetUrl(`index.html?v=${experienceVersion}`), { cache: "no-cache" });
       if (!response.ok) throw new Error(`Homepage component request failed: ${response.status}`);
 
       const sourceDocument = new DOMParser().parseFromString(await response.text(), "text/html");
@@ -72,11 +73,15 @@
 
       const section = document.importNode(sourceSection, true);
       section.classList.add("dashboard-onchain-carousel");
+      // Enable the shared camera/motion lifecycle without applying homepage layout
+      // rules to the surrounding dashboard or its embedded document.
+      section.dataset.onchainExperience = "shared-3d";
       adaptCarouselForDashboard(section);
       mount.replaceChildren(section);
 
       window.updateDashboardLanguage?.();
-      await loadDashboardController();
+      await loadSharedScript("trend-indicator-cycle.js", "dashboard-trend-cycle", () => Boolean(window.WelinkTrendIndicatorCycle?.create));
+      await loadSharedScript("product-dashboard.js", "dashboard-product-carousel", () => Boolean(window.updateProductDashboardLanguage));
       window.updateProductDashboardLanguage?.();
       window.dispatchEvent(new CustomEvent("dashboard:carousel-ready"));
     } catch (error) {

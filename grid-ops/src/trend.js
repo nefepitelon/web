@@ -77,3 +77,17 @@ export function analyzeTrend(candles, opts = {}) {
     detail: detail + volNote,
   };
 }
+
+/**
+ * Keep trend indicators based on the historical candle series, while using
+ * the venue's independently fetched live quote as the anchor for a new grid.
+ * Candle feeds can be delayed even when their ordering is correct, so their
+ * last close must not be treated as the executable market price.
+ */
+export function analyzeTrendWithLivePrice(candles, livePrice, opts = {}) {
+  const analysis = analyzeTrend(candles, opts);
+  const price = Number(livePrice);
+  return Number.isFinite(price) && price > 0
+    ? { ...analysis, price }
+    : { ...analysis, price: null };
+}

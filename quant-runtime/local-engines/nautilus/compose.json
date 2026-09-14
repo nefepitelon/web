@@ -1,0 +1,10 @@
+{
+  "services": {
+    "sdk": {
+      "image": "${ENGINE_IMAGE}", "profiles": ["sdk"],
+      "entrypoint": ["python", "-c"],
+      "command": ["import nautilus_trader; print(nautilus_trader.__version__)"],
+      "network_mode": "none", "read_only": true
+    }
+  }
+}

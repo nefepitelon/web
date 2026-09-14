@@ -1,0 +1,24 @@
+[Unit]
+Description=WelinkBTC quant native runtime gateway
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=welink-quant
+Group=welink-quant
+SupplementaryGroups=docker
+WorkingDirectory=/opt/welinkbtc/quant-runtime
+EnvironmentFile=/etc/welink-quant/runtime.env
+ExecStart=/usr/bin/node /opt/welinkbtc/quant-runtime/server.mjs
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/welink-quant
+TimeoutStopSec=90
+
+[Install]
+WantedBy=multi-user.target

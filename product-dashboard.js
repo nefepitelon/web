@@ -23,6 +23,8 @@
   const orbitReset = section.querySelector("#power-orbit-reset");
   const orbitAuto = section.querySelector("#power-orbit-auto");
   const isHomePage = document.body.classList.contains("home-page");
+  const hasTrendExperience = isHomePage || section.dataset.onchainExperience === "shared-3d";
+  const cycleToggle = section.querySelector("#power-cycle-toggle");
 
   function createHomeOrbitAnimator({ camera, draw, canAnimate, enabled = true, minZoom = 0.55, onState = () => {}, now = () => performance.now(), schedule = setTimeout, cancel = clearTimeout }) {
     const FRAME_MS = 1000 / 30;
@@ -68,18 +70,18 @@
       }
       lastFrameAt = time;
       const elapsed = time - startedAt;
-      const ramp = Math.min(elapsed / 4_000, 1);
+      const ramp = Math.min(elapsed / 2_000, 1);
       const ease = ramp * ramp * (3 - 2 * ramp);
-      // A small orbit around the current view, with a zero-velocity entrance.
+      // A readable orbit around the current view, with a zero-velocity entrance.
       // Manual yaw, pitch, zoom and pan become the next origin; no reset jump.
       const facingCenter = Math.round(origin.yaw / Math.PI) * Math.PI;
       const yawMargin = Math.max(0, Math.PI / 2 - 0.05 - Math.abs(origin.yaw - facingCenter));
-      const yawAmplitude = Math.min(0.20, yawMargin);
-      const pitchAmplitude = Math.max(0, Math.min(0.055, origin.pitch + 0.82, 0.92 - origin.pitch));
-      const zoomAmplitude = Math.max(0, Math.min(0.045, 1 - minZoom / origin.zoom, 2.25 / origin.zoom - 1));
-      camera.yaw = origin.yaw + yawAmplitude * Math.sin(elapsed * Math.PI * 2 / 48_000) * ease;
-      camera.pitch = origin.pitch + pitchAmplitude * Math.sin(elapsed * Math.PI * 2 / 60_000) * ease;
-      camera.zoom = origin.zoom * (1 + zoomAmplitude * Math.sin(elapsed * Math.PI * 2 / 24_000) * ease);
+      const yawAmplitude = Math.min(0.36, yawMargin);
+      const pitchAmplitude = Math.max(0, Math.min(0.10, origin.pitch + 0.82, 0.92 - origin.pitch));
+      const zoomAmplitude = Math.max(0, Math.min(0.08, 1 - minZoom / origin.zoom, 2.25 / origin.zoom - 1));
+      camera.yaw = origin.yaw + yawAmplitude * Math.sin(elapsed * Math.PI * 2 / 14_000) * ease;
+      camera.pitch = origin.pitch + pitchAmplitude * Math.sin(elapsed * Math.PI * 2 / 18_000) * ease;
+      camera.zoom = origin.zoom * (1 + zoomAmplitude * Math.sin(elapsed * Math.PI * 2 / 8_000) * ease);
       setRunning(true);
       draw();
       timer = schedule(frame, FRAME_MS);
@@ -101,6 +103,7 @@
       sync,
       isRunning: () => running,
       isEnabled: () => enabled,
+      elapsed: () => origin ? Math.max(0, lastFrameAt - startedAt) : 0,
       setEnabled(next) {
         enabled = Boolean(next);
         stop();
@@ -127,12 +130,15 @@
     const sinX = Math.sin(view.pitch);
     const rotatedX = point.x * cosY - point.z * sinY;
     const yawDepth = point.x * sinY + point.z * cosY;
-    const rotatedY = point.y * cosX - yawDepth * sinX;
-    const rotatedZ = point.y * sinX + yawDepth * cosX;
+    // Home rotates around the volume center so its floor stays attached to the
+    // plot instead of swinging around the bottom edge. Shared charts keep y=0.
+    const centeredY = point.y - (view.pivotY || 0);
+    const rotatedY = centeredY * cosX - yawDepth * sinX;
+    const rotatedZ = centeredY * sinX + yawDepth * cosX;
     const perspective = 13 / Math.max(5.5, 13 - rotatedZ);
     const scale = Math.min(width / 11.2, height / 7.4) * view.zoom;
     return {
-      x: width * 0.48 + view.panX + rotatedX * scale * perspective,
+      x: width * 0.48 + view.panX + rotatedX * scale * perspective * (view.horizontalScale || 1),
       y: height * 0.67 + view.panY - rotatedY * scale * perspective,
       depth: rotatedZ,
       perspective
@@ -140,21 +146,24 @@
   }
 
   function fitHomeCamera(width, height) {
-    const view = { yaw: -0.12, pitch: 0.28, zoom: 0.70, panX: 0, panY: 18 };
+    const view = { yaw: -0.12, pitch: 0.28, zoom: 0.70, panX: 0, panY: 18, pivotY: 2.75, horizontalScale: 1 };
     if (!(width > 0 && height > 0)) return view;
     const compact = width < 720;
     // Leave room for the orbit controls, axis labels, and the mobile metrics.
     const left = Math.min(80, width * 0.18);
     const right = width - 24;
-    const top = compact ? 104 : 88;
-    const bottom = height - (compact ? 250 : 78);
+    const top = compact ? 104 : 64;
+    const bottom = height - (compact ? 250 : 56);
+    // A wide time-series chart uses the available horizontal layout without
+    // changing data heights, depth ordering or the perspective denominator.
+    view.horizontalScale = compact ? 1 : Math.min(2, Math.max(1, width / height / 1.33));
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     // Bound the entire world box (including the highest axis/grid) throughout
     // every allowed default orbit, not just the initial data points.
     for (let yawStep = 0; yawStep <= 20; yawStep += 1) {
       for (let pitchStep = 0; pitchStep <= 10; pitchStep += 1) {
-        for (const zoom of [0.955, 1.045]) {
-          const sample = { ...view, yaw: -0.32 + yawStep * 0.02, pitch: 0.225 + pitchStep * 0.011, zoom, panX: 0, panY: 0 };
+        for (const zoom of [0.92, 1.08]) {
+          const sample = { ...view, yaw: -0.48 + yawStep * 0.036, pitch: 0.18 + pitchStep * 0.02, zoom, panX: 0, panY: 0 };
           for (const x of [-5, 5]) for (const y of [0, 5.75]) for (const z of [-1.7, 1.7]) {
             const point = projectOrbitPoint({ x, y, z }, width, height, sample);
             minX = Math.min(minX, point.x - width * 0.48);
@@ -166,16 +175,104 @@
       }
     }
     // The extra 3% absorbs between-sample extrema and endpoint stroke widths.
-    view.zoom = Math.min(0.74, (right - left) / (maxX - minX), Math.max(40, bottom - top) / (maxY - minY)) * 0.97;
+    view.zoom = Math.min(1.12, (right - left) / (maxX - minX), Math.max(40, bottom - top) / (maxY - minY)) * 0.97;
     view.panX = (left + right) / 2 - width * 0.48 - (minX + maxX) / 2 * view.zoom;
     view.panY = (top + bottom) / 2 - height * 0.67 - (minY + maxY) / 2 * view.zoom;
     return view;
   }
 
+  function createHomeCamera(width, height) {
+    // Fit the entire moving volume rather than enlarging it beyond the canvas.
+    // Initial view, resize and Reset view must all use this same framing.
+    return fitHomeCamera(width, height);
+  }
+
+  function drawOrbitGlow(context, points, color, progress, intense = false) {
+    if (points.length < 2) return;
+    const headIndex = Math.min(points.length - 1, Math.floor(progress * (points.length - 1)));
+    const tailIndex = Math.max(0, headIndex - Math.max(2, Math.ceil(points.length * 0.09)));
+    const head = points[headIndex];
+    if (!head) return;
+    // A gap remains a gap: do not illuminate a connection across missing data.
+    let firstIndex = headIndex;
+    while (firstIndex > tailIndex && points[firstIndex - 1]) firstIndex -= 1;
+    if (firstIndex === headIndex) return;
+    const tail = points[firstIndex];
+    context.save();
+    const light = context.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    light.addColorStop(0, "transparent");
+    light.addColorStop(0.55, color);
+    light.addColorStop(1, "#ecfff6");
+    context.strokeStyle = light;
+    context.globalAlpha = intense ? 0.95 : 0.72;
+    context.lineWidth = intense ? 4 : 2.8;
+    context.shadowColor = color;
+    context.shadowBlur = intense ? 22 : 12;
+    context.beginPath();
+    context.moveTo(tail.x, tail.y);
+    for (let index = firstIndex + 1; index <= headIndex; index += 1) {
+      context.lineTo(points[index].x, points[index].y);
+    }
+    context.stroke();
+    context.fillStyle = "#ecfff6";
+    context.beginPath();
+    context.arc(head.x, head.y, intense ? 3 : 2, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+
+  function createOrbitFloorRipples(elapsed) {
+    const time = Math.max(0, Number.isFinite(elapsed) ? elapsed : 0);
+    const centerX = Math.sin(time * Math.PI * 2 / 15_000) * 3.3;
+    const centerZ = Math.sin(time * Math.PI * 2 / 21_000) * 0.6;
+    return Array.from({ length: 4 }, (_, index) => {
+      const progress = (time / 6_000 + index / 4) % 1;
+      const radius = 0.2 + progress * 3.6;
+      return { opacity: Math.sin(progress * Math.PI) * (1 - progress * 0.45), points: Array.from({ length: 73 }, (_, step) => {
+        const angle = step / 72 * Math.PI * 2;
+        return { x: centerX + Math.cos(angle) * radius, y: 0, z: centerZ + Math.sin(angle) * radius };
+      }) };
+    });
+  }
+
+  function drawOrbitFloorRipples(context, width, height, view, elapsed, intense = false, dark = true) {
+    const floor = [{ x: -5, y: 0, z: -1.7 }, { x: 5, y: 0, z: -1.7 },
+      { x: 5, y: 0, z: 1.7 }, { x: -5, y: 0, z: 1.7 }]
+      .map(point => projectOrbitPoint(point, width, height, view));
+    context.save();
+    context.beginPath();
+    floor.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+    context.closePath();
+    // Clip after projection, including the blur: the light belongs to the
+    // actual grid plane even while the user rotates, pans or zooms it.
+    context.clip();
+    context.globalCompositeOperation = dark ? "lighter" : "source-over";
+    const light = context.createLinearGradient(floor[0].x, floor[0].y, floor[2].x, floor[2].y);
+    light.addColorStop(0, dark ? "#69d9f2" : "#13809a");
+    light.addColorStop(0.5, dark ? "#b5ffe0" : "#248b62");
+    light.addColorStop(1, dark ? "#75f39a" : "#277c45");
+    context.strokeStyle = light;
+    context.shadowColor = dark ? "#75f3bd" : "#3da27b";
+    context.shadowBlur = intense ? 18 : 10;
+    context.lineWidth = intense ? 2.4 : 1.6;
+    for (const ripple of createOrbitFloorRipples(elapsed)) {
+      context.globalAlpha = ripple.opacity * (intense ? 0.72 : 0.46);
+      context.beginPath();
+      ripple.points.forEach((point, index) => {
+        const projected = projectOrbitPoint(point, width, height, view);
+        if (index) context.lineTo(projected.x, projected.y);
+        else context.moveTo(projected.x, projected.y);
+      });
+      context.closePath();
+      context.stroke();
+    }
+    context.restore();
+  }
+
   const DAY_MS = 86_400_000;
   const state = {
     indicator: "cost-basis",
-    view: isHomePage ? "3d" : "2d",
+    view: hasTrendExperience ? "3d" : "2d",
     range: "all",
     glow: false,
     loading: false,
@@ -183,15 +280,16 @@
     data: null
   };
   const defaultCamera = Object.freeze({ yaw: -0.12, pitch: 0.28, zoom: 0.96, panX: 0, panY: 18 });
-  const minCameraZoom = isHomePage ? 0.20 : 0.55;
+  const minCameraZoom = hasTrendExperience ? 0.20 : 0.55;
   const initialCanvasSize = canvas.getBoundingClientRect();
-  const camera = isHomePage ? fitHomeCamera(initialCanvasSize.width, initialCanvasSize.height) : { ...defaultCamera };
-  let cameraFitManaged = isHomePage;
+  const camera = hasTrendExperience ? createHomeCamera(initialCanvasSize.width, initialCanvasSize.height) : { ...defaultCamera };
+  let cameraFitManaged = hasTrendExperience;
   let fittedSize = `${initialCanvasSize.width}:${initialCanvasSize.height}`;
   const activePointers = new Map();
   let pointerGesture = null;
   const payloadPromises = new Map();
   let orbitAnimator = null;
+  let indicatorCycle = null;
   let chartInViewport = false;
   let pageActive = true;
 
@@ -1126,24 +1224,100 @@
           [copy("成本线收复", "Cost-Line Reclaim"), dateLabel(value.reclaimDate)]
         ];
       }
+    },
+    "under-3m-heat": {
+      name: ["小于 3 个月热钱周期", "Under-3M Hot-Capital Cycle"],
+      short: "<3M HOT CAPITAL · 39–45%",
+      dot: "model-under-3m-heat",
+      endpoint: "/api/under-3m-realized-cap-cycle?schema=1",
+      scale: "linear",
+      thresholds: [
+        { value: 39, label: "39% WARNING", color: palette.orange },
+        { value: 45, label: "45% OVERHEAT", color: palette.red }
+      ],
+      lines: [
+        { key: "price", label: "BTC Price", color: palette.price, axis: "price" },
+        { key: "value", label: "<3M Public Live", color: palette.orange },
+        { key: "average30", label: "<3M · 30D MA", color: palette.cyan }
+      ],
+      normalize(payload) {
+        return {
+          rows: payload.series.map((row) => ({
+            date: parseDate(row.date),
+            price: number(row.price),
+            value: number(row.underThreeMonths) * 100,
+            average30: number(row.average30) * 100
+          })),
+          snapshot: payload.cycleSnapshot,
+          source: `${payload.sources?.history || "BGeometrics"} + ${payload.sources?.exactExtension || "Bitcoin Data"}`
+        };
+      },
+      metrics(data) {
+        const value = data.snapshot || {};
+        return [
+          [copy("公开源当前值", "Current Public Value"), fractionPercent(value.current, 1)],
+          [copy("参考图模型值", "Reference Figure"), fractionPercent(value.referenceCurrent, 1)],
+          [copy("距离 39% 警戒线", "Distance to 39%"), fractionPercent(value.distanceToCaution, 1)],
+          [copy("365 日情景终点", "365-Day Scenario End"), fractionPercent(value.scenarioEnd, 1)]
+        ];
+      }
+    },
+    "utxo-age-rp": {
+      name: ["UTXO 年龄段已实现价格", "Realized Price by UTXO Age Bands"],
+      short: "6–12M / 12–18M · 1045D",
+      dot: "model-utxo-age-rp",
+      endpoint: "/api/utxo-age-realized-price-cycle?schema=1",
+      scale: "log",
+      lines: [
+        { key: "price", label: "BTC Price", color: palette.price, axis: "price" },
+        { key: "sixToTwelve", label: "6M–12M Realized Price", color: palette.green },
+        { key: "twelveToEighteen", label: "12M–18M Realized Price", color: palette.orange }
+      ],
+      normalize(payload) {
+        return {
+          rows: payload.series.map((row) => ({
+            date: parseDate(row.date),
+            price: number(row.price),
+            sixToTwelve: number(row.sixToTwelve),
+            twelveToEighteen: number(row.twelveToEighteen)
+          })),
+          snapshot: payload.snapshot,
+          source: "BGeometrics · PUBLIC UTXO AGE-BAND RECONSTRUCTION"
+        };
+      },
+      metrics(data) {
+        const value = data.snapshot || {};
+        return [
+          [copy("6–12 个月成本", "6–12M Cost Basis"), usd(value.sixToTwelve)],
+          [copy("12–18 个月成本", "12–18M Cost Basis"), usd(value.twelveToEighteen)],
+          [copy("公开成本差", "Public Cost Spread"), percent(value.spreadPercent, 2)],
+          [copy("参考周期进度", "Reference Cycle Progress"), `${number(value.referenceElapsedDays).toFixed(0)} / ${number(value.averageCycleDays).toFixed(0)}D`]
+        ];
+      }
     }
   };
 
   const fetchPayload = async (endpoint) => {
     const request = async (url) => {
       if (typeof window.fetch === "function") {
-        const response = await window.fetch(url, {
-          cache: "no-store",
-          headers: { Accept: "application/json" }
-        });
-        if (!response.ok) throw new Error(`On-chain API ${response.status}`);
-        return response.json();
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 25_000);
+        try {
+          const response = await window.fetch(url, {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+            signal: controller.signal
+          });
+          if (!response.ok) throw new Error(`On-chain API ${response.status}`);
+          return await response.json();
+        } finally { window.clearTimeout(timeout); }
       }
 
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.setRequestHeader("Accept", "application/json");
+        xhr.timeout = 25_000;
         xhr.onload = () => {
           if (xhr.status < 200 || xhr.status >= 300) {
             reject(new Error(`On-chain API ${xhr.status}`));
@@ -1156,6 +1330,7 @@
           }
         };
         xhr.onerror = () => reject(new Error("On-chain API network error"));
+        xhr.ontimeout = () => reject(new Error("On-chain API timeout"));
         xhr.send();
       });
     };
@@ -1305,6 +1480,9 @@
     context.lineCap = "round";
     context.lineJoin = "round";
 
+    if (orbitAnimator?.isEnabled()) {
+      drawOrbitFloorRipples(context, width, height, camera, orbitAnimator.elapsed(), state.glow, dark);
+    }
     for (let index = 0; index <= 10; index += 1) {
       const x = xMin + (index / 10) * (xMax - xMin);
       drawWorldLine(context, width, height, { x, y: 0, z: zMin }, { x, y: 0, z: zMax }, gridColor);
@@ -1312,6 +1490,14 @@
     for (let index = 0; index <= 8; index += 1) {
       const z = zMin + (index / 8) * (zMax - zMin);
       drawWorldLine(context, width, height, { x: xMin, y: 0, z }, { x: xMax, y: 0, z }, gridColor);
+    }
+    // Explicit perimeter makes the footprint readable at the wider home view.
+    if (orbitAnimator) {
+      const floorColor = dark ? "rgba(117, 243, 154, 0.28)" : "rgba(35, 120, 75, 0.32)";
+      drawWorldLine(context, width, height, { x: xMin, y: 0, z: zMin }, { x: xMax, y: 0, z: zMin }, floorColor, 1.25);
+      drawWorldLine(context, width, height, { x: xMin, y: 0, z: zMax }, { x: xMax, y: 0, z: zMax }, floorColor, 1.25);
+      drawWorldLine(context, width, height, { x: xMin, y: 0, z: zMin }, { x: xMin, y: 0, z: zMax }, floorColor, 1.25);
+      drawWorldLine(context, width, height, { x: xMax, y: 0, z: zMin }, { x: xMax, y: 0, z: zMax }, floorColor, 1.25);
     }
     for (let index = 0; index < 6; index += 1) {
       const progress = index / 5;
@@ -1362,6 +1548,7 @@
     config.lines.forEach((line, lineIndex) => {
       const bounds = line.axis === "price" ? priceBounds : primaryBounds;
       const depth = (lineIndex - (lineCount - 1) / 2) * 0.18;
+      const projectedPoints = [];
       let started = false;
       context.save();
       context.strokeStyle = line.color;
@@ -1375,15 +1562,21 @@
       renderRows.forEach((row) => {
         const value = number(row[line.key]);
         if (!Number.isFinite(value) || (bounds.useLog && value <= 0)) {
+          projectedPoints.push(null);
           started = false;
           return;
         }
         const point = project3d({ x: xWorld(row.date), y: yWorld(value, bounds), z: depth }, width, height);
+        projectedPoints.push(point);
         if (!started) context.moveTo(point.x, point.y);
         else context.lineTo(point.x, point.y);
         started = true;
       });
       context.stroke();
+      if (orbitAnimator?.isEnabled()) {
+        const progress = ((orbitAnimator.elapsed() / 5_500) + lineIndex / lineCount) % 1;
+        drawOrbitGlow(context, projectedPoints, line.color, progress, state.glow);
+      }
 
       const latest = [...renderRows].reverse().find((row) => Number.isFinite(number(row[line.key])));
       if (latest) {
@@ -1524,8 +1717,20 @@
     context.restore();
   };
 
+  function updateCycleUi(cycleState = indicatorCycle?.getState()) {
+    if (!cycleToggle) return;
+    cycleToggle.hidden = !hasTrendExperience;
+    cycleToggle.disabled = !cycleState;
+    if (!cycleState) return;
+    section.dataset.indicatorCycle = cycleState.enabled ? cycleState.paused ? "waiting" : "running" : "paused";
+    cycleToggle.textContent = cycleState.enabled ? copy("25秒轮播 · 暂停", "25s loop · Pause") : copy("25秒轮播 · 继续", "25s loop · Resume");
+    cycleToggle.setAttribute("aria-pressed", String(cycleState.enabled));
+    cycleToggle.setAttribute("aria-label", cycleState.enabled ? copy("暂停每25秒切换指标", "Pause indicator changes every 25 seconds") : copy("继续每25秒切换指标", "Resume indicator changes every 25 seconds"));
+    cycleToggle.title = copy("2D、3D均每25秒轮换指标；离开图表或操作菜单时暂停", "Changes indicators every 25 seconds in 2D and 3D; pauses offscreen or while using the menu");
+  }
+
   const updateOrbitAutoUi = () => {
-    if (!isHomePage || !orbitAnimator) return;
+    if (!hasTrendExperience || !orbitAnimator) return;
     const enabled = orbitAnimator.isEnabled();
     section.dataset.autoOrbit = orbitAnimator.isRunning() ? "running" : enabled ? "waiting" : "paused";
     if (!orbitAuto) return;
@@ -1533,10 +1738,10 @@
     orbitAuto.textContent = enabled ? copy("暂停动画", "Pause motion") : copy("播放动画", "Play motion");
     orbitAuto.setAttribute("aria-pressed", String(enabled));
     orbitAuto.setAttribute("aria-label", enabled ? copy("暂停三维视角自动演示", "Pause automatic 3D camera motion") : copy("播放三维视角自动演示", "Play automatic 3D camera motion"));
-    orbitAuto.title = copy("缓慢旋转与缩放；手动操作结束 12 秒后恢复", "Slow orbit and zoom; resumes 12 seconds after interaction");
+    orbitAuto.title = copy("自动环绕、缩放、曲线流光与底面水波；手动操作结束 12 秒后恢复", "Automatic orbit, zoom, curve light and floor ripples; resumes 12 seconds after interaction");
   };
 
-  if (isHomePage) {
+  if (hasTrendExperience) {
     const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
     orbitAnimator = createHomeOrbitAnimator({
       camera,
@@ -1551,19 +1756,21 @@
     motionPreference.addEventListener("change", () => {
       if (motionPreference.matches) orbitAnimator.setEnabled(false);
     });
-    document.addEventListener("visibilitychange", () => orbitAnimator.sync());
-    window.addEventListener("pagehide", () => { pageActive = false; orbitAnimator.sync(); });
-    window.addEventListener("pageshow", () => { pageActive = true; orbitAnimator.sync(); });
+    document.addEventListener("visibilitychange", () => { orbitAnimator.sync(); indicatorCycle?.sync(); });
+    window.addEventListener("pagehide", () => { pageActive = false; orbitAnimator.sync(); indicatorCycle?.sync(); });
+    window.addEventListener("pageshow", () => { pageActive = true; orbitAnimator.sync(); indicatorCycle?.sync(); });
     if ("IntersectionObserver" in window) {
       new IntersectionObserver((entries) => {
         chartInViewport = entries.some((entry) => entry.isIntersecting);
         orbitAnimator.sync();
+        indicatorCycle?.sync();
       }).observe(canvas);
     } else {
       const updateViewport = () => {
         const bounds = canvas.getBoundingClientRect();
         chartInViewport = bounds.bottom > 0 && bounds.top < window.innerHeight;
         orbitAnimator.sync();
+        indicatorCycle?.sync();
       };
       window.addEventListener("scroll", updateViewport, { passive: true });
       window.addEventListener("resize", updateViewport, { passive: true });
@@ -1599,7 +1806,7 @@
     });
     section.classList.toggle("is-3d", is3d);
     if (orbitControls) orbitControls.hidden = !is3d;
-    if (orbitAuto) orbitAuto.hidden = !isHomePage || !is3d;
+    if (orbitAuto) orbitAuto.hidden = !hasTrendExperience || !is3d;
     if (orbitHint) orbitHint.textContent = copy(
       "拖拽旋转 · 滚轮缩放 · Shift / 右键拖拽平移",
       "Drag to orbit · Wheel to zoom · Shift / right-drag to pan"
@@ -1617,12 +1824,14 @@
     const config = indicatorConfig[state.indicator];
     const title = config.name[isEnglish() ? 1 : 0];
     if (modelLabel) modelLabel.textContent = title;
+    section.dataset.indicator = state.indicator;
     if (modelDot) modelDot.className = `model-dot ${config.dot}`;
     modelOptions.forEach((button) => button.classList.toggle("active", button.dataset.modelOption === state.indicator));
     rangeButtons.forEach((button) => button.classList.toggle("active", button.dataset.range === state.range));
     updateViewUi();
     renderMetrics();
     renderLegend();
+    updateCycleUi();
     draw();
   };
 
@@ -1631,6 +1840,8 @@
     const config = indicatorConfig[requestedIndicator];
     state.loading = true;
     state.error = null;
+    orbitAnimator?.sync();
+    indicatorCycle?.sync();
     status.hidden = false;
     status.classList.remove("is-error");
     status.textContent = copy("正在同步链上趋势快照...", "Syncing on-chain trend snapshot...");
@@ -1655,16 +1866,22 @@
       renderMetrics();
       renderLegend();
       draw();
+    } finally {
+      if (state.indicator === requestedIndicator) {
+        orbitAnimator?.sync();
+        indicatorCycle?.sync();
+      }
     }
   };
 
   // A fixed popup escapes the homepage toolbar's horizontal scroll container.
   const modelPopup = section.querySelector("#power-model-options");
-  const compactToolbar = document.body.classList.contains("home-page")
+  const compactToolbar = hasTrendExperience
     ? section.querySelector(".power-law-toolbar") : null;
   const closeModelMenu = () => {
     modelMenu?.classList.remove("is-open");
     modelToggle?.setAttribute("aria-expanded", "false");
+    indicatorCycle?.sync();
   };
   const positionModelPopup = () => {
     if (!compactToolbar || !modelPopup || !modelToggle) return;
@@ -1690,6 +1907,7 @@
     positionModelPopup();
     const open = modelMenu?.classList.toggle("is-open") ?? false;
     modelToggle.setAttribute("aria-expanded", String(open));
+    indicatorCycle?.sync();
   });
 
   modelOptions.forEach((button) => {
@@ -1701,7 +1919,9 @@
       modelMenu?.classList.remove("is-open");
       modelToggle?.setAttribute("aria-expanded", "false");
       updateUi();
+      canvas.focus({ preventScroll: true });
       loadIndicator();
+      indicatorCycle?.reset();
     });
   });
 
@@ -1710,6 +1930,7 @@
       const next = button.dataset.view;
       if (next !== "2d" && next !== "3d") return;
       state.view = next;
+      indicatorCycle?.reset();
       updateViewUi();
       draw();
     });
@@ -1718,15 +1939,16 @@
   rangeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       state.range = button.dataset.range || "all";
+      indicatorCycle?.reset();
       updateUi();
     });
   });
 
   const resetCamera = () => {
     const rect = canvas.getBoundingClientRect();
-    cameraFitManaged = isHomePage;
+    cameraFitManaged = hasTrendExperience;
     fittedSize = `${rect.width}:${rect.height}`;
-    Object.assign(camera, isHomePage ? fitHomeCamera(rect.width, rect.height) : defaultCamera);
+    Object.assign(camera, hasTrendExperience ? createHomeCamera(rect.width, rect.height) : defaultCamera);
     orbitAnimator?.interaction();
     draw();
   };
@@ -1877,17 +2099,43 @@
 
   document.addEventListener("click", (event) => {
     if (!modelMenu?.contains(event.target)) {
-      modelMenu?.classList.remove("is-open");
-      modelToggle?.setAttribute("aria-expanded", "false");
+      closeModelMenu();
     }
   });
+
+  if (hasTrendExperience && window.WelinkTrendIndicatorCycle?.create) {
+    const indicatorOrder = [...new Set(Array.from(modelOptions, (button) => button.dataset.modelOption))]
+      .filter((key) => indicatorConfig[key]);
+    indicatorCycle = window.WelinkTrendIndicatorCycle.create({
+      section: canvas,
+      intervalMs: 25_000,
+      canAdvance: () => indicatorOrder.length > 1 && !state.loading && Boolean(state.data || state.error)
+        && chartInViewport && pageActive && !document.hidden && activePointers.size === 0
+        && !modelMenu?.classList.contains("is-open") && !modelMenu?.contains(document.activeElement),
+      advance: () => {
+        const index = indicatorOrder.indexOf(state.indicator);
+        state.indicator = indicatorOrder[(index + 1) % indicatorOrder.length];
+        state.data = null;
+        updateUi();
+        return loadIndicator();
+      },
+      onStateChange: updateCycleUi
+    });
+    cycleToggle?.addEventListener("click", () => indicatorCycle.setEnabled(!indicatorCycle.getState().enabled));
+    modelMenu?.addEventListener("focusin", () => indicatorCycle.sync());
+    modelMenu?.addEventListener("focusout", () => queueMicrotask(() => indicatorCycle.sync()));
+    for (const eventName of ["pointerdown", "pointerup", "pointercancel", "wheel", "keydown"]) {
+      canvas.addEventListener(eventName, () => indicatorCycle.reset(), { passive: true });
+    }
+    orbitReset?.addEventListener("click", () => indicatorCycle.reset());
+  }
 
   const resizeObserver = new ResizeObserver(() => {
     const rect = canvas.getBoundingClientRect();
     const size = `${rect.width}:${rect.height}`;
     if (cameraFitManaged && rect.width > 0 && rect.height > 0 && fittedSize !== size) {
       fittedSize = size;
-      Object.assign(camera, fitHomeCamera(rect.width, rect.height));
+      Object.assign(camera, createHomeCamera(rect.width, rect.height));
       orbitAnimator?.reframe();
     }
     draw();
@@ -1895,6 +2143,11 @@
   resizeObserver.observe(canvas);
   window.drawProductDashboard = draw;
   window.updateProductDashboardLanguage = updateUi;
+  if (hasTrendExperience && initialCanvasSize.width >= 720 && metricsPanel && metricsToggle) {
+    metricsPanel.classList.add("is-collapsed");
+    metricsToggle.setAttribute("aria-expanded", "false");
+    metricsToggle.setAttribute("aria-label", copy("展开指标窗口", "Expand metric panel"));
+  }
   updateUi();
   loadIndicator();
 })();

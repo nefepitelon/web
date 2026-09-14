@@ -3,13 +3,15 @@ const assert = require("node:assert/strict");
 
 const {
   MemorySignalStore,
+  SupabaseSignalStore,
   collectPublicPreviewSignals,
   collectTelegramSignals,
   makeDedupeHash,
   parseTelegramSignal,
   publicPreviewMessagesFromHtml,
   publicPreviewMessagesFromMarkdown,
-  telegramMessagesFromUpdate
+  telegramMessagesFromUpdate,
+  verifiedSignalTime
 } = require("../workers/telegram_signal_collector");
 
 test("parses the target channel bilingual OI-up price-up format", () => {
@@ -169,6 +171,65 @@ _**🔻**_ [ETHUSDT] Binance openinterest +8.0%, Price -5.0%`;
   assert.equal(messages.length, 2);
   assert.equal(messages[0].options.messageId, "20001");
   assert.match(messages[1].rawText, /ETHUSDT/);
+  assert.equal(messages[0].options.signalTime, null);
+  const signals = messages.map((message) => parseTelegramSignal(message.rawText, message.options));
+  assert.ok(signals.every((signal) => signal.signal_time === null && signal.signal_time_source === "unknown"));
+});
+
+test("missing or invalid source times remain unknown instead of using collection time", () => {
+  const raw = "[SOLUSDT] OI +7.0%, Price +4.0%";
+  for (const signalTime of [undefined, null, "", "not-a-date"]) {
+    const signal = parseTelegramSignal(raw, { signalTime, sourceMode: "public_preview" });
+    assert.equal(signal.signal_time, null);
+    assert.equal(signal.signal_time_source, "unknown");
+    assert.ok(signal.received_at, "receipt time remains available separately");
+  }
+});
+
+test("legacy synthesized preview times are suppressed while genuine source times are preserved", () => {
+  const signal = { source_mode: "public_preview", received_at: "2026-09-09T10:00:00Z", signal_time: "2026-09-09T09:59:45Z" };
+  assert.equal(verifiedSignalTime(signal), null);
+  assert.equal(verifiedSignalTime({ ...signal, signal_time_source: "source_timestamp" }), "2026-09-09T09:59:45.000Z");
+  assert.equal(verifiedSignalTime({ ...signal, signal_time: "2026-09-09T08:00:00Z" }), "2026-09-09T08:00:00.000Z");
+  assert.equal(verifiedSignalTime({ ...signal, source_mode: "webhook" }), "2026-09-09T09:59:45.000Z");
+});
+
+test("fresh untimed messages keep Telegram message order and replace stale synthesized cache entries", async () => {
+  const markdown = `[](https://t.me/BWE_OI_Price_monitor/20001)
+[SOLUSDT] OI +7.0%, Price +4.0%
+[](https://t.me/BWE_OI_Price_monitor/20002)
+[ETHUSDT] OI +8.0%, Price -5.0%`;
+  const inputs = publicPreviewMessagesFromMarkdown(markdown);
+  const previous = inputs.map((input) => parseTelegramSignal(input.rawText, { ...input.options, signalTime: new Date().toISOString() }));
+  const result = await collectPublicPreviewSignals({
+    store: new MemorySignalStore(previous),
+    fetchImpl: async (url) => {
+      if (!url.includes("r.jina.ai")) throw new Error("direct preview unavailable");
+      return { ok: true, text: async () => markdown };
+    }
+  });
+  assert.deepEqual(result.latest.map((signal) => signal.telegram_message_id), ["20002", "20001"]);
+  assert.ok(result.latest.every((signal) => signal.signal_time === null));
+});
+
+test("the existing Supabase schema receives only timestamped records and no unsupported metadata", async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+  global.fetch = async (url, options) => { requests.push(JSON.parse(options.body)); return { ok: true }; };
+  try {
+    const store = new SupabaseSignalStore({ url: "https://example.invalid", serviceRoleKey: "unit-test" });
+    const raw = "[SOLUSDT] OI +7.0%, Price +4.0%";
+    const untimed = parseTelegramSignal(raw, { sourceMode: "public_preview" });
+    assert.deepEqual(await store.upsertMany([untimed]), { inserted: 0, duplicates: 0 });
+    assert.equal(requests.length, 0);
+    const timed = parseTelegramSignal(raw, { sourceMode: "public_preview", signalTime: "2026-09-09T08:00:00Z" });
+    await store.upsertMany([untimed, timed]);
+    assert.equal(requests[0].length, 1);
+    assert.equal(requests[0][0].signal_time, "2026-09-09T08:00:00.000Z");
+    assert.equal("signal_time_source" in requests[0][0], false);
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
 
 test("public preview collection falls back to the fresh read-only proxy", async () => {

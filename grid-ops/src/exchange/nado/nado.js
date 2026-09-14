@@ -99,6 +99,16 @@ export function floorNadoStep(value, step) {
   return Number((Math.floor((Number(value) + increment * 1e-9) / increment) * increment).toFixed(decimalsFor(increment)));
 }
 
+export function ceilNadoStep(value, step) {
+  const increment = Number(step);
+  if (!(increment > 0)) return Number(value);
+  const rounded = new BigNumber(value)
+    .div(increment)
+    .integerValue(BigNumber.ROUND_CEIL)
+    .times(increment);
+  return Number(rounded.toFixed(decimalsFor(increment)));
+}
+
 export function decodeNadoPrivateKey(raw) {
   let value = String(raw || '').trim();
   if (!value) throw new Error('Nado 私钥为空。');
@@ -200,6 +210,7 @@ export class NadoExchange extends EventEmitter {
     this._gonePolls = new Map();
     this.balance = null;
     this.equity = null;
+    this.availableMargin = null;
     this.realizedPnl = null;
     this.feeRate = 0.0001;
     this.lastOkAt = null;
@@ -278,6 +289,12 @@ export class NadoExchange extends EventEmitter {
     const symbols = new Map(Object.values(symbolResult?.symbols || {}).map((item) => [Number(item.productId), item]));
     this.markets.clear();
     this.marketToId.clear();
+    // A reconnect or network switch must not retain a quote/watch/position from
+    // a previous product map. Product IDs are network-scoped, so reusing a
+    // cached value here can associate a valid price with the wrong market.
+    this._prices.clear();
+    this._positions.clear();
+    this._watch.clear();
     for (const row of rows) {
       const symbol = symbols.get(Number(row.productId));
       if (!symbol || Number(row.type) !== ProductEngineType.PERP || Number(symbol.type) !== ProductEngineType.PERP) continue;
@@ -332,18 +349,47 @@ export class NadoExchange extends EventEmitter {
       period: nearestCandlePeriod(intervalSec),
       limit: Math.min(500, Math.max(20, Number(n) || 200)),
     });
-    return rows.map((row) => ({
-      time: asNumber(row.time) * 1000,
-      open: asNumber(row.open), high: asNumber(row.high), low: asNumber(row.low), close: asNumber(row.close),
-      volume: humanAmount(row.volume),
-    })).filter((row) => Number.isFinite(row.time) && row.close > 0);
+    const byTime = new Map();
+    for (const row of rows || []) {
+      const candle = {
+        time: asNumber(row.time) * 1000,
+        open: asNumber(row.open), high: asNumber(row.high), low: asNumber(row.low), close: asNumber(row.close),
+        volume: humanAmount(row.volume),
+      };
+      if (!Number.isFinite(candle.time) || !(candle.close > 0)) continue;
+      byTime.set(candle.time, candle);
+    }
+    // The archive API is a historical query and may return newest-first. Every
+    // indicator in Grid Ops expects chronological candles.
+    return [...byTime.values()].sort((a, b) => a.time - b.time);
   }
 
   async _pollPrice(marketId) {
-    const result = await this._ensureClient().market.getLatestMarketPrice({ productId: Number(marketId) });
+    const id = Number(marketId);
+    const market = this._market(id);
+    const result = await this._ensureClient().market.getLatestMarketPrice({ productId: id });
+    if (result?.productId != null && Number(result.productId) !== id) {
+      throw new Error(`Nado 行情响应产品不匹配：请求 ${id}，返回 ${result.productId}；已拒绝更新缓存。`);
+    }
     const bid = asNumber(result?.bid), ask = asNumber(result?.ask);
-    const price = bid > 0 && ask > 0 ? (bid + ask) / 2 : bid || ask || this.markets.get(Number(marketId))?.lastPrice;
-    if (price > 0) this._prices.set(Number(marketId), price);
+    if (!(bid > 0) || !(ask > 0)) {
+      throw new Error(`Nado ${market.exchangeSymbol} 未返回完整买一/卖一，已拒绝使用单边或缓存价格生成网格。`);
+    }
+    if (bid > 0 && ask > 0 && bid > ask) {
+      throw new Error(`Nado ${market.exchangeSymbol} 行情异常：bid ${bid} 高于 ask ${ask}；已拒绝用该快照挂单。`);
+    }
+    const price = (bid + ask) / 2;
+    const reference = Number(market.lastPrice);
+    if (price > 0 && reference > 0) {
+      const ratio = price / reference;
+      if (ratio > 1000 || ratio < 0.001) {
+        throw new Error(`Nado 行情价格单位异常：${market.exchangeSymbol} 实时价 ${price} 与市场参考价 ${reference} 相差过大；已拒绝写入网格。`);
+      }
+    }
+    if (price > 0) {
+      this._prices.set(id, price);
+      market.lastPrice = price;
+    }
     return price;
   }
 
@@ -364,10 +410,22 @@ export class NadoExchange extends EventEmitter {
   async _refreshAccount() {
     const summary = await this._ensureClient().subaccount.getSubaccountSummary(this._subaccount());
     if (!summary?.exists) throw new Error(`Nado 子账户 ${this.subaccount} 尚未创建`);
-    const quote = (summary.balances || []).find((row) => Number(row.productId) === 0);
+    const quote = (summary.balances || []).find((row) => (
+      Number(row.type) === ProductEngineType.SPOT && Number(row.productId) === 0
+    ));
     this.balance = quote ? humanAmount(quote.amount) : 0;
     const health = summary.health?.unweighted;
-    this.equity = health ? humanAmount(new BigNumber(health.assets).minus(health.liabilities)) : this.balance;
+    if (health?.health != null) {
+      this.equity = humanAmount(health.health);
+    } else if (health?.assets != null && health?.liabilities != null) {
+      this.equity = humanAmount(new BigNumber(health.assets).minus(health.liabilities));
+    } else {
+      this.equity = this.balance;
+    }
+    const initialHealth = summary.health?.initial?.health;
+    this.availableMargin = initialHealth != null
+      ? Math.max(0, humanAmount(initialHealth))
+      : Math.max(0, Number(this.equity) || 0);
     this._positions.clear();
     for (const row of summary.balances || []) {
       if (Number(row.type) !== ProductEngineType.PERP) continue;
@@ -391,10 +449,25 @@ export class NadoExchange extends EventEmitter {
     return summary;
   }
 
-  async preflightTrading() {
+  async preflightTrading(marketId, context = {}) {
     await this._validateLinkedSigner();
     await this._refreshAccount();
     if (!(this.equity > 0)) throw new Error('Nado 可用保证金不足，请先向该子账户存入 USDT0 保证金。');
+    if (!(this.availableMargin > 0)) {
+      throw new Error('Nado 可用初始保证金不足：账户虽有权益，但 initial health 已用尽。请先降低仓位/撤单或补充 USDT0；尚未发送任何交易写请求。');
+    }
+    const market = this._market(marketId);
+    const configuredSize = Number(context?.config?.sizeBase);
+    const lowestPrice = Number(context?.config?.lower)
+      || this._prices.get(Number(marketId))
+      || Number(market.lastPrice);
+    if (configuredSize > 0 && lowestPrice > 0 && market.minNotional > 0) {
+      const requiredSize = ceilNadoStep(market.minNotional / lowestPrice, market.stepSize);
+      if (configuredSize + market.stepSize * 1e-9 < requiredSize) {
+        const asset = market.symbol || market.exchangeSymbol.replace(/-PERP$/i, '');
+        throw new Error(`Nado 首单前最小名义价值预检未通过：每格 ${configuredSize} ${asset} 在最低挂单价 ${lowestPrice} 仅约 ${(configuredSize * lowestPrice).toFixed(4)} USDT0，低于 ${market.minNotional} USDT0；每格至少 ${requiredSize} ${asset}。请点击智能填充或提高每格数量；尚未发送任何交易写请求。`);
+      }
+    }
     return true;
   }
 
@@ -483,7 +556,7 @@ export class NadoExchange extends EventEmitter {
       side: order.side, price, sizeBase: size, reduceOnly: Boolean(order.reduceOnly),
     });
     this._watch.add(market.marketId);
-    return { orderId: digest };
+    return { orderId: digest, price, sizeBase: size };
   }
 
   async cancelOrder(marketId, digest) {

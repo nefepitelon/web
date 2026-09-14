@@ -4,12 +4,13 @@ import { EventEmitter } from 'node:events';
 import { GridBot } from '../src/bot.js';
 
 class StartExchange extends EventEmitter {
-  constructor({ preflightError = null, failAt = null } = {}) {
+  constructor({ preflightError = null, failAt = null, price = 100 } = {}) {
     super();
     this.balance = 10000;
     this.equity = 10000;
     this.preflightError = preflightError;
     this.failAt = failAt;
+    this.price = price;
     this.placeCalls = 0;
     this.cancelCalls = 0;
     this.leverageCalls = 0;
@@ -31,7 +32,7 @@ class StartExchange extends EventEmitter {
   async cancelAll() { this.cancelCalls++; return true; }
   async closePosition() { this.closeCalls = (this.closeCalls || 0) + 1; return true; }
   getPosition() { return null; }
-  async getPrice() { return 100; }
+  async getPrice() { return this.price; }
   start() {}
 
   async placeLimitOrder() {
@@ -54,6 +55,24 @@ test('gas preflight failure stops before any live write', async () => {
   assert.equal(ex.placeCalls, 0);
   assert.equal(bot.running, false);
   assert.equal(bot.alerts.some((item) => item.message.includes('已启动')), false);
+});
+
+test('a stale range is rejected against the fresh venue price before any live write', async () => {
+  const ex = new StartExchange({ price: 130 });
+  const bot = new GridBot(ex);
+  await assert.rejects(() => bot.start(config), /最新价 130 不在网格区间.*未挂出初始订单/);
+  assert.equal(ex.leverageCalls, 0);
+  assert.equal(ex.cancelCalls, 0);
+  assert.equal(ex.placeCalls, 0);
+  assert.equal(bot.running, false);
+});
+
+test('a neutral grid must have opening orders on both sides of the live price', async () => {
+  const ex = new StartExchange({ price: 90.1 });
+  const bot = new GridBot(ex);
+  await assert.rejects(() => bot.start(config), /无法同时生成上下双向初始挂单/);
+  assert.equal(ex.placeCalls, 0);
+  assert.equal(bot.running, false);
 });
 
 test('initial order rejection fails fast and never reports a zero-order start', async () => {

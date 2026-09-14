@@ -17,6 +17,7 @@ import {
   hostedSnapshot,
 } from "@/lib/grid-ops-hosted/service";
 import { prisma } from "@/lib/prisma";
+import { readHostedGridOpsView } from "@/lib/grid-ops-hosted/read-model";
 import { assertSameOrigin } from "@/lib/request-security";
 import { exchangeOnboardingTemplate, publicExchangeManifest } from "../../../../grid-ops/src/exchange/manifest.js";
 import {
@@ -61,9 +62,9 @@ function overview(bot: Awaited<ReturnType<typeof ensureHostedGridOpsBot>>, envir
   }]));
 }
 
-async function withBot() {
+async function withBot(readOnly = false) {
   const viewer = await requireAlphaOperator();
-  const bot = await ensureHostedGridOpsBot(viewer.id);
+  const bot = await ensureHostedGridOpsBot(viewer.id, { readOnly });
   const environment = decryptHostedGridOpsEnvironment(bot.configEncrypted);
   return { viewer, bot, environment, snapshot: hostedSnapshot(bot) };
 }
@@ -88,23 +89,41 @@ const gridAction: Record<string, string> = {
 export async function GET(request: Request, context: Context) {
   try {
     const path = pathOf((await context.params).path);
-    const { viewer, bot, environment, snapshot } = await withBot();
+    const { viewer, bot, environment } = await withBot(true);
     const manifest = buildExchangeInstanceManifest(environment.EXCHANGE_INSTANCES || "");
 
+    if (path === "/poll") {
+      const [views, hedge] = await Promise.all([
+        readHostedGridOpsView(viewer.id, bot.id, "views"),
+        readHostedGridOpsView(viewer.id, bot.id, "hedge"),
+      ]);
+      const snapshot = { views, hedge };
+      return json({
+        overview: overview({ ...bot, snapshot }, environment),
+        hedge,
+        active: Object.values(views).some((view: any) => view?.running) || Boolean(hedge.active) || ["STARTING", "RUNNING"].includes(bot.status),
+        status: bot.status, error: bot.lastError, heartbeatAt: bot.heartbeatAt?.toISOString() || null,
+        proxyConfig: { global: environment.GLOBAL_PROXY || "direct", ...Object.fromEntries(manifest.map((item: any) => [item.key, "direct"])), hosted: true, runtime: { mode: "server-direct" } },
+      });
+    }
+
     if (path === "/health") return json({
-      ok: true, hosted: true, service: "welinkbtc-grid-ops-hosted", version: "2.2.7", consoleApiVersion: 8,
+      ok: true, hosted: true, service: "welinkbtc-grid-ops-hosted", version: "2.3.1", consoleApiVersion: 8,
       status: bot.status, networkReady: bot.status !== "ERROR", exchanges: manifest.map((item: any) => item.key),
       heartbeatAt: bot.heartbeatAt?.toISOString() || null, error: bot.lastError,
     });
-    if (path === "/version") return json({ schemaVersion: 1, service: "ai-grid-ops-hosted-engine", version: "2.2.7", buildId: "hosted-workflow-v1", builtAt: bot.updatedAt.toISOString() });
+    if (path === "/version") return json({ schemaVersion: 1, service: "ai-grid-ops-hosted-engine", version: "2.3.1", buildId: "hosted-workflow-v1", builtAt: bot.updatedAt.toISOString() });
     if (path === "/exchanges") return json({ exchanges: publicExchangeManifest(manifest), maxInstances: 3 });
     if (path === "/exchanges/template") return json(exchangeOnboardingTemplate());
-    if (path === "/overview" || path === "/overview/stream") return json(overview(bot, environment));
+    if (path === "/overview" || path === "/overview/stream") {
+      const views = await readHostedGridOpsView(viewer.id, bot.id, "views");
+      return json(overview({ ...bot, snapshot: { views } }, environment));
+    }
     if (path === "/env-config") return json(hostedGridOpsEnvView(environment));
     if (path === "/proxy-config") return json({ global: environment.GLOBAL_PROXY || "direct", ...Object.fromEntries(manifest.map((item: any) => [item.key, "direct"])), hosted: true, runtime: { mode: "server-direct" } });
     if (path === "/network-diagnostics" || path === "/proxy-check") return json({ ok: bot.status !== "ERROR", hosted: true, source: "server-direct", message: bot.lastError || "线上托管服务器使用官方交易所地址直连。" });
     if (path === "/ai/status") return json({ configured: false, hosted: true, running: false, message: "交易网格与对冲已托管；AI 辅助分析可在本地模式使用。" });
-    if (path === "/hedge") return json(snapshot.hedgeDashboard || snapshot.hedge || { cycle: null, active: false, serverTime: Date.now() });
+    if (path === "/hedge") return json(await readHostedGridOpsView(viewer.id, bot.id, "hedge"));
     if (path === "/hedge/options") {
       return json(await enqueueHostedGridOpsCommand({ bot, userId: viewer.id, type: "HEDGE_OPTIONS" }));
     }
@@ -112,17 +131,13 @@ export async function GET(request: Request, context: Context) {
     if (match) {
       const [, target, action] = match;
       if (!manifest.some((item: any) => item.key === target)) return json({ error: "未知交易所账户" }, { status: 404 });
-      if (action === "state" || action === "stream") return json(snapshot.views?.[target] || { running: false, stats: {}, fills: [], alerts: [] });
+      if (action === "state" || action === "stream") {
+        const view = await readHostedGridOpsView(viewer.id, bot.id, "views", target);
+        return json(Object.keys(view).length ? view : { running: false, stats: {}, fills: [], alerts: [] });
+      }
       if (action === "markets") {
-        const catalogRecord = await prisma.hostedGridOpsBot.findUnique({
-          where: { id: bot.id },
-          select: { marketCatalog: true },
-        });
-        const catalog = catalogRecord?.marketCatalog && typeof catalogRecord.marketCatalog === "object"
-          ? catalogRecord.marketCatalog as Record<string, any>
-          : {};
-        const cached = catalog[target];
-        if (cached) return json(cached);
+        const cached = await readHostedGridOpsView(viewer.id, bot.id, "markets", target);
+        if (Object.keys(cached).length) return json(cached);
         return json({ exchange: target, mode: "paper", dataSource: "initializing", markets: [] }, { status: 202 });
       }
       const url = new URL(request.url);
@@ -151,7 +166,7 @@ export async function POST(request: Request, context: Context) {
         await requireAlphaOperator({ live: true });
         if (body.hostedLiveAcknowledged !== true) throw new Error("请先确认线上托管实盘风险与禁用提现权限");
         const lighter = buildExchangeInstanceManifest(merged.EXCHANGE_INSTANCES || "").find((item: any) => item.baseKey === "lr" && String(merged[item.modeEnv] || "paper").toLowerCase() === "live");
-        if (lighter) throw new Error("RHC Lighter 的官方签名器依赖本机 Python；线上托管支持其 PAPER 模式，RHC 实盘请切换本地引擎。其他九所可线上实盘。");
+        if (lighter) throw new Error("RHC Lighter 的官方签名器依赖本机 Python；线上托管支持其 PAPER 模式，RHC 实盘请切换本地引擎。除 Entropy（仅 PAPER）外，其他十所可线上实盘。");
       }
       const updated = await prisma.hostedGridOpsBot.update({
         where: { id: bot.id },

@@ -1,8 +1,8 @@
-<!-- Complete manual copied from the controlled source. SOURCE_SHA256: D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98; ADAPTED_SHA256: 2AA7F117C94949D163E088BEE43179C02DE346256F85D5D48AE4CB474DA74D17 -->
-<article class="guide-manual-article" data-source-sha256="D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98" data-manual-sha256="2AA7F117C94949D163E088BEE43179C02DE346256F85D5D48AE4CB474DA74D17">
+<!-- Complete manual copied from the controlled source. SOURCE_SHA256: D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98; ADAPTED_SHA256: D525F5D3D14A90C6BFF61BEF13D810AC002FE7D2E920C1AB8848C63A42C6D86E -->
+<article class="guide-manual-article" data-source-sha256="D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98" data-manual-sha256="D525F5D3D14A90C6BFF61BEF13D810AC002FE7D2E920C1AB8848C63A42C6D86E">
 <p dir="auto">AI 网格交易 Ops 完整使用手册<br>
 一个跑在你自己电脑上的加密货币永续合约网格交易机器人<br>
-支持 Decibel（Aptos 链）、Extended（Starknet 链）、RISEx、Binance、Ondo Perps、Phoenix、Nado、OKX、GRVT 与 RHC Lighter 等多家交易所<br>
+支持 Decibel（Aptos 链）、Extended（Starknet 链）、RISEx、Binance、Ondo Perps、Phoenix、Nado、OKX、GRVT、RHC Lighter 与 Arcus 等多家交易所；Entropy 当前仅支持官方实时行情驱动的 <code>paper</code> 模拟，不开放 <code>live</code><br>
 多个交易所可以同时各跑一个网格策略，统一在一个浏览器仪表盘里监控和操控<br>
 如果你还尚未注册交易所，可以用在金的邀请链接，万分感谢🙏<br>
 Decibel 注册链接：<a target="_blank" rel="noopener noreferrer" href="https://app.decibel.trade/r/C5WV3H" rel="nofollow">https://app.decibel.trade/r/C5WV3H</a><br>
@@ -322,24 +322,30 @@ RHC Lighter 注册链接：<a target="_blank" rel="noopener noreferrer" href="ht
 </tbody>
 </table></markdown-accessiblity-table>
 <p dir="auto">RISEx 文档仍在快速更新。必须先按官方流程把 session signer 注册到目标账户，再把该 signer 的私钥交给程序。不要把主钱包私钥填进 <code class="notranslate">SIGNER_PRIVATE_KEY</code>。</p>
-<h2 dir="auto">11. Arcus 配置</h2>
-<p dir="auto">官方入口：</p>
-<ul dir="auto">
-<li><a target="_blank" rel="noopener noreferrer" href="https://app.arcus.xyz/ref/WELINKBTC" rel="nofollow">Arcus 应用</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="https://docs.arcus.xyz/api-reference/introduction" rel="nofollow">Arcus API 文档</a></li>
+<h2>11. Arcus 配置</h2>
+<p>官方入口：</p>
+<ul>
+<li><a target="_blank" rel="noopener noreferrer" href="https://arcus.xyz/">Arcus 官网与地区资格说明</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://app.arcus.xyz/ref/WELINKBTC">Arcus 应用</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://docs.arcus.xyz/guides/rest-trading">Arcus REST 下单指南</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://docs.arcus.xyz/guides/websocket-trading">Arcus WebSocket 下单指南</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://docs.arcus.xyz/llms.txt">Arcus 完整 API 索引</a></li>
 </ul>
-<div class="highlight highlight-source-dotenv" dir="auto"><pre class="notranslate"><span class="pl-v">AR_MODE</span><span class="pl-k">=</span><span class="pl-s">paper</span>
-<span class="pl-v">AR_NETWORK</span><span class="pl-k">=</span><span class="pl-s">mainnet</span>
-<span class="pl-v">ARCUS_ADDRESS</span><span class="pl-k">=</span>
-<span class="pl-v">ARCUS_ACCOUNT_INDEX</span><span class="pl-k">=</span><span class="pl-s">0</span>
-<span class="pl-v">ARCUS_API_KEY</span><span class="pl-k">=</span>
-<span class="pl-v">ARCUS_API_PRIVATE_KEY</span><span class="pl-k">=</span>
-<span class="pl-v">ARCUS_API_PRIVATE_KEY_FILE</span><span class="pl-k">=</span>
-<span class="pl-v">ARCUS_GOOD_TIL_DAYS</span><span class="pl-k">=</span><span class="pl-s">40</span>
-<span class="pl-v">ARCUS_FEE_RATE</span><span class="pl-k">=</span><span class="pl-s">0.0005</span>
-<span class="pl-v">ARCUS_API_URL</span><span class="pl-k">=</span>
-<span class="pl-v">ARCUS_WS_URL</span><span class="pl-k">=</span></pre></div>
-<markdown-accessiblity-table><table role="table">
+<p>Arcus <code>paper</code> 使用官方公开实时行情并在本机模拟成交。Arcus <code>live</code> 可以通过官方 Perps REST / WebSocket API 完整下单，但当前产品仍处于 <strong>Perps Beta</strong>：只有已获相应权限、且所在国家或地区符合 Arcus 条款的账户才能启用。获得 Spot Beta 或使用 Spot SDK，不代表该账户已有 Perps API 权限。</p>
+<pre><code class="language-dotenv">AR_MODE=paper
+AR_NETWORK=mainnet
+ARCUS_ADDRESS=
+ARCUS_ACCOUNT_INDEX=0
+ARCUS_API_KEY=
+ARCUS_API_PRIVATE_KEY=
+ARCUS_API_PRIVATE_KEY_FILE=secrets/arcus-private.pem
+ARCUS_GOOD_TIL_DAYS=40
+ARCUS_FEE_RATE=0.0005
+ARCUS_API_URL=
+ARCUS_WS_URL=
+ARCUS_PROXY=
+</code></pre>
+<table>
 <thead>
 <tr>
 <th>字段</th>
@@ -347,67 +353,124 @@ RHC Lighter 注册链接：<a target="_blank" rel="noopener noreferrer" href="ht
 <th>填写内容</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td><code class="notranslate">AR_MODE</code></td>
+<tbody><tr>
+<td><code>AR_MODE</code></td>
 <td>总是</td>
-<td><code class="notranslate">paper</code> 或 <code class="notranslate">live</code>。</td>
+<td><code>paper</code> 或 <code>live</code>。未获 Perps Beta/地区资格时必须保持 <code>paper</code>。</td>
 </tr>
 <tr>
-<td><code class="notranslate">AR_NETWORK</code></td>
+<td><code>AR_NETWORK</code></td>
 <td>总是</td>
-<td><code class="notranslate">mainnet</code> 或 <code class="notranslate">testnet</code>。</td>
+<td><code>mainnet</code> 或 <code>testnet</code>；两套环境的 API key 不通用。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_ADDRESS</code></td>
+<td><code>ARCUS_ADDRESS</code></td>
 <td>实盘必填</td>
-<td>主钱包公开地址：<code class="notranslate">0x</code> + 40 位十六进制。绝不是 Ethereum 主钱包私钥。</td>
+<td>获授权的钱包公开地址：<code>0x</code> + 40 位十六进制。绝不是 Ethereum / Robinhood Chain 主钱包私钥。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_ACCOUNT_INDEX</code></td>
+<td><code>ARCUS_ACCOUNT_INDEX</code></td>
 <td>实盘必填</td>
-<td>创建 API key 返回的子账户编号 <code class="notranslate">0-9</code>。</td>
+<td>创建 API key 返回的子账户编号 <code>0-9</code>。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_API_KEY</code></td>
+<td><code>ARCUS_API_KEY</code></td>
 <td>实盘必填</td>
-<td>64 位十六进制 Ed25519 API 公钥，可带或不带 <code class="notranslate">0x</code>。</td>
+<td>Arcus 专用 Ed25519 API 公钥。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_API_PRIVATE_KEY</code></td>
+<td><code>ARCUS_API_PRIVATE_KEY</code></td>
 <td>二选一</td>
-<td>API 签名私钥：64 位 seed hex 或 PKCS#8 DER 的 hex/base64。</td>
+<td>与 API 公钥配对的 Ed25519 API Signing Key；不是钱包私钥。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_API_PRIVATE_KEY_FILE</code></td>
+<td><code>ARCUS_API_PRIVATE_KEY_FILE</code></td>
 <td>二选一</td>
-<td>指向私钥文件的相对或绝对路径，例如 <code class="notranslate">secrets/arcus-private.pem</code>。</td>
+<td>指向 Signing Key 文件的相对或绝对路径，例如 <code>secrets/arcus-private.pem</code>。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_GOOD_TIL_DAYS</code></td>
+<td><code>ARCUS_GOOD_TIL_DAYS</code></td>
 <td>建议保留</td>
-<td>有效范围会被限制为 32-180 天，默认 40 天。</td>
+<td>程序限制为 32–180 天，默认 40 天。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_FEE_RATE</code></td>
+<td><code>ARCUS_FEE_RATE</code></td>
 <td>建议保留</td>
-<td>无法读取账户实际费率时的回退值。</td>
+<td>无法读取账户实际费率时的保守回退值。</td>
 </tr>
 <tr>
-<td><code class="notranslate">ARCUS_API_URL</code> / <code class="notranslate">ARCUS_WS_URL</code></td>
+<td><code>ARCUS_API_URL</code> / <code>ARCUS_WS_URL</code></td>
 <td>通常留空</td>
-<td>仅按官方文档设置自定义 REST/WS 端点。</td>
+<td>留空按网络使用官方 REST / WebSocket；不要填第三方镜像。</td>
 </tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p dir="auto">推荐使用文件保存私钥：</p>
-<ol dir="auto">
-<li>在项目根目录新建 <code class="notranslate">secrets</code> 文件夹。</li>
-<li>把 Arcus 导出的 <code class="notranslate">private.pem</code> 放入其中。</li>
-<li>配置 <code class="notranslate">ARCUS_API_PRIVATE_KEY=</code> 留空。</li>
-<li>配置 <code class="notranslate">ARCUS_API_PRIVATE_KEY_FILE=secrets/arcus-private.pem</code>。</li>
+<tr>
+<td><code>ARCUS_PROXY</code></td>
+<td>可选</td>
+<td>仅 Arcus 请求使用的代理。</td>
+</tr>
+</tbody></table>
+<p>在 Arcus 应用的 API Keys 页面创建 Ed25519 API keypair 时，需要用一次 EIP-712 钱包签名把 API 公钥绑定到公开地址与子账户。此后机器人只应使用专用 API Signing Key 给交易请求签名。REST 私有请求按官方规范使用 <code>X-API-Key</code>、纳秒时间戳 <code>X-Timestamp</code> 与 <code>X-Signature</code>；不要自行改变待签名消息或时间单位。</p>
+<p>推荐把 Signing Key 保存为本机文件：</p>
+<ol>
+<li>在项目根目录创建 <code>secrets</code> 文件夹。</li>
+<li>把 Arcus 导出的 Signing Key 文件放入其中。</li>
+<li>保持 <code>ARCUS_API_PRIVATE_KEY=</code> 为空。</li>
+<li>配置 <code>ARCUS_API_PRIVATE_KEY_FILE=secrets/arcus-private.pem</code>。</li>
 </ol>
-<p dir="auto">程序会从私钥推导公钥并与 <code class="notranslate">ARCUS_API_KEY</code> 比较，不匹配时拒绝实盘启动；还会检查地址、accountIndex 和账户权益快照。Arcus 主钱包私钥和助记词永远不应该进入本程序。</p>
+<p>程序会从私钥推导公钥并与 <code>ARCUS_API_KEY</code> 比较，不匹配时拒绝实盘启动；还会检查地址、accountIndex、账户权限和权益快照。<strong>Arcus 主钱包私钥和任何助记词永远不应该进入本程序。</strong></p>
+<p>实盘预检必须从官方 <code>/v1/markets</code> 动态读取市场 ID、<code>status</code>、<code>tickSize</code>、分层 <code>tickTiers</code>、<code>stepSize</code>、<code>minOrderNotional</code> 与 <code>minOrderSize</code>。价格和数量必须按官方要求保留为精确十进制字符串；离线市场、未按当前价格档 tick 对齐的价格、或不满足最小值的数量必须在签名前拒绝，不能硬编码旧规则。Arcus 官方 <code>arcus-spot-sdk</code> 服务于 Spot RFQ，不是永续订单簿 SDK，不能用它替代本节的 Perps API。</p>
+<h2>11.1 Entropy 配置（Hyperliquid HIP-3；仅 Paper）</h2>
+<p>官方入口：</p>
+<ul>
+<li><a target="_blank" rel="noopener noreferrer" href="https://docs.entropy.io/">Entropy 官方文档</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-3-builder-deployed-perpetuals">Hyperliquid HIP-3 官方说明</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals">Hyperliquid Perpetuals Info API</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/asset-ids">Hyperliquid 资产 ID 规则</a></li>
+<li><a target="_blank" rel="noopener noreferrer" href="https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/tick-and-lot-size">Hyperliquid 价格与数量精度</a></li>
+</ul>
+<p>Entropy 是 Hyperliquid 上 DEX 标识为 <code>io</code> 的 HIP-3 市场部署者。当前接入只从 Hyperliquid 官方 API 获取实时市场、订单簿与 K 线，并在本机用虚拟余额模拟成交；<strong>不签名、不发送真实订单，也不开放 <code>live</code></strong>。</p>
+<pre><code class="language-dotenv">ENTROPY_MODE=paper
+ENTROPY_NETWORK=mainnet
+ENTROPY_DEX=io
+ENTROPY_API_URL=https://api.hyperliquid.xyz
+ENTROPY_PROXY=
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>何时必填</th>
+<th>填写内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ENTROPY_MODE</code></td>
+<td>总是</td>
+<td>当前只能是 <code>paper</code>；填写 <code>live</code> 必须 fail-closed，不能静默降级后仍显示 LIVE。</td>
+</tr>
+<tr>
+<td><code>ENTROPY_NETWORK</code></td>
+<td>总是</td>
+<td>当前为 <code>mainnet</code>。</td>
+</tr>
+<tr>
+<td><code>ENTROPY_DEX</code></td>
+<td>总是</td>
+<td>官方 HIP-3 DEX 标识 <code>io</code>。</td>
+</tr>
+<tr>
+<td><code>ENTROPY_API_URL</code></td>
+<td>总是</td>
+<td>Hyperliquid 官方 API <strong>基地址</strong> <code>https://api.hyperliquid.xyz</code>；程序在其后调用 <code>/info</code>，不要在配置值中追加 <code>/info</code>。</td>
+</tr>
+<tr>
+<td><code>ENTROPY_PROXY</code></td>
+<td>可选</td>
+<td>仅 Entropy 官方行情请求使用的代理。</td>
+</tr>
+</tbody></table>
+<p>市场名称形如 <code>io:ANTH</code>。实际市场清单、顺序、下架状态、<code>szDecimals</code>、<code>marginMode</code> 和 asset ID 必须以官方 <code>meta(dex:&quot;io&quot;)</code> 的实时结果为准，不得硬编码历史市场，也不要臆造 <code>api.entropy.io</code> 一类接口。官方数据不可用时应显示离线，不能用合成价格冒充 Entropy 实时行情。</p>
+<p>Entropy Paper 不需要任何账户或密钥。不要在本项目中填写 Hyperliquid 主钱包私钥、助记词或 Agent/API Wallet 私钥。只有未来完成并审计 Agent Wallet 签名、nonce、HIP-3 isolated margin / collateral、动态 asset ID、订单状态确认与撤单恢复后，才能单独评估实盘接入；在此之前界面和文档均不得宣称 Entropy 支持实盘。</p>
 <h2 dir="auto">12. Robinhood Chain Lighter（RHC）配置</h2>
 <p dir="auto">官方入口：</p>
 <ul dir="auto">

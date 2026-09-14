@@ -29,7 +29,7 @@ test("valuation cards present explanations before daily source metadata", () => 
 
 test("trend index navigates all chart panels and adapts to narrow screens", () => {
   const panelIds = [...html.matchAll(/<article class="chart-panel[^>]+id="([^"]+-panel)"/g)].map((match) => match[1]);
-  assert.equal(panelIds.length, 30);
+  assert.equal(panelIds.length, 32);
   assert.match(html, /id="trend-index-list"/);
   assert.match(js, /const setupTrendNavigator = \(\) =>/);
   assert.match(js, /const getTrendScrollOffset = \(\) =>/);
@@ -37,8 +37,8 @@ test("trend index navigates all chart panels and adapts to narrow screens", () =
   assert.match(js, /root\.style\.scrollBehavior = "auto"/);
   assert.match(js, /window\.scrollTo\(0, Math\.max\(0, top\)\)/);
   assert.doesNotMatch(js, /panel\.scrollIntoView/);
-  assert.match(css, /\.chart-section \{[\s\S]*grid-template-columns: 174px minmax\(0, 1fr\)/);
-  assert.match(css, /@media \(max-width: 1440px\)[\s\S]*\.trend-index-list \{[\s\S]*display: flex/);
+  assert.match(css, /\.chart-section \{[\s\S]*grid-template-columns: 208px minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 980px\)[\s\S]*\.trend-index-list \{[\s\S]*display: flex/);
   assert.match(css, /top: var\(--trend-index-sticky-top\)/);
   assert.match(css, /overscroll-behavior-inline: contain/);
   assert.match(js, /const syncTrendNavigatorLayout = \(\) =>/);
@@ -80,6 +80,6 @@ test("wide dashboard containers use more desktop width and shorter chart stages"
 });
 
 test("dashboard assets use the latest matching cache key", () => {
-  assert.match(html, /dashboard\.css\?v=20260902-sthmvrv-v1/);
-  assert.match(html, /dashboard\.js\?v=20260902-sthmvrv-v1/);
+  assert.match(html, /dashboard\.css\?v=20260914-system-ui-v1/);
+  assert.match(html, /dashboard\.js\?v=20260914-system-ui-v1/);
 });

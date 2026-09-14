@@ -6,6 +6,7 @@ import { buildGrid, seedOrders, replacementFor, isReduceOnly, rungProfit } from 
 import { selfTest, alignToStep, parseDec, settlementAmounts } from '../src/exchange/ex/starkcrypto.js';
 import { httpFallbackProxy, normalizeProxy } from '../src/proxy.js';
 import { calculateGasReserve, gasFundingMessage, isInsufficientGasError, isTransientReadError } from '../src/exchange/de/decibel.js';
+import { analyzeTrendWithLivePrice } from '../src/trend.js';
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -92,6 +93,22 @@ test('isReduceOnly matrix', () => {
 
 test('rungProfit', () => {
   assert.equal(rungProfit(10, 0.5), 5);
+});
+
+test('trend keeps historical indicators but anchors a new range to the live venue quote', () => {
+  const candles = Array.from({ length: 60 }, (_, index) => ({
+    time: index,
+    open: 3.5 + index * 0.001,
+    high: 3.6 + index * 0.001,
+    low: 3.4 + index * 0.001,
+    close: 3.5 + index * 0.001,
+    volume: 1,
+  }));
+  const analysis = analyzeTrendWithLivePrice(candles, 4.8);
+  assert.equal(analysis.price, 4.8);
+  assert.ok(Number.isFinite(analysis.emaFast));
+  assert.ok(Number.isFinite(analysis.emaSlow));
+  assert.equal(analyzeTrendWithLivePrice(candles, null).price, null);
 });
 
 console.log('starkcrypto.js');

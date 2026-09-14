@@ -1,5 +1,10 @@
 const SURF_FEED_URL = "https://api.asksurf.ai/muninn/v1/ai-news/feed";
 const SURF_PULSE_URL = "https://asksurf.ai/pulse";
+const {
+  AICOIN_SOURCE_URL,
+  getAicoinPulseSnapshot,
+  titleFingerprint
+} = require("../workers/aicoin_pulse_collector");
 const RETENTION_DAYS = 15;
 const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
 const SYNC_INTERVAL_MS = 10 * 60 * 1000;
@@ -34,6 +39,40 @@ function safeUrl(value, fallback = SURF_PULSE_URL) {
   } catch {
     return fallback;
   }
+}
+
+function canonicalUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^(utm_|ref$|source$)/i.test(key)) url.searchParams.delete(key);
+    }
+    return url.href.replace(/\/$/, "");
+  } catch {
+    return "";
+  }
+}
+
+function mergeFeedItems(collections, limit = MAX_FEED_ITEMS) {
+  const seenIds = new Set();
+  const seenUrls = new Set();
+  const seenTitles = new Set();
+  const merged = collections.flat().filter(Boolean)
+    .sort((left, right) => new Date(right.publishedAt) - new Date(left.publishedAt));
+  const items = [];
+  for (const item of merged) {
+    const id = String(item.id || "");
+    const url = canonicalUrl(item.url);
+    const title = item.dedupeKey || titleFingerprint(item.title);
+    if (!id || seenIds.has(id) || (url && seenUrls.has(url)) || (title && seenTitles.has(title))) continue;
+    seenIds.add(id);
+    if (url) seenUrls.add(url);
+    if (title) seenTitles.add(title);
+    items.push(item);
+    if (items.length >= limit) break;
+  }
+  return items;
 }
 
 function scoreSurfItem(item, now = Date.now()) {
@@ -192,21 +231,50 @@ async function surfPulseHandler(request, response) {
 
   try {
     const now = Date.now();
-    const collection = await collectSurfItems({ limit, lang, now });
+    const [surfResult, aicoinResult] = await Promise.allSettled([
+      collectSurfItems({ limit, lang, now }),
+      getAicoinPulseSnapshot({ now, refreshIfStale: true })
+    ]);
+    if (surfResult.status === "rejected" && aicoinResult.status === "rejected") {
+      throw new Error(`All realtime intelligence sources failed: Surf (${surfResult.reason?.message || surfResult.reason}); AiCoin (${aicoinResult.reason?.message || aicoinResult.reason})`);
+    }
+    const surfCollection = surfResult.status === "fulfilled"
+      ? surfResult.value
+      : { items: [], received: 0, pagesFetched: 0, hasMore: false };
+    const aicoinCollection = aicoinResult.status === "fulfilled"
+      ? aicoinResult.value
+      : { items: [], received: 0, filteredAds: 0, stale: true };
+    const items = mergeFeedItems([surfCollection.items, aicoinCollection.items], limit);
 
     response.setHeader("Cache-Control", "public, s-maxage=570, stale-while-revalidate=120");
     sendJson(response, 200, {
       ok: true,
-      source: "Surf Pulse Real-time Feed",
+      source: "Alpha Radar Real-time Intelligence Feed",
       sourceUrl: SURF_PULSE_URL,
+      sources: [
+        {
+          name: "Surf Pulse",
+          url: SURF_PULSE_URL,
+          ok: surfResult.status === "fulfilled",
+          count: surfCollection.items.length
+        },
+        {
+          name: "AiCoin Telegram",
+          url: AICOIN_SOURCE_URL,
+          ok: aicoinResult.status === "fulfilled",
+          stale: Boolean(aicoinCollection.stale),
+          count: aicoinCollection.items.length,
+          filteredAds: Number(aicoinCollection.filteredAds || 0)
+        }
+      ],
       fetchedAt: new Date(now).toISOString(),
       retentionDays: RETENTION_DAYS,
       syncIntervalMs: SYNC_INTERVAL_MS,
-      hasMore: collection.hasMore,
-      received: collection.received,
-      pagesFetched: collection.pagesFetched,
-      count: collection.items.length,
-      items: collection.items
+      hasMore: surfCollection.hasMore,
+      received: surfCollection.received + Number(aicoinCollection.received || 0),
+      pagesFetched: surfCollection.pagesFetched,
+      count: items.length,
+      items
     });
   } catch (error) {
     response.setHeader("Cache-Control", "no-store");
@@ -223,5 +291,6 @@ module.exports.scoreSurfItem = scoreSurfItem;
 module.exports.freshnessFor = freshnessFor;
 module.exports.normalizeSurfItem = normalizeSurfItem;
 module.exports.collectSurfItems = collectSurfItems;
+module.exports.mergeFeedItems = mergeFeedItems;
 module.exports.RETENTION_MS = RETENTION_MS;
 module.exports.SYNC_INTERVAL_MS = SYNC_INTERVAL_MS;

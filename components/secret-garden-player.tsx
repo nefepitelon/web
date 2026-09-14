@@ -2,6 +2,8 @@
 
 import {
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   Music2,
   Pause,
@@ -17,6 +19,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./secret-garden-player.module.css";
 
 const POSITION_KEY = "welinkbtc-secret-garden-top:v1";
+const TUCKED_KEY = "welinkbtc-secret-garden-tucked:v1";
 const VOLUME_KEY = "welinkbtc-secret-garden-volume:v1";
 const SOURCE_KEY = "welinkbtc-secret-garden-source:v1";
 
@@ -251,8 +254,9 @@ function clampTop(value: number, expanded: boolean) {
 export function SecretGardenPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef({ pointerId: -1, startY: 0, startTop: 0, moved: false });
+  const dragRef = useRef({ pointerId: -1, startY: 0, startTop: 0, lastTop: 0, moved: false });
   const [expanded, setExpanded] = useState(false);
+  const [tucked, setTucked] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(2595);
@@ -283,6 +287,7 @@ export function SecretGardenPlayer() {
     const savedVolumeValue = localStorage.getItem(VOLUME_KEY);
     const savedVolume = savedVolumeValue === null ? Number.NaN : Number(savedVolumeValue);
     const savedSource = localStorage.getItem(SOURCE_KEY);
+    setTucked(localStorage.getItem(TUCKED_KEY) === "true");
     setLanguage(localStorage.getItem("welinkbtc-language") === "en" ? "en" : "zh");
     setTop(clampTop(Number.isFinite(savedTop) && savedTop > 0 ? savedTop : window.innerHeight - 92, false));
     if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 1) setVolume(savedVolume);
@@ -367,8 +372,10 @@ export function SecretGardenPlayer() {
   };
 
   const startDrag = (event: React.PointerEvent<HTMLElement>) => {
-    if ((event.target as HTMLElement).closest("button,a,input,select")) return;
-    dragRef.current = { pointerId: event.pointerId, startY: event.clientY, startTop: top, moved: false };
+    const target = event.target as HTMLElement;
+    const launcherDrag = event.currentTarget.classList.contains(styles.launcher);
+    if (!launcherDrag && target.closest("button,a,input,select")) return;
+    dragRef.current = { pointerId: event.pointerId, startY: event.clientY, startTop: top, lastTop: top, moved: false };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -379,12 +386,14 @@ export function SecretGardenPlayer() {
     if (Math.abs(delta) > 4) drag.moved = true;
     if (!drag.moved) return;
     event.preventDefault();
-    setTop(clampTop(drag.startTop + delta, expanded));
+    const nextTop = clampTop(drag.startTop + delta, expanded);
+    drag.lastTop = nextTop;
+    setTop(nextTop);
   };
 
   const endDrag = (event: React.PointerEvent<HTMLElement>) => {
     if (dragRef.current.pointerId !== event.pointerId) return;
-    localStorage.setItem(POSITION_KEY, String(top));
+    localStorage.setItem(POSITION_KEY, String(dragRef.current.lastTop));
     dragRef.current.pointerId = -1;
   };
 
@@ -393,17 +402,39 @@ export function SecretGardenPlayer() {
       dragRef.current.moved = false;
       return;
     }
+    setTucked(false);
+    localStorage.setItem(TUCKED_KEY, "false");
     setTop((value) => clampTop(value, true));
     setExpanded(true);
+  };
+
+  const toggleTucked = () => {
+    setTucked((value) => {
+      const next = !value;
+      localStorage.setItem(TUCKED_KEY, String(next));
+      return next;
+    });
   };
 
   return (
     <div
       ref={rootRef}
-      className={`${styles.root} ${expanded ? styles.expanded : ""}`}
+      className={`${styles.root} ${expanded ? styles.expanded : ""} ${tucked && !expanded ? styles.tucked : ""}`}
       style={{ top }}
       aria-label={text("神秘园站内音乐播放器", "Secret Garden site music player")}
     >
+      {!expanded ? (
+        <button
+          className={styles.edgeToggle}
+          type="button"
+          aria-label={tucked ? text("显示神秘园图标", "Show Secret Garden icon") : text("将神秘园图标隐藏到右侧", "Hide Secret Garden icon at the right edge")}
+          aria-pressed={tucked}
+          title={tucked ? text("显示图标", "Show icon") : text("隐藏到右侧", "Hide at right edge")}
+          onClick={toggleTucked}
+        >
+          {tucked ? <ChevronLeft /> : <ChevronRight />}
+        </button>
+      ) : null}
       <audio
         key={selectedSource.id}
         ref={audioRef}

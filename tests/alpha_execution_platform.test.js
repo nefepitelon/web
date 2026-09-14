@@ -2,21 +2,48 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("Alpha Radar exposes four isolated execution environments and the production interlock", () => {
+test("Alpha Radar exposes Paper and Live with the production interlock", () => {
   const html = read("alpha-radar.html");
-  for (const mode of ["paper", "mock_exchange", "testnet", "live"]) {
+  for (const mode of ["paper", "live"]) {
     assert.match(html, new RegExp(`data-execution-mode="${mode}"`));
   }
+  assert.doesNotMatch(html, /data-execution-mode="(?:mock_exchange|testnet)"|<option value="(?:mock_exchange|testnet)"/);
   assert.match(html, /Binance API 与代理配置/);
   assert.match(html, /生产实盘双重保险锁/);
-  assert.match(html, /ENABLE LIVE TRADING/);
-  assert.match(html, /这不是短信验证码/);
-  assert.match(html, /id="fill-live-phrase"/);
+  assert.doesNotMatch(html, /ENABLE LIVE TRADING|live-unlock-phrase|fill-live-phrase/);
+  assert.match(html, /id="live-ack-funds"/);
+  assert.match(html, /id="live-ack-withdraw"/);
+  assert.match(html, /id="live-lock-help-toggle"[^>]*popovertarget="live-lock-help"/);
+  assert.match(html, /id="live-lock-help" popover/);
+  assert.doesNotMatch(html, /<p>实盘默认关闭[^<]*<\/p>\s*<label class="live-ack"/);
   assert.match(html, /订单监控与对账/);
+});
+
+test("execution center stacks environment and live interlock beside credentials with the save action in the header", () => {
+  const html = read("alpha-radar.html");
+  const styles = read("alpha-scanner.css");
+  const settingsStart = html.indexOf('<form class="execution-settings"');
+  const settingsEnd = html.indexOf('</form>', settingsStart);
+  const lockStart = html.indexOf('<section class="live-unlock-panel"');
+  assert.ok(settingsStart >= 0 && settingsEnd > settingsStart && lockStart > settingsEnd);
+  assert.ok(html.indexOf('id="save-execution-config"', settingsStart) < html.indexOf('</header>', settingsStart));
+  assert.match(styles, /\.execution-control-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /\.execution-right-panels\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)[\s\S]*?grid-template-rows:\s*auto minmax\(0, 1fr\)/);
+});
+
+test("live portfolio shortens verified automation sources without changing manual sources", () => {
+  const client = read("alpha-scanner.js");
+  const context = { executionEnum: value => String(value || "").toLowerCase() };
+  vm.createContext(context);
+  vm.runInContext(client.slice(client.indexOf("function automationTradeBadge("), client.indexOf("function renderExecutionOrders(")), context);
+  const automated = { environment: "LIVE", isAutomation: true, automationOrder: { reservationId: "reservation-1", source: "alpha-auto:reservation-1", entryOrderId: "entry-1" }, plan: { intent: { source: "alpha-auto:reservation-1" } } };
+  assert.equal(context.activePortfolioSource(automated), "alpha-auto");
+  assert.equal(context.activePortfolioSource({ plan: { intent: { source: "telegram" } } }), "telegram");
 });
 
 test("execution center navigation and risk policy controls are placed before the risk state machine", () => {
@@ -62,15 +89,17 @@ test("downstream positions, orders, monitor, and portfolio follow the active exe
   assert.match(read("app/api/alpha-execution/live-unlock/route.ts"), /activeMode: AlphaExecutionMode\.LIVE/);
 });
 
-test("live unlock phrase is explicit, normalized, and returns a friendly validation error", () => {
+test("live unlock requires both explicit acknowledgements and the server administrator gate", () => {
   const client = read("alpha-scanner.js");
   const route = read("app/api/alpha-execution/live-unlock/route.ts");
   const access = read("lib/alpha-execution/access.ts");
-  assert.match(client, /const liveUnlockPhrase = "ENABLE LIVE TRADING"/);
-  assert.match(client, /replace\(\/\\s\+\/g, " "\)\.toUpperCase\(\)/);
-  assert.match(client, /请输入完整的实盘解锁确认短语/);
-  assert.match(route, /LIVE_UNLOCK_PHRASE/);
-  assert.doesNotMatch(route, /z\.literal\("ENABLE LIVE TRADING"\)/);
+  assert.match(client, /acknowledgeRealFunds: fundsAcknowledgement.checked/);
+  assert.match(client, /acknowledgeNoWithdrawPermission: withdrawalAcknowledgement.checked/);
+  assert.match(client, /请先勾选两项资金与 API 安全确认/);
+  assert.match(route, /acknowledgeRealFunds/);
+  assert.match(route, /acknowledgeNoWithdrawPermission/);
+  assert.match(route, /requireAlphaOperator\(\{ live: true \}\)/);
+  assert.doesNotMatch(client, /liveUnlockPhrase|fillLiveUnlockPhrase/);
   assert.match(access, /caught instanceof ZodError/);
   assert.match(access, /caught\.issues\[0\]\?\.message/);
 });
@@ -164,7 +193,7 @@ test("live portfolio pull refreshes Binance equity, risk exposure and historical
   const data = read("lib/alpha-execution/data.ts");
   const binance = read("lib/alpha-execution/binance.ts");
   assert.match(html, /id="portfolio-realized-pnl"/);
-  assert.match(html, /历史实际盈亏/);
+  assert.match(html, /近 89 天实际盈亏/);
   assert.match(service, /const snapshot = await client\.preflight\(\)/);
   assert.match(service, /permissionSummary: json\(snapshot\)/);
   assert.match(service, /accountSnapshots/);
@@ -176,7 +205,7 @@ test("live portfolio pull refreshes Binance equity, risk exposure and historical
   assert.match(data, /riskExposureNotional/);
   assert.match(client, /activeExecutionPortfolioStats/);
   assert.match(client, /账户全量已同步/);
-  assert.match(client, /portfolioRealizedPnl\.textContent = formatSignedMoney/);
+  assert.match(client, /portfolioRealizedPnl\.textContent = known \? formatSignedMoney\(pnl\.amount\) : "—"/);
 });
 
 test("live reconciliation adopts authoritative Binance order and position state without weakening the Kill Switch", () => {

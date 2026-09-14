@@ -6,10 +6,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const hostedBridge = String.raw`
+<script src="/hosted-grid-polling.js"></script>
 <script>
 (() => {
   const PREFIX = '/api/grid-ops-hosted';
   const nativeFetch = window.fetch.bind(window);
+  const polling = window.createHostedGridPolling(nativeFetch, PREFIX);
   const rewrite = (value) => {
     const raw = typeof value === 'string' ? value : value instanceof URL ? value.toString() : value && value.url;
     if (!raw) return raw;
@@ -22,6 +24,8 @@ const hostedBridge = String.raw`
   window.fetch = async (input, init = {}) => {
     let nextInit = init;
     const url = rewrite(input);
+    const method = String(init.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    if (method === 'GET' && polling.matches(url)) return polling.fetch(url);
     if (String(url).startsWith(PREFIX + '/env-config') && String(init.method || 'GET').toUpperCase() === 'POST' && init.body) {
       try {
         const body = JSON.parse(String(init.body));
@@ -36,8 +40,10 @@ const hostedBridge = String.raw`
         if (error && error.message === '已取消线上实盘配置') throw error;
       }
     }
-    if (input instanceof Request) return nativeFetch(new Request(url, input), nextInit);
-    return nativeFetch(url, nextInit);
+    try {
+      if (input instanceof Request) return await nativeFetch(new Request(url, input), nextInit);
+      return await nativeFetch(url, nextInit);
+    } finally { if (method !== 'GET' && method !== 'HEAD') polling.invalidate(); }
   };
 
   class HostedPollingEventSource {
@@ -48,7 +54,7 @@ const hostedBridge = String.raw`
       this.onerror = null;
       this.closed = false;
       this.poll();
-      this.timer = window.setInterval(() => this.poll(), 1200);
+      this.timer = window.setInterval(() => this.poll(), 5000);
     }
     async poll() {
       if (this.closed || this.busy || document.hidden) return;

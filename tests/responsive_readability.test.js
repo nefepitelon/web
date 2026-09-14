@@ -14,7 +14,7 @@ test("Alpha Radar reclaims its sidebar and raises dense labels on laptop widths"
   assert.match(css, /@media \(min-width: 821px\) and \(max-width: 1440px\)/);
   assert.match(css, /\.sidebar\.open \{ transform: translateX\(0\); \}/);
   assert.match(css, /\.scanner-table td[\s\S]*font-size: 10px/);
-  assert.match(html, /alpha-scanner\.css\?v=20260824-readable-v1/);
+  assert.match(html, /alpha-scanner\.css\?v=20260911-radar-v7/);
 });
 
 test("bStockAlpha switches to a two-column workspace before text becomes cramped", () => {
@@ -45,6 +45,6 @@ test("shared dashboards and operations pages include narrow-screen readability r
   assert.match(dashboardCss, /@media \(max-width: 1440px\) \{[\s\S]*\.nav-links,[\s\S]*\.header-tools/);
   assert.match(aiOpsCss, /Narrow-screen readability for the operations console/);
   assert.match(sharedCss, /Narrow-screen readability for shared marketing and AlphaOps pages/);
-  assert.match(dashboardHtml, /dashboard\.css\?v=20260902-sthmvrv-v1/);
+  assert.match(dashboardHtml, /dashboard\.css\?v=20260914-system-ui-v1/);
   assert.match(aiOpsHtml, /ai-ops\.css\?v=20260824-readable-v1/);
 });

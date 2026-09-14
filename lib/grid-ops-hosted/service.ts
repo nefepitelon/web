@@ -82,8 +82,13 @@ export async function ensureHostedGridOpsRun(bot: HostedGridOpsBotRecord) {
   });
 }
 
-export async function ensureHostedGridOpsBot(userId: string) {
-  let bot = await prisma.hostedGridOpsBot.findUnique({ where: { userId }, select: hostedGridOpsBotSelect });
+export async function ensureHostedGridOpsBot(userId: string, options: { readOnly?: boolean } = {}) {
+  // Display requests need metadata only. Never transfer the private recovery
+  // snapshot for each exchange tab, health check or proxy status poll.
+  const selected = await prisma.hostedGridOpsBot.findUnique({
+    where: { userId }, select: { ...hostedGridOpsBotSelect, snapshot: !options.readOnly },
+  });
+  let bot = selected ? { ...selected, snapshot: selected.snapshot ?? null } : null;
   let created = false;
   if (!bot) {
     const environment = defaultHostedGridOpsEnvironment();
@@ -101,6 +106,10 @@ export async function ensureHostedGridOpsBot(userId: string) {
     });
     created = true;
   }
+
+  // Viewing a console must not wake deployment-pinned workflows. Commands
+  // explicitly wake the runner; a newly created bot still needs one warmup.
+  if (options.readOnly && !created) return bot;
 
   // A READY bot has no active grid or hedge cycle. Merely opening or polling
   // the console must not create an endless workflow that reads its large JSON

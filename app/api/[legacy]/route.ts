@@ -18,6 +18,7 @@ type LegacyHandler = (request: LegacyRequest, response: LegacyResponse) => unkno
 type HandlerModule = { default?: LegacyHandler } | LegacyHandler;
 
 const loaders: Record<string, () => Promise<HandlerModule>> = {
+  "aicoin-pulse-collector": () => import("@/api/aicoin-pulse-collector.js"),
   "ai-ops-adapt": () => import("@/api/ai-ops-adapt.js"),
   "ai-ops-config": () => import("@/api/ai-ops-config.js"),
   "ai-ops-generate": () => import("@/api/ai-ops-generate.js"),
@@ -59,6 +60,8 @@ const loaders: Record<string, () => Promise<HandlerModule>> = {
   "sth-cost-basis-bands": () => import("@/api/sth-cost-basis-bands.js"),
   "two-week-rsi": () => import("@/api/two-week-rsi.js"),
   "under-3m-realized-cap-hodl-waves": () => import("@/api/under-3m-realized-cap-hodl-waves.js"),
+  "under-3m-realized-cap-cycle": () => import("@/api/under-3m-realized-cap-cycle.js"),
+  "utxo-age-realized-price-cycle": () => import("@/api/utxo-age-realized-price-cycle.js"),
   "vdd-median-cycle": () => import("@/api/vdd-median-cycle.js"),
   "risk-engine": () => import("@/api/risk-engine.js"),
   "surf-pulse": () => import("@/api/surf-pulse.js"),

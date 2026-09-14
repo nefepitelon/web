@@ -51,10 +51,11 @@ test("theme and language controls render current state and survive restricted st
   assert.match(script, /function persistDisplayPreference\(key, value\)/);
   assert.doesNotMatch(script, /querySelector\("\.theme-toggle"\)\.textContent/);
   assert.doesNotMatch(script, /querySelector\("\.lang-toggle"\)\.textContent/);
-  assert.match(header, /platform-shell-header--bstock/);
-  assert.match(header, /data-preference=\{bstockContext \? "theme"/);
-  assert.match(header, /data-preference=\{bstockContext \? "language"/);
-  assert.match(header, /currentThemeLabel/);
-  assert.match(shellCss, /\.platform-shell-header--bstock \.platform-tool--preference/);
+  assert.match(header, /className="platform-shell-header"/);
+  assert.match(header, /data-preference="theme"/);
+  assert.match(header, /data-preference="language"/);
+  assert.match(header, /platform-preference-icon/);
+  assert.doesNotMatch(header, /bstockContext/);
+  assert.match(shellCss, /\.platform-tool--preference/);
   assert.match(shellCss, /html\[data-theme="light"\] \.bstock-report-share-page/);
 });

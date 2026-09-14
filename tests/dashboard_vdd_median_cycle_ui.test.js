@@ -17,7 +17,7 @@ test("dashboard exposes the twenty-sixth VDD / Median Price cycle model", () => 
   assert.match(html, /id="vdd-median-snapshot"/);
   assert.match(html, /id="vdd-median-download"/);
   assert.match(html, /id="vdd-median-fullscreen"/);
-  assert.match(html, /INDEX \/ 30/);
+  assert.match(html, /INDEX \/ 32/);
 });
 
 test("VDD / Median model loads public data and supports complete chart interaction", () => {
@@ -32,5 +32,5 @@ test("VDD / Median model loads public data and supports complete chart interacti
   assert.match(route, /"vdd-median-cycle"/);
   assert.match(css, /\.vdd-median-stage/);
   assert.match(css, /\.legend-vdd-median-bottom/);
-  assert.match(css, /grid-row: 1 \/ span 30/);
+  assert.match(css, /grid-row: 1 \/ span 32/);
 });

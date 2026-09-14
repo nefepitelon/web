@@ -15,7 +15,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="alpha-scanner.css?v=20260824-readable-v1" />
+    <link rel="stylesheet" href="alpha-scanner.css?v=20260911-radar-v7" />
+    <link rel="stylesheet" href="alpha-auto-trading.css?v=20260911-auto-v5" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
   </head>
@@ -53,6 +54,7 @@
 
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="收起导航" aria-controls="sidebar" aria-expanded="true"><span aria-hidden="true">‹</span><em>收起导航</em></button>
         <a class="sidebar-brand" href="index.html" aria-label="Alpha Radar Trading Platform">
           <span class="brand-orbit" aria-hidden="true"><i></i><b></b></span>
           <span><strong>Alpha Radar<span>Trading Platform</span></strong></span>
@@ -66,7 +68,7 @@
           </a>
           <a href="#signals" data-section="signals">
             <span class="nav-icon signal-icon" aria-hidden="true"></span>
-            <span><strong>信号解释</strong><small>Signal Intelligence</small></span>
+            <span><strong>动量与信号</strong><small>Momentum &amp; Signals</small></span>
             <em>02</em>
           </a>
           <a href="#risk-pool" data-section="risk-pool">
@@ -79,43 +81,48 @@
             <span><strong>交易执行中心</strong><small>Execution Control</small></span>
             <em>04</em>
           </a>
+          <a href="#auto-trading" data-section="auto-trading">
+            <span class="nav-icon automation-icon" aria-hidden="true">↻</span>
+            <span><strong>自动交易</strong><small>Auto Trading</small></span>
+            <em>05</em>
+          </a>
           <a href="#risk" data-section="risk">
             <span class="nav-icon shield-icon" aria-hidden="true"></span>
             <span><strong>风控执行</strong><small>Risk Engine</small></span>
-            <em>05</em>
+            <em>06</em>
           </a>
           <a href="#paper" data-section="paper">
             <span class="nav-icon order-icon" aria-hidden="true"></span>
             <span><strong id="portfolio-nav-title">纸面交易</strong><small id="portfolio-nav-subtitle">Paper Trading Only</small></span>
-            <em>06</em>
+            <em>07</em>
           </a>
         </nav>
 
         <section class="source-stack" aria-label="已连接信号源">
-          <div class="side-label"><span>数据源</span><em>4 / 4</em></div>
+          <div class="side-label"><span>数据源</span><em id="source-health-count">0 / 4</em></div>
           <ul>
-            <li><i class="source-dot live"></i><span>Binance Spot</span><em>LIVE</em></li>
-            <li><i class="source-dot live"></i><span>Binance Futures</span><em>LIVE</em></li>
-            <li><i class="source-dot pulse"></i><span>Crypto Bubbles · 1D</span><em>30s</em></li>
-            <li><i class="source-dot pulse"></i><span>BWE OI Monitor</span><em>TG</em></li>
+            <li data-source-health="spot"><i class="source-dot"></i><span>Binance Spot</span><em>等待</em></li>
+            <li data-source-health="futures"><i class="source-dot"></i><span>Binance Futures</span><em>等待</em></li>
+            <li data-source-health="momentum"><i class="source-dot"></i><span>Crypto Bubbles · 1D</span><em>等待</em></li>
+            <li data-source-health="signals"><i class="source-dot"></i><span>BWE OI Monitor</span><em>等待</em></li>
           </ul>
         </section>
 
         <section class="safety-lock" id="execution-safety-lock">
           <div class="lock-glyph" aria-hidden="true"></div>
-          <div><strong id="execution-lock-title">生产实盘默认加锁</strong><span id="execution-lock-copy">四环境共用风控与审计内核</span></div>
+          <div><strong id="execution-lock-title">生产实盘默认加锁</strong><span id="execution-lock-copy">PAPER / LIVE · 风控与审计</span></div>
         </section>
 
         <div class="side-footer">
           <div class="avatar">W</div>
-          <div><strong>Research Desk</strong><span>模拟权益 · 10,000 USDT</span></div>
+          <div><strong>Paper 研究账户</strong><span id="sidebar-equity">读取本机纸面账本…</span></div>
           <button type="button" aria-label="更多账户选项">•••</button>
         </div>
       </aside>
 
       <div class="workspace">
         <header class="topbar">
-          <button class="mobile-menu" id="mobile-menu" type="button" aria-label="打开导航" aria-expanded="false">
+          <button class="mobile-menu" id="mobile-menu" type="button" aria-label="展开导航" aria-controls="sidebar" aria-expanded="false">
             <span></span><span></span>
           </button>
           <div class="market-tape" aria-label="市场概览">
@@ -151,7 +158,7 @@
           <section class="radar-section" id="radar">
             <div class="page-heading">
               <div>
-                <div class="eyebrow"><i></i>BINANCE USDT · ALPHA SCANNER <span>PHASE 01</span></div>
+                <div class="eyebrow"><i></i>BINANCE USDT · ALPHA SCANNER</div>
                 <h1>Alpha 妖币雷达</h1>
                 <p>七维异动扫描 × 反指 / 共振方向模型。先发现，再解释，最后才执行。</p>
               </div>
@@ -163,7 +170,7 @@
 
             <div class="stage-banner">
               <span class="stage-icon">!</span>
-              <p><strong>强制安全链路：</strong>信号只能创建 Trade Intent；Paper、Mock、Testnet 与 Live 均必须经过 Risk Engine、Execution Plan、订单监控与对账。</p>
+              <p><strong>强制安全链路：</strong>信号只能创建 Trade Intent；Paper 与 Live 均必须经过 Risk Engine、Execution Plan、订单监控与对账。</p>
               <button type="button" id="show-roadmap">查看上线门槛 <span>→</span></button>
             </div>
 
@@ -172,25 +179,21 @@
                 <div class="metric-label"><span>扫描标的</span><em>SPOT + PERP</em></div>
                 <strong id="scan-universe-count">—</strong>
                 <p id="scan-market-mix"><i>同步中</i></p>
-                <span class="mini-bars bars-blue" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
               </article>
               <article>
                 <div class="metric-label"><span>强信号</span><em>SCORE ≥ 80</em></div>
                 <strong id="strong-count">—</strong>
                 <p id="strong-breakdown"><i>等待扫描结果</i></p>
-                <span class="mini-bars bars-green" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
               </article>
               <article>
                 <div class="metric-label"><span>风控拦截</span><em>LAST 24H</em></div>
-                <strong class="amber">3</strong>
-                <p><i>2</i> 重复 · <i>1</i> 深度不足</p>
-                <span class="mini-bars bars-amber" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <strong class="amber" id="risk-rejected-count">—</strong>
+                <p id="risk-rejected-detail">等待账户风控记录</p>
               </article>
               <article>
-                <div class="metric-label"><span>纸面组合</span><em>7D PNL</em></div>
-                <strong class="green">+3.84%</strong>
-                <p><i class="up">68.2%</i> 信号胜率</p>
-                <span class="mini-line" aria-hidden="true"></span>
+                <div class="metric-label"><span>实盘实际盈亏</span><em>LIVE · USDT</em></div>
+                <strong id="live-realized-metric">—</strong>
+                <p id="live-realized-detail">等待近 89 天实盘结算记录</p>
               </article>
             </div>
 
@@ -223,7 +226,7 @@
                   <button type="button" data-filter="long" role="tab">偏多 <em>—</em></button>
                   <button type="button" data-filter="short" role="tab">偏空 <em>—</em></button>
                   <button type="button" data-filter="neutral" role="tab">中性 <em>—</em></button>
-                  <button type="button" data-filter="watch" role="tab">自选 <em id="watch-count">2</em></button>
+                  <button type="button" data-filter="watch" role="tab">自选 <em id="watch-count">0</em></button>
                 </div>
 
                 <div class="scan-method-strip">
@@ -250,8 +253,8 @@
                   </table>
                   <div class="empty-state" id="empty-state" hidden>没有符合当前条件的标的</div>
                 </div>
-                <nav class="ranking-pagination" id="ranking-pagination" aria-label="异动排行榜分页">
-                  <span id="ranking-page-summary">第 1–12 名 · 共 24 个标的</span>
+                <nav class="ranking-pagination" id="ranking-pagination" hidden aria-label="异动排行榜分页">
+                  <span id="ranking-page-summary">等待扫描结果</span>
                   <div>
                     <button id="ranking-prev" type="button" aria-label="上一页" disabled>←</button>
                     <span class="ranking-pages" id="ranking-pages" aria-label="页码"></span>
@@ -264,7 +267,12 @@
                 </footer>
               </section>
 
-              <aside class="panel momentum-panel">
+
+            </div>
+          </section>
+
+          <section class="intelligence-grid" id="signals">
+            <aside class="panel momentum-panel">
                 <div class="panel-head">
                   <div>
                     <a class="panel-kicker bubble-source-link" href="https://cryptobubbles.net/zh/" target="_blank" rel="noopener noreferrer">CRYPTO BUBBLES · BINANCE <span aria-hidden="true">↗</span></a>
@@ -279,43 +287,7 @@
                   <div class="bubble-loading" id="bubble-loading"><span></span><strong>正在读取 Binance 1D 动量</strong></div>
                 </div>
                 <div class="bubble-legend"><span><i class="green-dot"></i>涨幅 TOP 10</span><span><i class="red-dot"></i>跌幅 TOP 10</span><em id="bubble-updated">每 60 秒更新</em></div>
-              </aside>
-            </div>
-          </section>
-
-          <section class="intelligence-grid" id="signals">
-            <article class="panel interpreter-panel">
-              <div class="panel-head">
-                <div>
-                  <span class="panel-kicker">SIGNAL INTELLIGENCE</span>
-                  <h2>Telegram 信号解释器</h2>
-                </div>
-                <a href="https://t.me/BWE_OI_Price_monitor" target="_blank" rel="noopener noreferrer" class="source-link">@BWE_OI_Price_monitor ↗</a>
-              </div>
-              <p class="panel-intro">外部信号仅触发分析，不直接触发订单。粘贴原始文本后，将其翻译成结构化因子并送入风控。</p>
-              <label class="signal-input">
-                <span>原始消息</span>
-                <textarea id="signal-text" rows="4" spellcheck="false">#POPCAT OI 15min +31.8%｜Price +12.4%｜Volume 4.2x｜Funding -0.018%｜多空比 0.72</textarea>
-              </label>
-              <div class="signal-actions">
-                <button class="primary-button" id="parse-signal" type="button"><span>解析信号</span><em>⌘ ↵</em></button>
-                <button class="ghost-button" id="clear-signal" type="button">清空</button>
-              </div>
-              <div class="parse-result" id="parse-result" aria-live="polite">
-                <div class="parse-top">
-                  <span class="token-avatar token-pop">P</span>
-                  <div><strong>POPCAT / USDT</strong><em>检测到 OI + 价格同步异动</em></div>
-                  <span class="confidence">91% 置信</span>
-                </div>
-                <div class="factor-chips">
-                  <span><em>价格</em>+12.4%</span><span><em>OI</em>+31.8%</span><span><em>量能</em>4.2×</span><span><em>资金费率</em>-0.018%</span>
-                </div>
-                <div class="explain-callout">
-                  <div class="callout-icon">↗</div>
-                  <div><span>模型结论 · 偏多共振</span><p>价格、OI 与成交量同向扩张，而资金费率仍为负，空头拥挤可能形成被动回补；但 24H 涨幅过高，建议等待回踩而非追价。</p></div>
-                </div>
-              </div>
-            </article>
+            </aside>
 
             <article class="panel pulse-panel">
               <div class="panel-head">
@@ -387,7 +359,7 @@
           <section class="panel execution-control-panel" id="execution-control" aria-labelledby="execution-control-title">
             <div class="panel-head execution-control-head">
               <div>
-                <span class="panel-kicker">BINANCE EXECUTION CONTROL · FOUR ENVIRONMENTS</span>
+                <span class="panel-kicker">BINANCE EXECUTION CONTROL · PAPER / LIVE</span>
                 <h2 id="execution-control-title">交易执行中心</h2>
                 <p>同一套状态机、风控规则、订单模型与审计日志；环境、密钥、额度和权限严格隔离。</p>
               </div>
@@ -396,32 +368,15 @@
 
             <div class="execution-mode-grid" role="radiogroup" aria-label="交易执行环境">
               <button class="active" type="button" data-execution-mode="paper" role="radio" aria-checked="true"><i>01</i><span><strong>PAPER</strong><em>纸面交易 · 策略验证</em></span><b>无真实资金</b></button>
-              <button type="button" data-execution-mode="mock_exchange" role="radio" aria-checked="false"><i>02</i><span><strong>MOCK EXCHANGE</strong><em>单元测试 · CI</em></span><b>无 Binance 请求</b></button>
-              <button type="button" data-execution-mode="testnet" role="radio" aria-checked="false"><i>03</i><span><strong>BINANCE TESTNET</strong><em>签名 · 保护单 · 回报</em></span><b>测试资金</b></button>
-              <button class="live-mode" type="button" data-execution-mode="live" role="radio" aria-checked="false"><i>04</i><span><strong>PRODUCTION LIVE</strong><em>生产实盘 · 额外加锁</em></span><b>真实资金</b></button>
+              <button class="live-mode" type="button" data-execution-mode="live" role="radio" aria-checked="false"><i>02</i><span><strong>LIVE</strong><em>生产实盘 · 额外加锁</em></span><b>真实资金</b></button>
             </div>
 
             <div class="execution-control-grid">
-              <form class="execution-settings" id="execution-config-form">
-                <header><div><span>ENVIRONMENT &amp; RISK</span><strong>环境与额度配置</strong></div><em id="execution-config-state">仅读取服务端配置</em></header>
-                <div class="execution-field-grid">
-                  <label><span>执行模式</span><select id="execution-mode" name="activeMode"><option value="paper">PAPER</option><option value="mock_exchange">MOCK EXCHANGE</option><option value="testnet">BINANCE TESTNET</option><option value="live">PRODUCTION LIVE</option></select></label>
-                  <label><span>交易市场</span><select id="execution-market" name="defaultMarket"><option value="futures">USDⓈ-M 永续</option><option value="spot">USDT 现货</option></select></label>
-                  <label><span>单笔名义上限</span><span class="execution-input-unit"><input id="execution-per-order-limit" name="perOrderNotionalLimit" type="number" min="5" max="100000" step="5" value="50"><em>USDT</em></span></label>
-                  <label><span>单日名义上限</span><span class="execution-input-unit"><input id="execution-daily-limit" name="dailyNotionalLimit" type="number" min="5" max="1000000" step="10" value="200"><em>USDT</em></span></label>
-                  <label class="execution-switch"><span>Testnet 闸门</span><input id="execution-testnet-enabled" name="testnetEnabled" type="checkbox"><i></i><em>允许测试网请求</em></label>
-                  <label class="execution-switch"><span>自动执行</span><input id="execution-auto" name="autoExecuteEnabled" type="checkbox"><i></i><em>仅审批后执行</em></label>
-                  <label class="execution-switch"><span>人工确认</span><input id="execution-manual-confirm" name="requireManualConfirmation" type="checkbox" checked><i></i><em>执行前二次确认</em></label>
-                  <label class="execution-switch forced"><span>保护单</span><input type="checkbox" checked disabled><i></i><em>强制止损 / 止盈</em></label>
-                </div>
-                <button class="execution-primary" id="save-execution-config" type="submit"><span>保存环境与风控配置</span><em>SERVER SIDE →</em></button>
-              </form>
-
               <section class="credential-vault" aria-labelledby="credential-vault-title">
                 <header><div><span>ENCRYPTED KEY VAULT</span><strong id="credential-vault-title">Binance API 与代理配置</strong></div><em>服务端 AES-GCM 加密</em></header>
                 <form id="execution-credential-form" autocomplete="off">
                   <div class="credential-selector-row">
-                    <label><span>环境</span><select id="execution-credential-environment" name="environment"><option value="testnet">TESTNET</option><option value="live">LIVE · 实盘</option></select></label>
+                    <label><span>环境</span><select id="execution-credential-environment" name="environment"><option value="live">LIVE · 实盘</option></select></label>
                     <label><span>市场</span><select id="execution-credential-market" name="market"><option value="futures">FUTURES</option><option value="spot">SPOT</option></select></label>
                   </div>
                   <label><span>API Key</span><input id="execution-api-key" name="apiKey" type="password" minlength="8" maxlength="240" placeholder="仅提交到服务端，不回显" spellcheck="false" autocomplete="new-password"></label>
@@ -433,32 +388,40 @@
                 <div class="credential-summary-list" id="execution-credential-list"><span>凭据只显示脱敏摘要</span></div>
               </section>
 
-              <section class="live-unlock-panel" id="live-unlock-panel" aria-labelledby="live-unlock-title">
-                <header><div><span>PRODUCTION INTERLOCK</span><strong id="live-unlock-title">生产实盘双重保险锁</strong></div><em id="live-lock-state">LOCKED</em></header>
-                <p>实盘默认关闭。仅双重验证管理员、已校验的无提现权限 API、健康对账和未触发 Kill Switch 时才可解锁。</p>
-                <div class="live-phrase-guide" id="live-phrase-help">
-                  <span>这不是短信验证码，请完整输入确认短语：</span>
-                  <code id="live-required-phrase">ENABLE LIVE TRADING</code>
-                  <button id="fill-live-phrase" type="button">填入短语</button>
+              <div class="execution-right-panels">
+              <form class="execution-settings" id="execution-config-form">
+                <header class="execution-settings-header">
+                  <div><span>ENVIRONMENT &amp; RISK</span><strong>环境与额度配置</strong></div>
+                  <div class="execution-settings-actions">
+                    <em id="execution-config-state">仅读取服务端配置</em>
+                    <button class="execution-primary" id="save-execution-config" type="submit"><span>保存环境与风控配置</span><em>SERVER SIDE →</em></button>
+                  </div>
+                </header>
+                <div class="execution-field-grid">
+                  <label><span>执行模式</span><select id="execution-mode" name="activeMode"><option value="paper">PAPER</option><option value="live">LIVE</option></select></label>
+                  <label><span>交易市场</span><select id="execution-market" name="defaultMarket"><option value="futures">USDⓈ-M 永续</option><option value="spot">USDT 现货</option></select></label>
+                  <label><span>单笔名义上限</span><span class="execution-input-unit"><input id="execution-per-order-limit" name="perOrderNotionalLimit" type="number" min="5" max="100000" step="5" value="50"><em>USDT</em></span></label>
+                  <label><span>单日名义上限</span><span class="execution-input-unit"><input id="execution-daily-limit" name="dailyNotionalLimit" type="number" min="5" max="1000000" step="10" value="200"><em>USDT</em></span></label>
+                  <label class="execution-switch"><span>自动执行</span><input id="execution-auto" name="autoExecuteEnabled" type="checkbox"><i></i><em>仅审批后执行</em></label>
+                  <label class="execution-switch"><span>人工确认</span><input id="execution-manual-confirm" name="requireManualConfirmation" type="checkbox" checked><i></i><em>执行前二次确认</em></label>
+                  <label class="execution-switch forced"><span>保护单</span><input type="checkbox" checked disabled><i></i><em>强制止损 / 止盈</em></label>
                 </div>
-                <label><span>实盘解锁确认短语</span><input id="live-unlock-phrase" type="text" placeholder="请在此输入上方英文短语" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="live-phrase-help"></label>
+              </form>
+              <section class="live-unlock-panel" id="live-unlock-panel" aria-labelledby="live-unlock-title">
+                <header><div><span>PRODUCTION INTERLOCK</span><div class="live-lock-heading"><strong id="live-unlock-title">生产实盘双重保险锁</strong><button class="aat-help-toggle" id="live-lock-help-toggle" type="button" popovertarget="live-lock-help" aria-controls="live-lock-help" aria-expanded="false" aria-label="查看实盘解锁条件说明">?</button></div></div><em id="live-lock-state">LOCKED</em></header>
+                <div class="aat-help-popover" id="live-lock-help" popover aria-labelledby="live-lock-help-title"><strong id="live-lock-help-title">实盘解锁条件</strong><p>实盘默认关闭。仅双重验证管理员、已校验的无提现权限 API、健康对账和未触发 Kill Switch 时才可解锁。</p><button type="button" popovertarget="live-lock-help" popovertargetaction="hide" aria-label="关闭实盘解锁条件说明">关闭</button></div>
                 <label class="live-ack"><input id="live-ack-funds" type="checkbox"><span>我确认这会使用真实资金，并接受单笔与单日额度限制。</span></label>
                 <label class="live-ack"><input id="live-ack-withdraw" type="checkbox"><span>我确认 API Key 未开启提现权限，并已绑定受控 IP。</span></label>
-                <div class="live-unlock-actions"><button id="unlock-live" type="button">管理员解锁实盘</button><button id="relock-live" type="button">立即重新加锁</button></div>
+                <div class="live-unlock-actions"><button id="unlock-live" type="button" disabled>管理员解锁实盘</button><button id="relock-live" type="button">立即重新加锁</button></div>
               </section>
+              </div>
             </div>
 
-            <div class="execution-operations">
-              <div><span>ORDER MONITOR &amp; RECONCILIATION</span><strong>订单监控与对账</strong><em>状态不明时只查询，不盲目重试</em></div>
-              <span class="operation-state" id="execution-reconcile-state"><i></i>等待首轮对账</span>
-              <span class="operation-state" id="execution-stream-state"><i></i>WebSocket 未连接</span>
-              <button id="execution-stream" type="button">连接成交回报</button>
-              <button id="execution-reconcile" type="button">立即对账</button>
-            </div>
-            <div class="execution-ledger">
-              <div class="execution-ledger-head"><strong>统一订单流水</strong><span id="execution-order-count">0 ORDERS</span></div>
-              <div class="execution-order-list" id="execution-order-list"><div class="execution-empty"><strong>暂无服务端订单</strong><span>审批后的执行计划会在这里显示环境、幂等键、成交与保护单状态。</span></div></div>
-            </div>
+          </section>
+
+          <section class="panel alpha-auto-trading" id="auto-trading" aria-labelledby="auto-trading-title">
+                <div class="panel-head aat-panel-head"><div><span class="panel-kicker">AUTOMATED TRADING</span><div class="aat-title-line"><h2 id="auto-trading-title">自动交易</h2><span class="aat-live-label">LIVE · 真实资金</span></div><p>按所选策略筛选候选，经风控、保护单与对账检查后执行。参数建议未经盈利验证。</p></div></div>
+            <div id="alpha-auto-trading-root"><div class="execution-empty"><strong>正在读取自动交易配置</strong><span>以服务端策略和运行状态为准</span></div></div>
           </section>
 
           <section class="risk-workbench" id="risk">
@@ -479,7 +442,7 @@
                 <label><span><i class="rule-icon">×</i><strong>最大杠杆</strong><small>硬性上限，不可绕过</small></span><select id="max-leverage"><option>2×</option><option selected>3×</option><option>5×</option><option>10×</option><option>20×</option></select></label>
                 <label><span><i class="rule-icon">↓</i><strong>单日熔断</strong><small>触发后停止新开仓</small></span><select id="daily-stop"><option>-1.5%</option><option selected>-2.0%</option><option>-3.0%</option><option>-3.5%</option></select></label>
                 <label><span><i class="rule-icon">↻</i><strong>信号去重</strong><small>同环境 / 市场 / 标的 / 方向冷却</small></span><select id="dedupe-window"><option>5 min</option><option>10 min</option><option selected>15 min</option><option>30 min</option><option>60 min</option></select></label>
-                <span class="risk-policy-save-state" id="risk-policy-save-state"><i></i>服务端参数已同步</span>
+                <span class="risk-policy-save-state" id="risk-policy-save-state"><i></i>等待服务端参数</span>
               </div>
 
               <div class="risk-safety-banner">
@@ -510,14 +473,14 @@
                     </div>
                   </div>
                   <div class="intent-form-grid">
-                    <label><span>标的</span><input id="intent-symbol" name="symbol" value="POPCATUSDT" autocomplete="off" required></label>
+                    <label><span>标的</span><input id="intent-symbol" name="symbol" placeholder="载入候选或输入交易对" autocomplete="off" required></label>
                     <label><span>方向</span><select id="intent-side" name="side"><option value="LONG">LONG · 做多</option><option value="SHORT">SHORT · 做空</option></select></label>
-                    <label><span>参考入场</span><input id="intent-entry" name="entryPrice" type="number" min="0" step="any" value="0.6412" required></label>
-                    <label><span>保护止损</span><input id="intent-stop" name="stopLoss" type="number" min="0" step="any" value="0.6026" required></label>
-                    <label><span>目标止盈</span><input id="intent-target" name="takeProfit" type="number" min="0" step="any" value="0.7184" required></label>
+                    <label><span>参考入场</span><input id="intent-entry" name="entryPrice" type="number" min="0" step="any" placeholder="实时价格" required></label>
+                    <label><span>保护止损</span><input id="intent-stop" name="stopLoss" type="number" min="0" step="any" placeholder="设置保护止损" required></label>
+                    <label><span>目标止盈</span><input id="intent-target" name="takeProfit" type="number" min="0" step="any" placeholder="设置目标止盈" required></label>
                     <label><span>杠杆</span><select id="intent-leverage" name="leverage"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>10</option><option>20</option></select></label>
                     <label><span>信号源</span><select id="intent-source" name="source"><option value="alpha-radar">Alpha Radar</option><option value="telegram">Telegram</option><option value="risk-pool">雷达执行池</option><option value="crypto-bubbles">Crypto Bubbles 1D</option><option value="manual">人工录入</option></select></label>
-                    <label><span>Alpha 分</span><input id="intent-score" name="alphaScore" type="number" min="0" max="100" step="1" value="91"></label>
+                    <label><span>Alpha 分</span><input id="intent-score" name="alphaScore" type="number" min="0" max="100" step="1" placeholder="候选评分"></label>
                     <label><span>交易市场</span><select id="intent-market" name="market"><option value="futures">USDⓈ-M 永续</option><option value="spot">USDT 现货</option></select></label>
                     <label><span>订单类型</span><select id="intent-order-type" name="orderType"><option value="MARKET">MARKET · 市价</option><option value="LIMIT">LIMIT · 限价</option></select></label>
                   </div>
@@ -537,16 +500,6 @@
 
             </article>
 
-            <div class="risk-ops-grid">
-              <article class="panel position-monitor-panel">
-                <div class="panel-head compact-head"><div><span class="panel-kicker" id="position-monitor-kicker">POSITION MONITOR</span><h2 id="position-monitor-title">持仓监控</h2></div><span class="monitor-count" id="monitor-count">0 OPEN</span></div>
-                <div class="position-monitor-list" id="position-monitor-list"><div class="risk-list-empty"><strong>暂无受控持仓</strong><span>执行计划成交并附加保护单后才会进入监控</span></div></div>
-              </article>
-              <article class="panel audit-panel">
-                <div class="panel-head compact-head"><div><span class="panel-kicker">AUDIT TRAIL</span><h2>审计日志</h2></div><button class="audit-clear" id="export-audit" type="button">导出审计</button></div>
-                <div class="audit-log-list" id="risk-audit-list"><div class="risk-list-empty"><strong>等待首条审计事件</strong><span>审批、确认、保护单、平仓和熔断都会留痕</span></div></div>
-              </article>
-            </div>
           </section>
 
           <section class="panel paper-panel" id="paper">
@@ -562,7 +515,7 @@
                 </div>
               </div>
               <div class="paper-head-actions">
-                <div class="paper-stats"><span><em id="portfolio-equity-label">组合权益</em><strong id="paper-equity">10,000.00 USDT</strong></span><span><em>浮动盈亏</em><strong id="paper-pnl">0.00</strong></span><span><em>风险敞口</em><strong id="paper-exposure">0.0%</strong></span><span id="portfolio-realized-stat" hidden><em>历史实际盈亏</em><strong id="portfolio-realized-pnl">0.00</strong><small id="portfolio-realized-count">0 笔已完结</small></span></div>
+                <div class="paper-stats"><span><em id="portfolio-equity-label">组合权益</em><strong id="paper-equity">10,000.00 USDT</strong></span><span><em>浮动盈亏</em><strong id="paper-pnl">0.00</strong></span><span><em>风险敞口</em><strong id="paper-exposure">0.0%</strong></span><span id="portfolio-realized-stat" hidden><em>近 89 天实际盈亏</em><strong id="portfolio-realized-pnl">—</strong><small id="portfolio-realized-count">等待完整实盘结算记录</small></span></div>
                 <button class="live-pull-button" id="live-portfolio-pull" type="button" hidden><i>↻</i><span>实时数据回捞<small id="live-portfolio-pull-state">每 30s 自动同步</small></span></button>
                 <button class="paper-reset-button" id="reset-paper-trading" type="button" aria-label="归档当前纸面交易并还原初始测试状态"><i>↺</i><span>一键还原<small>归档并初始化</small></span></button>
               </div>
@@ -587,11 +540,21 @@
             </div>
           </section>
 
-          <section class="architecture-strip" aria-label="产品架构">
-            <article><span>01</span><div><strong>妖币雷达扫描器</strong><p>Binance USDT 现货 / 永续与 1D 动量池</p></div><em>→</em></article>
-            <article><span>02</span><div><strong>信号解释层</strong><p>七维评分、Telegram 解析、反指 / 共振</p></div><em>→</em></article>
-            <article><span>03</span><div><strong>风控执行层</strong><p>止损、去重、仓位、熔断与深度检查</p></div><em>→</em></article>
-            <article><span>04</span><div><strong>Binance 下单层</strong><p>Paper / Mock / Testnet / Live 共用状态机 · 实盘默认加锁</p></div></article>
+          <section class="panel execution-monitor-panel" id="execution-monitor" aria-labelledby="execution-monitor-title">
+            <div class="execution-operations">
+              <div><span>ORDER MONITOR &amp; RECONCILIATION</span><h2 id="execution-monitor-title">订单监控与对账</h2><em>状态不明时只查询，不盲目重试</em></div>
+              <span class="operation-state" id="execution-reconcile-state"><i></i>等待首轮对账</span>
+              <span class="operation-state" id="execution-stream-state"><i></i>WebSocket 未连接</span>
+              <div class="execution-monitor-actions">
+                <button id="execution-stream" type="button">连接成交回报</button>
+                <button id="execution-reconcile" type="button">立即对账</button>
+                <button id="export-audit" type="button" disabled title="导出服务端 LIVE 实盘审计记录">导出审计 <small>LIVE</small></button>
+              </div>
+            </div>
+            <div class="execution-ledger">
+              <div class="execution-ledger-head"><strong>统一订单流水</strong><span id="execution-order-count">0 ORDERS</span></div>
+              <div class="execution-order-list" id="execution-order-list"><div class="execution-empty"><strong>暂无服务端订单</strong><span>审批后的执行计划会在这里显示环境、幂等键、成交与保护单状态。</span></div></div>
+            </div>
           </section>
           </div>
 
@@ -644,16 +607,16 @@
       </header>
       <div class="drawer-scroll">
         <section class="token-hero">
-          <div class="token-avatar token-pop" id="detail-avatar">P</div>
-          <div><h2 id="detail-name">POPCAT <span>/ USDT</span></h2><p id="detail-subtitle">Solana Meme · Binance 永续</p></div>
+          <div class="token-avatar" id="detail-avatar">—</div>
+          <div><h2 id="detail-name">请选择标的</h2><p id="detail-subtitle">等待实时快照</p></div>
           <button class="watch-button active" id="watch-button" type="button" aria-label="加入自选">★</button>
         </section>
         <section class="detail-quote">
-          <div><span>最新价</span><strong id="detail-price">$0.6412</strong><em id="detail-change" class="up">+38.6%</em></div>
-          <div class="score-orb"><strong id="detail-score">91</strong><span id="detail-score-label">ALPHA</span></div>
+          <div><span>最新价</span><strong id="detail-price">—</strong><em id="detail-change">—</em></div>
+          <div class="score-orb"><strong id="detail-score">—</strong><span id="detail-score-label">ALPHA</span></div>
         </section>
         <section class="bias-card long" id="bias-card">
-          <span id="detail-bias">偏多共振</span><strong id="detail-signal">LONG BIAS</strong><p id="detail-reason">价格、OI 与量能同向扩张，资金费率逆向，存在空头回补动能。</p>
+          <span id="detail-bias">等待信号</span><strong id="detail-signal">—</strong><p id="detail-reason">请选择有数据的标的查看。</p>
         </section>
         <section class="detail-section">
           <div class="detail-title"><strong id="detail-dimension-title">七维雷达</strong><span id="detail-dimension-window">当前窗口 · 15m / 4h</span></div>
@@ -663,9 +626,9 @@
           </div>
         </section>
         <section class="detail-section">
-          <div class="detail-title"><strong id="detail-heat-title">X / 媒体热度</strong><span id="heat-label">较 24H 均值 +164%</span></div>
-          <canvas id="heat-canvas" width="540" height="118" aria-label="社交热度走势"></canvas>
-          <div class="kol-row" id="kol-row"><span>KOL 扩散</span><i>@lookonchain</i><i>@0xSun</i><i>@defioasis</i><em>+12</em></div>
+          <div class="detail-title"><strong id="detail-heat-title">X / 媒体热度</strong><span id="heat-label">当前快照</span></div>
+          <canvas id="heat-canvas" width="540" height="118" aria-label="当前快照的社交与媒体评分"></canvas>
+          <div class="kol-row" id="kol-row"></div>
         </section>
         <section class="detail-section">
           <div class="detail-title"><strong id="detail-headline-title">媒体头条</strong><span id="detail-headline-window">近 6 小时</span></div>
@@ -698,7 +661,7 @@
           <li><i>02</i><span><strong>止损与仓位模型</strong><small>滑点、手续费与最小下单量已纳入</small></span><em>待验证</em></li>
           <li><i>03</i><span><strong>去重与风控熔断</strong><small>重复信号、连续亏损和 API 异常保护</small></span><em>待验证</em></li>
           <li><i>04</i><span><strong>回测与前向测试</strong><small>跨市场阶段验证，排除幸存者偏差</small></span><em>待验证</em></li>
-          <li><i>05</i><span><strong>Testnet 稳定运行</strong><small>至少 30 天订单、撤单、恢复演练</small></span><em>待验证</em></li>
+          <li><i>05</i><span><strong>Paper 前向验证</strong><small>订单、止损、撤单与异常恢复记录</small></span><em>以实际记录为准</em></li>
         </ol>
         <button class="primary-button dialog-close" value="close">了解，继续纸面验证</button>
       </form>
@@ -706,7 +669,8 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"><i>✓</i><span>交易意图已更新</span></div>
     <script src="ui-translations.js"></script>
-    <script src="alpha-scanner.js?v=20260816-featured"></script>
+    <script src="alpha-scanner.js?v=20260911-radar-v7"></script>
+    <script src="alpha-auto-trading.js?v=20260911-auto-v5"></script>
     <script src="surf-assistant.js"></script>
   </body>
 </html>

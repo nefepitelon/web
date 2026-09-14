@@ -15,7 +15,7 @@ import {
 } from './exchange/instances.js';
 import { inspectExchangeInstanceExposure } from './exchange/instance-removal.js';
 import { GridBot } from './bot.js';
-import { analyzeTrend } from './trend.js';
+import { analyzeTrendWithLivePrice } from './trend.js';
 import {
   setupProxies,
   checkProxy,
@@ -83,8 +83,12 @@ const ENGINE_METADATA = (() => {
   for (const definition of INSTANCE_MANIFEST) {
     const exchangeConfig = cfg.exchanges[definition.key];
     if (exchangeConfig.mode !== 'live') continue;
+    if (definition.liveAvailable === false) {
+      console.error(`[${definition.name}] LIVE 暂未开放：${definition.liveUnavailableReason || '请切换为 paper。'}`);
+      continue;
+    }
     for (const field of definition.fields.filter((item) => item.requiredLive)) {
-      if (!exchangeConfig[field.prop]) missing.push([definition.name.padEnd(9), field.env, definition.liveGuide?.url || '交易所 API 管理页面']);
+      if (!String(exchangeConfig[field.prop] ?? '').trim()) missing.push([definition.name.padEnd(9), field.env, definition.liveGuide?.url || '交易所 API 管理页面']);
     }
     for (const group of definition.requiredLiveAnyOf || []) {
       const fields = group.map((env) => definition.fields.find((field) => field.env === env)).filter(Boolean);
@@ -292,7 +296,7 @@ function makeExchangeHandler(prefix, bot, exchange, exCfg, clients, name, repair
       let price = null;
       try { price = await exchange.getPrice(marketId); } catch {}
       const analysis = (candles && candles.length >= 20)
-        ? analyzeTrend(candles)
+        ? analyzeTrendWithLivePrice(candles, price)
         : {
             trend: 'range', recommended: 'neutral', strength: 0, atrPct: null, price,
             detail: '暂时拿不到足够K线数据，已默认中性网格。可手动设置上下边界后启动；不影响下单。',

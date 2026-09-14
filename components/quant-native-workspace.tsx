@@ -1,0 +1,57 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { ArrowDownToLine, ArrowLeft, BookOpen, Check, ChevronRight, Code2, Copy, ExternalLink, FileCode2, FolderOpen, Maximize2, Monitor, RefreshCw, Server, Settings2, Terminal } from "lucide-react";
+import { QUANT_ENGINES, type QuantEngineId } from "@/lib/quant-suite/catalog";
+import type { NativeSourceFile } from "@/lib/quant-suite/native-workspaces";
+import styles from "./quant-native-workspace.module.css";
+
+type NativeInfo = {title: string; kind: string; license: string; source: string; entry: string | null; description: string; requirements: string};
+type Connection = {connected: boolean; uiUrl: string | null; message: string};
+export function QuantNativeWorkspace({engine, info, files, signedIn, canOperate}: {engine: QuantEngineId; info: NativeInfo; files: NativeSourceFile[]; signedIn: boolean; canOperate: boolean}) {
+  const current = QUANT_ENGINES.find(item => item.id === engine)!;
+  const sdk = engine === "nautilus" || engine === "lean";
+  const [language, setLanguage] = useState("zh");
+  const l = (zh: string, en: string) => language === "en" ? en : zh;
+  const [tab, setTab] = useState<"interface" | "source">(sdk ? "source" : "interface");
+  const [connection, setConnection] = useState<Connection | null>(null);
+  const [error, setError] = useState("");
+  const [selected, setSelected] = useState(0);
+  const [query, setQuery] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [generation, setGeneration] = useState(0);
+  const [localInterface, setLocalInterface] = useState(false);
+  const frameContainer = useRef<HTMLDivElement>(null);
+  const file = files[selected];
+  const localPorts: Partial<Record<QuantEngineId, number>> = {freqtrade:8791, hummingbot:8793, jesse:8795, octobot:8796};
+  const localEntry = localPorts[engine] ? `http://127.0.0.1:${localPorts[engine]}` : null;
+  const entry = localInterface ? localEntry : info.entry ?? connection?.uiUrl;
+  useEffect(() => {const sync = () => setLanguage(document.documentElement.dataset.language ?? "zh"); sync(); const observer = new MutationObserver(sync); observer.observe(document.documentElement, {attributes: true, attributeFilter: ["data-language"]}); return () => observer.disconnect();}, []);
+  useEffect(() => {
+    if (!signedIn || !canOperate) return;
+    const controller = new AbortController();
+    fetch(`/api/quant-suite/native/${engine}`, {cache: "no-store", signal: controller.signal}).then(async response => {const data = await response.json(); if (!response.ok) throw new Error(data.message); return data;}).then(data => {setConnection(data); setError("");}).catch(reason => {if (!controller.signal.aborted) setError(reason.message);});
+    return () => controller.abort();
+  }, [engine, signedIn, canOperate, generation]);
+  async function copySource() {if (!file) return; try {await navigator.clipboard.writeText(file.content); setCopied(true); window.setTimeout(() => setCopied(false), 1500);} catch {setError(l("无法访问剪贴板，请选择代码后复制。", "Clipboard unavailable. Select and copy the source."));}}
+  function downloadSource() {if (!file) return; const url = URL.createObjectURL(new Blob([file.content], {type: "text/plain;charset=utf-8"})); const anchor = document.createElement("a"); anchor.href = url; anchor.download = file.name.split("/").at(-1)!; anchor.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);}
+  return <main className={styles.root} data-native-i18n="react">
+    <div className={styles.location}><Link href="/quant-suite"><ArrowLeft size={14}/>{l("量化交易集", "Quant Suite")}</Link><ChevronRight size={13}/><span>{current.name}</span><span className={styles.origin}>{info.kind} · {info.license}</span></div>
+    <nav className={styles.switcher} aria-label={l("切换交易引擎", "Switch engine")}>{QUANT_ENGINES.map(item => <Link key={item.id} href={`/quant-suite/${item.id}`} aria-current={item.id === engine ? "page" : undefined}><i style={{background: item.color}}/>{item.name}</Link>)}</nav>
+    <header className={styles.heading}><div><span className={styles.wordmark}>{engine === "freqtrade" ? "FREQ" : engine === "jesse" ? "J" : engine === "hummingbot" ? "HB" : engine === "octobot" ? "OCTO" : "</>"}</span><div><h1>{info.title}</h1><p>{info.description}</p></div></div><Link className={styles.control} href={`/quant-suite/${engine}/control`}><Settings2 size={15}/>{l("连接与执行", "Connection & execution")}</Link></header>
+    <div className={styles.toolbar}><div role="tablist" aria-label={l("工作台视图", "Workspace views")}>{!sdk && <button role="tab" aria-selected={tab === "interface"} onClick={() => setTab("interface")}><Monitor size={15}/>{l("原版界面", "Upstream interface")}</button>}<button role="tab" aria-selected={tab === "source"} onClick={() => setTab("source")}><Code2 size={15}/>{sdk ? l("官方 SDK 源码", "Official SDK source") : l("运行接入源码", "Integration source")}</button></div><span><i data-connected={Boolean(connection?.connected)}/>{localInterface ? l("本机原版界面", "Local original UI") : connection?.connected ? l("API 地址已配置", "API configured") : l("原生 API 尚未配置", "Native API not configured")}</span><button title={l("重新载入", "Reload")} aria-label={l("重新载入", "Reload")} onClick={() => setGeneration(value => value + 1)}><RefreshCw size={14}/></button></div>
+    <div className={styles.deviceAccess}><Link href="/quant-suite/devices"><ArrowDownToLine size={14}/>{l("下载 .bat · 配对本地执行器", "Download .bat · Pair local worker")}</Link><a href="http://127.0.0.1:8790" target="_blank" rel="noopener noreferrer">{l("本地控制台", "Local console")}<ExternalLink size={12}/></a>{localEntry && <button onClick={() => {setLocalInterface(value => !value); setTab("interface");}}>{localInterface ? l("返回本站前端", "Return to hosted frontend") : l("载入本机原版界面", "Load local original interface")}</button>}</div>
+    {localInterface && localEntry && <div className={styles.notice}><span>{l("需先启动本地执行器并安装此引擎。浏览器若拦截本地网络访问，可在独立窗口中使用完整原版界面。", "Start the local worker and install this engine first. If the browser blocks local network access, open the full original UI in a separate window.")}</span><a href={localEntry} target="_blank" rel="noopener noreferrer">{l("独立窗口打开", "Open in new tab")} ↗</a></div>}
+    {engine === "jesse" && !localInterface && tab === "interface" && <div className={styles.runtimeNote}>{l("此处可浏览官方前端。完整登录、研究和实时交互请安装并打开本机原版界面；本站尚未代理 Jesse 后端。", "Browse the official frontend here. Install and open the local original UI for login, research and live interactions; Jesse backend requests are not proxied by this hosted frontend.")}</div>}
+    {error && <div className={styles.notice} role="alert">{error}</div>}
+    {!signedIn && <div className={styles.notice}><span>{l("可浏览原版前端与源码。连接私有引擎需要登录本站。", "Browse the upstream frontend and source. Sign in to connect a private engine.")}</span><Link href={`/login?next=${encodeURIComponent(`/quant-suite/${engine}`)}`}>{l("登录", "Sign in")} →</Link></div>}
+    {tab === "interface" ? <>
+      <div className={styles.runtimeNote}><Server size={15}/><span>{localInterface ? l("当前载入本机原版服务，实际运行状态以原生界面为准。设备心跳可在「本地交易执行器」查看。", "Loading the local native service. Read its actual state in the original UI; device heartbeats are shown on the local-worker page.") : connection?.connected ? connection.message : l("本站前端与交易进程独立运行。下载并安装本机执行器后，打开本机原版界面使用完整服务。", "The hosted frontend and trading process run independently. Download and install the local worker, then open the local original UI to use its full service.")}</span></div>
+      {entry ? <div ref={frameContainer} className={styles.frameContainer}><div className={styles.frameBar}><span><i/><i/><i/></span><code>{localInterface ? `本机 / ${info.title}` : info.entry ? `本站 / ${info.title}` : info.title}</code><button aria-label={l("全屏原版界面", "Fullscreen upstream interface")} onClick={() => void frameContainer.current?.requestFullscreen().catch(() => setError(l("当前浏览器不支持全屏。", "Fullscreen is unavailable.")))}><Maximize2 size={14}/></button>{entry && <a href={entry} target="_blank" rel="noopener noreferrer" aria-label={l("独立窗口打开原版界面", "Open original UI in a new tab")}><ExternalLink size={14}/></a>}</div><iframe key={generation} src={entry} title={`${current.name} ${l("原版界面", "upstream interface")}`} className={styles.frame} sandbox="allow-scripts allow-same-origin allow-forms allow-downloads" allow="fullscreen" referrerPolicy="same-origin"/></div> : <section className={styles.serverWorkspace}><div className={styles.serverTitle}><Terminal size={24}/><div><h2>{info.title}</h2><p>{l("原版服务尚未部署", "Upstream service has not been deployed")}</p></div></div><div className={styles.serverGrid}><div><span>01 / {l("界面进程", "UI PROCESS")}</span><h3>{engine === "hummingbot" ? "Streamlit" : "Flask + Socket.IO"}</h3><p>{info.description}</p><span>02 / {l("执行依赖", "RUNTIME DEPENDENCIES")}</span><p>{info.requirements}</p><span>03 / {l("当前状态", "CURRENT STATE")}</span><p>{l("Vercel 已部署本站入口；Supabase 不提供运行该原版界面所需的常驻 Python 服务。配置实际运行节点后，此区域直接载入该账户的原版界面。", "The site entry is deployed on Vercel. Supabase does not host the persistent Python service required by this UI. Once a real runtime is configured, this area loads the account's upstream interface.")}</p></div><div className={styles.console}><span>{current.name.toUpperCase()} / SERVICE CHECK</span><p><i>✓</i> {l("本站入口", "Site entry")}</p><p><b>—</b> {l("原版界面服务", "Upstream UI service")}</p><p><b>—</b> {l("原生交易进程", "Native trading process")}</p><p><b>—</b> {l("账户及策略验收", "Account and strategy verification")}</p><hr/><p>{l("等待执行节点接入", "Waiting for an execution node")}<span className={styles.cursor}>▍</span></p><button onClick={() => setTab("source")}><FolderOpen size={14}/>{l("查看真实接入文件", "Inspect integration files")}</button></div></div></section>}
+    </> : <section className={styles.sourceWorkspace}>
+      <aside><div><FolderOpen size={15}/>{sdk ? "UPSTREAM EXAMPLES" : "RUNTIME INTEGRATION"}</div><input aria-label={l("筛选文件", "Filter files")} placeholder={l("筛选文件…", "Filter files…")} value={query} onChange={event => setQuery(event.target.value)}/>{files.map((item, index) => item.name.toLowerCase().includes(query.toLowerCase()) && <button key={item.name} aria-current={selected === index ? "true" : undefined} onClick={() => setSelected(index)}><FileCode2 size={14}/>{item.name}</button>)}<a href={info.source} target="_blank" rel="noopener noreferrer"><BookOpen size={14}/>{l("上游来源与许可", "Upstream source & license")}<ExternalLink size={12}/></a></aside>
+      <div className={styles.editor}><div className={styles.editorBar}><span>{file?.name ?? l("没有可显示的文件", "No files available")}</span><small>{l("源码阅读 · 不会执行浏览器中的代码", "SOURCE VIEW · DOES NOT EXECUTE CODE")}</small><button onClick={() => void copySource()} disabled={!file} aria-label={l("复制源码", "Copy source")}>{copied ? <Check size={14}/> : <Copy size={14}/>}</button><button onClick={downloadSource} disabled={!file} aria-label={l("下载文件", "Download file")}><ArrowDownToLine size={14}/></button></div><pre tabIndex={0}>{file?.content.split("\n").map((line, index) => <div key={index}><span aria-hidden="true">{index + 1}</span><code>{line || " "}</code></div>)}</pre><footer><span>{sdk ? l("官方示例；不是已部署的实盘策略", "Official example; not a deployed live strategy") : l("本站原生引擎接入代码", "Site integration code for the native engine")}</span><Link href={`/quant-suite/${engine}/control`}>{l("配置节点并管理运行", "Configure and operate a node")} →</Link></footer></div>
+    </section>}
+  </main>;
+}

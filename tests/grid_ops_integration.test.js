@@ -33,7 +33,7 @@ test("AI grid Ops route connects safely to the loopback-only trading console", (
 
   assert.match(page, /GridOpsSurface/);
   assert.match(surface, /http:\/\/127\.0\.0\.1:8080/);
-  assert.match(surface, /ENGINE_VERSION = "2\.2\.7"/);
+  assert.match(surface, /ENGINE_VERSION = "2\.3\.1"/);
   assert.match(surface, /CONSOLE_API_VERSION = 8/);
   assert.match(surface, /MIN_COMPATIBLE_ENGINE_VERSION = "1\.2\.3"/);
   assert.match(surface, /isCompatibleEngine\(result\)/);
@@ -41,7 +41,7 @@ test("AI grid Ops route connects safely to the loopback-only trading console", (
   assert.match(surface, /controller\.abort\(\), 5000/);
   assert.doesNotMatch(surface, /COMPATIBLE_ENGINE_VERSIONS/);
   assert.match(surface, /先启动本地交易引擎/);
-  assert.match(surface, /Ondo Perps \/ Phoenix \/ Nado \/ OKX \/ GRVT \/ RHC Lighter/);
+  assert.match(surface, /Ondo Perps \/ Phoenix \/ Nado \/ OKX \/ GRVT \/ Arcus \/ Entropy \/ RHC Lighter/);
   assert.match(surface, /setInterval\(\(\) => void checkEngine\(false\), 3000\)/);
   assert.match(surface, /src=\{`\$\{ENGINE_URL\}\/\?embedded=1&webVersion=\$\{ENGINE_VERSION\}&reload=\$\{frameVersion\}`\}/);
   assert.doesNotMatch(surface, /target="_blank"/);
@@ -61,8 +61,9 @@ test("AI grid Ops route connects safely to the loopback-only trading console", (
   assert.doesNotMatch(dashboard, /\.overview-grid \{ grid-template-columns:/);
   assert.match(dashboard, /class="header-status-strip" role="region" aria-label="交易所运行状态，可左右滑动"/);
   assert.match(dashboard, /\.header-status-strip \{[\s\S]*?overflow-x: auto;/);
-  assert.match(dashboard, /\.header-right > \* \{ flex: 0 0 auto; \}/);
-  assert.match(dashboard, /@media \(max-width: 1400px\) \{[\s\S]*?\.header-right \{ grid-column: 1 \/ -1;/);
+  assert.match(dashboard, /\.main-nav-status > \* \{ flex:0 0 auto; \}/);
+  assert.match(dashboard, /<nav class="main-tabs"[\s\S]*?id="hdr-proxy"[\s\S]*?id="hdr-conn"[\s\S]*?id="hdr-time"[\s\S]*?id="overview-filter-mode"[\s\S]*?<\/nav>/);
+  assert.doesNotMatch(dashboard.slice(dashboard.indexOf('<div class="header">'), dashboard.indexOf('<!-- ── 使用指南支持')), /id="hdr-(?:proxy|conn|time)"/);
   assert.match(dashboard, /document\.querySelector\('\.header-status-strip'\)/);
   assert.match(dashboard, /A \/ B 交易所总控制台/);
   assert.match(dashboard, /id="hedge-console-leg-a"/);
@@ -143,7 +144,7 @@ test("AI grid Ops route connects safely to the loopback-only trading console", (
   assert.match(server, /requireConfirmedClose: true/);
   assert.match(server, /isLoopbackConsoleRequest/);
   assert.match(server, /Access-Control-Allow-Private-Network/);
-  for (const surface of ["Decibel", "Extended", "RISEx", "Binance", "Ondo Perps", "Phoenix", "Nado", "OKX", "GRVT", "RHC Lighter", "AI助手", "环境设置", "IP配置"]) {
+  for (const surface of ["Decibel", "Extended", "RISEx", "Binance", "Ondo Perps", "Phoenix", "Nado", "OKX", "GRVT", "Arcus", "Entropy", "RHC Lighter", "AI助手", "环境设置", "IP配置"]) {
     assert.match(dashboard, new RegExp(surface));
   }
 });
@@ -368,6 +369,8 @@ test("upstream grid engine is bundled locally with no GitHub runtime dependency"
   assert.ok(fs.existsSync(path.join(root, "grid-ops/src/exchange/phoenix/paper.js")));
   assert.ok(fs.existsSync(path.join(root, "grid-ops/src/exchange/nado/nado.js")));
   assert.ok(fs.existsSync(path.join(root, "grid-ops/src/exchange/nado/paper.js")));
+  assert.ok(fs.existsSync(path.join(root, "grid-ops/src/exchange/arcus/arcus.js")));
+  assert.ok(fs.existsSync(path.join(root, "grid-ops/src/exchange/entropy/entropy.js")));
   assert.doesNotMatch(server + launcher, /github\.com\/ZAIJIN88\/3xx-wangge/);
 });
 

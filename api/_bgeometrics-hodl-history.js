@@ -2,6 +2,7 @@ const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 25_000;
 
 const FILES_BASE_URL = "https://charts.bgeometrics.com/files";
+const FILES_MIRROR_BASE_URL = "https://raw.githubusercontent.com/BGeometrics/bgeometrics.github.io/master/files";
 const EXACT_REALIZED_CAP_URL = "https://bitcoin-data.com/v1/realized-cap-hodl-waves";
 
 const AGE_BANDS = [
@@ -146,6 +147,21 @@ function normalizePairSeries(payload) {
 }
 
 async function fetchJson(url) {
+  const candidates = url.startsWith(`${FILES_BASE_URL}/`)
+    ? [url, `${FILES_MIRROR_BASE_URL}/${url.slice(FILES_BASE_URL.length + 1)}`]
+    : [url];
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      return await fetchJsonCandidate(candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error(`Unable to load ${url}`);
+}
+
+async function fetchJsonCandidate(url) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
@@ -182,6 +198,8 @@ function finiteNumber(value) {
 
 export {
   AGE_BANDS,
+  FILES_BASE_URL,
+  FILES_MIRROR_BASE_URL,
   fetchExactRealizedCapShares,
   fetchPublicBtcPriceHistory,
   fetchPublicRealizedCapHistory,

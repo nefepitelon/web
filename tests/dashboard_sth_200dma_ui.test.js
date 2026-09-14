@@ -31,5 +31,5 @@ test("STH / 200DMA model loads public data and supports complete chart interacti
   assert.match(route, /"sth-200dma"/);
   assert.match(css, /\.sth-200dma-stage/);
   assert.match(css, /\.legend-sth-200dma-cross/);
-  assert.match(css, /grid-row: 1 \/ span 30/);
+  assert.match(css, /grid-row: 1 \/ span 32/);
 });

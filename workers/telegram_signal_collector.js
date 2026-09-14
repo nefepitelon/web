@@ -139,7 +139,31 @@ function extractSignalTime(text, suppliedTime) {
     const parsed = new Date(match[1]);
     if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
   }
-  return new Date().toISOString();
+  return null;
+}
+
+function verifiedSignalTime(signal) {
+  const value = extractSignalTime("", signal.signal_time);
+  if (!value || signal.signal_time_source === "unknown") return null;
+  // Older Markdown captures synthesized one-second timestamps backwards from
+  // received_at. Do not let those cached records reappear as new trade signals.
+  if (signal.source_mode === PUBLIC_PREVIEW_SOURCE_MODE && !signal.signal_time_source && signal.received_at) {
+    const collected = new Date(signal.received_at).getTime();
+    const age = collected - new Date(value).getTime();
+    if (Number.isFinite(collected) && age >= -1000 && age <= (RECENT_SIGNAL_LIMIT + 2) * 1000) return null;
+  }
+  return value;
+}
+
+function compareRecentSignals(left, right) {
+  const sameChannel = normalizeChannelUsername(left.channel_username) === normalizeChannelUsername(right.channel_username);
+  const leftId = Number(left.telegram_message_id);
+  const rightId = Number(right.telegram_message_id);
+  if (sameChannel && left.telegram_message_id && right.telegram_message_id && Number.isSafeInteger(leftId) && Number.isSafeInteger(rightId)) {
+    return rightId - leftId;
+  }
+  const time = (signal) => new Date(verifiedSignalTime(signal) || signal.received_at || 0).getTime() || 0;
+  return time(right) - time(left);
 }
 
 function makeDedupeHash({ channelId, channelUsername, messageId, rawText }) {
@@ -216,7 +240,6 @@ function publicPreviewMessagesFromMarkdown(markdown, env = process.env) {
   const escapedChannel = channelUsername.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const source = String(markdown || "");
   const markers = [...source.matchAll(new RegExp(`^\\[\\]\\(https:\\/\\/t\\.me\\/${escapedChannel}\\/(\\d+)\\)\\s*$`, "gmi"))];
-  const collectedAt = Date.now();
 
   return markers.map((marker, index) => {
     const block = source.slice(marker.index + marker[0].length, markers[index + 1]?.index ?? source.length);
@@ -228,13 +251,14 @@ function publicPreviewMessagesFromMarkdown(markdown, env = process.env) {
       .filter((line) => /\[[A-Z0-9]+USDT\]/i.test(line));
     const rawText = signalLines.slice(0, 2).join("\n").trim();
     if (!rawText) return null;
-    const orderOffset = Math.max(0, markers.length - index - 1) * 1000;
     return {
       rawText,
       options: {
         channelUsername,
         messageId: marker[1],
-        signalTime: new Date(collectedAt - orderOffset).toISOString(),
+        // The reader strips Telegram's datetime attribute. Message IDs retain
+        // ordering, but collection time must never impersonate publication time.
+        signalTime: null,
         sourceMode: PUBLIC_PREVIEW_SOURCE_MODE
       }
     };
@@ -261,7 +285,8 @@ function parseTelegramSignal(rawText, options = {}) {
   const price = extractPrice(text);
   const direction = extractDirection(text, priceChangePct);
   const triggerType = extractTriggerType(text, oiChangePct, priceChangePct);
-  const signalTime = extractSignalTime(text, options.signalTime);
+  const suppliedTime = extractSignalTime("", options.signalTime);
+  const signalTime = suppliedTime || extractSignalTime(text);
   const confidence = calculateConfidence({ symbol, direction, price, priceChangePct, oiChangePct, triggerType, signalTime });
   const requiredCount = [symbol, direction !== "unknown", price != null || priceChangePct != null, oiChangePct != null].filter(Boolean).length;
   const parseStatus = requiredCount === 4 ? "parsed" : requiredCount >= 2 ? "partial" : "unparsed";
@@ -285,6 +310,7 @@ function parseTelegramSignal(rawText, options = {}) {
     oi_change_pct: oiChangePct,
     trigger_type: triggerType,
     signal_time: signalTime,
+    signal_time_source: suppliedTime ? "source_timestamp" : signalTime ? "message_text" : "unknown",
     confidence: parseStatus === "unparsed" ? Math.min(confidence, 0.25) : confidence,
     parse_status: parseStatus,
     raw_text: preservedRawText,
@@ -313,7 +339,7 @@ class MemorySignalStore {
 
   async listRecent(limit = RECENT_SIGNAL_LIMIT) {
     return [...this.records.values()]
-      .sort((left, right) => new Date(right.signal_time) - new Date(left.signal_time))
+      .sort(compareRecentSignals)
       .slice(0, limit);
   }
 }
@@ -334,7 +360,7 @@ class BlobSignalStore {
       if (!response.ok) return [];
       const payload = await response.json();
       return (Array.isArray(payload) ? payload : [])
-        .sort((left, right) => new Date(right.signal_time) - new Date(left.signal_time))
+        .sort(compareRecentSignals)
         .slice(0, limit);
     } catch {
       return [];
@@ -364,7 +390,7 @@ class BlobSignalStore {
     const merged = new Map(currentFeed.map((signal) => [signal.dedupe_hash, signal]));
     signals.forEach((signal) => merged.set(signal.dedupe_hash, signal));
     const latestFeed = [...merged.values()]
-      .sort((left, right) => new Date(right.signal_time) - new Date(left.signal_time))
+      .sort(compareRecentSignals)
       .slice(0, RECENT_SIGNAL_LIMIT);
     await this.blobClient.put(`${SIGNAL_FEED_COLLECTION}/latest.json`, JSON.stringify(latestFeed), {
       access: "public",
@@ -389,7 +415,7 @@ class BlobSignalStore {
       }
     }));
     return records.filter(Boolean)
-      .sort((left, right) => new Date(right.signal_time) - new Date(left.signal_time))
+      .sort(compareRecentSignals)
       .slice(0, limit);
   }
 }
@@ -406,14 +432,17 @@ class SupabaseSignalStore {
   }
 
   async upsertMany(signals) {
-    if (!signals.length) return { inserted: 0, duplicates: 0 };
+    // The existing Supabase table requires a non-null signal_time. Untimed
+    // public messages remain in the response without inserting a fabricated date.
+    const timedSignals = signals.filter((signal) => verifiedSignalTime(signal)).map(({ signal_time_source, ...signal }) => signal);
+    if (!timedSignals.length) return { inserted: 0, duplicates: 0 };
     const response = await fetch(`${this.baseUrl}/rest/v1/telegram_signals?on_conflict=dedupe_hash`, {
       method: "POST",
       headers: { ...this.headers, prefer: "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify(signals)
+      body: JSON.stringify(timedSignals)
     });
     if (!response.ok) throw new Error(`telegram_signals upsert failed (${response.status}): ${await response.text()}`);
-    return { inserted: signals.length, duplicates: 0 };
+    return { inserted: timedSignals.length, duplicates: 0 };
   }
 
   async listRecent(limit = RECENT_SIGNAL_LIMIT) {
@@ -579,12 +608,16 @@ async function collectPublicPreviewSignals({
   let writeResult = { inserted: 0, duplicates: 0 };
   let storageError = null;
   let recent = [...signals]
-    .sort((left, right) => new Date(right.signal_time) - new Date(left.signal_time))
+    .sort(compareRecentSignals)
     .slice(0, RECENT_SIGNAL_LIMIT);
   try {
     writeResult = await store.upsertMany(signals);
     const storedRecent = await store.listRecent(RECENT_SIGNAL_LIMIT);
-    if (storedRecent.length) recent = storedRecent;
+    if (storedRecent.length) {
+      const merged = new Map(storedRecent.filter((signal) => signal.source_mode !== "mock").map((signal) => [signal.dedupe_hash, signal]));
+      signals.forEach((signal) => merged.set(signal.dedupe_hash, signal));
+      recent = [...merged.values()].sort(compareRecentSignals).slice(0, RECENT_SIGNAL_LIMIT);
+    }
   } catch (error) {
     storageError = error instanceof Error ? error.message : String(error);
   }
@@ -621,6 +654,7 @@ module.exports = {
   collectTelegramSignals,
   collectPublicPreviewSignals,
   createStoreFromEnv,
+  compareRecentSignals,
   makeDedupeHash,
   matchesTargetChannel,
   mockMessagesFromBody,
@@ -629,5 +663,6 @@ module.exports = {
   publicPreviewMessagesFromHtml,
   publicPreviewMessagesFromMarkdown,
   telegramHtmlToText,
-  telegramMessagesFromUpdate
+  telegramMessagesFromUpdate,
+  verifiedSignalTime
 };

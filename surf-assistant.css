@@ -12,29 +12,54 @@
   position: fixed;
   z-index: 170;
   top: var(--surf-bot-top);
-  right: 18px;
-  width: 70px;
+  right: 12px;
+  width: 60px;
   color: var(--xw-ink);
   font-family: Inter, "Noto Sans SC", system-ui, sans-serif;
   transform: translateY(-50%);
+  transition: transform .18s ease;
   touch-action: none;
 }
+.surf-assistant.is-tucked { transform: translate(calc(100% - 9px),-50%); }
 .surf-assistant,.surf-assistant * { box-sizing: border-box; }
 .surf-assistant button,.surf-assistant textarea,.surf-assistant select { font: inherit; }
 .surf-assistant .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+.surf-edge-toggle {
+  position: absolute;
+  z-index: 7;
+  top: 50%;
+  left: -22px;
+  display: grid;
+  width: 20px;
+  height: 40px;
+  padding: 0;
+  place-items: center;
+  transform: translateY(-50%);
+  color: var(--xw-green);
+  border: 1px solid rgba(117,255,155,.38);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: rgba(5,10,7,.96);
+  box-shadow: -8px 0 22px rgba(34,222,103,.08);
+  cursor: pointer;
+}
+.surf-edge-toggle:hover { background: rgba(15,32,21,.98); }
+.surf-edge-toggle span { font-size: 20px; line-height: 1; transform: translateY(-1px); }
+.surf-assistant.is-open .surf-edge-toggle { opacity: 0; pointer-events: none; }
 
 .surf-bot-toggle {
   position: relative;
   isolation: isolate;
   display: grid;
-  width: 70px;
-  min-height: 98px;
-  padding: 11px 6px 8px;
+  width: 60px;
+  min-height: 84px;
+  padding: 9px 5px 7px;
   place-items: center;
   overflow: visible;
   color: var(--xw-ink);
   border: 1px solid rgba(117,255,155,.5);
-  border-radius: 25px;
+  border-radius: 22px;
   background:
     linear-gradient(rgba(117,255,155,.05) 1px, transparent 1px) 0 0 / 9px 9px,
     linear-gradient(145deg, rgba(15,32,21,.98), rgba(3,8,5,.98));
@@ -49,7 +74,7 @@
   z-index: -1;
   inset: -6px;
   border: 1px solid rgba(117,255,155,.16);
-  border-radius: 30px;
+  border-radius: 27px;
   background: conic-gradient(from 0deg, transparent 0 66%, rgba(117,255,155,.72) 78%, transparent 88%);
   filter: drop-shadow(0 0 8px rgba(117,255,155,.34));
   animation: xwOrbit 6s linear infinite;
@@ -75,8 +100,8 @@
 .surf-bot-robot {
   position: relative;
   display: grid;
-  width: 49px;
-  height: 46px;
+  width: 42px;
+  height: 40px;
   place-items: center;
   border: 1px solid rgba(117,255,155,.72);
   border-radius: 16px 16px 19px 19px;
@@ -84,10 +109,10 @@
   box-shadow: inset 0 -10px 20px rgba(0,0,0,.45), 0 0 18px rgba(117,255,155,.18);
   clip-path: polygon(12% 0,88% 0,100% 15%,100% 86%,86% 100%,14% 100%,0 86%,0 15%);
 }
-.surf-bot-robot::before,.surf-bot-robot::after { content: ""; position: absolute; top: 19px; width: 5px; height: 12px; border: 1px solid rgba(117,255,155,.55); background: #07100b; }.surf-bot-robot::before { left: -6px; border-radius: 4px 0 0 4px; }.surf-bot-robot::after { right: -6px; border-radius: 0 4px 4px 0; }
+.surf-bot-robot::before,.surf-bot-robot::after { content: ""; position: absolute; top: 16px; width: 4px; height: 10px; border: 1px solid rgba(117,255,155,.55); background: #07100b; }.surf-bot-robot::before { left: -5px; border-radius: 4px 0 0 4px; }.surf-bot-robot::after { right: -5px; border-radius: 0 4px 4px 0; }
 .surf-bot-antenna { position: absolute; top: -9px; width: 2px; height: 10px; background: var(--xw-green); box-shadow: 0 0 8px var(--xw-green); }
 .surf-bot-antenna::after { content: ""; position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--xw-green); box-shadow: 0 0 13px var(--xw-green); }
-.surf-bot-face { display: flex; gap: 10px; align-items: center; justify-content: center; width: 35px; height: 23px; border: 1px solid rgba(117,255,155,.18); border-radius: 8px; background: #020604; box-shadow: inset 0 0 12px rgba(117,255,155,.08); }
+.surf-bot-face { display: flex; gap: 9px; align-items: center; justify-content: center; width: 31px; height: 20px; border: 1px solid rgba(117,255,155,.18); border-radius: 7px; background: #020604; box-shadow: inset 0 0 12px rgba(117,255,155,.08); }
 .surf-bot-face b { width: 6px; height: 6px; border-radius: 2px; background: var(--xw-green); box-shadow: 0 0 10px var(--xw-green); animation: xwBlink 4.8s infinite; }
 .surf-bot-body { position: absolute; right: 5px; bottom: 2px; color: var(--xw-green); font: 900 7px "JetBrains Mono", monospace; font-style: normal; text-shadow: 0 0 8px var(--xw-green); }
 .surf-bot-toggle-copy { text-align: center; }.surf-bot-toggle-copy strong,.surf-bot-toggle-copy small { display: block; }.surf-bot-toggle-copy strong { font-size: 11px; letter-spacing: .12em; }.surf-bot-toggle-copy small { margin-top: 3px; color: var(--xw-green); font: 800 6px "JetBrains Mono", monospace; letter-spacing: .08em; white-space: nowrap; }
@@ -142,10 +167,12 @@
 @keyframes xwThinking { 50% { opacity: .3; transform: translateX(3px); } }
 
 @media (max-width: 620px) {
-  .surf-assistant { right: 10px; width: 58px; }
-  .surf-bot-toggle { width: 58px; min-height: 82px; padding: 9px 4px 6px; border-radius: 21px; }
-  .surf-bot-robot { width: 41px; height: 39px; }
-  .surf-bot-face { width: 30px; height: 20px; }
+  .surf-assistant { right: 8px; width: 54px; }
+  .surf-assistant.is-tucked { transform: translate(calc(100% - 7px),-50%); }
+  .surf-edge-toggle { left: -20px; width: 18px; height: 36px; }
+  .surf-bot-toggle { width: 54px; min-height: 76px; padding: 8px 4px 6px; border-radius: 20px; }
+  .surf-bot-robot { width: 38px; height: 36px; }
+  .surf-bot-face { width: 28px; height: 18px; }
   .surf-bot-panel { position: fixed; top: auto; right: 8px; bottom: 8px; width: calc(100vw - 16px); max-height: min(740px,calc(100vh - 16px)); transform: translateY(22px) scale(.98); transform-origin: right bottom; }
   .surf-assistant.is-open .surf-bot-panel { transform: translateY(0) scale(1); }
   .surf-assistant.is-open .surf-bot-toggle { opacity: 0; pointer-events: none; }
@@ -153,4 +180,4 @@
   .surf-bot-messages { min-height: 135px; }
   .surf-bot-actions { flex-wrap: wrap; }.surf-bot-actions label { flex: 1; }.surf-bot-actions select { width: 100%; }
 }
-@media (prefers-reduced-motion: reduce) { .surf-bot-toggle::before,.surf-bot-toggle::after,.surf-bot-face b,.surf-message.loading p::after,.surf-bot-mini::before { animation: none; }.surf-bot-panel,.surf-bot-toggle { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .surf-assistant,.surf-bot-toggle::before,.surf-bot-toggle::after,.surf-bot-face b,.surf-message.loading p::after,.surf-bot-mini::before { animation: none; }.surf-assistant,.surf-bot-panel,.surf-bot-toggle { transition: none; } }

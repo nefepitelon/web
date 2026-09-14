@@ -1,0 +1,6 @@
+{
+  "baseUrl": "http://hummingbot-api:8000",
+  "script": "v2_with_controllers.py",
+  "conf": "welink-reviewed.yml",
+  "backtest": { "backtesting_resolution": "1m", "trade_cost": 0.001, "config": "welink-reviewed.yml" }
+}

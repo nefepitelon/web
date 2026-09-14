@@ -13,6 +13,7 @@
 | AI 网格交易 Ops | `/grid-ops` | `app/grid-ops/`、`grid-ops/` |
 | AIClassic 网格 | `/classic-grid` | `app/classic-grid/`、`classic-grid/`、`lib/classic-grid/` |
 | TideSight 量化与 MACD | `/tidesight-quant`、`/tidesight-quant/macd` | `app/tidesight-quant/`、`lib/tidesight/` |
+| 量化交易集（六引擎） | `/quant-suite`、`/quant-suite/[engine]` | `components/quant-suite-surface.tsx`、`lib/quant-suite/`、`quant-runtime/` |
 | 研究档案 | `/research` | `app/research/`、`lib/research-*` |
 | 排行榜 | `/rankings` | `app/rankings/`、`lib/binance-square-*` |
 | 工具箱 | `/toolbox` | `app/toolbox/`、`lib/toolbox*` |

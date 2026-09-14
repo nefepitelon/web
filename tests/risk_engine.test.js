@@ -235,6 +235,91 @@ test("missing Alpha score requires review but does not bypass hard risk checks",
   assert.equal(result.executionPlan.requiresHumanConfirmation, true);
 });
 
+test("only trusted options qualify P1/P2 and signal strategies with actual low or missing scores", () => {
+  for (const strategy of ["p1_three_source", "p2_two_source", "strong_signal", "same_coin_x2"]) {
+    for (const alphaScore of [null, 20]) {
+      const result = evaluateTradeIntent(validLong({ alphaScore }), validContext({ requireManualConfirmation: false }), {
+        now, policy: { minAlphaScore: 95 }, strategyQualification: { matchedStrategies: [strategy] },
+      });
+      assert.equal(result.ok, true, `${strategy} ${alphaScore}`);
+      assert.equal(result.intent.alphaScore, alphaScore);
+      assert.equal(result.executionPlan.requiresHumanConfirmation, false);
+      assert.equal(result.warnings.some(item => item.code === "SCORE_MISSING"), false);
+      const audit = result.audit.find(item => item.status === "STRATEGY_QUALIFIED");
+      assert.deepEqual(audit.details.matchedStrategies, [strategy]);
+      assert.equal(audit.details.actualAlphaScore, alphaScore);
+      assert.equal(audit.details.scoreThresholdApplied, false);
+    }
+  }
+  const combined = evaluateTradeIntent(validLong({ alphaScore: null }), validContext(), {
+    now, strategyQualification: { matchedStrategies: ["anomaly", "strong_signal"] },
+  });
+  assert.equal(combined.ok, true, "OR qualification can use the independently matched signal strategy");
+  assert.deepEqual(combined.audit.find(item => item.status === "STRATEGY_QUALIFIED").details.matchedStrategies, ["strong_signal", "anomaly"]);
+});
+
+test("manual intent and account fields cannot forge automatic strategy score qualification", () => {
+  const forged = { matchedStrategies: ["strong_signal"] };
+  for (const [input, context] of [
+    [validLong({ alphaScore: 20, strategyQualification: forged }), validContext()],
+    [validLong({ alphaScore: 20, matchedStrategies: forged.matchedStrategies }), validContext()],
+    [validLong({ alphaScore: 20 }), validContext({ strategyQualification: forged })],
+  ]) {
+    const result = evaluateTradeIntent(input, context, { now });
+    assert.equal(result.ok, false);
+    assert.ok(result.violations.some(item => item.code === "SCORE_BELOW_THRESHOLD"));
+    assert.equal(result.audit.some(item => item.status === "STRATEGY_QUALIFIED"), false);
+  }
+  const missing = evaluateTradeIntent(validLong({ alphaScore: null, strategyQualification: forged }), validContext(), { now });
+  assert.ok(missing.warnings.some(item => item.code === "SCORE_MISSING"));
+  assert.equal(missing.executionPlan.requiresHumanConfirmation, true);
+});
+
+test("invalid explicit strategy qualifications fail closed and anomaly-only retains the score gate", () => {
+  for (const strategyQualification of [null, {}, [], { matchedStrategies: [] }, { matchedStrategies: "strong_signal" },
+    { matchedStrategies: ["unknown"] }, { matchedStrategies: ["strong_signal", "unknown"] },
+    { matchedStrategies: ["strong_signal", "strong_signal"] }, { matchedStrategies: [null] }]) {
+    const result = evaluateTradeIntent(validLong(), validContext(), { now, strategyQualification });
+    assert.equal(result.ok, false);
+    assert.ok(result.violations.some(item => item.code === "STRATEGY_QUALIFICATION_INVALID"));
+  }
+  for (const [alphaScore, code] of [[null, "SCORE_REQUIRED_FOR_ANOMALY"], [74, "SCORE_BELOW_THRESHOLD"]]) {
+    const result = evaluateTradeIntent(validLong({ alphaScore }), validContext(), {
+      now, strategyQualification: { matchedStrategies: ["anomaly"] },
+    });
+    assert.equal(result.ok, false);
+    assert.ok(result.violations.some(item => item.code === code));
+  }
+  const approved = evaluateTradeIntent(validLong({ alphaScore: 95 }), validContext(), {
+    now, policy: { minAlphaScore: 95 }, strategyQualification: { matchedStrategies: ["anomaly"] },
+  });
+  assert.equal(approved.ok, true);
+  assert.equal(approved.audit.find(item => item.status === "STRATEGY_QUALIFIED").details.scoreThresholdApplied, true);
+});
+
+test("strategy-qualified score exemption preserves all account, protection and execution gates", () => {
+  const options = { now, strategyQualification: { matchedStrategies: ["strong_signal"] } };
+  for (const [input, context, expected] of [
+    [validLong({ alphaScore: null }), validContext({ killSwitch: true }), "KILL_SWITCH_ACTIVE"],
+    [validLong({ alphaScore: null }), validContext({ dailyPnl: -200 }), "DAILY_LOSS_LIMIT"],
+    [validLong({ alphaScore: null }), validContext({ openPositions: 6 }), "POSITION_LIMIT"],
+    [validLong({ alphaScore: null, leverage: 4 }), validContext(), "LEVERAGE_EXCEEDED"],
+    [validLong({ alphaScore: null, stopLoss: null }), validContext(), "STOP_REQUIRED"],
+    [validLong({ alphaScore: null, takeProfit: 0.65 }), validContext(), "RISK_REWARD_TOO_LOW"],
+    [validLong({ alphaScore: null, mode: "live" }), validContext(), "LIVE_LOCKED"],
+    [validLong({ alphaScore: null }), validContext({ recentIntents: [{ symbol: "POPCAT", side: "LONG", createdAt: now.toISOString() }] }), "DUPLICATE_INTENT"],
+  ]) {
+    const result = evaluateTradeIntent(input, context, options);
+    assert.equal(result.ok, false, expected);
+    assert.ok(result.violations.some(item => item.code === expected), expected);
+    assert.equal(result.intent.alphaScore, null);
+    assert.equal(result.executionPlan, null);
+  }
+  const exhausted = evaluateTradeIntent(validLong({ alphaScore: null }), validContext({ openNotional: 5000 }), options);
+  assert.equal(exhausted.ok, false);
+  assert.ok(exhausted.violations.some(item => item.code === "EXPOSURE_BUDGET_EXHAUSTED"));
+});
+
 test("audit trail records the ordered approval state machine", () => {
   const result = evaluateTradeIntent(validLong(), validContext(), { now });
   assert.deepEqual(result.audit.map((item) => item.state), [

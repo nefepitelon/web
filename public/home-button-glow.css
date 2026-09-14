@@ -1,0 +1,111 @@
+/* Homepage content only: navigation, view, period and Glow stay plain.
+   Keep ::after free: the product tabs use it for their playback progress. */
+@property --home-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.home-page {
+  --home-border-peak: #e7fff3;
+  --home-border-trail: #85caae;
+  --home-border-opacity: .66;
+}
+
+body.home-page[data-theme="light"] {
+  --home-border-peak: #275f4d;
+  --home-border-trail: #75a18c;
+  --home-border-opacity: .64;
+}
+
+/* These panels deliberately retain a dark surface in either page theme. */
+.home-page :is(.product-demo, .research-section, .power-law-toolbar, .power-orbit-controls, .power-metrics) {
+  --home-border-peak: #e7fff3;
+  --home-border-trail: #85caae;
+}
+
+/* Only establish a containing block on normally in-flow controls. The metrics
+   toggle is already absolutely positioned and must keep its original anchor. */
+.home-page :is(main, .site-footer) :is(
+  button:not(.power-metrics-toggle):not(.surf-bot-toggle, [data-view], [data-range]),
+  a.primary-button, a.text-link, a.research-button, a.research-article-pill,
+  a.contact-card, a.social-button, .product-demo-caption > a,
+  .site-footer > a
+) {
+  position: relative;
+}
+
+/* Mask out the entire interior instead of painting over the original fill.
+   Two short opposing glints travel around the existing rounded outline. */
+.home-page :is(main, .site-footer) :is(
+  button:not(.surf-bot-toggle, [data-view], [data-range]), a.primary-button, a.text-link, a.research-button,
+  a.research-article-pill, a.contact-card, a.social-button,
+  .product-demo-caption > a, .site-footer > a
+)::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  box-sizing: border-box;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--home-border-angle),
+    transparent 0deg 44deg,
+    var(--home-border-trail) 66deg,
+    var(--home-border-peak) 78deg,
+    transparent 100deg 224deg,
+    var(--home-border-trail) 246deg,
+    var(--home-border-peak) 258deg,
+    transparent 280deg 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: var(--home-border-opacity, .66);
+  animation: home-border-travel 5.6s linear infinite;
+  transition: opacity 180ms ease;
+}
+
+.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a):is(:hover, :focus-visible)::before {
+  opacity: .95;
+}
+
+/* Stagger neighboring controls so the page reads as a gentle flow, not a flash. */
+.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a):nth-child(2n)::before {
+  animation-delay: -1.8s;
+}
+.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a):nth-child(3n)::before {
+  animation-delay: -3.6s;
+}
+
+.home-page main :is(button:disabled, [aria-disabled="true"])::before {
+  animation: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes home-border-travel {
+  to { --home-border-angle: 360deg; }
+}
+
+/* The normal focus ring remains untouched. Reduced-motion users receive a
+   restrained static outline, and hidden pages stop border repaint work. */
+html.is-page-hidden .home-page :is(main, .site-footer) *::before {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a)::before {
+    animation: none !important;
+    transition: none;
+    opacity: .28;
+  }
+}
+
+/* A browser without composite masks keeps the existing plain borders instead
+   of accidentally covering the button's label with a gradient. */
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a)::before { content: none; }
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "requestConfig": {
+    "mode": "paper",
+    "exchange": "binance",
+    "symbols": ["BTC/USDT:USDT"],
+    "timeframe": "1h",
+    "strategy": "EMACrossResearch",
+    "stakeAmount": 100,
+    "maxOpenTrades": 1,
+    "stopLossPct": 2
+  },
+  "node": {
+    "engine": {
+      "trader_id": "WELINK-BACKTEST001",
+      "logging": { "log_level": "WARNING", "log_colors": false },
+      "strategies": [{
+        "strategy_path": "nautilus_trader.examples.strategies.ema_cross:EMACross",
+        "config_path": "nautilus_trader.examples.strategies.ema_cross:EMACrossConfig",
+        "config": {
+          "instrument_id": "BTCUSDT-PERP.BINANCE",
+          "bar_type": "BTCUSDT-PERP.BINANCE-1-HOUR-LAST-EXTERNAL",
+          "trade_size": "0.001",
+          "fast_ema_period": 12,
+          "slow_ema_period": 26,
+          "request_bars": false,
+          "subscribe_trade_ticks": false
+        }
+      }]
+    },
+    "venues": [{
+      "name": "BINANCE",
+      "oms_type": "NETTING",
+      "account_type": "MARGIN",
+      "base_currency": "USDT",
+      "starting_balances": ["10000 USDT"],
+      "default_leverage": 1
+    }],
+    "data": [{
+      "catalog_path": "/project/catalog",
+      "data_cls": "nautilus_trader.model.data:Bar",
+      "instrument_id": "BTCUSDT-PERP.BINANCE",
+      "bar_spec": "1-HOUR-LAST"
+    }],
+    "raise_exception": true,
+    "dispose_on_completion": false
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "repository": "https://github.com/nautechsystems/nautilus_trader",
+  "license": "LGPL-3.0-or-later",
+  "commit": "27a8e54e7ac3c57d6cbf8891f0283dfbaee97317",
+  "retrievedAt": "2026-09-07",
+  "kind": "Unmodified original upstream SDK examples; not a native graphical user interface",
+  "files": [
+    {
+      "name": "LICENSE",
+      "url": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/27a8e54e7ac3c57d6cbf8891f0283dfbaee97317/LICENSE",
+      "upstreamPath": "LICENSE",
+      "sha256": "ee907919ec88c9c017b1f8b608db20960b6598aefcc4fe58820bde955d65ed3c"
+    },
+    {
+      "name": "binance_spot_futures_sandbox.py",
+      "url": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/27a8e54e7ac3c57d6cbf8891f0283dfbaee97317/examples/sandbox/binance_spot_futures_sandbox.py",
+      "upstreamPath": "examples/sandbox/binance_spot_futures_sandbox.py",
+      "sha256": "529b42e4b23c51b808ceb1d91dd4b585efe143c149c33cf938c60d2b476a5956"
+    },
+    {
+      "name": "model_configs_example.py",
+      "url": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/27a8e54e7ac3c57d6cbf8891f0283dfbaee97317/examples/backtest/model_configs_example.py",
+      "upstreamPath": "examples/backtest/model_configs_example.py",
+      "sha256": "8cb674974d50aa4780a5870f9620ef9b6857f62af7b9e31da213804b76615d73"
+    }
+  ],
+  "version": "1.231.0",
+  "ref": "v1.231.0",
+  "project": "nautilus"
+}

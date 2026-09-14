@@ -8,6 +8,8 @@ import { createExchange as createPhoenix } from './phoenix/index.js';
 import { createExchange as createNado } from './nado/index.js';
 import { createExchange as createOkx } from './okx/index.js';
 import { createExchange as createGrvt } from './grvt/index.js';
+import { createExchange as createArcus } from './arcus/index.js';
+import { createExchange as createEntropy } from './entropy/index.js';
 import { createExchange as createLighter } from './lr/index.js';
 
 const FACTORIES = {
@@ -20,6 +22,8 @@ const FACTORIES = {
   nd: createNado,
   ok: createOkx,
   gv: createGrvt,
+  ar: createArcus,
+  en: createEntropy,
   lr: createLighter,
 };
 
