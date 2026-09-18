@@ -5,7 +5,7 @@ import { getViewer } from "@/lib/membership";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "A股&加密箱体突破看板 · WELINKBTC",
+  title: "箱体突破看板 · WELINKBTC",
   description: "沪深 A 股与 Binance USDT 永续箱体突破扫描：热门板块、连续倍量、资金控盘、箱顶试盘与原生日 K 线。",
 };
 

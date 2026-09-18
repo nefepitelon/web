@@ -17,7 +17,7 @@ test("dashboard exposes the 30th STH-MVRV model with full controls", () => {
   assert.match(html, /id="sth-mvrv-snapshot"/);
   assert.match(html, /id="sth-mvrv-download"/);
   assert.match(html, /id="sth-mvrv-fullscreen"/);
-  assert.match(html, /INDEX \/ 32/);
+  assert.match(html, /INDEX \/ 34/);
   assert.match(html, /短期持有者 MVRV/);
 
   assert.match(js, /\/api\/sth-mvrv\?schema=1/);
@@ -31,7 +31,7 @@ test("dashboard exposes the 30th STH-MVRV model with full controls", () => {
   assert.match(route, /"sth-mvrv"/);
   assert.match(css, /\.sth-mvrv-stage/);
   assert.match(css, /\.legend-sth-mvrv-breakeven/);
-  assert.match(css, /grid-row: 1 \/ span 32/);
+  assert.match(css, /grid-row: 1 \/ span 34/);
 });
 
 test("homepage exposes the 30th STH-MVRV snapshot", () => {

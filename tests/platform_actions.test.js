@@ -58,7 +58,7 @@ test("AlphaOps and Alpha Radar apply language preferences to their full workspac
   const translator = fs.readFileSync(path.join(root, "ui-translations.js"), "utf8");
 
   assert.match(alphaOpsHtml, /<script src="ui-translations\.js"><\/script>\s*<script src="script\.js"><\/script>/);
-  assert.match(radarHtml, /<script src="ui-translations\.js"><\/script>\s*<script src="alpha-scanner\.js\?v=20260911-radar-v7"><\/script>/);
+  assert.match(radarHtml, /<script src="ui-translations\.js\?v=20260918-radar-v8"><\/script>\s*<script src="alpha-scanner\.js\?v=20260918-radar-v8"><\/script>/);
   assert.match(siteScript, /alphaOpsUiTranslator\?\.setLanguage\(currentLanguage\)/);
   assert.match(radarScript, /radarUiTranslator\?\.setLanguage\(platformLang\)/);
   assert.match(translator, /alphaops: \[/);

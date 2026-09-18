@@ -84,6 +84,17 @@ const overlapAllSymbols = document.querySelector("#overlap-all-symbols");
 const poolCandidateList = document.querySelector("#pool-candidate-list");
 const poolVisibleCount = document.querySelector("#pool-visible-count");
 const poolFilterButtons = [...document.querySelectorAll("[data-pool-filter]")];
+const boxScanButtons = [...document.querySelectorAll("[data-box-scan]")];
+const boxNotice = document.querySelector("#alpha-box-notice");
+const boxResults = document.querySelector("#alpha-box-results");
+const boxSearch = document.querySelector("#alpha-box-search");
+const boxFilter = document.querySelector("#alpha-box-filter");
+const boxSort = document.querySelector("#alpha-box-sort");
+const boxJob = document.querySelector("#alpha-box-job");
+const boxProgress = document.querySelector("#alpha-box-progress");
+const boxJobLabel = document.querySelector("#alpha-box-job-label");
+const boxJobCount = document.querySelector("#alpha-box-job-count");
+const boxJobLog = document.querySelector("#alpha-box-job-log");
 const tradeIntentForm = document.querySelector("#trade-intent-form");
 const riskDecisionView = document.querySelector("#risk-decision-view");
 const riskSubmit = document.querySelector("#risk-submit");
@@ -183,6 +194,13 @@ let surfPulseItems = [];
 let surfPulseSeenIds = new Set();
 let surfPulseNewIds = new Set();
 let activeSurfFilter = "all";
+let boxBreakoutState = null;
+let boxBreakoutLoading = false;
+let boxBreakoutTimer = null;
+let boxQuoteTimer = null;
+let boxQuotes = new Map();
+let boxChartRequest = 0;
+const boxChartCache = new Map();
 let pendingExecutionPlan = null;
 let paperMonitorTimer = null;
 let paperRenderQueued = false;
@@ -254,19 +272,19 @@ function updateSourceHealth(key, state = "live", timestamp = Date.now()) {
 }
 
 function renderSourceHealth() {
-  let healthy = 0;
+  const healthyKeys = new Set();
   document.querySelectorAll("[data-source-health]").forEach((row) => {
     const key = row.dataset.sourceHealth;
     const source = sourceHealth.get(key);
     const ttl = key === "signals" ? telegramSignalRefreshMs + 60_000 : key === "momentum" ? cryptoBubblesRefreshMs + 60_000 : 120_000;
     const fresh = source && source.state === "live" && Date.now() - source.timestamp < ttl;
-    if (fresh) healthy += 1;
+    if (fresh) healthyKeys.add(key);
     row.querySelector("i").className = `source-dot${fresh ? " live" : ""}`;
-    row.querySelector("em").textContent = fresh ? "LIVE" : source ? source.state === "error" ? "重连" : "缓存" : "等待";
-    row.title = source ? `最近同步 ${new Date(source.timestamp).toLocaleTimeString("zh-CN", { hour12: false })}` : "尚未收到数据";
+    row.querySelector("em").textContent = fresh ? radarText("实时", "LIVE") : source ? source.state === "error" ? radarText("重连", "RETRY") : radarText("缓存", "CACHED") : radarText("等待", "WAITING");
+    row.title = source ? `${radarText("最近同步", "Last sync")} ${new Date(source.timestamp).toLocaleTimeString(platformLang === "en" ? "en-GB" : "zh-CN", { hour12: false })}` : radarText("尚未收到数据", "No data received yet");
   });
   const count = document.querySelector("#source-health-count");
-  if (count) count.textContent = `${healthy} / 4`;
+  if (count) count.textContent = `${healthyKeys.size} / 4`;
 }
 
 function renderLiveSummaryMetrics() {
@@ -859,7 +877,9 @@ function renderRiskPool() {
   vennMomentumCount.textContent = model.ready.momentum ? model.momentumSet.size : "—";
   vennSignalCount.textContent = model.ready.signal ? model.signalSet.size : "—";
   riskPoolTotal.textContent = model.candidates.length || "—";
-  riskPoolState.textContent = allReady ? "三路实时 · 已去重" : `已连接 ${readyCount} / 3 路`;
+  riskPoolState.textContent = allReady
+    ? radarText("三路实时 · 已去重", "Three sources live · deduplicated")
+    : radarText(`已连接 ${readyCount} / 3 路`, `${readyCount} / 3 sources connected`);
 
   renderRiskPoolOverlap(overlapScanMomentum, scanMomentum, model.ready.scan && model.ready.momentum);
   renderRiskPoolOverlap(overlapScanSignal, scanSignal, model.ready.scan && model.ready.signal);
@@ -903,6 +923,15 @@ function formatMarketPrice(symbol, value) {
 function prepareMarketTape() {
   const track = document.querySelector("#market-tape-track");
   const sourceGroup = track?.querySelector(".market-tape-group");
+  if (!track || !sourceGroup || track.children.length > 1) return;
+  const clone = sourceGroup.cloneNode(true);
+  clone.setAttribute("aria-hidden", "true");
+  track.append(clone);
+}
+
+function prepareSourceTape() {
+  const track = document.querySelector("#source-tape-track");
+  const sourceGroup = track?.querySelector(".source-tape-group");
   if (!track || !sourceGroup || track.children.length > 1) return;
   const clone = sourceGroup.cloneNode(true);
   clone.setAttribute("aria-hidden", "true");
@@ -1058,6 +1087,7 @@ function connectFuturesMarketFeed() {
 
 function startMarketFeed() {
   prepareMarketTape();
+  prepareSourceTape();
   hydrateMarketSnapshot();
   connectMarketFeed();
   connectFuturesMarketFeed();
@@ -1070,6 +1100,268 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function radarText(zh, en) {
+  return platformLang === "en" ? en : zh;
+}
+
+function boxSourceLabel(mode) {
+  if (mode === "crypto-radar") return radarText("α-RadarTP 异动排行榜", "α-RadarTP anomaly ranking");
+  if (mode === "crypto-mainstream") return radarText("α-RadarTP 热门精选主流", "α-RadarTP featured majors");
+  return radarText("Binance 永续涨幅 TOP 30", "Binance futures top 30 gainers");
+}
+
+function boxStatusLabel(candidate) {
+  if (candidate.score >= 85) return radarText("达标关注", "Qualified");
+  if (candidate.score >= 70) return radarText("突破观察", "Breakout watch");
+  if (candidate.score >= 50) return radarText("观察", "Watch");
+  return radarText("箱内 / 排除", "Inside box / excluded");
+}
+
+function boxConditionLabel(condition) {
+  const labels = {
+    volume: ["倍量启动", "Volume expansion"],
+    tests: ["上沿试盘", "Upper-bound tests"],
+    momentum: ["24 小时涨幅强度", "24h momentum"],
+    theme: ["热点题材", "Theme momentum"],
+    flow: ["资金与控盘", "Flow and control"]
+  };
+  const value = labels[condition.key] || [condition.label || "评分项", condition.key || "Condition"];
+  return radarText(value[0], value[1]);
+}
+
+function boxConditionDetail(condition, candidate) {
+  if (platformLang !== "en") return condition.detail || "—";
+  if (condition.key === "volume") return `${candidate.volume?.days || 0} consecutive days · ${Number(candidate.volume?.ratio || 0).toFixed(2)}× current ratio`;
+  if (condition.key === "tests") return `${candidate.box?.tests || 0} verified upper-bound tests`;
+  if (condition.key === "momentum") return `${Number(candidate.quote?.changePct || 0) >= 0 ? "+" : ""}${Number(candidate.quote?.changePct || 0).toFixed(2)}% over 24h`;
+  return `${condition.points || 0} / ${condition.maximum || 0}`;
+}
+
+function boxDisplayCandidates() {
+  const source = Array.isArray(boxBreakoutState?.crypto) ? boxBreakoutState.crypto : [];
+  const search = String(boxSearch?.value || "").trim().toUpperCase();
+  const filter = boxFilter?.value || "all";
+  const sort = boxSort?.value || "change";
+  return source.filter((candidate) => {
+    if (search && !`${candidate.symbol} ${candidate.name}`.toUpperCase().includes(search)) return false;
+    if (filter === "qualified" && !candidate.qualified) return false;
+    if (filter === "watch" && candidate.score < 70) return false;
+    return true;
+  }).sort((a, b) => {
+    if (sort === "score") return Number(b.score) - Number(a.score);
+    if (sort === "volume") return Number(b.volume?.ratio || 0) - Number(a.volume?.ratio || 0);
+    return Number(b.quote?.changePct || 0) - Number(a.quote?.changePct || 0);
+  });
+}
+
+function formatBoxPrice(value) {
+  const price = Number(value);
+  if (!Number.isFinite(price)) return "—";
+  const digits = price >= 100 ? 2 : price >= 1 ? 4 : 6;
+  return `$${price.toLocaleString("en-US", { maximumFractionDigits: digits })}`;
+}
+
+function renderBoxCandidate(candidate) {
+  const quote = boxQuotes.get(candidate.symbol) || candidate.quote || {};
+  const change = Number(quote.changePct || 0);
+  const warnings = Array.isArray(candidate.dataWarnings) ? candidate.dataWarnings.length : 0;
+  const conditions = Array.isArray(candidate.conditions) ? candidate.conditions : [];
+  return `<article class="alpha-box-card">
+    <header><div><small>${escapeHtml(String(candidate.symbol || "").replace(/USDT$/i, ""))} / USDT</small><h3>${escapeHtml(candidate.name || String(candidate.symbol || "").replace(/USDT$/i, ""))}</h3></div><strong>${Number(candidate.score || 0)}<em>/100</em></strong></header>
+    <div class="alpha-box-quote"><b>${formatBoxPrice(quote.price)}</b><span class="${change >= 0 ? "up" : "down"}">${change >= 0 ? "+" : ""}${change.toFixed(2)}%</span><em>${boxStatusLabel(candidate)}</em></div>
+    <canvas class="alpha-box-chart" data-box-chart="${escapeHtml(candidate.symbol)}" width="520" height="150" aria-label="${escapeHtml(candidate.symbol)} ${radarText("日线箱体图", "daily box chart")}"></canvas>
+    <div class="alpha-box-conditions">${conditions.map((condition) => `<div class="${condition.passed ? "passed" : ""}"><span>${escapeHtml(boxConditionLabel(condition))}<b>${Number(condition.points || 0)} / ${Number(condition.maximum || 0)}</b></span><small>${escapeHtml(boxConditionDetail(condition, candidate))}</small></div>`).join("")}</div>
+    <footer><span>${candidate.box ? `${radarText("箱体位置", "Box position")} ${Number(candidate.box.positionPct || 0).toFixed(1)}% · ${radarText("试盘", "Tests")} ${candidate.box.tests || 0}` : radarText("尚未形成有效箱体", "No valid box yet")}</span><a href="/box-breakout" target="_top">${radarText("完整复盘", "Full review")} ↗</a></footer>
+    ${warnings ? `<p class="alpha-box-warning">${radarText(`${warnings} 项数据说明`, `${warnings} data note${warnings === 1 ? "" : "s"}`)}</p>` : ""}
+  </article>`;
+}
+
+function renderBoxBreakout() {
+  if (!boxResults) return;
+  const candidates = Array.isArray(boxBreakoutState?.crypto) ? boxBreakoutState.crypto : [];
+  const visible = boxDisplayCandidates();
+  const qualified = candidates.filter((candidate) => candidate.qualified).length;
+  const watch = candidates.filter((candidate) => candidate.score >= 70 && candidate.score < 85).length;
+  const mode = boxBreakoutState?.cryptoSourceMode || "crypto";
+  document.querySelector("#alpha-box-total").textContent = candidates.length.toLocaleString();
+  document.querySelector("#alpha-box-qualified").textContent = qualified.toLocaleString();
+  document.querySelector("#alpha-box-watch").textContent = watch.toLocaleString();
+  document.querySelector("#alpha-box-source").textContent = boxSourceLabel(mode);
+  document.querySelector("#alpha-box-visible-count").textContent = radarText(`${visible.length} 个结果`, `${visible.length} results`);
+  document.querySelector("#alpha-box-pool-title").textContent = mode === "crypto-radar"
+    ? radarText("α-RadarTP 异动机会池", "α-RadarTP anomaly opportunities")
+    : mode === "crypto-mainstream"
+      ? radarText("α-RadarTP 主流机会池", "α-RadarTP major opportunities")
+      : radarText("加密涨幅机会池", "Crypto gainer opportunities");
+  const updated = boxBreakoutState?.asOf ? new Date(boxBreakoutState.asOf) : null;
+  document.querySelector("#alpha-box-updated").textContent = updated && !Number.isNaN(updated.getTime())
+    ? updated.toLocaleString(platformLang === "en" ? "en-GB" : "zh-CN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+    : "—";
+
+  const job = boxBreakoutState?.job;
+  const cryptoJob = job && ["crypto", "crypto-radar", "crypto-mainstream"].includes(job.mode);
+  boxJob.hidden = !cryptoJob;
+  if (cryptoJob) {
+    const jobState = { queued: ["排队中", "Queued"], running: ["进行中", "Running"], complete: ["已完成", "Complete"], cancelled: ["已取消", "Cancelled"], failed: ["失败", "Failed"] }[job.status] || [job.status, job.status];
+    boxJobLabel.textContent = `${boxSourceLabel(job.mode)} · ${radarText(jobState[0], jobState[1])}`;
+    boxJobCount.textContent = `${Number(job.processed || 0)} / ${Number(job.total || 0)}`;
+    boxProgress.max = Math.max(Number(job.total || 0), 1);
+    boxProgress.value = Number(job.processed || 0);
+    boxJobLog.textContent = platformLang === "en" ? radarText("", "Background scan state is synced from the full dashboard.") : (job.logs?.at(-1) || "正在准备行情源…");
+  }
+
+  boxScanButtons.forEach((button) => {
+    const running = job && ["queued", "running"].includes(job.status);
+    button.disabled = boxBreakoutLoading || running || !boxBreakoutState?.signedIn;
+    button.classList.toggle("active", button.dataset.boxScan === mode);
+  });
+
+  if (!boxBreakoutState?.signedIn) {
+    boxNotice.hidden = false;
+    boxNotice.innerHTML = `${radarText("登录并完成账户验证后，可启动独立后台扫描；已有快照仍可在此查看。", "Sign in and complete account verification to start a persistent scan. Existing snapshots remain available here.")} <a href="/login?next=%2Falpha-radar" target="_top">${radarText("登录 / 注册", "Sign in / register")} ↗</a>`;
+  } else if (boxBreakoutState.error) {
+    boxNotice.hidden = false;
+    boxNotice.textContent = boxBreakoutState.error;
+  } else {
+    boxNotice.hidden = true;
+    boxNotice.textContent = "";
+  }
+
+  boxResults.innerHTML = visible.length
+    ? visible.slice(0, 12).map(renderBoxCandidate).join("")
+    : `<div class="alpha-box-empty"><i aria-hidden="true">◎</i><strong>${radarText(candidates.length ? "当前筛选暂无结果" : "等待加密市场扫描", candidates.length ? "No results match this filter" : "Ready for a crypto scan")}</strong><span>${radarText(candidates.length ? "调整筛选条件查看完整扫描结果。" : "选择一种真实数据源，扫描任务会在后台持续完成。", candidates.length ? "Change the filter to inspect the complete scan." : "Choose a live source; the scan continues safely in the background.")}</span></div>`;
+  hydrateBoxCharts();
+  scheduleBoxQuoteRefresh();
+}
+
+function drawBoxChart(canvas, bars, box) {
+  const context = canvas.getContext("2d");
+  if (!context || !Array.isArray(bars) || !bars.length) return;
+  const ratio = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 520;
+  const height = canvas.clientHeight || 150;
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  context.clearRect(0, 0, width, height);
+  const shown = bars.slice(-64);
+  const low = Math.min(...shown.map((bar) => Number(bar.low)));
+  const high = Math.max(...shown.map((bar) => Number(bar.high)));
+  const range = Math.max(high - low, high * 0.002, 0.000001);
+  const xStep = width / shown.length;
+  const y = (value) => 8 + (high - Number(value)) / range * (height - 22);
+  context.strokeStyle = "rgba(126, 164, 222, .12)";
+  context.lineWidth = 1;
+  [0.25, 0.5, 0.75].forEach((part) => { context.beginPath(); context.moveTo(0, height * part); context.lineTo(width, height * part); context.stroke(); });
+  if (box) {
+    context.fillStyle = "rgba(132, 164, 255, .07)";
+    context.fillRect(0, y(box.high), width, Math.max(1, y(box.low) - y(box.high)));
+    context.setLineDash([4, 4]);
+    context.strokeStyle = "rgba(244, 196, 93, .62)";
+    [box.high, box.low].forEach((value) => { context.beginPath(); context.moveTo(0, y(value)); context.lineTo(width, y(value)); context.stroke(); });
+    context.setLineDash([]);
+  }
+  shown.forEach((bar, index) => {
+    const x = index * xStep + xStep / 2;
+    const rising = Number(bar.close) >= Number(bar.open);
+    context.strokeStyle = rising ? "#75ddb1" : "#ee8d94";
+    context.fillStyle = rising ? "#75ddb1" : "#ee8d94";
+    context.beginPath(); context.moveTo(x, y(bar.high)); context.lineTo(x, y(bar.low)); context.stroke();
+    const top = Math.min(y(bar.open), y(bar.close));
+    context.fillRect(x - Math.max(1, xStep * 0.26), top, Math.max(2, xStep * 0.52), Math.max(1, Math.abs(y(bar.open) - y(bar.close))));
+  });
+}
+
+async function hydrateBoxCharts() {
+  const requestId = ++boxChartRequest;
+  const candidates = new Map(boxDisplayCandidates().slice(0, 12).map((candidate) => [candidate.symbol, candidate]));
+  const canvases = [...document.querySelectorAll("[data-box-chart]")];
+  await Promise.all(canvases.map(async (canvas) => {
+    const symbol = canvas.dataset.boxChart;
+    const candidate = candidates.get(symbol);
+    if (!candidate) return;
+    const cached = boxChartCache.get(symbol);
+    if (cached && Date.now() - cached.at < 60_000) {
+      drawBoxChart(canvas, cached.bars, candidate.box);
+      return;
+    }
+    try {
+      const response = await fetch(`/api/box-breakout/chart?market=crypto&symbol=${encodeURIComponent(symbol)}`, { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || requestId !== boxChartRequest) return;
+      boxChartCache.set(symbol, { at: Date.now(), bars: payload.bars });
+      drawBoxChart(canvas, payload.bars, candidate.box);
+    } catch {}
+  }));
+}
+
+function scheduleBoxBreakout(delay) {
+  window.clearTimeout(boxBreakoutTimer);
+  if (!document.hidden) boxBreakoutTimer = window.setTimeout(() => hydrateBoxBreakout(), delay);
+}
+
+async function hydrateBoxBreakout() {
+  if (!boxResults || boxBreakoutLoading || document.hidden) return;
+  boxBreakoutLoading = true;
+  try {
+    const response = await fetch("/api/box-breakout", { cache: "no-store" });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || radarText("箱体扫描状态暂不可用", "Box scan status is unavailable"));
+    boxBreakoutState = payload;
+    renderBoxBreakout();
+  } catch (error) {
+    if (boxNotice) {
+      boxNotice.hidden = false;
+      boxNotice.textContent = error instanceof Error ? error.message : radarText("箱体扫描状态暂不可用", "Box scan status is unavailable");
+    }
+  } finally {
+    boxBreakoutLoading = false;
+    const running = boxBreakoutState?.job && ["queued", "running"].includes(boxBreakoutState.job.status);
+    scheduleBoxBreakout(running ? 2500 : 45_000);
+  }
+}
+
+async function startBoxBreakoutScan(mode) {
+  if (boxBreakoutLoading) return;
+  boxBreakoutLoading = true;
+  boxScanButtons.forEach((button) => { button.disabled = true; });
+  if (boxNotice) {
+    boxNotice.hidden = false;
+    boxNotice.textContent = radarText("扫描任务正在提交…", "Submitting the scan…");
+  }
+  try {
+    const response = await fetch("/api/box-breakout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "scan", mode }) });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || radarText("扫描提交失败", "Unable to start scan"));
+    boxBreakoutState = payload;
+    renderBoxBreakout();
+    scheduleBoxBreakout(1200);
+  } catch (error) {
+    boxNotice.hidden = false;
+    boxNotice.textContent = error instanceof Error ? error.message : radarText("扫描提交失败", "Unable to start scan");
+  } finally {
+    boxBreakoutLoading = false;
+  }
+}
+
+function scheduleBoxQuoteRefresh() {
+  window.clearTimeout(boxQuoteTimer);
+  const symbols = boxDisplayCandidates().slice(0, 12).map((candidate) => candidate.symbol);
+  if (!symbols.length || document.hidden) return;
+  boxQuoteTimer = window.setTimeout(async () => {
+    try {
+      const response = await fetch(`/api/box-breakout/quotes?market=crypto&symbols=${encodeURIComponent(symbols.join(","))}`, { cache: "no-store" });
+      const payload = await response.json();
+      if (response.ok && Array.isArray(payload.quotes)) {
+        payload.quotes.forEach((quote) => boxQuotes.set(quote.symbol, quote));
+        renderBoxBreakout();
+      }
+    } catch {
+      scheduleBoxQuoteRefresh();
+    }
+  }, 3000);
 }
 
 function avatarClass(symbol) {
@@ -1811,12 +2103,12 @@ async function hydrateSurfPulse({ announce = false } = {}) {
   if (!surfPulseFeed || surfPulseLoading) return;
   surfPulseLoading = true;
   refreshSurfPulse?.classList.add("loading");
-  setSurfLiveState("loading", surfPulseItems.length ? "刷新中" : "同步中");
+  setSurfLiveState("loading", surfPulseItems.length ? radarText("刷新中", "Refreshing") : radarText("同步中", "Syncing"));
   surfPulseFeed.setAttribute("aria-busy", "true");
 
   try {
     const refreshParam = announce ? `&refresh=${Date.now()}` : "";
-    const response = await fetch(`/api/surf-pulse?limit=90&lang=zh${refreshParam}`, { cache: "no-store" });
+    const response = await fetch(`/api/surf-pulse?limit=90&lang=${platformLang}${refreshParam}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`Surf Pulse ${response.status}`);
     const payload = await response.json();
     const incoming = Array.isArray(payload.items) ? payload.items : [];
@@ -1828,15 +2120,15 @@ async function hydrateSurfPulse({ announce = false } = {}) {
     surfPulseItems = incoming;
     renderSurfPulse();
     const fetchedAt = new Date(payload.fetchedAt);
-    const time = Number.isNaN(fetchedAt.getTime()) ? "实时" : fetchedAt.toLocaleTimeString("zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    setSurfLiveState("live", `实时 · ${time}`);
-    if (announce) showToast(`实时情报流已更新 ${incoming.length} 条 15 日内信息`);
+    const time = Number.isNaN(fetchedAt.getTime()) ? radarText("实时", "Live") : fetchedAt.toLocaleTimeString(platformLang === "en" ? "en-GB" : "zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    setSurfLiveState("live", `${radarText("实时", "Live")} · ${time}`);
+    if (announce) showToast(radarText(`实时情报流已更新 ${incoming.length} 条 15 日内信息`, `Intelligence feed updated with ${incoming.length} items from the last 15 days`));
   } catch (error) {
     if (!surfPulseItems.length) {
-      surfPulseFeed.innerHTML = `<div class="surf-feed-state"><strong>实时情报源暂时不可用</strong><span>系统将在 10 分钟后自动重试</span></div>`;
+      surfPulseFeed.innerHTML = `<div class="surf-feed-state"><strong>${radarText("实时情报源暂时不可用", "Live intelligence is temporarily unavailable")}</strong><span>${radarText("系统将在 10 分钟后自动重试", "The system will retry in 10 minutes")}</span></div>`;
     }
-    setSurfLiveState("error", "重试中");
-    if (announce) showToast("实时情报源暂时不可用，正在自动重试", true);
+    setSurfLiveState("error", radarText("重试中", "Retrying"));
+    if (announce) showToast(radarText("实时情报源暂时不可用，正在自动重试", "Live intelligence is unavailable; retrying automatically"), true);
   } finally {
     surfPulseFeed.setAttribute("aria-busy", "false");
     surfPulseLoading = false;
@@ -3873,9 +4165,45 @@ document.querySelector("#export-audit")?.addEventListener("click", exportLiveAud
 const mobileMenu = document.querySelector("#mobile-menu");
 const sidebar = document.querySelector("#sidebar");
 const sidebarToggle = document.querySelector("#sidebar-toggle");
+const layoutModeToggle = document.querySelector("#layout-mode-toggle");
+const appShell = document.querySelector(".app-shell");
 const sidebarMedia = window.matchMedia("(max-width: 1440px)");
+let platformLang = localStorage.getItem("welinkbtc-language") === "en" ? "en" : "zh";
+let platformThemeMode = localStorage.getItem("welinkbtc-theme") || "dark";
 let sidebarPreference = null;
+let workspaceLayoutMode = "grid";
+let activeWorkspaceSection = "radar";
 try { sidebarPreference = localStorage.getItem("alpha-radar-sidebar"); } catch {}
+try { workspaceLayoutMode = localStorage.getItem("alpha-radar-layout-mode") === "tabs" ? "tabs" : "grid"; } catch {}
+const requestedSection = window.location.hash.replace(/^#/, "");
+if (document.querySelector(`.side-nav a[data-section="${CSS.escape(requestedSection)}"]`)) activeWorkspaceSection = requestedSection;
+
+function updateLayoutModeLabel() {
+  if (!layoutModeToggle) return;
+  const tabs = workspaceLayoutMode === "tabs";
+  layoutModeToggle.setAttribute("aria-pressed", String(tabs));
+  layoutModeToggle.setAttribute("aria-label", tabs ? radarText("切换为整体平铺", "Switch to full layout") : radarText("切换为分页浏览", "Switch to tab view"));
+  layoutModeToggle.querySelector("span").textContent = tabs ? radarText("整体平铺", "Full layout") : radarText("分页浏览", "Tab view");
+}
+
+function selectWorkspaceSection(section, { updateHash = false } = {}) {
+  activeWorkspaceSection = section;
+  document.querySelectorAll(".side-nav a").forEach((item) => item.classList.toggle("active", item.dataset.section === section));
+  document.querySelectorAll(".alpha-main-column > section").forEach((item) => item.toggleAttribute("data-tab-active", item.id === section || (item.id === "execution-monitor" && section === "execution-control")));
+  document.querySelector("#surf-pulse")?.toggleAttribute("data-tab-active", section === "signals");
+  appShell.dataset.activeSection = section;
+  if (updateHash) history.replaceState(null, "", `#${section}`);
+}
+
+function setWorkspaceLayout(mode, persist = false) {
+  workspaceLayoutMode = mode === "tabs" ? "tabs" : "grid";
+  appShell.dataset.workspaceLayout = workspaceLayoutMode;
+  updateLayoutModeLabel();
+  selectWorkspaceSection(activeWorkspaceSection);
+  if (persist) {
+    try { localStorage.setItem("alpha-radar-layout-mode", workspaceLayoutMode); } catch {}
+  }
+}
 function setSidebarCollapsed(collapsed, persist = false) {
   document.querySelector(".app-shell").classList.toggle("sidebar-collapsed", collapsed);
   [sidebarToggle, mobileMenu].forEach((button) => {
@@ -3898,26 +4226,23 @@ sidebarMedia.addEventListener("change", (event) => {
 document.querySelectorAll(".side-nav a").forEach((link) => {
   link.setAttribute("aria-label", link.querySelector("strong").textContent);
   link.title = link.querySelector("strong").textContent;
-  link.addEventListener("click", () => {
-    document.querySelectorAll(".side-nav a").forEach((item) => item.classList.toggle("active", item === link));
+  link.addEventListener("click", (event) => {
+    const section = link.dataset.section;
+    if (workspaceLayoutMode === "tabs") event.preventDefault();
+    selectWorkspaceSection(section, { updateHash: workspaceLayoutMode === "tabs" });
     if (window.innerWidth <= 820) setSidebarCollapsed(true);
   });
 });
+layoutModeToggle?.addEventListener("click", () => setWorkspaceLayout(workspaceLayoutMode === "tabs" ? "grid" : "tabs", true));
+setWorkspaceLayout(workspaceLayoutMode);
 
 const platformMenuToggle = document.querySelector("#platform-menu-toggle");
 const platformNav = document.querySelector("#platform-nav");
 const platformLanguage = document.querySelector("#platform-language");
 const platformTheme = document.querySelector("#platform-theme");
-let platformLang = localStorage.getItem("welinkbtc-language") || "zh";
-let platformThemeMode = localStorage.getItem("welinkbtc-theme") || "dark";
 const radarUiTranslator = window.WelinkUiTranslator?.create({
-  roots: [
-    document.querySelector(".app-shell"),
-    ...document.querySelectorAll("dialog"),
-    document.querySelector(".toast")
-  ],
-  profile: "radar",
-  exclude: ".surf-pulse-feed .surf-card-title, .surf-pulse-feed .surf-card-summary"
+  roots: [document.body],
+  profile: "radar"
 });
 
 function applyPlatformTheme() {
@@ -3934,12 +4259,30 @@ function applyPlatformTheme() {
 
 function applyPlatformLanguage() {
   document.documentElement.lang = platformLang === "zh" ? "zh-CN" : "en";
+  document.documentElement.dataset.radarLanguage = platformLang;
   document.querySelectorAll("[data-platform-zh]").forEach((item) => {
     item.textContent = item.dataset[`platform${platformLang === "zh" ? "Zh" : "En"}`];
   });
-  platformLanguage.textContent = platformLang === "zh" ? "EN" : "中";
+  document.querySelectorAll("[data-radar-zh]").forEach((item) => {
+    item.textContent = item.dataset[`radar${platformLang === "zh" ? "Zh" : "En"}`];
+  });
+  document.querySelectorAll("[data-language-only]").forEach((item) => {
+    item.hidden = item.dataset.languageOnly !== platformLang;
+  });
+  document.querySelectorAll("[data-placeholder-zh]").forEach((item) => {
+    item.placeholder = item.dataset[`placeholder${platformLang === "zh" ? "Zh" : "En"}`];
+  });
+  platformLanguage.textContent = platformLang === "zh" ? "EN" : "ZH";
   platformLanguage.setAttribute("aria-label", platformLang === "zh" ? "Switch to English" : "切换到中文");
   radarUiTranslator?.setLanguage(platformLang);
+  document.title = platformLang === "zh" ? "阿尔法雷达平台" : "Alpha Radar Trading Platform";
+  updateLayoutModeLabel();
+  renderSourceHealth();
+  if (boxBreakoutState) renderBoxBreakout();
+  requestAnimationFrame(() => document.querySelectorAll(".side-nav a").forEach((link) => {
+    link.setAttribute("aria-label", link.querySelector("strong")?.textContent || "");
+    link.title = link.querySelector("strong")?.textContent || "";
+  }));
   applyPlatformTheme();
 }
 
@@ -3959,6 +4302,8 @@ platformLanguage.addEventListener("click", () => {
   platformLang = platformLang === "zh" ? "en" : "zh";
   localStorage.setItem("welinkbtc-language", platformLang);
   applyPlatformLanguage();
+  surfPulseItems = [];
+  hydrateSurfPulse({ announce: true });
 });
 
 platformTheme.addEventListener("click", () => {
@@ -3967,7 +4312,31 @@ platformTheme.addEventListener("click", () => {
   applyPlatformTheme();
 });
 
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin || event.source !== window.parent) return;
+  if (event.data?.type === "welinkbtc:preferences") {
+    const nextLanguage = event.data.language === "en" ? "en" : "zh";
+    const languageChanged = nextLanguage !== platformLang;
+    platformLang = nextLanguage;
+    platformThemeMode = event.data.theme === "light" ? "light" : "dark";
+    applyPlatformLanguage();
+    if (languageChanged && surfPulseItems.length) {
+      surfPulseItems = [];
+      hydrateSurfPulse();
+    }
+  }
+  if (event.data?.type === "welinkbtc:navigate" && typeof event.data.hash === "string") {
+    const section = event.data.hash.replace(/^#/, "");
+    if (document.querySelector(`.side-nav a[data-section="${CSS.escape(section)}"]`)) selectWorkspaceSection(section, { updateHash: true });
+  }
+});
+
 applyPlatformLanguage();
+
+boxScanButtons.forEach((button) => button.addEventListener("click", () => startBoxBreakoutScan(button.dataset.boxScan)));
+boxSearch?.addEventListener("input", renderBoxBreakout);
+boxFilter?.addEventListener("change", renderBoxBreakout);
+boxSort?.addEventListener("change", renderBoxBreakout);
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
@@ -3982,6 +4351,8 @@ document.addEventListener("visibilitychange", () => {
     window.clearTimeout(paperMonitorTimer);
     window.clearTimeout(alphaExecutionTimer);
     window.clearTimeout(livePortfolioPullTimer);
+    window.clearTimeout(boxBreakoutTimer);
+    window.clearTimeout(boxQuoteTimer);
     livePortfolioPullTimer = null;
     if (marketSocket) marketSocket.close();
     if (futuresMarketSocket) futuresMarketSocket.close();
@@ -3995,6 +4366,7 @@ document.addEventListener("visibilitychange", () => {
   hydrateAlphaScan();
   hydrateRecentSignals({ force: true });
   hydrateSurfPulse();
+  hydrateBoxBreakout();
   hydrateAlphaExecution();
   ensureLivePortfolioPullSchedule();
   schedulePaperMonitor(0);
@@ -4012,6 +4384,8 @@ window.addEventListener("beforeunload", () => {
   window.clearTimeout(paperMonitorTimer);
   window.clearTimeout(alphaExecutionTimer);
   window.clearTimeout(livePortfolioPullTimer);
+  window.clearTimeout(boxBreakoutTimer);
+  window.clearTimeout(boxQuoteTimer);
   if (marketSocket) marketSocket.close();
   if (futuresMarketSocket) futuresMarketSocket.close();
   if (alphaExecutionUserSocket) alphaExecutionUserSocket.close();
@@ -4023,5 +4397,6 @@ hydrateCryptoBubbles();
 hydrateAlphaScan();
 hydrateRecentSignals({ force: true });
 hydrateSurfPulse();
+hydrateBoxBreakout();
 initializePaperRiskEngine();
 hydrateAlphaExecution();

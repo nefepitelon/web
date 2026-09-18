@@ -603,6 +603,60 @@ const translations = {
     "utxoAgeRp.explainTwo": "参考图给出的三个周期为 1045、1028 与 1063 天，均值为 1045 天。系统把这些研究锚点与公开重建交叉分开绘制；公开序列不满足死叉条件时，不会借用参考锚点宣称公开模型已确认。",
     "utxoAgeRp.explainThree": "虚线根据两条成本线近期动量与一年结构趋势逐步衰减，持续推演至参考周期窗口结束。它只用于检验成本结构路径，不预测 BTC 顶部价格，也不保证顶部日期。",
     "utxoAgeRp.disclaimer": "6–12 个月成本由公开分组已实现市值除以公开分组供应量重建；公开源仅发布 1–2 年合并组，因此 12–18 个月线使用价格年龄切片并校准至该公开合并组。发布基线之后的数据标记为估算。参考周期与 2026 锚点来自用户提供的研究图，仅用于周期研究，不构成投资建议。",
+    "sthRplMomentum.title": "BTC：短期持有者盈亏动量指标",
+    "sthRplMomentum.subtitle": "用短期持有者已实现盈亏比的 7 日均值相对 365 日均值，衡量获利或亏损兑现的加速度。",
+    "sthRplMomentum.current": "当前利润动量",
+    "sthRplMomentum.ratios": "7D / 365D 盈亏比",
+    "sthRplMomentum.recentPeak": "180 日动量峰值",
+    "sthRplMomentum.progress": "参考爬升进度",
+    "sthRplMomentum.loading": "正在同步 2012 年至今的公开 STH 盈亏序列，并计算 7D / 365D 动量与剩余参考周期...",
+    "sthRplMomentum.signalLabel": "短期资金盈亏加速度",
+    "sthRplMomentum.waiting": "等待公开数据同步",
+    "sthRplMomentum.signalPending": "同步后将分别呈现公开动量状态、近期峰值变化和 27／118 天参考周期。",
+    "sthRplMomentum.rawRatio": "当日原始盈亏比",
+    "sthRplMomentum.trough": "180 日动量低点",
+    "sthRplMomentum.remaining": "参考窗口剩余",
+    "sthRplMomentum.date": "链上日期",
+    "sthRplMomentum.explainTitle": "利润动量衡量短期筹码获利兑现相对一年常态的加速度，并帮助识别市场状态切换",
+    "sthRplMomentum.explainOne": "系统先计算短期持有者已实现利润除以已实现亏损，再用该比率的 7 日均值除以 365 日均值。高于 1 表示近期利润兑现快于一年常态；快速飙升则说明获利筹码加速变现，需要同时检验现货需求能否承接。",
+    "sthRplMomentum.depressed": "贴零沉淀",
+    "sthRplMomentum.depressedCopy": "利润兑现显著低于年均",
+    "sthRplMomentum.loss": "弱势修复",
+    "sthRplMomentum.lossCopy": "尚未恢复一年常态",
+    "sthRplMomentum.expansion": "动量扩张",
+    "sthRplMomentum.expansionCopy": "利润兑现开始加速",
+    "sthRplMomentum.distribution": "狂热派发",
+    "sthRplMomentum.distributionCopy": "关注获利筹码集中变现",
+    "sthRplMomentum.explainTwo": "参考图给出的 2015、2019 与 2022 三轮爬升期分别为 113、139 与 103 天，均值约 118 天；2026 参考锚点目前为第 27 天。系统将这些参考天数与公开数据实际峰值分开绘制。",
+    "sthRplMomentum.explainThree": "虚线从最新公开动量延伸至 118 天参考窗口，并向前三轮公开代理峰值的平均水平平滑过渡。该路径只用于观察剩余时间和验证条件，不预测 BTC 价格或保证周期峰值。",
+    "sthRplMomentum.disclaimer": "公开序列使用 BGeometrics 的 STH 已实现利润、已实现亏损和 BTC 日价，最新值由无密钥 API 增量覆盖，实时现价来自 Binance Spot。它是 UTXO 币龄代理，不等同于 Glassnode 的实体聚类调整专有序列；参考天数来自用户提供的研究图，仅用于周期研究，不构成投资建议。",
+    "mvrvZ.title": "BTC：MVRV Z分数",
+    "mvrvZ.subtitle": "用现货总市值偏离全网已实现市值的标准化程度，识别成本修复、趋势扩张与极端过热区。",
+    "mvrvZ.current": "当前 7D Z分数",
+    "mvrvZ.cross": "最近上穿 0.7539",
+    "mvrvZ.classic": "经典三轮倒计时",
+    "mvrvZ.expanded": "四轮扩展窗口",
+    "mvrvZ.loading": "正在同步 2010 年至今的公开市值、MVRV 与 BTC 日价，并重建经典 MVRV Z-Score...",
+    "mvrvZ.signalLabel": "全网成本偏离强度",
+    "mvrvZ.waiting": "等待公开数据同步",
+    "mvrvZ.signalPending": "同步后将分别显示公开 Z 分数、0.7539 上穿状态，以及经典三轮和含 2022 异常值的扩展窗口。",
+    "mvrvZ.raw": "当日原始 Z分数",
+    "mvrvZ.mvrv": "当前 MVRV",
+    "mvrvZ.recentPeak": "180 日峰值",
+    "mvrvZ.crosscheck": "BGeometrics 校验",
+    "mvrvZ.explainTitle": "MVRV Z-Score 衡量市值相对全网真实成本的偏离程度，适合观察周期位置与估值极端",
+    "mvrvZ.explainOne": "系统按经典公式计算（市值减已实现市值）除以市值自创世以来的累计总体标准差，再取 7 日均线。它与本站采用四年滚动标准化的 MVRV 指标互不替代。",
+    "mvrvZ.undervalued": "成本折价",
+    "mvrvZ.undervaluedCopy": "市值低于实现成本",
+    "mvrvZ.recovery": "复苏蓄势",
+    "mvrvZ.recoveryCopy": "尚未越过研究分水岭",
+    "mvrvZ.expansion": "趋势扩张",
+    "mvrvZ.expansionCopy": "验证需求与利润扩张",
+    "mvrvZ.overheated": "极端过热",
+    "mvrvZ.overheatedCopy": "历史估值高风险区",
+    "mvrvZ.explainTwo": "用户研究图给出的 2012、2016、2019 三轮倒计时为 32、49、44 天，均值约 42 天。公开重建显示 2022 周期从 2023-10-25 上穿到 2024-03-13 阶段高点为 140 天，因此系统同时提供 42 天经典窗口与 66 天四轮扩展均值，避免隐藏样本分歧。",
+    "mvrvZ.explainThree": "虚线从最新公开 7 日 Z 分数出发，以近 30 日动量逐步衰减至扩展窗口终点。它只用于持续检验时间与指标路径，不预测 BTC 价格，也不保证阶段顶部日期。",
+    "mvrvZ.disclaimer": "历史线使用 Coin Metrics Community 的市值、MVRV 与价格重建经典公式，BGeometrics 免费最新值仅用于交叉校验，实时现价来自 Binance Spot。公开重建不等同于 Glassnode 的专有实体调整序列；周期天数仅供研究，不构成投资建议。",
     "sth200dma.title": "BTC：“短期持有者成本线”与“200 日均线”的金叉",
     "sth200dma.subtitle": "用 STH 已实现价格上穿 BTC 200 日均线识别熊牛结构转换，并以历史周期样本估算长期窗口。",
     "sth200dma.sth": "STH 短期成本",
@@ -1542,6 +1596,60 @@ const translations = {
     "utxoAgeRp.explainTwo": "The supplied figure reports 1,045, 1,028 and 1,063 days, averaging 1,045 days. These research anchors are drawn separately from public reconstructed crosses; when the public series does not meet the death-cross rule, the reference anchor is not presented as public confirmation.",
     "utxoAgeRp.explainThree": "Dashed lines decay recent momentum toward the one-year structural trend and continue through the reference window. They test a cost-structure path; they do not predict a BTC top price or guarantee a top date.",
     "utxoAgeRp.disclaimer": "The 6–12M cost is reconstructed from public cohort realized cap divided by public cohort supply. Because the source only publishes a combined 1–2Y cohort, the 12–18M line uses a price-vintage slice calibrated to that public aggregate. Observations after the publisher baseline are marked estimated. Reference cycles and the 2026 anchor come from the supplied research figure. Research only; not investment advice.",
+    "sthRplMomentum.title": "BTC: Short-Term Holder Realized Profit / Loss Ratio Momentum",
+    "sthRplMomentum.subtitle": "Compare the seven-day average of the STH realized profit/loss ratio with its 365-day average to measure the acceleration of realized profit or loss.",
+    "sthRplMomentum.current": "Current Profit Momentum",
+    "sthRplMomentum.ratios": "7D / 365D P/L Ratio",
+    "sthRplMomentum.recentPeak": "180-Day Momentum Peak",
+    "sthRplMomentum.progress": "Reference Climb Progress",
+    "sthRplMomentum.loading": "Syncing public STH profit/loss history since 2012 and calculating 7D / 365D momentum plus the remaining reference cycle...",
+    "sthRplMomentum.signalLabel": "Short-Term Capital P/L Acceleration",
+    "sthRplMomentum.waiting": "Waiting for public data",
+    "sthRplMomentum.signalPending": "Public momentum, the latest peak change and the supplied 27/118-day reference cycle will be reported separately.",
+    "sthRplMomentum.rawRatio": "Daily Raw P/L Ratio",
+    "sthRplMomentum.trough": "180-Day Momentum Low",
+    "sthRplMomentum.remaining": "Reference Window Left",
+    "sthRplMomentum.date": "On-Chain Date",
+    "sthRplMomentum.explainTitle": "Profit momentum measures how fast short-term-holder profit realization is changing relative to its annual norm and helps identify regime shifts",
+    "sthRplMomentum.explainOne": "The model first divides STH realized profit by realized loss, then divides the ratio's seven-day average by its 365-day average. Above one, recent profit realization is faster than the annual norm; a sharp spike means profitable coins are being monetized rapidly and spot demand must absorb them.",
+    "sthRplMomentum.depressed": "Near-Zero Base",
+    "sthRplMomentum.depressedCopy": "Profit realization is far below its annual pace",
+    "sthRplMomentum.loss": "Weak Repair",
+    "sthRplMomentum.lossCopy": "The ratio has not recovered its annual pace",
+    "sthRplMomentum.expansion": "Momentum Expansion",
+    "sthRplMomentum.expansionCopy": "Profit realization begins to accelerate",
+    "sthRplMomentum.distribution": "Frenzied Distribution",
+    "sthRplMomentum.distributionCopy": "Watch concentrated monetization of profitable coins",
+    "sthRplMomentum.explainTwo": "The supplied figure reports 113, 139 and 103 days for the 2015, 2019 and 2022 recoveries, averaging about 118 days; the supplied 2026 anchor is currently at day 27. These reference spans are drawn separately from peaks detected in the public proxy.",
+    "sthRplMomentum.explainThree": "The dashed line extends from the latest public momentum through the 118-day reference window and transitions toward the mean public-proxy peak from the prior three cycles. It visualizes timing and validation conditions; it does not forecast BTC price or guarantee a cycle peak.",
+    "sthRplMomentum.disclaimer": "The public series uses BGeometrics STH realized profit, realized loss and daily BTC price, with the no-token API covering the latest observations and Binance Spot providing live price. It is a UTXO-age proxy rather than Glassnode's proprietary entity-cluster-adjusted series. Reference durations come from the supplied figure. Research only; not investment advice.",
+    "mvrvZ.title": "BTC: MVRV Z-Score",
+    "mvrvZ.subtitle": "Standardize the gap between spot market value and aggregate realized value to identify cost repair, trend expansion and extreme valuation zones.",
+    "mvrvZ.current": "Current 7D Z-Score",
+    "mvrvZ.cross": "Latest Cross Above 0.7539",
+    "mvrvZ.classic": "Classic Three-Cycle Countdown",
+    "mvrvZ.expanded": "Four-Cycle Expanded Window",
+    "mvrvZ.loading": "Syncing public market cap, MVRV and BTC daily price since 2010 to reconstruct the classic MVRV Z-Score...",
+    "mvrvZ.signalLabel": "Aggregate Cost Deviation",
+    "mvrvZ.waiting": "Waiting for public data",
+    "mvrvZ.signalPending": "The public Z-Score, 0.7539 cross, classic three-cycle window and expanded window including the 2022 outlier will be shown separately.",
+    "mvrvZ.raw": "Daily Raw Z-Score",
+    "mvrvZ.mvrv": "Current MVRV",
+    "mvrvZ.recentPeak": "180-Day Peak",
+    "mvrvZ.crosscheck": "BGeometrics Cross-Check",
+    "mvrvZ.explainTitle": "MVRV Z-Score measures how far market value has moved from aggregate cost basis and helps locate cycle position and valuation extremes",
+    "mvrvZ.explainOne": "The classic formula divides market cap minus realized cap by the cumulative population standard deviation of market cap since inception, then applies a seven-day average. It remains separate from this site's four-year rolling MVRV normalization.",
+    "mvrvZ.undervalued": "Cost Discount",
+    "mvrvZ.undervaluedCopy": "Market value is below realized cost",
+    "mvrvZ.recovery": "Recovery Base",
+    "mvrvZ.recoveryCopy": "Below the research threshold",
+    "mvrvZ.expansion": "Trend Expansion",
+    "mvrvZ.expansionCopy": "Validate demand and profit growth",
+    "mvrvZ.overheated": "Extreme Overheating",
+    "mvrvZ.overheatedCopy": "Historically high valuation risk",
+    "mvrvZ.explainTwo": "The supplied research figure reports 32, 49 and 44 days for the 2012, 2016 and 2019 countdowns, averaging about 42 days. The public reconstruction measures 140 days from the 2023-10-25 cross to the 2024-03-13 phase peak for the 2022 cycle, so the interface shows both the 42-day classic window and the 66-day four-cycle mean.",
+    "mvrvZ.explainThree": "The dashed line starts at the latest public seven-day Z-Score and gradually decays its 30-day momentum through the expanded window. It tests an indicator and timing path; it does not forecast BTC price or guarantee a phase-top date.",
+    "mvrvZ.disclaimer": "The historical line reconstructs the classic formula from Coin Metrics Community market cap, MVRV and price. The free BGeometrics latest value is a cross-check and live spot comes from Binance. This public reconstruction is not Glassnode's proprietary entity-adjusted series. Research only; not investment advice.",
     "sth200dma.title": "BTC: Short-Term Holder Realized Price / 200DMA Golden Cross",
     "sth200dma.subtitle": "Track the STH realized price crossing above BTC's 200-day average to identify macro regime transitions and estimate long-cycle windows from public history.",
     "sth200dma.sth": "STH Cost Basis",
@@ -2092,6 +2200,21 @@ let utxoAgeRpReferenceCycles = [];
 let utxoAgeRpPublicCrosses = [];
 let utxoAgeRpRange = "all";
 let utxoAgeRpChartState = null;
+let sthRplMomentumSeries = [];
+let sthRplMomentumProjection = [];
+let sthRplMomentumSnapshot = null;
+let sthRplMomentumSources = null;
+let sthRplMomentumReferenceCycles = [];
+let sthRplMomentumPublicPeaks = [];
+let sthRplMomentumRange = "all";
+let sthRplMomentumChartState = null;
+let mvrvZscoreSeries = [];
+let mvrvZscoreProjection = [];
+let mvrvZscoreSnapshot = null;
+let mvrvZscoreSources = null;
+let mvrvZscoreReferenceCycles = [];
+let mvrvZscoreRange = "all";
+let mvrvZscoreChartState = null;
 let sth200dmaSeries = [];
 let sth200dmaSnapshot = null;
 let sth200dmaSources = null;
@@ -2182,6 +2305,8 @@ const TWO_WEEK_RSI_CACHE_KEY = "welinkbtc-two-week-rsi-v1";
 const UNDER_3M_HODL_CACHE_KEY = "welinkbtc-under-3m-realized-cap-hodl-v1";
 const UNDER_3M_HEAT_CACHE_KEY = "welinkbtc-under-3m-realized-cap-cycle-v1";
 const UTXO_AGE_RP_CACHE_KEY = "welinkbtc-utxo-age-realized-price-cycle-v1";
+const STH_RPL_MOMENTUM_CACHE_KEY = "welinkbtc-sth-realized-profit-loss-momentum-v1";
+const MVRV_ZSCORE_CACHE_KEY = "welinkbtc-mvrv-zscore-cycle-v1";
 const STH_200DMA_CACHE_KEY = "welinkbtc-sth-200dma-v1";
 const VDD_MEDIAN_CACHE_KEY = "welinkbtc-vdd-median-cycle-v1";
 const SSR_CACHE_KEY = "welinkbtc-stablecoin-supply-ratio-v1";
@@ -2218,6 +2343,8 @@ const DASHBOARD_DATA_CACHE_KEYS = [
   UNDER_3M_HODL_CACHE_KEY,
   UNDER_3M_HEAT_CACHE_KEY,
   UTXO_AGE_RP_CACHE_KEY,
+  STH_RPL_MOMENTUM_CACHE_KEY,
+  MVRV_ZSCORE_CACHE_KEY,
   STH_200DMA_CACHE_KEY,
   VDD_MEDIAN_CACHE_KEY,
   SSR_CACHE_KEY,
@@ -6758,6 +6885,481 @@ const hideUtxoAgeRpTooltip = () => {
   if (tooltip) tooltip.hidden = true;
 };
 
+const getSthRplMomentumVisibleSeries = () => {
+  if (!sthRplMomentumSeries.length || sthRplMomentumRange === "all") return sthRplMomentumSeries;
+  const days = Number(sthRplMomentumRange);
+  const end = sthRplMomentumSeries.at(-1).date.getTime();
+  const start = end - Math.max(days - 1, 1) * 86_400_000;
+  const visible = sthRplMomentumSeries.filter((point) => point.date.getTime() >= start);
+  return visible.length >= 2 ? visible : sthRplMomentumSeries.slice(-2);
+};
+
+const drawSthRplMomentumChart = () => {
+  const canvas = document.querySelector("#sth-rpl-momentum-chart");
+  const stage = canvas?.closest(".sth-rpl-momentum-stage");
+  const history = getSthRplMomentumVisibleSeries();
+  const projection = ["all", "365"].includes(sthRplMomentumRange) ? sthRplMomentumProjection : [];
+  if (!canvas || !stage || history.length < 2) {
+    drawEmptyChart("#sth-rpl-momentum-chart");
+    sthRplMomentumChartState = null;
+    return;
+  }
+
+  canvas.style.removeProperty("height");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.max(rect.width, 1);
+  const height = Math.max(rect.height || stage.clientHeight || 620, 380);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const context = canvas.getContext("2d");
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colors = chartColors();
+  const compact = width < 700;
+  const padding = { top: compact ? 62 : 76, right: compact ? 48 : 70, bottom: 46, left: compact ? 58 : 76 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const startTime = history[0].date.getTime();
+  const endTime = projection.at(-1)?.date.getTime() || history.at(-1).date.getTime();
+  const xFor = (date) => padding.left + ((date.getTime() - startTime) / Math.max(endTime - startTime, 1)) * chartWidth;
+  const priceValues = history.map((point) => point.price).filter((value) => Number.isFinite(value) && value > 0);
+  const logMin = Math.log10(Math.min(...priceValues)) - 0.08;
+  const logMax = Math.log10(Math.max(...priceValues)) + 0.08;
+  const priceY = (value) => padding.top + (1 - (Math.log10(Math.max(value, 0.0001)) - logMin) / Math.max(logMax - logMin, 0.0001)) * chartHeight;
+  const momentumValues = history.map((point) => point.momentum)
+    .concat(projection.map((point) => point.momentum))
+    .filter((value) => Number.isFinite(value) && value >= 0)
+    .sort((left, right) => left - right);
+  const percentile = momentumValues[Math.min(momentumValues.length - 1, Math.floor(momentumValues.length * 0.995))] || 10;
+  const momentumMax = Math.min(50, Math.max(10, percentile * 1.18));
+  const momentumY = (value) => padding.top + (1 - Math.max(0, Math.min(momentumMax, value)) / momentumMax) * chartHeight;
+
+  context.clearRect(0, 0, width, height);
+  context.font = "700 10px JetBrains Mono";
+  context.textBaseline = "middle";
+  for (let index = 0; index < 6; index += 1) {
+    const progress = index / 5;
+    const y = padding.top + progress * chartHeight;
+    const priceValue = 10 ** (logMax - progress * (logMax - logMin));
+    const momentumValue = momentumMax * (1 - progress);
+    context.strokeStyle = colors.line;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = colors.muted;
+    context.textAlign = "right";
+    context.fillText(formatAxisUsd(priceValue), padding.left - 9, y);
+    context.textAlign = "left";
+    context.fillText(`${momentumValue.toFixed(momentumValue >= 10 ? 0 : 1)}×`, width - padding.right + 9, y);
+  }
+
+  const drawLine = (rows, accessor, yFor, color, lineWidth, dashed = false, alpha = 1) => {
+    if (rows.length < 2) return;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+    context.globalAlpha = alpha;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.setLineDash(dashed ? [8, 6] : []);
+    context.beginPath();
+    let started = false;
+    rows.forEach((point) => {
+      const value = accessor(point);
+      if (!Number.isFinite(value)) return;
+      const x = xFor(point.date);
+      const y = yFor(value);
+      if (!started) { context.moveTo(x, y); started = true; }
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+    context.restore();
+  };
+
+  context.save();
+  context.strokeStyle = "#5fa58c";
+  context.globalAlpha = 0.68;
+  context.setLineDash([5, 5]);
+  context.beginPath();
+  context.moveTo(padding.left, momentumY(1));
+  context.lineTo(width - padding.right, momentumY(1));
+  context.stroke();
+  context.restore();
+
+  drawLine(history, (point) => point.price, priceY, colors.ink, compact ? 1.2 : 1.6, false, 0.42);
+  drawLine(history, (point) => point.momentum, momentumY, "#36b77b", compact ? 1.8 : 2.35);
+  if (projection.length) {
+    const latest = history.at(-1);
+    drawLine([{ date: latest.date, momentum: latest.momentum }, ...projection], (point) => point.momentum, momentumY, "#58d5a0", compact ? 1.6 : 2.1, true, 0.94);
+  }
+
+  if (sthRplMomentumRange === "all") {
+    const arrowY = compact ? 28 : 34;
+    const arrowHead = compact ? 4 : 6;
+    const drawCycleArrow = (cycle, current = false) => {
+      const startDate = new Date(`${cycle.startDate}T00:00:00Z`);
+      const peakDate = new Date(`${cycle.peakDate || sthRplMomentumSnapshot?.targetDate}T00:00:00Z`);
+      const startX = xFor(startDate);
+      const finishX = xFor(peakDate);
+      if (finishX < padding.left || startX > width - padding.right) return;
+      const left = Math.max(padding.left, startX);
+      const right = Math.min(width - padding.right, finishX);
+      context.save();
+      context.strokeStyle = "#23b8e6";
+      context.fillStyle = "#23b8e6";
+      context.lineWidth = current ? 1.8 : 1.25;
+      context.beginPath();
+      context.moveTo(left, arrowY);
+      context.lineTo(right, arrowY);
+      context.moveTo(left, arrowY);
+      context.lineTo(left + arrowHead, arrowY - arrowHead);
+      context.moveTo(left, arrowY);
+      context.lineTo(left + arrowHead, arrowY + arrowHead);
+      context.moveTo(right, arrowY);
+      context.lineTo(right - arrowHead, arrowY - arrowHead);
+      context.moveTo(right, arrowY);
+      context.lineTo(right - arrowHead, arrowY + arrowHead);
+      context.stroke();
+      context.setLineDash([7, 6]);
+      context.globalAlpha = 0.68;
+      [startX, finishX].forEach((x) => {
+        if (x < padding.left || x > width - padding.right) return;
+        context.beginPath();
+        context.moveTo(x, arrowY + 8);
+        context.lineTo(x, height - padding.bottom);
+        context.stroke();
+      });
+      context.setLineDash([]);
+      context.globalAlpha = 1;
+      context.font = compact ? "800 9px JetBrains Mono" : "800 13px JetBrains Mono";
+      context.textAlign = "center";
+      const label = current
+        ? `${sthRplMomentumSnapshot?.referenceElapsedDays ?? 0} / ${cycle.durationDays}D · REF`
+        : `${cycle.durationDays} DAYS`;
+      context.fillText(label, (left + right) / 2, arrowY - (compact ? 10 : 13));
+      context.restore();
+    };
+    sthRplMomentumReferenceCycles.forEach((cycle) => drawCycleArrow(cycle));
+    if (sthRplMomentumSnapshot?.targetDate) drawCycleArrow({
+      startDate: sthRplMomentumSnapshot.referenceStartDate,
+      peakDate: sthRplMomentumSnapshot.targetDate,
+      durationDays: sthRplMomentumSnapshot.averageCycleDays
+    }, true);
+
+    sthRplMomentumPublicPeaks.forEach((peak) => {
+      const date = new Date(`${peak.date}T00:00:00Z`);
+      const x = xFor(date);
+      if (x < padding.left || x > width - padding.right) return;
+      context.save();
+      context.fillStyle = "#f0a13d";
+      context.strokeStyle = document.body.dataset.theme === "dark" ? "#0a0d0c" : "#fff";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.arc(x, momentumY(Number(peak.momentum)), compact ? 3.5 : 4.5, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.restore();
+    });
+  }
+
+  context.save();
+  context.fillStyle = colors.ink;
+  context.font = `800 ${Math.max(30, Math.min(width * 0.08, height * 0.14, 84))}px Inter`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  drawBrandWatermark(context, padding.left + chartWidth / 2, padding.top + chartHeight / 2);
+  context.restore();
+
+  const latest = history.at(-1);
+  [[latest.price, priceY, colors.ink, 2.8], [latest.momentum, momentumY, "#36b77b", 4.3]].forEach(([value, yFor, color, radius]) => {
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(xFor(latest.date), yFor(value), radius, 0, Math.PI * 2);
+    context.fill();
+  });
+
+  const xTicks = compact ? 4 : 7;
+  const shortRange = ["7", "30", "90"].includes(sthRplMomentumRange);
+  const dateFormatter = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", {
+    year: shortRange ? undefined : "numeric",
+    month: "short",
+    day: shortRange ? "2-digit" : undefined
+  });
+  context.textBaseline = "alphabetic";
+  for (let index = 0; index < xTicks; index += 1) {
+    const progress = index / Math.max(xTicks - 1, 1);
+    const date = new Date(startTime + progress * (endTime - startTime));
+    context.fillStyle = colors.muted;
+    context.textAlign = index === 0 ? "left" : index === xTicks - 1 ? "right" : "center";
+    context.fillText(dateFormatter.format(date), padding.left + progress * chartWidth, height - 13);
+  }
+
+  sthRplMomentumChartState = {
+    rows: [...history.map((point) => ({ ...point, kind: "public" })), ...projection.map((point) => ({ ...point, kind: "scenario" }))],
+    startTime, endTime, padding, chartWidth, width, height
+  };
+};
+
+const showSthRplMomentumTooltip = (event) => {
+  const canvas = document.querySelector("#sth-rpl-momentum-chart");
+  const tooltip = document.querySelector("#sth-rpl-momentum-tooltip");
+  if (!canvas || !tooltip || !sthRplMomentumChartState) return;
+  const { rows, startTime, endTime, padding, chartWidth, width, height } = sthRplMomentumChartState;
+  const rect = canvas.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * width;
+  const progress = Math.max(0, Math.min(1, (x - padding.left) / Math.max(chartWidth, 1)));
+  const target = startTime + progress * (endTime - startTime);
+  let point = rows[0];
+  rows.forEach((candidate) => {
+    if (Math.abs(candidate.date.getTime() - target) < Math.abs(point.date.getTime() - target)) point = candidate;
+  });
+  if (!point) return;
+  const date = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit" }).format(point.date);
+  tooltip.innerHTML = point.kind === "scenario"
+    ? `<strong>${date} · SCENARIO</strong><span>STH Profit Momentum <i>${Number(point.momentum).toFixed(2)}×</i></span><span>${currentLanguage === "zh" ? "参考日" : "Reference Day"} <i>${Number(point.referenceDay || 0)}D</i></span>`
+    : `<strong>${date} · PUBLIC</strong><span>BTC <i>${formatUsd(point.price)}</i></span><span>STH Profit Momentum <i>${Number(point.momentum).toFixed(2)}×</i></span><span>P/L Ratio 7D / 365D <i>${Number(point.ratio7).toFixed(2)} / ${Number(point.ratio365).toFixed(2)}</i></span>`;
+  tooltip.hidden = false;
+  const tooltipWidth = tooltip.offsetWidth || 250;
+  tooltip.style.left = `${Math.max(8, Math.min(rect.width - tooltipWidth - 8, event.clientX - rect.left + 14))}px`;
+  tooltip.style.top = `${Math.max(8, Math.min(height - 148, event.clientY - rect.top - 82))}px`;
+};
+
+const hideSthRplMomentumTooltip = () => {
+  const tooltip = document.querySelector("#sth-rpl-momentum-tooltip");
+  if (tooltip) tooltip.hidden = true;
+};
+
+const getMvrvZscoreVisibleSeries = () => {
+  if (!mvrvZscoreSeries.length || mvrvZscoreRange === "all") return mvrvZscoreSeries;
+  const days = Number(mvrvZscoreRange);
+  const end = mvrvZscoreSeries.at(-1).date.getTime();
+  const start = end - Math.max(days - 1, 1) * 86_400_000;
+  const visible = mvrvZscoreSeries.filter((point) => point.date.getTime() >= start);
+  return visible.length >= 2 ? visible : mvrvZscoreSeries.slice(-2);
+};
+
+const drawMvrvZscoreChart = () => {
+  const canvas = document.querySelector("#mvrv-zscore-chart");
+  const stage = canvas?.closest(".mvrv-zscore-stage");
+  const history = getMvrvZscoreVisibleSeries();
+  const projection = ["all", "365"].includes(mvrvZscoreRange) ? mvrvZscoreProjection : [];
+  if (!canvas || !stage || history.length < 2) {
+    drawEmptyChart("#mvrv-zscore-chart");
+    mvrvZscoreChartState = null;
+    return;
+  }
+
+  canvas.style.removeProperty("height");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.max(rect.width, 1);
+  const height = Math.max(rect.height || stage.clientHeight || 620, 380);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const context = canvas.getContext("2d");
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colors = chartColors();
+  const compact = width < 700;
+  const padding = { top: compact ? 64 : 78, right: compact ? 50 : 72, bottom: 46, left: compact ? 58 : 76 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const startTime = history[0].date.getTime();
+  const endTime = projection.at(-1)?.date.getTime() || history.at(-1).date.getTime();
+  const xFor = (date) => padding.left + ((date.getTime() - startTime) / Math.max(endTime - startTime, 1)) * chartWidth;
+
+  const prices = history.map((point) => point.price).filter((value) => Number.isFinite(value) && value > 0);
+  const logMin = Math.log10(Math.min(...prices)) - 0.08;
+  const logMax = Math.log10(Math.max(...prices)) + 0.08;
+  const priceY = (value) => padding.top + (1 - (Math.log10(Math.max(value, 0.0001)) - logMin) / Math.max(logMax - logMin, 0.0001)) * chartHeight;
+  const zValues = history.map((point) => point.zScore).concat(projection.map((point) => point.zScore)).filter(Number.isFinite);
+  const zMin = mvrvZscoreRange === "all" ? -1 : Math.min(-0.25, Math.floor(Math.min(...zValues) * 2) / 2);
+  const zMax = mvrvZscoreRange === "all" ? Math.max(10, Math.ceil(Math.max(...zValues))) : Math.max(2, Math.ceil(Math.max(...zValues) * 2) / 2);
+  const zY = (value) => padding.top + (1 - (Math.max(zMin, Math.min(zMax, value)) - zMin) / Math.max(zMax - zMin, 0.0001)) * chartHeight;
+
+  context.clearRect(0, 0, width, height);
+  context.save();
+  context.fillStyle = "rgba(76, 190, 132, 0.09)";
+  context.fillRect(padding.left, zY(0), chartWidth, Math.max(0, height - padding.bottom - zY(0)));
+  if (zMax > 7) {
+    context.fillStyle = "rgba(239, 102, 91, 0.085)";
+    context.fillRect(padding.left, padding.top, chartWidth, Math.max(0, zY(7) - padding.top));
+  }
+  context.restore();
+
+  context.font = "700 10px JetBrains Mono";
+  context.textBaseline = "middle";
+  for (let index = 0; index < 6; index += 1) {
+    const progress = index / 5;
+    const y = padding.top + progress * chartHeight;
+    const priceValue = 10 ** (logMax - progress * (logMax - logMin));
+    const zValue = zMax - progress * (zMax - zMin);
+    context.strokeStyle = colors.line;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = colors.muted;
+    context.textAlign = "right";
+    context.fillText(formatAxisUsd(priceValue), padding.left - 9, y);
+    context.textAlign = "left";
+    context.fillText(zValue.toFixed(1), width - padding.right + 9, y);
+  }
+
+  const drawLine = (rows, accessor, yFor, color, lineWidth, dashed = false, alpha = 1) => {
+    if (rows.length < 2) return;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+    context.globalAlpha = alpha;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.setLineDash(dashed ? [8, 6] : []);
+    context.beginPath();
+    let started = false;
+    rows.forEach((point) => {
+      const value = accessor(point);
+      if (!Number.isFinite(value)) return;
+      const x = xFor(point.date);
+      const y = yFor(value);
+      if (!started) { context.moveTo(x, y); started = true; }
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+    context.restore();
+  };
+
+  context.save();
+  context.strokeStyle = "#24b8e8";
+  context.lineWidth = 1.35;
+  context.setLineDash([7, 5]);
+  context.beginPath();
+  context.moveTo(padding.left, zY(0.7539));
+  context.lineTo(width - padding.right, zY(0.7539));
+  context.stroke();
+  context.fillStyle = "#24b8e8";
+  context.textAlign = "right";
+  context.fillText("0.7539", width - padding.right - 6, zY(0.7539) - 10);
+  context.restore();
+
+  drawLine(history, (point) => point.price, priceY, colors.ink, compact ? 1.15 : 1.55, false, 0.4);
+  drawLine(history, (point) => point.zScore, zY, "#e59b32", compact ? 1.8 : 2.35);
+  if (projection.length) {
+    const latest = history.at(-1);
+    drawLine([{ date: latest.date, zScore: latest.zScore }, ...projection], (point) => point.zScore, zY, "#f3bd5b", compact ? 1.6 : 2.1, true, 0.95);
+  }
+
+  if (mvrvZscoreRange === "all") {
+    const arrowY = compact ? 28 : 34;
+    const cycles = [...mvrvZscoreReferenceCycles];
+    if (mvrvZscoreSnapshot?.referenceStartDate) cycles.push({
+      cycle: "2026",
+      crossDate: mvrvZscoreSnapshot.referenceStartDate,
+      peakDate: mvrvZscoreSnapshot.expandedTargetDate,
+      durationDays: mvrvZscoreSnapshot.expandedReferenceDays,
+      current: true
+    });
+    cycles.forEach((cycle) => {
+      const startX = xFor(new Date(`${cycle.crossDate}T00:00:00Z`));
+      const endX = xFor(new Date(`${cycle.peakDate}T00:00:00Z`));
+      if (endX < padding.left || startX > width - padding.right) return;
+      const left = Math.max(padding.left, startX);
+      const right = Math.min(width - padding.right, endX);
+      context.save();
+      context.strokeStyle = "#24b8e8";
+      context.fillStyle = "#24b8e8";
+      context.lineWidth = cycle.current ? 1.8 : 1.2;
+      context.beginPath();
+      context.moveTo(left, arrowY);
+      context.lineTo(right, arrowY);
+      context.moveTo(left, arrowY); context.lineTo(left + 5, arrowY - 5);
+      context.moveTo(left, arrowY); context.lineTo(left + 5, arrowY + 5);
+      context.moveTo(right, arrowY); context.lineTo(right - 5, arrowY - 5);
+      context.moveTo(right, arrowY); context.lineTo(right - 5, arrowY + 5);
+      context.stroke();
+      context.setLineDash([7, 6]);
+      context.globalAlpha = 0.56;
+      [startX, endX].forEach((x) => {
+        if (x < padding.left || x > width - padding.right) return;
+        context.beginPath(); context.moveTo(x, arrowY + 8); context.lineTo(x, height - padding.bottom); context.stroke();
+      });
+      context.setLineDash([]);
+      context.globalAlpha = 1;
+      context.font = `800 ${compact ? 9 : 11}px JetBrains Mono`;
+      context.textAlign = "center";
+      context.fillText(`${cycle.cycle} · ${cycle.durationDays}D`, (left + right) / 2, arrowY - 13);
+      context.restore();
+    });
+  }
+
+  context.save();
+  context.fillStyle = colors.ink;
+  context.globalAlpha = document.body.dataset.theme === "dark" ? 0.055 : 0.045;
+  context.font = `800 ${Math.max(30, Math.min(width * 0.085, height * 0.16, 92))}px Inter`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  drawBrandWatermark(context, padding.left + chartWidth / 2, padding.top + chartHeight / 2);
+  context.restore();
+
+  const latest = history.at(-1);
+  [[latest.price, priceY, colors.ink, 2.7], [latest.zScore, zY, "#e59b32", 4.2]].forEach(([value, yFor, color, radius]) => {
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(xFor(latest.date), yFor(value), radius, 0, Math.PI * 2);
+    context.fill();
+  });
+
+  const xTicks = compact ? 4 : 7;
+  const shortRange = ["7", "30", "90"].includes(mvrvZscoreRange);
+  const dateFormatter = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", { year: shortRange ? undefined : "numeric", month: "short", day: shortRange ? "2-digit" : undefined });
+  context.textBaseline = "alphabetic";
+  for (let index = 0; index < xTicks; index += 1) {
+    const progress = index / Math.max(xTicks - 1, 1);
+    const date = new Date(startTime + progress * (endTime - startTime));
+    context.fillStyle = colors.muted;
+    context.textAlign = index === 0 ? "left" : index === xTicks - 1 ? "right" : "center";
+    context.fillText(dateFormatter.format(date), padding.left + progress * chartWidth, height - 13);
+  }
+
+  mvrvZscoreChartState = {
+    rows: [...history.map((point) => ({ ...point, kind: "public" })), ...projection.map((point) => ({ ...point, kind: "scenario" }))],
+    startTime, endTime, padding, chartWidth, width, height
+  };
+};
+
+const showMvrvZscoreTooltip = (event) => {
+  const canvas = document.querySelector("#mvrv-zscore-chart");
+  const tooltip = document.querySelector("#mvrv-zscore-tooltip");
+  if (!canvas || !tooltip || !mvrvZscoreChartState) return;
+  const { rows, startTime, endTime, padding, chartWidth, width, height } = mvrvZscoreChartState;
+  const rect = canvas.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * width;
+  const progress = Math.max(0, Math.min(1, (x - padding.left) / Math.max(chartWidth, 1)));
+  const target = startTime + progress * (endTime - startTime);
+  let point = rows[0];
+  rows.forEach((candidate) => {
+    if (Math.abs(candidate.date.getTime() - target) < Math.abs(point.date.getTime() - target)) point = candidate;
+  });
+  if (!point) return;
+  const date = new Intl.DateTimeFormat(currentLanguage === "zh" ? "zh-CN" : "en-US", { year: "numeric", month: "2-digit", day: "2-digit" }).format(point.date);
+  tooltip.innerHTML = point.kind === "scenario"
+    ? `<strong>${date} · SCENARIO</strong><span>MVRV Z-Score <i>${Number(point.zScore).toFixed(3)}</i></span><span>${currentLanguage === "zh" ? "参考日" : "Reference Day"} <i>${Number(point.referenceDay || 0)}D</i></span>`
+    : `<strong>${date} · PUBLIC</strong><span>BTC <i>${formatUsd(point.price)}</i></span><span>MVRV Z-Score · 7D <i>${Number(point.zScore).toFixed(3)}</i></span><span>MVRV <i>${Number.isFinite(point.mvrv) ? Number(point.mvrv).toFixed(3) : "--"}</i></span>`;
+  tooltip.hidden = false;
+  const tooltipWidth = tooltip.offsetWidth || 250;
+  tooltip.style.left = `${Math.max(8, Math.min(rect.width - tooltipWidth - 8, event.clientX - rect.left + 14))}px`;
+  tooltip.style.top = `${Math.max(8, Math.min(height - 148, event.clientY - rect.top - 82))}px`;
+};
+
+const hideMvrvZscoreTooltip = () => {
+  const tooltip = document.querySelector("#mvrv-zscore-tooltip");
+  if (tooltip) tooltip.hidden = true;
+};
+
 const getSth200dmaVisibleSeries = () => {
   if (!sth200dmaSeries.length || sth200dmaRange === "all") return sth200dmaSeries;
   const days = Number(sth200dmaRange);
@@ -9113,6 +9715,8 @@ const drawAllCharts = () => {
   drawUnder3mHodlChart();
   drawUnder3mHeatChart();
   drawUtxoAgeRpChart();
+  drawSthRplMomentumChart();
+  drawMvrvZscoreChart();
   drawSth200dmaChart();
   drawVddMedianCycleChart();
   drawSsrChart();
@@ -12032,6 +12636,277 @@ const loadUtxoAgeRpMetrics = async () => {
   }
 };
 
+const readSthRplMomentumCache = () => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(STH_RPL_MOMENTUM_CACHE_KEY) || "null");
+    return cached?.payload || null;
+  } catch {
+    return null;
+  }
+};
+
+const applySthRplMomentumPayload = (payload, cacheFallback = false) => {
+  const rows = (payload?.series || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    price: Number(point.price),
+    rawRatio: Number(point.rawRatio),
+    ratio7: Number(point.ratio7),
+    ratio365: Number(point.ratio365),
+    momentum: Number(point.momentum),
+    source: point.source || "public"
+  })).filter((point) => !Number.isNaN(point.date.getTime())
+    && Number.isFinite(point.price) && point.price > 0
+    && Number.isFinite(point.momentum) && point.momentum >= 0);
+  const projection = (payload?.projection || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    momentum: Number(point.momentum),
+    referenceDay: Number(point.referenceDay)
+  })).filter((point) => !Number.isNaN(point.date.getTime())
+    && Number.isFinite(point.momentum) && point.momentum >= 0);
+  const snapshot = payload?.snapshot;
+  if (rows.length < 365 || !snapshot
+    || !Number.isFinite(Number(snapshot.currentMomentum))
+    || !Number.isFinite(Number(snapshot.ratio7))
+    || !Number.isFinite(Number(snapshot.ratio365))) return false;
+
+  sthRplMomentumSeries = rows;
+  sthRplMomentumProjection = projection;
+  sthRplMomentumSnapshot = snapshot;
+  sthRplMomentumSources = payload.sources || null;
+  sthRplMomentumReferenceCycles = Array.isArray(payload.referenceCycles) ? payload.referenceCycles : [];
+  sthRplMomentumPublicPeaks = Array.isArray(payload.publicPeaks) ? payload.publicPeaks : [];
+
+  const current = Number(snapshot.currentMomentum);
+  const ratio7 = Number(snapshot.ratio7);
+  const ratio365 = Number(snapshot.ratio365);
+  const recentPeak = Number(snapshot.recentPeak);
+  const recentTrough = Number(snapshot.recentTrough);
+  const peakDrawdown = Number(snapshot.drawdownFromRecentPeak);
+  const elapsed = Number(snapshot.referenceElapsedDays);
+  const averageDays = Number(snapshot.averageCycleDays);
+  const remaining = Number(snapshot.remainingDays);
+  const sevenDayChange = Number(snapshot.sevenDayChange);
+  const sourceSuffix = payload.stale || cacheFallback ? " · CACHE" : "";
+  const zoneCopy = {
+    depressed: currentLanguage === "zh" ? "贴零沉淀" : "Near-Zero Base",
+    "loss-dominant": currentLanguage === "zh" ? "仍低于年均" : "Below Annual Pace",
+    expansion: currentLanguage === "zh" ? "动量扩张" : "Momentum Expansion",
+    accelerating: currentLanguage === "zh" ? "加速获利兑现" : "Accelerating Profit Taking",
+    distribution: currentLanguage === "zh" ? "狂热派发警戒" : "Frenzied Distribution Watch"
+  }[snapshot.zone] || snapshot.zone || "--";
+  const trendCopy = snapshot.trend === "rising"
+    ? (currentLanguage === "zh" ? "7 日重新加速" : "Reaccelerating over 7D")
+    : snapshot.trend === "falling"
+      ? (currentLanguage === "zh" ? "7 日动量回落" : "Cooling over 7D")
+      : (currentLanguage === "zh" ? "7 日变化平稳" : "Flat over 7D");
+  const signedChange = Number.isFinite(sevenDayChange) ? `${sevenDayChange >= 0 ? "+" : ""}${sevenDayChange.toFixed(2)}×` : "--";
+  const signedDrawdown = Number.isFinite(peakDrawdown) ? `${(peakDrawdown * 100).toFixed(1)}%` : "--";
+
+  setText("#sth-rpl-momentum-current", `${current.toFixed(2)}×`);
+  setText("#sth-rpl-momentum-zone", `${zoneCopy} · ${snapshot.onchainAsOf || "--"}`);
+  setText("#sth-rpl-momentum-ratios", `${ratio7.toFixed(2)} / ${ratio365.toFixed(2)}`);
+  setText("#sth-rpl-momentum-trend", `${trendCopy} · ${signedChange}`);
+  setText("#sth-rpl-momentum-peak", Number.isFinite(recentPeak) ? `${recentPeak.toFixed(2)}×` : "--");
+  setText("#sth-rpl-momentum-peak-date", `${snapshot.recentPeakDate || "--"} · ${signedDrawdown}`);
+  setText("#sth-rpl-momentum-progress", `${elapsed} / ${averageDays}D`);
+  setText("#sth-rpl-momentum-target", `${currentLanguage === "zh" ? "参考窗口" : "Reference window"} · ${snapshot.targetDate || "--"}`);
+  setText("#sth-rpl-momentum-raw", Number.isFinite(Number(snapshot.rawRatio)) ? `${Number(snapshot.rawRatio).toFixed(2)}×` : "--");
+  setText("#sth-rpl-momentum-trough", Number.isFinite(recentTrough) ? `${recentTrough.toFixed(2)}× · ${snapshot.recentTroughDate || "--"}` : "--");
+  setText("#sth-rpl-momentum-remaining", `${remaining}D`);
+  setText("#sth-rpl-momentum-date", snapshot.onchainAsOf || "--");
+  setText("#sth-rpl-momentum-source", `BGEOMETRICS · PUBLIC UTXO-AGE PROXY · DAILY${sourceSuffix} · ${payload.completeHistory ? "FULL HISTORY" : "RECENT WINDOW"}`);
+
+  const signal = document.querySelector("#sth-rpl-momentum-signal");
+  ["depressed", "loss-dominant", "expansion", "accelerating", "distribution"].forEach((zone) => signal?.classList.toggle(`is-${zone}`, snapshot.zone === zone));
+  setText("#sth-rpl-momentum-signal-title", currentLanguage === "zh"
+    ? `${zoneCopy} · 公开动量 ${current.toFixed(2)}×`
+    : `${zoneCopy} · Public Momentum ${current.toFixed(2)}×`);
+  const signalCopy = currentLanguage === "zh"
+    ? `公开代理的 7 日盈亏比为 ${ratio7.toFixed(2)}，365 日均值为 ${ratio365.toFixed(2)}，当前利润动量为 ${current.toFixed(2)}×，相对 180 日峰值 ${Number.isFinite(recentPeak) ? recentPeak.toFixed(2) : "--"}× 已变化 ${signedDrawdown}。参考图的 2026 锚点从 ${snapshot.referenceStartDate || "--"} 起算，参考计时截至 ${snapshot.referenceAsOfDate || snapshot.onchainAsOf || "--"} 为第 ${elapsed} 天，距 ${averageDays} 天历史均值窗口约 ${remaining} 天；公开链上数据截至 ${snapshot.onchainAsOf || "--"}。公开状态与参考计时保持独立。`
+    : `The public proxy has a 7D P/L ratio of ${ratio7.toFixed(2)} versus a 365D mean of ${ratio365.toFixed(2)}, producing ${current.toFixed(2)}× profit momentum. It is ${signedDrawdown} from the 180-day peak of ${Number.isFinite(recentPeak) ? recentPeak.toFixed(2) : "--"}×. The supplied 2026 reference starts on ${snapshot.referenceStartDate || "--"}; reference day ${elapsed} is measured through ${snapshot.referenceAsOfDate || snapshot.onchainAsOf || "--"}, leaving about ${remaining} days to the ${averageDays}-day mean window. Public on-chain data runs through ${snapshot.onchainAsOf || "--"}. Public status and reference timing remain separate.`;
+  setText("#sth-rpl-momentum-signal-copy", signalCopy);
+
+  const history = document.querySelector("#sth-rpl-momentum-history");
+  if (history) {
+    const referenceRows = sthRplMomentumReferenceCycles.map((cycle) => `<div><span>${cycle.cycle} · REFERENCE</span><strong>${Number(cycle.durationDays)} DAYS</strong><em>${cycle.startDate} → ${cycle.peakDate}</em></div>`);
+    const publicRows = sthRplMomentumPublicPeaks.map((peak) => `<div><span>${peak.cycle} · PUBLIC PEAK</span><strong>${Number(peak.momentum).toFixed(2)}×</strong><em>${peak.date}</em></div>`);
+    history.innerHTML = [...referenceRows, ...publicRows].join("");
+  }
+
+  const loading = document.querySelector("#sth-rpl-momentum-loading");
+  if (loading) {
+    loading.hidden = true;
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+  }
+  hideSthRplMomentumTooltip();
+  drawSthRplMomentumChart();
+  return true;
+};
+
+const loadSthRplMomentumMetrics = async () => {
+  const cached = readSthRplMomentumCache();
+  const loading = document.querySelector("#sth-rpl-momentum-loading");
+  if (loading) {
+    loading.hidden = sthRplMomentumSeries.length >= 2 && Boolean(sthRplMomentumSnapshot);
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+    loading.textContent = getCopy("sthRplMomentum.loading");
+  }
+  try {
+    const response = await fetch(`${API_BASE}/api/sth-realized-profit-loss-momentum?schema=1`, { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+    if (!response.ok) throw new Error(`STH realized profit/loss momentum API ${response.status}`);
+    const payload = await response.json();
+    if (!applySthRplMomentumPayload(payload, false)) throw new Error("STH realized profit/loss momentum payload is empty");
+    writeDashboardCache(STH_RPL_MOMENTUM_CACHE_KEY, payload, "STH Realized Profit/Loss Momentum");
+    if (payload.stale) publicDataWarnings.push("sth-rpl-momentum-stale");
+  } catch (error) {
+    if (preserveRenderedChart(sthRplMomentumSeries, sthRplMomentumSnapshot, ["#sth-rpl-momentum-loading"], "sth-rpl-momentum-refresh")) return;
+    if (cached && applySthRplMomentumPayload(cached, true)) {
+      publicDataWarnings.push("sth-rpl-momentum-cache");
+      return;
+    }
+    clearDashboardCache(STH_RPL_MOMENTUM_CACHE_KEY, "STH Realized Profit/Loss Momentum");
+    if (loading) {
+      loading.hidden = false;
+      loading.classList.add("is-error");
+      loading.setAttribute("role", "button");
+      loading.setAttribute("tabindex", "0");
+      loading.textContent = currentLanguage === "zh" ? "短期持有者盈亏动量同步失败，点击重试" : "STH realized profit/loss momentum sync failed. Click to retry.";
+    }
+    throw error;
+  }
+};
+
+const readMvrvZscoreCache = () => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(MVRV_ZSCORE_CACHE_KEY) || "null");
+    return cached?.payload || null;
+  } catch {
+    return null;
+  }
+};
+
+const applyMvrvZscorePayload = (payload, cacheFallback = false) => {
+  const rows = (payload?.series || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    price: Number(point.price),
+    marketCap: Number(point.marketCap),
+    realizedCap: Number(point.realizedCap),
+    mvrv: Number(point.mvrv),
+    rawZScore: Number(point.rawZScore),
+    zScore: Number(point.zScore),
+    source: point.source || "public"
+  })).filter((point) => !Number.isNaN(point.date.getTime())
+    && Number.isFinite(point.price) && point.price > 0
+    && Number.isFinite(point.zScore));
+  const projection = (payload?.projection || []).map((point) => ({
+    date: new Date(`${point.date}T00:00:00Z`),
+    zScore: Number(point.zScore),
+    referenceDay: Number(point.referenceDay)
+  })).filter((point) => !Number.isNaN(point.date.getTime()) && Number.isFinite(point.zScore));
+  const snapshot = payload?.snapshot;
+  if (rows.length < 365 || !snapshot || !Number.isFinite(Number(snapshot.currentZScore))) return false;
+
+  mvrvZscoreSeries = rows;
+  mvrvZscoreProjection = projection;
+  mvrvZscoreSnapshot = snapshot;
+  mvrvZscoreSources = payload.sources || null;
+  mvrvZscoreReferenceCycles = Array.isArray(payload.referenceCycles) ? payload.referenceCycles : [];
+
+  const current = Number(snapshot.currentZScore);
+  const thresholdDistance = Number(snapshot.thresholdDistance);
+  const elapsed = Number(snapshot.referenceElapsedDays);
+  const classicRemaining = Number(snapshot.classicRemainingDays);
+  const expandedRemaining = Number(snapshot.expandedRemainingDays);
+  const sourceSuffix = payload.stale || cacheFallback ? " · CACHE" : "";
+  const zoneCopy = {
+    undervalued: currentLanguage === "zh" ? "成本折价" : "Cost Discount",
+    recovery: currentLanguage === "zh" ? "复苏蓄势" : "Recovery Base",
+    expansion: currentLanguage === "zh" ? "趋势扩张" : "Trend Expansion",
+    heated: currentLanguage === "zh" ? "估值升温" : "Heated Valuation",
+    overheated: currentLanguage === "zh" ? "极端过热" : "Extreme Overheating"
+  }[snapshot.zone] || snapshot.zone || "--";
+  const thresholdText = Number.isFinite(thresholdDistance) ? `${thresholdDistance >= 0 ? "+" : ""}${thresholdDistance.toFixed(4)} vs 0.7539` : "--";
+  const delayedCopy = snapshot.bgeometricsDelayed ? (currentLanguage === "zh" ? "延迟" : "delayed") : "latest";
+
+  setText("#mvrv-zscore-current", current.toFixed(4));
+  setText("#mvrv-zscore-zone", `${zoneCopy} · ${thresholdText}`);
+  setText("#mvrv-zscore-cross", snapshot.referenceStartDate || "--");
+  setText("#mvrv-zscore-elapsed", `${currentLanguage === "zh" ? "已过" : "Elapsed"} ${elapsed}D`);
+  setText("#mvrv-zscore-classic", `${classicRemaining}D`);
+  setText("#mvrv-zscore-classic-target", `${snapshot.classicReferenceDays}D ${currentLanguage === "zh" ? "均值" : "mean"} · ${snapshot.classicTargetDate || "--"}`);
+  setText("#mvrv-zscore-expanded", `${expandedRemaining}D`);
+  setText("#mvrv-zscore-expanded-target", `${snapshot.expandedReferenceDays}D ${currentLanguage === "zh" ? "均值" : "mean"} · ${snapshot.expandedTargetDate || "--"}`);
+  setText("#mvrv-zscore-raw", Number.isFinite(Number(snapshot.rawZScore)) ? Number(snapshot.rawZScore).toFixed(4) : "--");
+  setText("#mvrv-zscore-mvrv", Number.isFinite(Number(snapshot.currentMvrv)) ? `${Number(snapshot.currentMvrv).toFixed(3)}×` : "--");
+  setText("#mvrv-zscore-peak", Number.isFinite(Number(snapshot.recentPeak)) ? `${Number(snapshot.recentPeak).toFixed(3)} · ${snapshot.recentPeakDate || "--"}` : "--");
+  setText("#mvrv-zscore-crosscheck", Number.isFinite(Number(snapshot.bgeometricsZScore)) ? `${Number(snapshot.bgeometricsZScore).toFixed(4)} · ${snapshot.bgeometricsAsOf || "--"} · ${delayedCopy}` : "--");
+  setText("#mvrv-zscore-source", `COIN METRICS · CLASSIC PUBLIC RECONSTRUCTION · 7D${sourceSuffix} · ${payload.completeHistory ? "FULL HISTORY" : "RECENT WINDOW"}`);
+
+  const signal = document.querySelector("#mvrv-zscore-signal");
+  ["undervalued", "recovery", "expansion", "heated", "overheated"].forEach((zone) => signal?.classList.toggle(`is-${zone}`, snapshot.zone === zone));
+  setText("#mvrv-zscore-signal-title", currentLanguage === "zh" ? `${zoneCopy} · 7D Z分数 ${current.toFixed(4)}` : `${zoneCopy} · 7D Z-Score ${current.toFixed(4)}`);
+  setText("#mvrv-zscore-signal-copy", currentLanguage === "zh"
+    ? `公开重建的 7 日 Z 分数为 ${current.toFixed(4)}，相对 0.7539 分水岭为 ${thresholdText}。最近一次向上穿越发生在 ${snapshot.referenceStartDate || "--"}，截至 ${snapshot.onchainAsOf || "--"} 已过 ${elapsed} 天。前三轮 42 天经典均值尚余 ${classicRemaining} 天；加入 2022 年 140 天样本后的 66 天扩展均值尚余 ${expandedRemaining} 天。两组窗口并列展示，不把小样本统计写成确定顶部。`
+    : `The public seven-day reconstruction is ${current.toFixed(4)}, or ${thresholdText}. Its latest upward cross occurred on ${snapshot.referenceStartDate || "--"}, ${elapsed} days before the ${snapshot.onchainAsOf || "--"} observation. The classic 42-day mean has ${classicRemaining} days left; the 66-day mean including the 140-day 2022 sample has ${expandedRemaining} days left. Both windows remain visible rather than presenting a small-sample statistic as a certain top.`);
+
+  const history = document.querySelector("#mvrv-zscore-history");
+  if (history) {
+    const rowsHtml = mvrvZscoreReferenceCycles.map((cycle) => `<div class="${cycle.basis === "public-reconstruction" ? "public" : "reference"}"><span>${cycle.cycle} · ${cycle.basis === "public-reconstruction" ? "PUBLIC" : "REFERENCE"}</span><strong>${Number(cycle.durationDays)} DAYS</strong><em>${cycle.crossDate} → ${cycle.peakDate}</em></div>`);
+    rowsHtml.push(`<div class="current"><span>2026 · LIVE</span><strong>${elapsed} / ${snapshot.classicReferenceDays} / ${snapshot.expandedReferenceDays}D</strong><em>${snapshot.referenceStartDate || "--"} → ${snapshot.expandedTargetDate || "--"}</em></div>`);
+    history.innerHTML = rowsHtml.join("");
+  }
+
+  const loading = document.querySelector("#mvrv-zscore-loading");
+  if (loading) {
+    loading.hidden = true;
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+  }
+  hideMvrvZscoreTooltip();
+  drawMvrvZscoreChart();
+  return true;
+};
+
+const loadMvrvZscoreMetrics = async () => {
+  const cached = readMvrvZscoreCache();
+  const loading = document.querySelector("#mvrv-zscore-loading");
+  if (loading) {
+    loading.hidden = mvrvZscoreSeries.length >= 2 && Boolean(mvrvZscoreSnapshot);
+    loading.classList.remove("is-error");
+    loading.removeAttribute("role");
+    loading.removeAttribute("tabindex");
+    loading.textContent = getCopy("mvrvZ.loading");
+  }
+  try {
+    const response = await fetch(`${API_BASE}/api/mvrv-zscore-cycle?schema=1`, { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+    if (!response.ok) throw new Error(`MVRV Z-Score API ${response.status}`);
+    const payload = await response.json();
+    if (!applyMvrvZscorePayload(payload, false)) throw new Error("MVRV Z-Score payload is empty");
+    writeDashboardCache(MVRV_ZSCORE_CACHE_KEY, payload, "MVRV Z-Score");
+    if (payload.stale) publicDataWarnings.push("mvrv-zscore-stale");
+  } catch (error) {
+    if (preserveRenderedChart(mvrvZscoreSeries, mvrvZscoreSnapshot, ["#mvrv-zscore-loading"], "mvrv-zscore-refresh")) return;
+    if (cached && applyMvrvZscorePayload(cached, true)) {
+      publicDataWarnings.push("mvrv-zscore-cache");
+      return;
+    }
+    clearDashboardCache(MVRV_ZSCORE_CACHE_KEY, "MVRV Z-Score");
+    if (loading) {
+      loading.hidden = false;
+      loading.classList.add("is-error");
+      loading.setAttribute("role", "button");
+      loading.setAttribute("tabindex", "0");
+      loading.textContent = currentLanguage === "zh" ? "MVRV Z分数同步失败，点击重试" : "MVRV Z-Score sync failed. Click to retry.";
+    }
+    throw error;
+  }
+};
+
 const readSth200dmaCache = () => {
   try {
     const cached = JSON.parse(localStorage.getItem(STH_200DMA_CACHE_KEY) || "null");
@@ -14169,6 +15044,36 @@ const saveUtxoAgeRpSnapshot = () => {
   }, "image/png", 1);
 };
 
+const saveSthRplMomentumSnapshot = () => {
+  const canvas = document.querySelector("#sth-rpl-momentum-chart");
+  if (!canvas || !sthRplMomentumSeries.length) return;
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+  const context = exportCanvas.getContext("2d");
+  context.fillStyle = getComputedStyle(document.body).getPropertyValue("--paper").trim() || "#0a0d0c";
+  context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+  context.drawImage(canvas, 0, 0);
+  exportCanvas.toBlob((blob) => {
+    if (blob) downloadFile(blob, `welinkbtc-sth-realized-profit-loss-momentum-${new Date().toISOString().slice(0, 10)}.png`);
+  }, "image/png", 1);
+};
+
+const saveMvrvZscoreSnapshot = () => {
+  const canvas = document.querySelector("#mvrv-zscore-chart");
+  if (!canvas || !mvrvZscoreSeries.length) return;
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = canvas.width;
+  exportCanvas.height = canvas.height;
+  const context = exportCanvas.getContext("2d");
+  context.fillStyle = getComputedStyle(document.body).getPropertyValue("--paper").trim() || "#0a0d0c";
+  context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+  context.drawImage(canvas, 0, 0);
+  exportCanvas.toBlob((blob) => {
+    if (blob) downloadFile(blob, `welinkbtc-mvrv-zscore-${new Date().toISOString().slice(0, 10)}.png`);
+  }, "image/png", 1);
+};
+
 const saveSth200dmaSnapshot = () => {
   const canvas = document.querySelector("#sth-200dma-chart");
   if (!canvas || !sth200dmaSeries.length) return;
@@ -14673,6 +15578,51 @@ const downloadUtxoAgeRpCsv = () => {
     ].join(",")));
   }
   downloadFile(new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" }), `welinkbtc-utxo-age-realized-price-${utxoAgeRpRange}.csv`);
+};
+
+const downloadSthRplMomentumCsv = () => {
+  const history = getSthRplMomentumVisibleSeries();
+  if (!history.length) return;
+  const header = "date,btc_price_usd,sth_realized_profit_loss_ratio_raw,ratio_7d_sma,ratio_365d_sma,profit_momentum,reference_day,data_kind";
+  const lines = history.map((point) => [
+    point.date.toISOString().slice(0, 10),
+    point.price,
+    point.rawRatio,
+    point.ratio7,
+    point.ratio365,
+    point.momentum,
+    "",
+    "public_utxo_age_proxy"
+  ].join(","));
+  if (["all", "365"].includes(sthRplMomentumRange)) {
+    sthRplMomentumProjection.forEach((point) => lines.push([
+      point.date.toISOString().slice(0, 10), "", "", "", "", point.momentum, point.referenceDay, "forward_scenario"
+    ].join(",")));
+  }
+  downloadFile(new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" }), `welinkbtc-sth-realized-profit-loss-momentum-${sthRplMomentumRange}.csv`);
+};
+
+const downloadMvrvZscoreCsv = () => {
+  const history = getMvrvZscoreVisibleSeries();
+  if (!history.length) return;
+  const header = "date,btc_price_usd,market_cap_usd,realized_cap_usd,mvrv,raw_mvrv_zscore,mvrv_zscore_7d,reference_day,data_kind";
+  const lines = history.map((point) => [
+    point.date.toISOString().slice(0, 10),
+    point.price,
+    Number.isFinite(point.marketCap) ? point.marketCap : "",
+    Number.isFinite(point.realizedCap) ? point.realizedCap : "",
+    Number.isFinite(point.mvrv) ? point.mvrv : "",
+    Number.isFinite(point.rawZScore) ? point.rawZScore : "",
+    point.zScore,
+    "",
+    "public_reconstruction"
+  ].join(","));
+  if (["all", "365"].includes(mvrvZscoreRange)) {
+    mvrvZscoreProjection.forEach((point) => lines.push([
+      point.date.toISOString().slice(0, 10), "", "", "", "", "", point.zScore, point.referenceDay, "forward_scenario"
+    ].join(",")));
+  }
+  downloadFile(new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" }), `welinkbtc-mvrv-zscore-${mvrvZscoreRange}.csv`);
 };
 
 const downloadSth200dmaCsv = () => {
@@ -15184,6 +16134,38 @@ const toggleUtxoAgeRpFullscreen = async () => {
   }, 80);
 };
 
+const toggleSthRplMomentumFullscreen = async () => {
+  const panel = document.querySelector("#sth-rpl-momentum-panel");
+  if (!panel) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (panel.requestFullscreen) await panel.requestFullscreen();
+    else panel.classList.toggle("is-expanded");
+  } catch {
+    panel.classList.toggle("is-expanded");
+  }
+  window.setTimeout(() => {
+    hideSthRplMomentumTooltip();
+    drawSthRplMomentumChart();
+  }, 80);
+};
+
+const toggleMvrvZscoreFullscreen = async () => {
+  const panel = document.querySelector("#mvrv-zscore-panel");
+  if (!panel) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (panel.requestFullscreen) await panel.requestFullscreen();
+    else panel.classList.toggle("is-expanded");
+  } catch {
+    panel.classList.toggle("is-expanded");
+  }
+  window.setTimeout(() => {
+    hideMvrvZscoreTooltip();
+    drawMvrvZscoreChart();
+  }, 80);
+};
+
 const toggleSth200dmaFullscreen = async () => {
   const panel = document.querySelector("#sth-200dma-panel");
   if (!panel) return;
@@ -15450,6 +16432,28 @@ const surfMetricConfig = {
       publicCrosses: utxoAgeRpPublicCrosses.map((cross) => `${cross.date}:${Number(cross.spreadPercent).toFixed(2)}%${cross.estimated ? ":estimated" : ""}`).join(" | "),
       dataSources: `${utxoAgeRpSources?.supply || "BGeometrics public HODL Waves supply"} + ${utxoAgeRpSources?.realizedCap || "BGeometrics public Realized-Cap HODL Waves"}`,
       disclosure: utxoAgeRpSources?.disclosure || "Reference anchors and the public reconstruction are reported separately."
+    })
+  },
+  "sth-rpl-momentum": {
+    name: "BTC Short-Term Holder Realized Profit / Loss Ratio Momentum",
+    snapshot: () => ({
+      ...(sthRplMomentumSnapshot || {}),
+      methodology: "sma7_of_public_sth_realized_profit_loss_ratio_divided_by_sma365",
+      referenceCycles: sthRplMomentumReferenceCycles.map((cycle) => `${cycle.cycle}:${cycle.startDate}->${cycle.peakDate}:${cycle.durationDays}d`).join(" | "),
+      publicPeaks: sthRplMomentumPublicPeaks.map((peak) => `${peak.cycle}:${Number(peak.momentum).toFixed(2)}x@${peak.date}`).join(" | "),
+      dataSources: `${sthRplMomentumSources?.fullHistory || "BGeometrics public full history"} + ${sthRplMomentumSources?.recent || "BGeometrics no-token API"}`,
+      disclosure: sthRplMomentumSources?.disclosure || "Reference durations and public proxy peaks are reported separately."
+    })
+  },
+  "mvrv-zscore": {
+    name: "BTC MVRV Z-Score · 7D Moving Average",
+    snapshot: () => ({
+      ...(mvrvZscoreSnapshot || {}),
+      methodology: "sma7_of_market_cap_minus_realized_cap_divided_by_cumulative_population_standard_deviation_of_market_cap",
+      threshold: 0.7539,
+      referenceCycles: mvrvZscoreReferenceCycles.map((cycle) => `${cycle.cycle}:${cycle.crossDate}->${cycle.peakDate}:${cycle.durationDays}d:${cycle.basis}`).join(" | "),
+      dataSources: `${mvrvZscoreSources?.primary || "Coin Metrics Community API"} + ${mvrvZscoreSources?.crosscheck || "BGeometrics no-key latest endpoint"}`,
+      disclosure: mvrvZscoreSources?.disclosure || "Classic and expanded timing windows are shown separately; the forward line is not a price forecast."
     })
   },
   "sth-200dma": {
@@ -15957,6 +16961,8 @@ const analysisLoaders = [
   loadTwoWeekRsiMetrics,
   loadUnder3mHodlMetrics,
   loadUtxoAgeRpMetrics,
+  loadSthRplMomentumMetrics,
+  loadMvrvZscoreMetrics,
   loadSth200dmaMetrics,
   loadVddMedianMetrics,
   loadSsrMetrics,
@@ -16344,6 +17350,24 @@ document.querySelectorAll("[data-chart-tabs='utxo-age-rp'] button").forEach((but
   });
 });
 
+document.querySelectorAll("[data-chart-tabs='sth-rpl-momentum'] button").forEach((button) => {
+  button.addEventListener("click", () => {
+    sthRplMomentumRange = button.dataset.range || "all";
+    document.querySelectorAll("[data-chart-tabs='sth-rpl-momentum'] button").forEach((item) => item.classList.toggle("active", item === button));
+    hideSthRplMomentumTooltip();
+    drawSthRplMomentumChart();
+  });
+});
+
+document.querySelectorAll("[data-chart-tabs='mvrv-zscore'] button").forEach((button) => {
+  button.addEventListener("click", () => {
+    mvrvZscoreRange = button.dataset.range || "all";
+    document.querySelectorAll("[data-chart-tabs='mvrv-zscore'] button").forEach((item) => item.classList.toggle("active", item === button));
+    hideMvrvZscoreTooltip();
+    drawMvrvZscoreChart();
+  });
+});
+
 document.querySelectorAll("[data-chart-tabs='sth-200dma'] button").forEach((button) => {
   button.addEventListener("click", () => {
     sth200dmaRange = button.dataset.range || "all";
@@ -16540,6 +17564,16 @@ document.querySelector("#utxo-age-rp-download")?.addEventListener("click", downl
 document.querySelector("#utxo-age-rp-fullscreen")?.addEventListener("click", toggleUtxoAgeRpFullscreen);
 document.querySelector("#utxo-age-rp-chart")?.addEventListener("pointermove", showUtxoAgeRpTooltip);
 document.querySelector("#utxo-age-rp-chart")?.addEventListener("pointerleave", hideUtxoAgeRpTooltip);
+document.querySelector("#sth-rpl-momentum-snapshot")?.addEventListener("click", saveSthRplMomentumSnapshot);
+document.querySelector("#sth-rpl-momentum-download")?.addEventListener("click", downloadSthRplMomentumCsv);
+document.querySelector("#sth-rpl-momentum-fullscreen")?.addEventListener("click", toggleSthRplMomentumFullscreen);
+document.querySelector("#sth-rpl-momentum-chart")?.addEventListener("pointermove", showSthRplMomentumTooltip);
+document.querySelector("#sth-rpl-momentum-chart")?.addEventListener("pointerleave", hideSthRplMomentumTooltip);
+document.querySelector("#mvrv-zscore-snapshot")?.addEventListener("click", saveMvrvZscoreSnapshot);
+document.querySelector("#mvrv-zscore-download")?.addEventListener("click", downloadMvrvZscoreCsv);
+document.querySelector("#mvrv-zscore-fullscreen")?.addEventListener("click", toggleMvrvZscoreFullscreen);
+document.querySelector("#mvrv-zscore-chart")?.addEventListener("pointermove", showMvrvZscoreTooltip);
+document.querySelector("#mvrv-zscore-chart")?.addEventListener("pointerleave", hideMvrvZscoreTooltip);
 document.querySelector("#sth-200dma-snapshot")?.addEventListener("click", saveSth200dmaSnapshot);
 document.querySelector("#sth-200dma-download")?.addEventListener("click", downloadSth200dmaCsv);
 document.querySelector("#sth-200dma-fullscreen")?.addEventListener("click", toggleSth200dmaFullscreen);
@@ -16737,6 +17771,24 @@ const retryUtxoAgeRpLoading = (event) => {
 };
 document.querySelector("#utxo-age-rp-loading")?.addEventListener("click", retryUtxoAgeRpLoading);
 document.querySelector("#utxo-age-rp-loading")?.addEventListener("keydown", retryUtxoAgeRpLoading);
+const retrySthRplMomentumLoading = (event) => {
+  const loading = event.currentTarget;
+  if (!loading.classList.contains("is-error")) return;
+  if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  loadSthRplMomentumMetrics().catch((error) => console.warn("STH realized profit/loss momentum retry failed", error));
+};
+document.querySelector("#sth-rpl-momentum-loading")?.addEventListener("click", retrySthRplMomentumLoading);
+document.querySelector("#sth-rpl-momentum-loading")?.addEventListener("keydown", retrySthRplMomentumLoading);
+const retryMvrvZscoreLoading = (event) => {
+  const loading = event.currentTarget;
+  if (!loading.classList.contains("is-error")) return;
+  if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  loadMvrvZscoreMetrics().catch((error) => console.warn("MVRV Z-Score retry failed", error));
+};
+document.querySelector("#mvrv-zscore-loading")?.addEventListener("click", retryMvrvZscoreLoading);
+document.querySelector("#mvrv-zscore-loading")?.addEventListener("keydown", retryMvrvZscoreLoading);
 const retrySth200dmaLoading = (event) => {
   const loading = event.currentTarget;
   if (!loading.classList.contains("is-error")) return;
@@ -16834,6 +17886,8 @@ document.addEventListener("fullscreenchange", () => window.setTimeout(() => {
   hideUnder3mHodlTooltip();
   hideUnder3mHeatTooltip();
   hideUtxoAgeRpTooltip();
+  hideSthRplMomentumTooltip();
+  hideMvrvZscoreTooltip();
   hideSth200dmaTooltip();
   hideVddMedianTooltip();
   hideSsrTooltip();
@@ -16865,6 +17919,8 @@ document.addEventListener("fullscreenchange", () => window.setTimeout(() => {
   drawUnder3mHodlChart();
   drawUnder3mHeatChart();
   drawUtxoAgeRpChart();
+  drawSthRplMomentumChart();
+  drawMvrvZscoreChart();
   drawSth200dmaChart();
   drawVddMedianCycleChart();
   drawSsrChart();

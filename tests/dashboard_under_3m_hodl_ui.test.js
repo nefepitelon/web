@@ -37,7 +37,7 @@ test("under-three-month HODL Waves keeps the dashboard visual and responsive sys
   assert.match(css, /\.under-3m-hodl-stage/);
   assert.match(css, /\.legend-under-3m-share/);
   assert.match(css, /\.under-3m-hodl-snapshot/);
-  assert.match(css, /grid-row: 1 \/ span 32/);
+  assert.match(css, /grid-row: 1 \/ span 34/);
   assert.match(css, /@media \(min-width: 981px\)[\s\S]*\.under-3m-hodl-stage,[\s\S]*height: 560px/);
   assert.match(css, /@media \(max-width: 980px\)[\s\S]*\.under-3m-hodl-stage \{ min-height: 520px/);
 });

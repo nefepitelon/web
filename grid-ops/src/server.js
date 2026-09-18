@@ -16,6 +16,7 @@ import {
 import { inspectExchangeInstanceExposure } from './exchange/instance-removal.js';
 import { GridBot } from './bot.js';
 import { analyzeTrendWithLivePrice } from './trend.js';
+import { normalizeTrendIntervalSec, scanTrendRecommendations } from './trend-recommendations.js';
 import {
   setupProxies,
   checkProxy,
@@ -290,7 +291,7 @@ function makeExchangeHandler(prefix, bot, exchange, exCfg, clients, name, repair
 
     if (subPath === '/trend') {
       const marketId = Number(url.searchParams.get('marketId') || 1);
-      const intervalSec = Number(url.searchParams.get('intervalSec') || 3600);
+      const intervalSec = normalizeTrendIntervalSec(url.searchParams.get('intervalSec'));
       let candles = [];
       try { candles = await exchange.getCandles(marketId, intervalSec, 200); } catch { /* tolerate */ }
       let price = null;
@@ -302,6 +303,19 @@ function makeExchangeHandler(prefix, bot, exchange, exCfg, clients, name, repair
             detail: '暂时拿不到足够K线数据，已默认中性网格。可手动设置上下边界后启动；不影响下单。',
           };
       return send(res, 200, { analysis, candles: (candles || []).slice(-120) });
+    }
+
+    if (subPath === '/trend-recommendations') {
+      const intervalSec = normalizeTrendIntervalSec(url.searchParams.get('intervalSec'));
+      const result = await scanTrendRecommendations({
+        markets: await exchange.getMarkets(),
+        intervalSec,
+        recommendation: url.searchParams.get('strategy'),
+        minStrength: url.searchParams.get('minStrength'),
+        getCandles: (marketId, seconds, count) => exchange.getCandles(marketId, seconds, count),
+        getPrice: (marketId) => exchange.getPrice(marketId),
+      });
+      return send(res, 200, { exchange: name, ...result });
     }
 
     if (subPath === '/state') return send(res, 200, bot.getState());

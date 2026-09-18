@@ -29,6 +29,10 @@ export function isInternalWorkflowPath(pathname: string) {
   return pathname === "/.well-known/workflow" || pathname.startsWith("/.well-known/workflow/");
 }
 
+export function isPublicMarketDataPath(pathname: string) {
+  return pathname === "/api/box-breakout/quotes" || pathname === "/api/box-breakout/chart";
+}
+
 export async function proxy(request: NextRequest) {
   // Workflow DevKit calls these endpoints at high frequency. They are internal
   // transport requests, not browser sessions, and must never refresh Supabase
@@ -40,6 +44,13 @@ export async function proxy(request: NextRequest) {
 
   const canonicalRedirect = redirectToCanonicalHost(request);
   if (canonicalRedirect) return canonicalRedirect;
+
+  // These endpoints only proxy public market data. Running Supabase session
+  // validation for every quote/chart refresh creates avoidable Auth egress and
+  // database work, while providing no authorization boundary.
+  if (isPublicMarketDataPath(request.nextUrl.pathname)) {
+    return NextResponse.next({ request });
+  }
 
   const authParamNames = ["code", "error", "error_code", "error_description"] as const;
   // A plain `error` query belongs to the application UI too. Treat only the

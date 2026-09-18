@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams, market = readMarket(params);
     const symbol = validateSymbol(params.get("symbol") ?? "", market);
-    await limitRequests(request, "chart", 40);
-    return Response.json(await getChart(symbol, market), { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=30" } });
+    await limitRequests(request, "chart", 20, undefined, { persistent: false });
+    return Response.json(await getChart(symbol, market), { headers: { "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=86400" } });
   } catch (error) { return errorResponse(error); }
 }

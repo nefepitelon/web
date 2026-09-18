@@ -12,6 +12,26 @@ test("internal workflow transport bypasses Supabase auth", async () => {
   assert.match(proxy, /matcher:[\s\S]*\\\.well-known\/workflow\//);
 });
 
+test("public box market data bypasses auth and persistent rate-limit egress", async () => {
+  const [proxy, service, quotes, chart, rateLimit] = await Promise.all([
+    read("proxy.ts"),
+    read("lib/box-breakout/service.ts"),
+    read("app/api/box-breakout/quotes/route.ts"),
+    read("app/api/box-breakout/chart/route.ts"),
+    read("lib/rate-limit.ts"),
+  ]);
+  assert.match(proxy, /isPublicMarketDataPath/);
+  assert.match(proxy, /\/api\/box-breakout\/quotes/);
+  assert.match(proxy, /\/api\/box-breakout\/chart/);
+  assert.ok(proxy.indexOf("if (isPublicMarketDataPath") < proxy.indexOf("supabase.auth.getClaims"));
+  assert.match(service, /options\.persistent !== false && isDatabaseConfigured\(\)/);
+  assert.match(quotes, /persistent: false/);
+  assert.match(chart, /persistent: false/);
+  assert.match(quotes, /s-maxage=10/);
+  assert.match(chart, /s-maxage=900/);
+  assert.match(rateLimit, /select: \{ count: true \}/);
+});
+
 test("normal viewer reads do not rewrite the full user projection", async () => {
   const membership = await read("lib/membership.ts");
   assert.match(membership, /projectionNeedsRepair/);

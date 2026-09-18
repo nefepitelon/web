@@ -32,7 +32,7 @@ test("dashboard carousel reuses the complete homepage component and controller",
   assert.match(dashboardHtml, /href="styles\.css/);
 
   const options = homepageHtml.match(/data-model-option="[^"]+"/g) || [];
-  assert.equal(options.length, 32);
+  assert.equal(options.length, 34);
   assert.match(homepageHtml, /data-view="2d"/);
   assert.match(homepageHtml, /data-view="3d"/);
 });
@@ -120,21 +120,21 @@ test("dashboard mounts the shared 3D experience before sequential cycle/controll
   for (const base of ["", "/legacy"]) {
     const run = mountHarness({ scriptPath: `${base}/dashboard-product-carousel.js` });
     await flushMount();
-    assert.equal(run.requested[0].url, `${base}/index.html?v=20260914-system-ui-v1`);
+    assert.equal(run.requested[0].url, `${base}/index.html?v=20260917-mvrv-zscore-watermark-v2`);
     assert.equal(run.requested[0].options.cache, "no-cache");
     assert.equal(run.mount.children[0], run.section);
     assert.equal(run.section.dataset.onchainExperience, "shared-3d");
     assert.equal(run.copy.removed, true);
     assert.deepEqual(run.brand.children[0].children, [run.subtitle, run.actions]);
     assert.equal(run.appended.length, 1, "controller must wait for cycle dependency");
-    assert.equal(run.appended[0].src, `${base}/trend-indicator-cycle.js?v=20260914-system-ui-v1`);
+    assert.equal(run.appended[0].src, `${base}/trend-indicator-cycle.js?v=20260917-mvrv-zscore-watermark-v2`);
     assert.deepEqual(run.events, []);
 
     run.window.WelinkTrendIndicatorCycle = { create() {} };
     run.appended[0].listeners.load();
     await flushMount();
     assert.equal(run.appended.length, 2);
-    assert.equal(run.appended[1].src, `${base}/product-dashboard.js?v=20260914-system-ui-v1`);
+    assert.equal(run.appended[1].src, `${base}/product-dashboard.js?v=20260917-mvrv-zscore-watermark-v2`);
     run.window.updateProductDashboardLanguage = () => run.languages.push("shared");
     run.appended[1].listeners.load();
     await flushMount();

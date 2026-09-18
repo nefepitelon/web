@@ -5,6 +5,7 @@ import type { Bar, Box, Market } from "@/lib/box-breakout/types";
 import styles from "./box-breakout.module.css";
 
 const cache = new Map<string, { at: number; bars: Bar[]; source: string }>();
+const CHART_CACHE_MS = 15 * 60_000;
 export function priceLabel(value: number) {
   if (!Number.isFinite(value)) return "—";
   return value.toLocaleString("en-US", { maximumFractionDigits: value >= 100 ? 2 : value >= 1 ? 3 : 8 });
@@ -26,7 +27,7 @@ export function BoxBreakoutChart({ symbol, market, box, expanded = false }: { sy
       started = true;
       const key = `${market}:${symbol}`;
       const saved = cache.get(key);
-      if (saved && Date.now() - saved.at < 60_000) { setBars(saved.bars); setSource(saved.source); return; }
+      if (saved && Date.now() - saved.at < CHART_CACHE_MS) { setBars(saved.bars); setSource(saved.source); return; }
       try {
         const response = await fetch(`/api/box-breakout/chart?market=${market}&symbol=${encodeURIComponent(symbol)}`, { signal: abort.signal });
         const result = await response.json();

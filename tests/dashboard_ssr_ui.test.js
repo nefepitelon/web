@@ -17,7 +17,7 @@ test("dashboard exposes the 27th SSR Bollinger model with Surf, export and fulls
   assert.match(html, /id="ssr-snapshot"/);
   assert.match(html, /id="ssr-download"/);
   assert.match(html, /id="ssr-fullscreen"/);
-  assert.match(html, /INDEX \/ 32/);
+  assert.match(html, /INDEX \/ 34/);
   assert.match(html, /SSR 稳定币供应比例上下条形带/);
 
   assert.match(js, /\/api\/stablecoin-supply-ratio\?schema=1/);
@@ -30,5 +30,5 @@ test("dashboard exposes the 27th SSR Bollinger model with Surf, export and fulls
   assert.match(route, /"stablecoin-supply-ratio"/);
   assert.match(css, /\.ssr-stage/);
   assert.match(css, /\.legend-ssr-upper/);
-  assert.match(css, /grid-row: 1 \/ span 32/);
+  assert.match(css, /grid-row: 1 \/ span 34/);
 });

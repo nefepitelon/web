@@ -35,5 +35,5 @@ test("thirty-first model has distinct responsive and reference styling", () => {
   assert.match(css, /\.under-3m-heat-stage/);
   assert.match(css, /\.legend-under-3m-heat-share/);
   assert.match(css, /\.under-3m-heat-history/);
-  assert.match(css, /grid-row: 1 \/ span 32/);
+  assert.match(css, /grid-row: 1 \/ span 34/);
 });

@@ -14,8 +14,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-  <link rel="stylesheet" href="styles.css?v=20260914-system-ui-v1" />
-  <link rel="stylesheet" href="dashboard.css?v=20260914-system-ui-v1" />
+  <link rel="stylesheet" href="styles.css?v=20260917-mvrv-zscore-watermark-v2" />
+  <link rel="stylesheet" href="dashboard.css?v=20260917-mvrv-zscore-watermark-v2" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
   </head>
@@ -341,7 +341,7 @@
           <section class="terminal-section chart-section" id="charts">
             <aside class="trend-index" id="trend-index" aria-label="趋势指标导航">
               <div class="trend-index-head">
-              <span class="trend-index-kicker">INDEX / 32</span>
+              <span class="trend-index-kicker">INDEX / 34</span>
                 <strong data-i18n="trendNav.title">趋势指标导航</strong>
                 <p data-i18n="trendNav.text">点击名称快速定位</p>
               </div>
@@ -2843,6 +2843,162 @@
               </details>
             </article>
 
+            <article class="chart-panel cost-basis-panel sth-rpl-momentum-panel" id="sth-rpl-momentum-panel">
+              <div class="cost-basis-header">
+                <div class="cost-basis-heading">
+                  <p class="eyebrow">BTC: SHORT-TERM HOLDER REALIZED PROFIT / LOSS RATIO MOMENTUM</p>
+                  <h2 data-i18n="sthRplMomentum.title">BTC：短期持有者盈亏动量指标</h2>
+                  <p data-i18n="sthRplMomentum.subtitle">用短期持有者已实现盈亏比的 7 日均值相对 365 日均值，衡量获利或亏损兑现的加速度。</p>
+                </div>
+                <div class="cost-basis-toolbar">
+                  <div class="chart-actions" role="group" aria-label="Bitcoin STH realized profit loss momentum chart tools">
+                    <button class="surf-model-switch" type="button" data-surf-model="sth-rpl-momentum" title="Surf 模型解读" aria-label="打开 Surf 模型解读" aria-pressed="false"><span aria-hidden="true">⇄</span></button>
+                    <button id="sth-rpl-momentum-snapshot" type="button" title="保存图表快照" aria-label="保存图表快照"><span aria-hidden="true">◉</span></button>
+                    <button id="sth-rpl-momentum-download" type="button" title="下载图表数据" aria-label="下载图表数据"><span aria-hidden="true">⇩</span></button>
+                    <button id="sth-rpl-momentum-fullscreen" type="button" title="全屏查看" aria-label="全屏查看"><span aria-hidden="true">⛶</span></button>
+                  </div>
+                  <div class="range-tabs cost-basis-tabs" data-chart-tabs="sth-rpl-momentum" role="group" aria-label="Bitcoin STH realized profit loss momentum range">
+                    <button type="button" data-range="7">7D</button>
+                    <button type="button" data-range="30">30D</button>
+                    <button type="button" data-range="90">90D</button>
+                    <button type="button" data-range="365">1Y</button>
+                    <button type="button" data-range="all" class="active">ALL</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cost-basis-snapshot sth-rpl-momentum-snapshot" aria-live="polite">
+                <div><span data-i18n="sthRplMomentum.current">当前利润动量</span><strong id="sth-rpl-momentum-current">--</strong><em id="sth-rpl-momentum-zone">--</em></div>
+                <div><span data-i18n="sthRplMomentum.ratios">7D / 365D 盈亏比</span><strong id="sth-rpl-momentum-ratios">-- / --</strong><em id="sth-rpl-momentum-trend">--</em></div>
+                <div><span data-i18n="sthRplMomentum.recentPeak">180 日动量峰值</span><strong id="sth-rpl-momentum-peak">--</strong><em id="sth-rpl-momentum-peak-date">--</em></div>
+                <div><span data-i18n="sthRplMomentum.progress">参考爬升进度</span><strong id="sth-rpl-momentum-progress">--</strong><em id="sth-rpl-momentum-target">--</em></div>
+              </div>
+
+              <div class="chart-stage cost-basis-stage sth-rpl-momentum-stage">
+                <canvas id="sth-rpl-momentum-chart" height="620"></canvas>
+                <div class="cost-basis-tooltip" id="sth-rpl-momentum-tooltip" hidden></div>
+                <div class="chart-loading" id="sth-rpl-momentum-loading" data-i18n="sthRplMomentum.loading">正在同步 2012 年至今的公开 STH 盈亏序列，并计算 7D / 365D 动量与剩余参考周期...</div>
+              </div>
+              <div class="chart-legend cost-basis-legend sth-rpl-momentum-legend">
+                <span><i class="legend-sth-rpl-momentum-price"></i>BTC Price</span>
+                <span><i class="legend-sth-rpl-momentum-line"></i>STH Profit Momentum</span>
+                <span><i class="legend-sth-rpl-momentum-neutral"></i>1.0 Annual Pace</span>
+                <span><i class="legend-sth-rpl-momentum-reference"></i>Reference Cycles</span>
+                <span><i class="legend-sth-rpl-momentum-projection"></i>118D Scenario</span>
+                <em id="sth-rpl-momentum-source">BGEOMETRICS · PUBLIC UTXO-AGE PROXY · DAILY</em>
+              </div>
+
+              <details class="cost-basis-analysis-disclosure">
+                <summary><span data-i18n="costBasis.analysisToggle">指标分析</span></summary>
+                <div class="cost-basis-analysis sth-rpl-momentum-analysis">
+                  <div class="cost-basis-signal" id="sth-rpl-momentum-signal">
+                    <span data-i18n="sthRplMomentum.signalLabel">短期资金盈亏加速度</span>
+                    <strong id="sth-rpl-momentum-signal-title" data-i18n="sthRplMomentum.waiting">等待公开数据同步</strong>
+                    <p id="sth-rpl-momentum-signal-copy" data-i18n="sthRplMomentum.signalPending">同步后将分别呈现公开动量状态、近期峰值变化和 27／118 天参考周期。</p>
+                    <dl>
+                      <div><dt data-i18n="sthRplMomentum.rawRatio">当日原始盈亏比</dt><dd id="sth-rpl-momentum-raw">--</dd></div>
+                      <div><dt data-i18n="sthRplMomentum.trough">180 日动量低点</dt><dd id="sth-rpl-momentum-trough">--</dd></div>
+                      <div><dt data-i18n="sthRplMomentum.remaining">参考窗口剩余</dt><dd id="sth-rpl-momentum-remaining">--</dd></div>
+                      <div><dt data-i18n="sthRplMomentum.date">链上日期</dt><dd id="sth-rpl-momentum-date">--</dd></div>
+                    </dl>
+                  </div>
+                  <div class="cost-basis-explainer">
+                    <p class="eyebrow">Why It Matters</p>
+                    <h3 data-i18n="sthRplMomentum.explainTitle">利润动量衡量短期筹码获利兑现相对一年常态的加速度，并帮助识别市场状态切换</h3>
+                    <p data-i18n="sthRplMomentum.explainOne">系统先计算短期持有者已实现利润除以已实现亏损，再用该比率的 7 日均值除以 365 日均值。高于 1 表示近期利润兑现快于一年常态；快速飙升则说明获利筹码加速变现，需要同时检验现货需求能否承接。</p>
+                    <div class="vdd-threshold-levels sth-rpl-momentum-levels">
+                      <div class="depressed"><span data-i18n="sthRplMomentum.depressed">贴零沉淀</span><strong>&lt;0.5×</strong><em data-i18n="sthRplMomentum.depressedCopy">利润兑现显著低于年均</em></div>
+                      <div class="loss"><span data-i18n="sthRplMomentum.loss">弱势修复</span><strong>0.5–1×</strong><em data-i18n="sthRplMomentum.lossCopy">尚未恢复一年常态</em></div>
+                      <div class="expansion"><span data-i18n="sthRplMomentum.expansion">动量扩张</span><strong>1–3×</strong><em data-i18n="sthRplMomentum.expansionCopy">利润兑现开始加速</em></div>
+                      <div class="distribution"><span data-i18n="sthRplMomentum.distribution">狂热派发</span><strong>≥8×</strong><em data-i18n="sthRplMomentum.distributionCopy">关注获利筹码集中变现</em></div>
+                    </div>
+                    <p data-i18n="sthRplMomentum.explainTwo">参考图给出的 2015、2019 与 2022 三轮爬升期分别为 113、139 与 103 天，均值约 118 天；2026 参考锚点目前为第 27 天。系统将这些参考天数与公开数据实际峰值分开绘制。</p>
+                    <div class="cost-basis-history sth-rpl-momentum-history" id="sth-rpl-momentum-history" aria-label="Reference and public STH realized profit loss momentum cycles"></div>
+                    <p data-i18n="sthRplMomentum.explainThree">虚线从最新公开动量延伸至 118 天参考窗口，并向前三轮公开代理峰值的平均水平平滑过渡。该路径只用于观察剩余时间和验证条件，不预测 BTC 价格或保证周期峰值。</p>
+                    <p class="cost-basis-disclaimer" data-i18n="sthRplMomentum.disclaimer">公开序列使用 BGeometrics 的 STH 已实现利润、已实现亏损和 BTC 日价，最新值由无密钥 API 增量覆盖，实时现价来自 Binance Spot。它是 UTXO 币龄代理，不等同于 Glassnode 的实体聚类调整专有序列；参考天数来自用户提供的研究图，仅用于周期研究，不构成投资建议。</p>
+                  </div>
+                </div>
+              </details>
+            </article>
+
+            <article class="chart-panel cost-basis-panel mvrv-zscore-panel" id="mvrv-zscore-panel">
+              <div class="cost-basis-header">
+                <div class="cost-basis-heading">
+                  <p class="eyebrow">BTC: MVRV Z-SCORE · 7D MOVING AVERAGE</p>
+                  <h2 data-i18n="mvrvZ.title">BTC：MVRV Z分数</h2>
+                  <p data-i18n="mvrvZ.subtitle">用现货总市值偏离全网已实现市值的标准化程度，识别成本修复、趋势扩张与极端过热区。</p>
+                </div>
+                <div class="cost-basis-toolbar">
+                  <div class="chart-actions" role="group" aria-label="Bitcoin MVRV Z-Score chart tools">
+                    <button class="surf-model-switch" type="button" data-surf-model="mvrv-zscore" title="Surf 模型解读" aria-label="打开 Surf 模型解读" aria-pressed="false"><span aria-hidden="true">⇄</span></button>
+                    <button id="mvrv-zscore-snapshot" type="button" title="保存图表快照" aria-label="保存图表快照"><span aria-hidden="true">◉</span></button>
+                    <button id="mvrv-zscore-download" type="button" title="下载图表数据" aria-label="下载图表数据"><span aria-hidden="true">⇩</span></button>
+                    <button id="mvrv-zscore-fullscreen" type="button" title="全屏查看" aria-label="全屏查看"><span aria-hidden="true">⛶</span></button>
+                  </div>
+                  <div class="range-tabs cost-basis-tabs" data-chart-tabs="mvrv-zscore" role="group" aria-label="Bitcoin MVRV Z-Score range">
+                    <button type="button" data-range="7">7D</button>
+                    <button type="button" data-range="30">30D</button>
+                    <button type="button" data-range="90">90D</button>
+                    <button type="button" data-range="365">1Y</button>
+                    <button type="button" data-range="all" class="active">ALL</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cost-basis-snapshot mvrv-zscore-snapshot" aria-live="polite">
+                <div><span data-i18n="mvrvZ.current">当前 7D Z分数</span><strong id="mvrv-zscore-current">--</strong><em id="mvrv-zscore-zone">--</em></div>
+                <div><span data-i18n="mvrvZ.cross">最近上穿 0.7539</span><strong id="mvrv-zscore-cross">--</strong><em id="mvrv-zscore-elapsed">--</em></div>
+                <div><span data-i18n="mvrvZ.classic">经典三轮倒计时</span><strong id="mvrv-zscore-classic">--</strong><em id="mvrv-zscore-classic-target">--</em></div>
+                <div><span data-i18n="mvrvZ.expanded">四轮扩展窗口</span><strong id="mvrv-zscore-expanded">--</strong><em id="mvrv-zscore-expanded-target">--</em></div>
+              </div>
+
+              <div class="chart-stage cost-basis-stage mvrv-zscore-stage">
+                <canvas id="mvrv-zscore-chart" height="620"></canvas>
+                <div class="cost-basis-tooltip" id="mvrv-zscore-tooltip" hidden></div>
+                <div class="chart-loading" id="mvrv-zscore-loading" data-i18n="mvrvZ.loading">正在同步 2010 年至今的公开市值、MVRV 与 BTC 日价，并重建经典 MVRV Z-Score...</div>
+              </div>
+              <div class="chart-legend cost-basis-legend mvrv-zscore-legend">
+                <span><i class="legend-mvrv-zscore-price"></i>BTC Price</span>
+                <span><i class="legend-mvrv-zscore-line"></i>MVRV Z-Score · 7D</span>
+                <span><i class="legend-mvrv-zscore-threshold"></i>0.7539 Recovery Threshold</span>
+                <span><i class="legend-mvrv-zscore-reference"></i>Reference Cycles</span>
+                <span><i class="legend-mvrv-zscore-projection"></i>Forward Scenario</span>
+                <em id="mvrv-zscore-source">COIN METRICS · PUBLIC RECONSTRUCTION · DAILY</em>
+              </div>
+
+              <details class="cost-basis-analysis-disclosure">
+                <summary><span data-i18n="costBasis.analysisToggle">指标分析</span></summary>
+                <div class="cost-basis-analysis mvrv-zscore-analysis">
+                  <div class="cost-basis-signal" id="mvrv-zscore-signal">
+                    <span data-i18n="mvrvZ.signalLabel">全网成本偏离强度</span>
+                    <strong id="mvrv-zscore-signal-title" data-i18n="mvrvZ.waiting">等待公开数据同步</strong>
+                    <p id="mvrv-zscore-signal-copy" data-i18n="mvrvZ.signalPending">同步后将分别显示公开 Z 分数、0.7539 上穿状态，以及经典三轮和含 2022 异常值的扩展窗口。</p>
+                    <dl>
+                      <div><dt data-i18n="mvrvZ.raw">当日原始 Z分数</dt><dd id="mvrv-zscore-raw">--</dd></div>
+                      <div><dt data-i18n="mvrvZ.mvrv">当前 MVRV</dt><dd id="mvrv-zscore-mvrv">--</dd></div>
+                      <div><dt data-i18n="mvrvZ.recentPeak">180 日峰值</dt><dd id="mvrv-zscore-peak">--</dd></div>
+                      <div><dt data-i18n="mvrvZ.crosscheck">BGeometrics 校验</dt><dd id="mvrv-zscore-crosscheck">--</dd></div>
+                    </dl>
+                  </div>
+                  <div class="cost-basis-explainer">
+                    <p class="eyebrow">Why It Matters</p>
+                    <h3 data-i18n="mvrvZ.explainTitle">MVRV Z-Score 衡量市值相对全网真实成本的偏离程度，适合观察周期位置与估值极端</h3>
+                    <p data-i18n="mvrvZ.explainOne">系统按经典公式计算（市值减已实现市值）除以市值自创世以来的累计总体标准差，再取 7 日均线。它与本站采用四年滚动标准化的 MVRV 指标互不替代。</p>
+                    <div class="vdd-threshold-levels mvrv-zscore-levels">
+                      <div class="bottom"><span data-i18n="mvrvZ.undervalued">成本折价</span><strong>&lt;0</strong><em data-i18n="mvrvZ.undervaluedCopy">市值低于实现成本</em></div>
+                      <div class="early"><span data-i18n="mvrvZ.recovery">复苏蓄势</span><strong>0–0.7539</strong><em data-i18n="mvrvZ.recoveryCopy">尚未越过研究分水岭</em></div>
+                      <div class="expansion"><span data-i18n="mvrvZ.expansion">趋势扩张</span><strong>0.7539–3</strong><em data-i18n="mvrvZ.expansionCopy">验证需求与利润扩张</em></div>
+                      <div class="distribution"><span data-i18n="mvrvZ.overheated">极端过热</span><strong>≥7</strong><em data-i18n="mvrvZ.overheatedCopy">历史估值高风险区</em></div>
+                    </div>
+                    <p data-i18n="mvrvZ.explainTwo">用户研究图给出的 2012、2016、2019 三轮倒计时为 32、49、44 天，均值约 42 天。公开重建显示 2022 周期从 2023-10-25 上穿到 2024-03-13 阶段高点为 140 天，因此系统同时提供 42 天经典窗口与 66 天四轮扩展均值，避免隐藏样本分歧。</p>
+                    <div class="cost-basis-history mvrv-zscore-history" id="mvrv-zscore-history" aria-label="Reference Bitcoin MVRV Z-Score cycles"></div>
+                    <p data-i18n="mvrvZ.explainThree">虚线从最新公开 7 日 Z 分数出发，以近 30 日动量逐步衰减至扩展窗口终点。它只用于持续检验时间与指标路径，不预测 BTC 价格，也不保证阶段顶部日期。</p>
+                    <p class="cost-basis-disclaimer" data-i18n="mvrvZ.disclaimer">历史线使用 Coin Metrics Community 的市值、MVRV 与价格重建经典公式，BGeometrics 免费最新值仅用于交叉校验，实时现价来自 Binance Spot。公开重建不等同于 Glassnode 的专有实体调整序列；周期天数仅供研究，不构成投资建议。</p>
+                  </div>
+                </div>
+              </details>
+            </article>
+
             <article class="chart-panel halving-section">
               <div class="section-heading compact">
                 <div><p class="eyebrow">BTC Halving Countdown</p><h2 id="halving-title" data-i18n="halving.title">第五次减半进度</h2></div>
@@ -2953,8 +3109,8 @@
       </div>
     </aside>
 
-  <script src="dashboard.js?v=20260914-system-ui-v1"></script>
-  <script src="dashboard-product-carousel.js?v=20260914-system-ui-v1"></script>
+  <script src="dashboard.js?v=20260917-mvrv-zscore-watermark-v2"></script>
+  <script src="dashboard-product-carousel.js?v=20260917-mvrv-zscore-watermark-v2"></script>
     <script src="surf-assistant.js"></script>
   </body>
 </html>

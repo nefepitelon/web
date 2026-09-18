@@ -103,7 +103,7 @@ const productLinks: readonly MoreLink[] = [
   },
   {
     href: "/box-breakout",
-    zh: "A股&加密箱体突破看板",
+    zh: "箱体突破看板",
     en: "A-share & Crypto Breakouts",
     zhDescription: "箱体试盘、倍量共振与跨市场突破扫描",
     enDescription: "Box tests, volume resonance and breakout screening",

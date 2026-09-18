@@ -108,11 +108,11 @@ export async function GET(request: Request, context: Context) {
     }
 
     if (path === "/health") return json({
-      ok: true, hosted: true, service: "welinkbtc-grid-ops-hosted", version: "2.3.1", consoleApiVersion: 8,
+      ok: true, hosted: true, service: "welinkbtc-grid-ops-hosted", version: "2.3.3", consoleApiVersion: 8,
       status: bot.status, networkReady: bot.status !== "ERROR", exchanges: manifest.map((item: any) => item.key),
       heartbeatAt: bot.heartbeatAt?.toISOString() || null, error: bot.lastError,
     });
-    if (path === "/version") return json({ schemaVersion: 1, service: "ai-grid-ops-hosted-engine", version: "2.3.1", buildId: "hosted-workflow-v1", builtAt: bot.updatedAt.toISOString() });
+    if (path === "/version") return json({ schemaVersion: 1, service: "ai-grid-ops-hosted-engine", version: "2.3.3", buildId: "hosted-workflow-v1", builtAt: bot.updatedAt.toISOString() });
     if (path === "/exchanges") return json({ exchanges: publicExchangeManifest(manifest), maxInstances: 3 });
     if (path === "/exchanges/template") return json(exchangeOnboardingTemplate());
     if (path === "/overview" || path === "/overview/stream") {
@@ -127,7 +127,18 @@ export async function GET(request: Request, context: Context) {
     if (path === "/hedge/options") {
       return json(await enqueueHostedGridOpsCommand({ bot, userId: viewer.id, type: "HEDGE_OPTIONS" }));
     }
-    const match = path.match(/^\/([a-z0-9]+)\/(markets|state|trend|stream)$/i);
+    const commandMatch = path.match(/^\/commands\/([a-z0-9]+)$/i);
+    if (commandMatch) {
+      const command = await prisma.hostedGridOpsCommand.findFirst({
+        where: { id: commandMatch[1], botId: bot.id, userId: viewer.id },
+        select: { status: true, result: true, error: true },
+      });
+      if (!command) return json({ error: "托管分析任务不存在" }, { status: 404 });
+      if (command.status === "FAILED") return json({ error: command.error || "托管分析失败", status: command.status }, { status: 400 });
+      if (command.status === "SUCCEEDED") return json(command.result ?? { recommendations: [], scanned: 0, matched: 0, failed: 0 });
+      return json({ ok: true, queued: true, commandId: commandMatch[1], status: command.status });
+    }
+    const match = path.match(/^\/([a-z0-9]+)\/(markets|state|trend|trend-recommendations|stream)$/i);
     if (match) {
       const [, target, action] = match;
       if (!manifest.some((item: any) => item.key === target)) return json({ error: "未知交易所账户" }, { status: 404 });
@@ -142,8 +153,13 @@ export async function GET(request: Request, context: Context) {
       }
       const url = new URL(request.url);
       return json(await enqueueHostedGridOpsCommand({
-        bot, userId: viewer.id, type: "TREND", target,
-        payload: { marketId: url.searchParams.get("marketId"), intervalSec: url.searchParams.get("intervalSec") },
+        bot, userId: viewer.id, type: action === "trend-recommendations" ? "TREND_RECOMMENDATIONS" : "TREND", target,
+        payload: {
+          marketId: url.searchParams.get("marketId"),
+          intervalSec: url.searchParams.get("intervalSec"),
+          strategy: url.searchParams.get("strategy"),
+          minStrength: url.searchParams.get("minStrength"),
+        },
       }));
     }
     return json({ error: `未知托管接口：${path}` }, { status: 404 });

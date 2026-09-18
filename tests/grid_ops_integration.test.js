@@ -33,7 +33,7 @@ test("AI grid Ops route connects safely to the loopback-only trading console", (
 
   assert.match(page, /GridOpsSurface/);
   assert.match(surface, /http:\/\/127\.0\.0\.1:8080/);
-  assert.match(surface, /ENGINE_VERSION = "2\.3\.1"/);
+  assert.match(surface, /ENGINE_VERSION = "2\.3\.3"/);
   assert.match(surface, /CONSOLE_API_VERSION = 8/);
   assert.match(surface, /MIN_COMPATIBLE_ENGINE_VERSION = "1\.2\.3"/);
   assert.match(surface, /isCompatibleEngine\(result\)/);

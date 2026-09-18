@@ -20,7 +20,7 @@ test("dashboard exposes the sixth LTH/STH cycle indicator with complete chart to
 
 test("all thirty-two cycle indicators expose an on-demand Surf model switch", () => {
   const switches = html.match(/data-surf-model="[^"]+"/g) || [];
-  assert.equal(switches.length, 32);
+  assert.equal(switches.length, 34);
   assert.match(js, /\/api\/surf-research/);
   assert.match(js, /toggleSurfMetricPanel/);
   assert.match(css, /\.surf-model-panel/);
@@ -66,6 +66,6 @@ test("all trend loaders preserve rendered data and treat browser cache as best-e
 });
 
 test("dashboard assets use a release version so browsers do not retain the pre-fix loader", () => {
-  assert.match(html, /dashboard\.js\?v=20260914-system-ui-v1/);
-  assert.match(html, /dashboard\.css\?v=20260914-system-ui-v1/);
+  assert.match(html, /dashboard\.js\?v=20260917-mvrv-zscore-watermark-v2/);
+  assert.match(html, /dashboard\.css\?v=20260917-mvrv-zscore-watermark-v2/);
 });

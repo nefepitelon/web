@@ -233,7 +233,9 @@ async function surfPulseHandler(request, response) {
     const now = Date.now();
     const [surfResult, aicoinResult] = await Promise.allSettled([
       collectSurfItems({ limit, lang, now }),
-      getAicoinPulseSnapshot({ now, refreshIfStale: true })
+      lang === "zh"
+        ? getAicoinPulseSnapshot({ now, refreshIfStale: true })
+        : Promise.resolve({ items: [], received: 0, filteredAds: 0, stale: false })
     ]);
     if (surfResult.status === "rejected" && aicoinResult.status === "rejected") {
       throw new Error(`All realtime intelligence sources failed: Surf (${surfResult.reason?.message || surfResult.reason}); AiCoin (${aicoinResult.reason?.message || aicoinResult.reason})`);

@@ -1294,6 +1294,76 @@
           [copy("参考周期进度", "Reference Cycle Progress"), `${number(value.referenceElapsedDays).toFixed(0)} / ${number(value.averageCycleDays).toFixed(0)}D`]
         ];
       }
+    },
+    "sth-rpl-momentum": {
+      name: ["短期持有者盈亏动量", "STH Realized Profit / Loss Momentum"],
+      short: "STH P/L MOMENTUM · 7D / 365D",
+      dot: "model-sth-rpl-momentum",
+      endpoint: "/api/sth-realized-profit-loss-momentum?schema=1",
+      scale: "linear",
+      thresholds: [
+        { value: 1, label: "1.0 ANNUAL PACE", color: palette.cyan },
+        { value: 8, label: "8.0 DISTRIBUTION", color: palette.orange }
+      ],
+      lines: [
+        { key: "price", label: "BTC Price", color: palette.price, axis: "price" },
+        { key: "momentum", label: "STH Profit Momentum", color: palette.green }
+      ],
+      normalize(payload) {
+        return {
+          rows: payload.series.map((row) => ({
+            date: parseDate(row.date),
+            price: number(row.price),
+            momentum: number(row.momentum)
+          })),
+          snapshot: payload.snapshot,
+          source: "BGeometrics · PUBLIC UTXO-AGE STH PROXY · 7D / 365D"
+        };
+      },
+      metrics(data) {
+        const value = data.snapshot || {};
+        return [
+          [copy("当前利润动量", "Current Profit Momentum"), `${number(value.currentMomentum).toFixed(2)}×`],
+          [copy("7D / 365D 盈亏比", "7D / 365D P/L Ratio"), `${number(value.ratio7).toFixed(2)} / ${number(value.ratio365).toFixed(2)}`],
+          [copy("180 日动量峰值", "180-Day Momentum Peak"), `${number(value.recentPeak).toFixed(2)}×`],
+          [copy("参考爬升进度", "Reference Climb Progress"), `${number(value.referenceElapsedDays).toFixed(0)} / ${number(value.averageCycleDays).toFixed(0)}D`]
+        ];
+      }
+    },
+    "mvrv-zscore": {
+      name: ["MVRV Z分数", "MVRV Z-Score"],
+      short: "MVRV Z-SCORE · 7D",
+      dot: "model-mvrv-zscore",
+      endpoint: "/api/mvrv-zscore-cycle?schema=1",
+      scale: "linear",
+      thresholds: [
+        { value: 0.7539, label: "0.7539 RECOVERY", color: palette.cyan },
+        { value: 7, label: "7.0 OVERHEATED", color: palette.red }
+      ],
+      lines: [
+        { key: "price", label: "BTC Price", color: palette.price, axis: "price" },
+        { key: "zScore", label: "MVRV Z-Score · 7D", color: palette.orange }
+      ],
+      normalize(payload) {
+        return {
+          rows: payload.series.map((row) => ({
+            date: parseDate(row.date),
+            price: number(row.price),
+            zScore: number(row.zScore)
+          })),
+          snapshot: payload.snapshot,
+          source: "Coin Metrics · CLASSIC PUBLIC RECONSTRUCTION · 7D"
+        };
+      },
+      metrics(data) {
+        const value = data.snapshot || {};
+        return [
+          [copy("当前 7D Z分数", "Current 7D Z-Score"), number(value.currentZScore).toFixed(4)],
+          [copy("最近上穿", "Latest Upward Cross"), value.referenceStartDate || "--"],
+          [copy("经典三轮倒计时", "Classic Countdown"), `${number(value.classicRemainingDays).toFixed(0)}D`],
+          [copy("四轮扩展窗口", "Expanded Window"), `${number(value.expandedRemainingDays).toFixed(0)}D`]
+        ];
+      }
     }
   };
 

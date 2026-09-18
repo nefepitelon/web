@@ -733,6 +733,33 @@ input:focus, select:focus { outline: none; border-color: var(--pur); }
 .rec-box.rec-up { background: #22c55e10; border-color: #22c55e40; }
 .rec-box.rec-down { background: #ef444410; border-color: #ef444440; }
 .rec-box.rec-range { background: #3b82f610; border-color: #3b82f640; }
+.recommended-markets { margin-top:10px; padding:12px; border:1px solid #334155; border-radius:10px; background:linear-gradient(145deg,#08101d,#0b1322); box-shadow:0 8px 22px #02061724; }
+.recommended-markets-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.recommended-markets-title { display:grid; gap:3px; color:var(--text); font-size:12px; }
+.recommended-markets-title small { color:var(--mut); font-weight:400; line-height:1.35; }
+.recommended-markets-controls { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; align-items:end; }
+.recommended-market-filter { display:grid; gap:5px; min-width:0; }
+.recommended-market-filter > span { color:var(--mut2); font-size:10px; font-weight:600; }
+.recommended-market-filter select { margin:0; min-width:0; height:34px; padding:6px 28px 6px 9px; border-color:#334155; background-color:#0a1220; font-size:11px; }
+.recommended-markets-analyze { grid-column:1 / -1; width:100%; height:34px; margin:0; padding:6px 12px; border-color:#60a5fa75; background:#3b82f61a; color:#bfdbfe; }
+.recommended-markets-analyze:hover:not(:disabled) { border-color:#60a5fa; background:#3b82f633; color:#fff; }
+.recommended-markets-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; min-height:29px; align-items:center; }
+.recommended-market-chip { appearance:none; border:1px solid #60a5fa55; border-radius:999px; background:#3b82f611; color:#dbeafe; padding:6px 9px; cursor:pointer; font:inherit; font-size:11px; display:inline-flex; gap:6px; align-items:center; transition:.16s ease; }
+.recommended-market-chip strong { color:#7dd3fc; font-size:10px; }
+.recommended-market-chip em { color:var(--mut2); font-size:9px; font-style:normal; }
+.recommended-market-chip.long { border-color:#22c55e55; background:#22c55e11; }
+.recommended-market-chip.long strong { color:#86efac; }
+.recommended-market-chip.short { border-color:#ef444455; background:#ef444411; }
+.recommended-market-chip.short strong { color:#fca5a5; }
+.recommended-market-chip:hover:not(:disabled), .recommended-market-chip.active { border-color:#60a5fa; background:#3b82f62b; transform:translateY(-1px); }
+.recommended-market-chip:focus-visible { outline:2px solid #93c5fd; outline-offset:2px; }
+.recommended-market-chip:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+.recommended-markets-empty, .recommended-markets-status { color:var(--mut); font-size:11px; line-height:1.55; }
+.recommended-markets-status { margin-top:7px; }
+@media (max-width:680px) {
+  .recommended-markets-controls { grid-template-columns:1fr; }
+  .recommended-markets-analyze { grid-column:auto; }
+}
 .rec-tag { font-size: 15px; font-weight: 700; margin: 4px 0 2px; }
 .rec-detail { font-size: 11px; color: var(--mut2); margin-top: 4px; line-height: 1.4; }
 
@@ -1557,7 +1584,7 @@ body.hedge-mode .hedge-panel { display:block; }
   <div>
     <div class="panel de" style="margin-bottom:14px">
       <div class="panel-title" style="color:var(--de-color)">Decibel · 市场与趋势</div>
-      <label>交易对</label>
+      <label>全部交易对</label>
       <select id="de-market"></select>
       <div class="row" style="margin-top:8px">
         <div>
@@ -1681,7 +1708,7 @@ body.hedge-mode .hedge-panel { display:block; }
   <div>
     <div class="panel ex" style="margin-bottom:14px">
       <div class="panel-title" style="color:var(--ex-color)">Extended · 市场与趋势</div>
-      <label>交易对</label>
+      <label>全部交易对</label>
       <select id="ex-market"></select>
       <div class="row" style="margin-top:8px">
         <div>
@@ -1804,7 +1831,7 @@ body.hedge-mode .hedge-panel { display:block; }
   <div>
     <div class="panel rs" style="margin-bottom:14px">
       <div class="panel-title" style="color:var(--rs-color)">RISEx · 市场与趋势</div>
-      <label>交易对</label>
+      <label>全部交易对</label>
       <select id="rs-market"></select>
       <div class="row" style="margin-top:8px">
         <div>
@@ -3226,6 +3253,8 @@ function makeExchangeCtrl(prefix, chartId) {
   let curTrendMarketId = null;
   let trendRequestSeq = 0;
   let trendAbortController = null;
+  let recommendationRequestSeq = 0;
+  let recommendationAbortController = null;
   let lastState = null;
   let chart = null;
 
@@ -3269,6 +3298,7 @@ function makeExchangeCtrl(prefix, chartId) {
       if (!r.ok || j.error) throw new Error(j.error || `行情列表读取失败（HTTP ${r.status}）`);
       markets = Array.isArray(j.markets) ? j.markets : [];
       if (!markets.length) throw new Error('交易所没有返回可交易市场');
+      resetRecommendedMarkets(`共 ${markets.filter((market) => market.isClosed !== true).length} 个开放交易对，点击“分析”筛选。`);
       // Update header badge
       const hdrBadge = $('hdr-' + prefix);
       hdrBadge.textContent = prefix.toUpperCase() + ': ' + j.mode.toUpperCase();
@@ -3333,6 +3363,132 @@ function makeExchangeCtrl(prefix, chartId) {
       return false;
     } finally {
       if (requestSeq === trendRequestSeq) trendAbortController = null;
+    }
+  }
+
+  const recommendationStrategyLabels = { neutral:'中性网格', long:'做多网格', short:'做空网格' };
+
+  function recommendationFilter() {
+    const strategy = P('recommend-strategy')?.value || 'neutral';
+    const minStrength = Number(P('recommend-strength')?.value ?? 0.3);
+    return {
+      strategy,
+      minStrength: Number.isFinite(minStrength) ? minStrength : 0.3,
+      strategyLabel: recommendationStrategyLabels[strategy] || '中性网格',
+    };
+  }
+
+  function resetRecommendedMarkets(message = '') {
+    const list = P('recommended-list');
+    const status = P('recommended-status');
+    if (!list || !status) return;
+    list.replaceChildren();
+    const empty = document.createElement('span');
+    empty.className = 'recommended-markets-empty';
+    empty.textContent = '尚未分析';
+    list.appendChild(empty);
+    const filter = recommendationFilter();
+    status.textContent = message || `点击“分析”，筛选${filter.strategyLabel}且强度大于 ${(filter.minStrength * 100).toFixed(0)}% 的交易对。`;
+  }
+
+  function syncRecommendedMarketButtons() {
+    const selected = String(P('market').value);
+    P('recommended-list')?.querySelectorAll('.recommended-market-chip').forEach((button) => {
+      button.classList.toggle('active', String(button.dataset.marketId) === selected);
+      button.disabled = P('market').disabled;
+      button.title = P('market').disabled ? '网格运行中不能切换交易对' : '切换到此交易对';
+    });
+  }
+
+  function renderRecommendedMarkets(items) {
+    const list = P('recommended-list');
+    if (!list) return;
+    list.replaceChildren();
+    if (!items.length) {
+      const empty = document.createElement('span');
+      empty.className = 'recommended-markets-empty';
+      empty.textContent = '本轮未发现符合条件的交易对';
+      list.appendChild(empty);
+      return;
+    }
+    for (const item of items) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `recommended-market-chip ${item.recommended || ''}`;
+      button.dataset.marketId = String(item.marketId);
+      const label = document.createElement('span');
+      label.textContent = item.displayName || item.symbol || String(item.marketId);
+      const strength = document.createElement('strong');
+      strength.textContent = `${(Number(item.strength) * 100).toFixed(0)}%`;
+      const strategy = document.createElement('em');
+      strategy.textContent = recommendationStrategyLabels[item.recommended] || '';
+      button.append(label, strength, strategy);
+      button.onclick = () => {
+        if (P('market').disabled) return;
+        P('market').value = String(item.marketId);
+        P('market').dispatchEvent(new Event('change'));
+      };
+      list.appendChild(button);
+    }
+    syncRecommendedMarketButtons();
+  }
+
+  async function resolveRecommendationResult(initial, controller, requestSeq) {
+    let result = initial;
+    for (let attempt = 0; result?.queued && result?.commandId && attempt < 90; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (requestSeq !== recommendationRequestSeq || controller.signal.aborted) return null;
+      const response = await fetch(`/api/commands/${encodeURIComponent(result.commandId)}`, {
+        cache:'no-store', signal:controller.signal,
+      });
+      result = await response.json();
+      if (!response.ok || result.error) throw new Error(result.error || `分析结果读取失败（HTTP ${response.status}）`);
+    }
+    if (result?.queued) throw new Error('全市场分析仍在处理，请稍后再次点击“分析”。');
+    return result;
+  }
+
+  async function analyzeRecommendedMarkets() {
+    const requestSeq = ++recommendationRequestSeq;
+    recommendationAbortController?.abort();
+    const controller = new AbortController();
+    recommendationAbortController = controller;
+    const button = P('analyze-markets');
+    const status = P('recommended-status');
+    const oldText = button.textContent;
+    button.disabled = true;
+    button.textContent = '分析中…';
+    const filter = recommendationFilter();
+    status.textContent = `正在分析全部 ${markets.filter((market) => market.isClosed !== true).length} 个开放交易对，并筛选${filter.strategyLabel}、强度大于 ${(filter.minStrength * 100).toFixed(0)}%…`;
+    try {
+      const query = new URLSearchParams({
+        intervalSec: P('interval').value,
+        strategy: filter.strategy,
+        minStrength: String(filter.minStrength),
+      });
+      const response = await fetch(`/api/${prefix}/trend-recommendations?${query}`, {
+        cache:'no-store', signal:controller.signal,
+      });
+      let result = await response.json();
+      if (!response.ok || result.error) throw new Error(result.error || `全市场分析失败（HTTP ${response.status}）`);
+      result = await resolveRecommendationResult(result, controller, requestSeq);
+      if (!result || requestSeq !== recommendationRequestSeq) return;
+      const items = Array.isArray(result.recommendations) ? result.recommendations : [];
+      renderRecommendedMarkets(items);
+      const failed = Number(result.failed) || 0;
+      const appliedStrategy = recommendationStrategyLabels[result.recommendation] || filter.strategyLabel;
+      const appliedStrength = Number.isFinite(Number(result.minStrength)) ? Number(result.minStrength) : filter.minStrength;
+      status.textContent = `已分析 ${Number(result.scanned) || 0} 个 · 推荐 ${items.length} 个${failed ? ` · ${failed} 个行情暂不可用` : ''} · 条件：${appliedStrategy}且强度 >${(appliedStrength * 100).toFixed(0)}%`;
+    } catch (error) {
+      if (requestSeq !== recommendationRequestSeq || error?.name === 'AbortError') return;
+      renderRecommendedMarkets([]);
+      status.textContent = `分析失败：${error?.message || String(error)}`;
+    } finally {
+      if (requestSeq === recommendationRequestSeq) {
+        recommendationAbortController = null;
+        button.disabled = false;
+        button.textContent = oldText;
+      }
     }
   }
 
@@ -3520,9 +3676,27 @@ function makeExchangeCtrl(prefix, chartId) {
     await refreshTrend();
     if (curTrend?.price) autoSizePerGrid(curTrend.price, +P('leverage').value || 3);
     updateRiskPreview();
+    syncRecommendedMarketButtons();
   };
-  P('interval').onchange = refreshTrend;
+  P('interval').onchange = () => {
+    recommendationRequestSeq++;
+    recommendationAbortController?.abort();
+    P('analyze-markets').disabled = false;
+    P('analyze-markets').textContent = '分析';
+    resetRecommendedMarkets('K线周期已变化，请重新点击“分析”。');
+    void refreshTrend();
+  };
   P('refresh-trend').onclick = refreshTrend;
+  P('analyze-markets').onclick = analyzeRecommendedMarkets;
+  for (const filterId of ['recommend-strategy', 'recommend-strength']) {
+    P(filterId).onchange = () => {
+      recommendationRequestSeq++;
+      recommendationAbortController?.abort();
+      P('analyze-markets').disabled = false;
+      P('analyze-markets').textContent = '分析';
+      resetRecommendedMarkets('筛选条件已变化，请重新点击“分析”。');
+    };
+  }
 
   // 交易所数量可动态扩展，不能为每家交易所永久占用一个 EventSource。
   // 浏览器对同源 HTTP/1.1 通常只有约 6 个连接槽；5 家交易所流加总览流会
@@ -3551,6 +3725,7 @@ function makeExchangeCtrl(prefix, chartId) {
       }
     }
     P('market').disabled = run;
+    syncRecommendedMarketButtons();
     P('start-btn').disabled = run;
     P('stop-btn').disabled = !run;
     if (P('adjust-btn')) P('adjust-btn').disabled = !run;
@@ -3695,6 +3870,32 @@ function ensureExchangeUi(definition) {
       item.classList.remove('de'); item.classList.add('exchange-panel'); item.style.setProperty('--exchange-color', color);
     });
     $('tab-ai').before(panel);
+  }
+
+  const marketSelect = $(`${key}-market`);
+  if (marketSelect?.previousElementSibling?.tagName === 'LABEL') {
+    marketSelect.previousElementSibling.textContent = '全部交易对';
+  }
+  if (!$(`${key}-recommended-markets`)) {
+    const recommendationPanel = document.createElement('section');
+    recommendationPanel.id = `${key}-recommended-markets`;
+    recommendationPanel.className = 'recommended-markets';
+    recommendationPanel.innerHTML = `
+      <div class="recommended-markets-head">
+        <div class="recommended-markets-title"><b>推荐交易对</b><small>按当前 K 线周期分析全部开放市场</small></div>
+      </div>
+      <div class="recommended-markets-controls">
+        <label class="recommended-market-filter"><span>推荐策略</span><select id="${key}-recommend-strategy">
+          <option value="neutral" selected>中性</option><option value="long">做多</option><option value="short">做空</option>
+        </select></label>
+        <label class="recommended-market-filter"><span>最低强度</span><select id="${key}-recommend-strength">
+          <option value="0">大于 0%</option><option value="0.1">大于 10%</option><option value="0.2">大于 20%</option><option value="0.3" selected>大于 30%</option><option value="0.4">大于 40%</option><option value="0.5">大于 50%</option><option value="0.6">大于 60%</option><option value="0.7">大于 70%</option><option value="0.8">大于 80%</option><option value="0.9">大于 90%</option>
+        </select></label>
+        <button type="button" class="btn btn-ghost recommended-markets-analyze" id="${key}-analyze-markets">分析</button>
+      </div>
+      <div class="recommended-markets-list" id="${key}-recommended-list"><span class="recommended-markets-empty">尚未分析</span></div>
+      <div class="recommended-markets-status" id="${key}-recommended-status" role="status">默认筛选中性网格且强度大于 30% 的交易对。</div>`;
+    $(`${key}-rec-box`).insertAdjacentElement('afterend', recommendationPanel);
   }
 
   const exchangeTabs = $('exchange-tabs');

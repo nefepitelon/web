@@ -16,10 +16,10 @@ import { boxScanWorkflow, boxScheduleWorkflow } from "./workflow";
 const MAX_PUBLIC_RESULTS = 1000;
 export const SCAN_CHUNK_SIZE = 8;
 const localLimits = new Map<string, { count: number; until: number }>();
-export async function limitRequests(request: Request, scope: string, maximum: number, userId?: string) {
+export async function limitRequests(request: Request, scope: string, maximum: number, userId?: string, options: { persistent?: boolean } = {}) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
   const key = `box:${scope}:${createHash("sha256").update(userId ?? ip).digest("hex").slice(0, 32)}`;
-  if (isDatabaseConfigured()) {
+  if (options.persistent !== false && isDatabaseConfigured()) {
     if (!(await checkRateLimit(key, maximum, 60_000)).allowed) throw new BoxError("请求过于频繁，请稍后再试", 429);
   } else {
     const now = Date.now();

@@ -21,7 +21,8 @@ const render = props => renderToStaticMarkup(React.createElement(BoxBreakoutSurf
 
 test("box dashboard is native UI, with all three A-share scan choices and crypto market", () => {
   const html = render({ signedIn: false, canOperate: false });
-  assert.match(html, /A股<span[^>]*>&amp;<\/span>加密箱体突破看板/);
+  assert.match(html, /class="panelTitle">箱体突破看板<\/h1>/);
+  assert.doesNotMatch(html, /A股<span[^>]*>&amp;<\/span>加密箱体突破看板/);
   assert.match(html, /value="market"/);
   assert.match(html, /value="quick"/);
   assert.match(html, /value="pool"/);
@@ -59,7 +60,7 @@ test("results provide named search, score filtering, ordering, and export contro
   }
   assert.match(html, /value="qualified"/);
   assert.match(html, /value="watch"/);
-  assert.match(html, /value="all"/);
+  assert.match(html, /<option value="all" selected="">全部扫描结果<\/option>/);
 });
 
 test("chart SSR stays honest while data loads and preserves micro-price precision", () => {
@@ -86,10 +87,20 @@ test("quote polling is bounded to visible cards and stops in a hidden tab", () =
   const source = read("components/box-breakout-surface.tsx");
   assert.match(source, /visible\.map\(candidate => candidate\.symbol\)/);
   assert.match(source, /pending \|\| document\.hidden/);
-  assert.match(source, /setInterval\(\(\) => void refresh\(\), 3000\)/);
+  assert.match(source, /QUOTE_POLL_MS: Record<Market, number> = \{ ashare: 30_000, crypto: 15_000 \}/);
+  assert.match(source, /setInterval\(\(\) => void refresh\(\), QUOTE_POLL_MS\[market\]\)/);
+  assert.match(source, /cache: "default"/);
   assert.match(source, /clearInterval\(timer\); abort\.abort\(\)/);
   assert.match(source, /type="password" autoComplete="new-password"/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML|eval\(/);
+});
+
+test("dashboard and chart polling use egress-safe refresh windows", () => {
+  const surface = read("components/box-breakout-surface.tsx");
+  const chart = read("components/box-breakout-chart.tsx");
+  assert.match(surface, /ACTIVE_STATE_POLL_MS = 10_000/);
+  assert.match(surface, /IDLE_STATE_POLL_MS = 5 \* 60_000/);
+  assert.match(chart, /CHART_CACHE_MS = 15 \* 60_000/);
 });
 
 test("dashboard polling retains results when snapshot versions are unchanged", () => {
@@ -103,7 +114,7 @@ test("new product uses an internal navigation entry and adaptive theme styles", 
   assert.match(read("components/box-breakout-surface.tsx"), /data-native-i18n="react"/, "Legacy DOM translation must not restore stale dynamic prices, totals or labels");
   const header = read("components/platform-header.tsx");
   assert.match(header, /href:\s*"\/box-breakout"/);
-  assert.match(header, /A股&加密箱体突破看板/);
+  assert.match(header, /zh:\s*"箱体突破看板"/);
   const css = read("components/box-breakout.module.css");
   assert.match(css, /html\[data-theme="light"\]/);
   assert.match(css, /prefers-reduced-motion/);

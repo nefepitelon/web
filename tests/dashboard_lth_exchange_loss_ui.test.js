@@ -35,5 +35,5 @@ test("the new indicator keeps the dashboard visual system", () => {
   assert.match(css, /\.lth-exchange-loss-stage/);
   assert.match(css, /\.legend-lth-exchange-loss/);
   assert.match(css, /\.lth-exchange-loss-levels/);
-  assert.match(css, /grid-row: 1 \/ span 32/);
+  assert.match(css, /grid-row: 1 \/ span 34/);
 });

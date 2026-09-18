@@ -6,7 +6,8 @@ import { getConfigFromEnvironment } from "../../grid-ops/src/config.js";
 import { createRegisteredExchanges } from "../../grid-ops/src/exchange/registry.js";
 import { GridBot } from "../../grid-ops/src/bot.js";
 import { HedgeCycleManager } from "../../grid-ops/src/hedge/cycle.js";
-import { analyzeTrend } from "../../grid-ops/src/trend.js";
+import { analyzeTrendWithLivePrice } from "../../grid-ops/src/trend.js";
+import { normalizeTrendIntervalSec, scanTrendRecommendations } from "../../grid-ops/src/trend-recommendations.js";
 
 type JsonRecord = Record<string, any>;
 type HostedSnapshot = {
@@ -158,16 +159,27 @@ async function executeCommand(command: { type: string; target: string | null; pa
     case "TREND": {
       if (!exchange) throw new Error("未知交易所账户");
       const marketId = Number(payload.marketId || 1);
-      const intervalSec = Number(payload.intervalSec || 3600);
+      const intervalSec = normalizeTrendIntervalSec(payload.intervalSec);
       let candles: any[] = [];
       try { candles = await exchange.getCandles(marketId, intervalSec, 200); } catch {}
       let price = null;
       try { price = await exchange.getPrice(marketId); } catch {}
-      const analysis = candles.length >= 20 ? analyzeTrend(candles) : {
+      const analysis = candles.length >= 20 ? analyzeTrendWithLivePrice(candles, price) : {
         trend: "range", recommended: "neutral", strength: 0, atrPct: null, price,
         detail: "暂时拿不到足够K线数据，已默认中性网格。",
       };
       return { analysis, candles: candles.slice(-120) };
+    }
+    case "TREND_RECOMMENDATIONS": {
+      if (!exchange) throw new Error("未知交易所账户");
+      return scanTrendRecommendations({
+        markets: await exchange.getMarkets(),
+        intervalSec: normalizeTrendIntervalSec(payload.intervalSec),
+        recommendation: payload.strategy,
+        minStrength: payload.minStrength,
+        getCandles: (marketId: number, seconds: number, count: number) => exchange.getCandles(marketId, seconds, count),
+        getPrice: (marketId: number) => exchange.getPrice(marketId),
+      });
     }
     case "GRID_START":
       if (!bot) throw new Error("未知交易所账户");

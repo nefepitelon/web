@@ -9,7 +9,8 @@ export async function checkRateLimit(key: string, maximum: number, windowMs: num
   const bucket = await prisma.rateLimitBucket.upsert({
     where: { key_windowStart: { key, windowStart } },
     update: { count: { increment: 1 }, expiresAt },
-    create: { key, windowStart, expiresAt, count: 1 }
+    create: { key, windowStart, expiresAt, count: 1 },
+    select: { count: true }
   });
 
   if (Math.random() < 0.02) {

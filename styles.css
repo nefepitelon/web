@@ -1343,6 +1343,16 @@ pre {
   box-shadow: 0 0 22px rgba(36, 184, 232, 0.54);
 }
 
+.model-sth-rpl-momentum {
+  background: linear-gradient(135deg, #55bb7c, #22b7e6 52%, #eca33a);
+  box-shadow: 0 0 22px rgba(85, 187, 124, 0.56);
+}
+
+.model-mvrv-zscore {
+  background: linear-gradient(135deg, #e59b32, #24b8e8 55%, #ef665b);
+  box-shadow: 0 0 22px rgba(229, 155, 50, 0.58);
+}
+
 .model-select strong {
   color: #f3f4f0;
 }

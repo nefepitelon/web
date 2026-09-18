@@ -62,6 +62,8 @@ const loaders: Record<string, () => Promise<HandlerModule>> = {
   "under-3m-realized-cap-hodl-waves": () => import("@/api/under-3m-realized-cap-hodl-waves.js"),
   "under-3m-realized-cap-cycle": () => import("@/api/under-3m-realized-cap-cycle.js"),
   "utxo-age-realized-price-cycle": () => import("@/api/utxo-age-realized-price-cycle.js"),
+  "sth-realized-profit-loss-momentum": () => import("@/api/sth-realized-profit-loss-momentum.js"),
+  "mvrv-zscore-cycle": () => import("@/api/mvrv-zscore-cycle.js"),
   "vdd-median-cycle": () => import("@/api/vdd-median-cycle.js"),
   "risk-engine": () => import("@/api/risk-engine.js"),
   "surf-pulse": () => import("@/api/surf-pulse.js"),

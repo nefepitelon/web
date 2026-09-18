@@ -1,5 +1,5 @@
-<!-- Complete manual copied from the controlled source. SOURCE_SHA256: D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98; ADAPTED_SHA256: D525F5D3D14A90C6BFF61BEF13D810AC002FE7D2E920C1AB8848C63A42C6D86E -->
-<article class="guide-manual-article" data-source-sha256="D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98" data-manual-sha256="D525F5D3D14A90C6BFF61BEF13D810AC002FE7D2E920C1AB8848C63A42C6D86E">
+<!-- Complete manual copied from the controlled source. SOURCE_SHA256: D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98; ADAPTED_SHA256: 89DAE59AA426FEB9C33598BACEAB9056660F1C807E17D79462BB4A90481ED992 -->
+<article class="guide-manual-article" data-source-sha256="D3C53A722D1A196D78AD58DEC6E81E31A1F9EE64C9081DA9E3512948A583FC98" data-manual-sha256="89DAE59AA426FEB9C33598BACEAB9056660F1C807E17D79462BB4A90481ED992">
 <p dir="auto">AI 网格交易 Ops 完整使用手册<br>
 一个跑在你自己电脑上的加密货币永续合约网格交易机器人<br>
 支持 Decibel（Aptos 链）、Extended（Starknet 链）、RISEx、Binance、Ondo Perps、Phoenix、Nado、OKX、GRVT、RHC Lighter 与 Arcus 等多家交易所；Entropy 当前仅支持官方实时行情驱动的 <code>paper</code> 模拟，不开放 <code>live</code><br>
@@ -573,7 +573,7 @@ ENTROPY_PROXY=
 <h2 dir="auto">15. 单个交易所控制台</h2>
 <p dir="auto">五个控制台布局和按钮一致。</p>
 <h3 dir="auto">市场与趋势</h3>
-<p dir="auto">“交易对”来自交易所当前返回的活跃市场。“K线周期”可选 <code class="notranslate">15m / 1h / 4h / 1d</code>。趋势算法使用 EMA20、EMA50、最近 20 根归一化斜率和 ATR14：</p>
+<p dir="auto">“全部交易对”来自交易所当前返回的活跃市场。“K线周期”可选 <code class="notranslate">15m / 1h / 4h / 1d</code>。“推荐交易对”可选择中性、做多或做空，最低强度按 10% 一档选择；默认筛选中性网格且强度严格大于 30%。点击“分析”会按当前周期扫描全部开放市场，点击推荐项即可切换。该分析只读取行情，不会下单。趋势算法使用 EMA20、EMA50、最近 20 根归一化斜率和 ATR14：</p>
 <ul dir="auto">
 <li>EMA20 高于 EMA50 且斜率明显向上：推荐做多网格；</li>
 <li>EMA20 低于 EMA50 且斜率明显向下：推荐做空网格；</li>

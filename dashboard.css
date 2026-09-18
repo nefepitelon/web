@@ -1537,7 +1537,7 @@ html.welinkbtc-embedded .dashboard-carousel-mount {
 .trend-index {
   position: sticky;
   top: 138px;
-  grid-row: 1 / span 32;
+  grid-row: 1 / span 34;
   align-self: start;
   max-height: calc(100vh - 154px);
   overflow: hidden;
@@ -3250,6 +3250,95 @@ html.welinkbtc-embedded .dashboard-carousel-mount {
 .utxo-age-rp-levels .expansion strong { color: var(--cyan); }
 .utxo-age-rp-levels .timing strong,
 .utxo-age-rp-history strong { color: #24b8e8; }
+.sth-rpl-momentum-panel::before {
+  background: linear-gradient(90deg, #55bb7c 0%, #22b7e6 52%, #eca33a 100%);
+}
+.sth-rpl-momentum-panel .cost-basis-heading h2 {
+  max-width: 1120px;
+  font-size: clamp(22px, 2.2vw, 34px);
+}
+.sth-rpl-momentum-stage { min-height: 620px; }
+.sth-rpl-momentum-stage canvas { height: 620px; }
+.sth-rpl-momentum-snapshot { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sth-rpl-momentum-legend { flex-wrap: wrap; }
+.legend-sth-rpl-momentum-price { background: var(--ink); opacity: 0.54; }
+.legend-sth-rpl-momentum-line { background: #55bb7c; }
+.legend-sth-rpl-momentum-neutral {
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--ink) 54%, transparent);
+}
+.legend-sth-rpl-momentum-reference {
+  background: transparent;
+  border: 1px solid #22b7e6;
+}
+.legend-sth-rpl-momentum-projection {
+  background: transparent;
+  border: 1px dashed #eca33a;
+}
+#sth-rpl-momentum-current,
+#sth-rpl-momentum-ratios,
+#sth-rpl-momentum-peak,
+#sth-rpl-momentum-progress { font-family: "JetBrains Mono", monospace; }
+#sth-rpl-momentum-current { color: #55bb7c; }
+#sth-rpl-momentum-peak { color: #eca33a; }
+#sth-rpl-momentum-progress { color: #22b7e6; }
+#sth-rpl-momentum-signal.is-depressed strong,
+#sth-rpl-momentum-signal.is-loss-dominant strong { color: var(--red); }
+#sth-rpl-momentum-signal.is-expansion strong { color: #55bb7c; }
+#sth-rpl-momentum-signal.is-accelerating strong { color: #eca33a; }
+#sth-rpl-momentum-signal.is-distribution strong { color: #ef665b; }
+.sth-rpl-momentum-levels { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sth-rpl-momentum-levels .depressed strong { color: var(--red); }
+.sth-rpl-momentum-levels .loss strong { color: var(--cyan); }
+.sth-rpl-momentum-levels .expansion strong { color: #55bb7c; }
+.sth-rpl-momentum-levels .distribution strong { color: #eca33a; }
+.sth-rpl-momentum-history strong { color: #22b7e6; }
+.mvrv-zscore-panel::before {
+  background: linear-gradient(90deg, #e59b32 0%, #24b8e8 55%, #ef665b 100%);
+}
+.mvrv-zscore-panel .cost-basis-heading h2 {
+  max-width: 1120px;
+  font-size: clamp(22px, 2.2vw, 34px);
+}
+.mvrv-zscore-stage { min-height: 620px; }
+.mvrv-zscore-stage canvas { height: 620px; }
+.mvrv-zscore-snapshot { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.mvrv-zscore-legend { flex-wrap: wrap; }
+.legend-mvrv-zscore-price { background: var(--ink); opacity: 0.5; }
+.legend-mvrv-zscore-line { background: #e59b32; }
+.legend-mvrv-zscore-threshold {
+  background: transparent;
+  border: 1px dashed #24b8e8;
+}
+.legend-mvrv-zscore-reference {
+  background: transparent;
+  border: 1px solid #24b8e8;
+}
+.legend-mvrv-zscore-projection {
+  background: transparent;
+  border: 1px dashed #f3bd5b;
+}
+#mvrv-zscore-current,
+#mvrv-zscore-cross,
+#mvrv-zscore-classic,
+#mvrv-zscore-expanded { font-family: "JetBrains Mono", monospace; }
+#mvrv-zscore-current { color: #e59b32; }
+#mvrv-zscore-cross { color: #24b8e8; }
+#mvrv-zscore-classic { color: #65c99a; }
+#mvrv-zscore-expanded { color: #f3bd5b; }
+#mvrv-zscore-signal.is-undervalued strong { color: var(--green); }
+#mvrv-zscore-signal.is-recovery strong { color: var(--cyan); }
+#mvrv-zscore-signal.is-expansion strong { color: #e59b32; }
+#mvrv-zscore-signal.is-heated strong,
+#mvrv-zscore-signal.is-overheated strong { color: var(--red); }
+.mvrv-zscore-levels { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.mvrv-zscore-levels .bottom strong { color: var(--green); }
+.mvrv-zscore-levels .early strong { color: var(--cyan); }
+.mvrv-zscore-levels .expansion strong { color: #e59b32; }
+.mvrv-zscore-levels .distribution strong { color: var(--red); }
+.mvrv-zscore-history strong { color: #24b8e8; }
+.mvrv-zscore-history .public strong { color: #e59b32; }
+.mvrv-zscore-history .current strong { color: #65c99a; }
 #realized-cap-hodl-signal-title.is-deep-lock,
 #realized-cap-hodl-signal-title.is-accumulation { color: var(--green); }
 #realized-cap-hodl-signal-title.is-balanced { color: var(--cyan); }
@@ -4187,6 +4276,10 @@ canvas {
   .under-3m-hodl-stage canvas,
   .under-3m-heat-stage,
   .under-3m-heat-stage canvas,
+  .sth-rpl-momentum-stage,
+  .sth-rpl-momentum-stage canvas,
+  .mvrv-zscore-stage,
+  .mvrv-zscore-stage canvas,
   .sth-200dma-stage,
   .sth-200dma-stage canvas,
   .vdd-median-stage,
@@ -4728,6 +4821,10 @@ canvas {
   .under-3m-hodl-stage canvas { height: 520px; }
   .under-3m-heat-stage { min-height: 520px; }
   .under-3m-heat-stage canvas { height: 520px; }
+  .sth-rpl-momentum-stage { min-height: 520px; }
+  .sth-rpl-momentum-stage canvas { height: 520px; }
+  .mvrv-zscore-stage { min-height: 520px; }
+  .mvrv-zscore-stage canvas { height: 520px; }
   .sth-200dma-stage { min-height: 520px; }
   .sth-200dma-stage canvas { height: 520px; }
   .vdd-median-stage { min-height: 520px; }

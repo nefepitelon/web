@@ -82,3 +82,17 @@ test('manifest consoles expose Arcus and keep unsupported Entropy live mode disa
   assert.match(html, /definition\.liveAvailable === false[\s\S]*?live 暂未开放/);
   assert.match(html, /LIVE 不可用/);
 });
+
+test('every exchange console exposes configurable strategy and strength recommendation scans', async () => {
+  const html = await readFile(dashboardPath, 'utf8');
+  assert.equal((html.match(/<label>全部交易对<\/label>/g) || []).length, 3);
+  assert.match(html, /recommended-markets-title[\s\S]*?推荐交易对[\s\S]*?recommended-markets-controls/);
+  assert.match(html, /id="\$\{key\}-recommend-strategy"[\s\S]*?中性[\s\S]*?做多[\s\S]*?做空/);
+  assert.match(html, /id="\$\{key\}-recommend-strength"[\s\S]*?大于 10%[\s\S]*?大于 90%/);
+  assert.match(html, /function analyzeRecommendedMarkets\(\)/);
+  assert.match(html, /URLSearchParams\([\s\S]*?strategy: filter\.strategy[\s\S]*?minStrength: String\(filter\.minStrength\)/);
+  assert.match(html, /\/trend-recommendations\?\$\{query\}/);
+  assert.match(html, /P\('analyze-markets'\)\.onclick = analyzeRecommendedMarkets/);
+  assert.match(html, /P\('market'\)\.dispatchEvent\(new Event\('change'\)\)/);
+  assert.match(html, /K线周期已变化，请重新点击“分析”/);
+});

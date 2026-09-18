@@ -29,7 +29,14 @@ test("hosted Grid and Hedge commands execute through a durable workflow", () => 
   assert.match(runtime, /case "HEDGE_START"/);
   assert.match(api, /assertSameOrigin\(request\)/);
   assert.match(api, /requireAlphaOperator\(\{ live: true \}\)/);
-  assert.match(api, /version: "2\.3\.1"/);
+  assert.match(api, /version: "2\.3\.3"/);
+  assert.match(api, /trend-recommendations/);
+  assert.match(api, /type: action === "trend-recommendations" \? "TREND_RECOMMENDATIONS" : "TREND"/);
+  assert.match(api, /hostedGridOpsCommand\.findFirst/);
+  assert.match(runtime, /case "TREND_RECOMMENDATIONS"/);
+  assert.match(runtime, /scanTrendRecommendations/);
+  assert.match(runtime, /recommendation: payload\.strategy/);
+  assert.match(runtime, /minStrength: payload\.minStrength/);
   assert.match(runtime, /hedgeDashboard/);
 });
 

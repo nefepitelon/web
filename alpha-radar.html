@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="alpha-scanner.css?v=20260911-radar-v7" />
+    <link rel="stylesheet" href="alpha-scanner.css?v=20260918-radar-v8" />
     <link rel="stylesheet" href="alpha-auto-trading.css?v=20260911-auto-v5" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
@@ -54,59 +54,57 @@
 
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="收起导航" aria-controls="sidebar" aria-expanded="true"><span aria-hidden="true">‹</span><em>收起导航</em></button>
+        <div class="sidebar-command-row">
+          <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="收起导航" aria-controls="sidebar" aria-expanded="true"><span aria-hidden="true">‹</span><em data-radar-zh="收起导航" data-radar-en="Collapse">收起导航</em></button>
+          <button class="layout-mode-toggle" id="layout-mode-toggle" type="button" aria-pressed="false"><i aria-hidden="true"></i><span data-radar-zh="分页浏览" data-radar-en="Tab view">分页浏览</span></button>
+        </div>
         <a class="sidebar-brand" href="index.html" aria-label="Alpha Radar Trading Platform">
           <span class="brand-orbit" aria-hidden="true"><i></i><b></b></span>
-          <span><strong>Alpha Radar<span>Trading Platform</span></strong></span>
+          <span><strong data-radar-zh="阿尔法雷达平台" data-radar-en="Alpha Radar">阿尔法雷达平台</strong><small data-language-only="en">Trading Platform</small></span>
         </a>
 
         <nav class="side-nav" aria-label="产品模块">
           <a class="active" href="#radar" data-section="radar">
             <span class="nav-icon radar-icon" aria-hidden="true"></span>
-            <span><strong>妖币雷达</strong><small>Multi-Dimensional Scanner</small></span>
+            <span><strong data-radar-zh="妖币雷达" data-radar-en="Meme Coin Radar">妖币雷达</strong><small data-language-only="en">Multi-Dimensional Scanner</small></span>
             <em>01</em>
           </a>
           <a href="#signals" data-section="signals">
             <span class="nav-icon signal-icon" aria-hidden="true"></span>
-            <span><strong>动量与信号</strong><small>Momentum &amp; Signals</small></span>
+            <span><strong data-radar-zh="动量与信号" data-radar-en="Momentum &amp; Signals">动量与信号</strong><small data-language-only="en">Momentum &amp; Signals</small></span>
             <em>02</em>
           </a>
           <a href="#risk-pool" data-section="risk-pool">
             <span class="nav-icon pool-icon" aria-hidden="true"></span>
-            <span><strong>雷达执行池</strong><small>Alpha Risk Pool</small></span>
+            <span><strong data-radar-zh="雷达执行池" data-radar-en="Radar Execution Pool">雷达执行池</strong><small data-language-only="en">Alpha Risk Pool</small></span>
             <em>03</em>
+          </a>
+          <a href="#box-breakout" data-section="box-breakout">
+            <span class="nav-icon box-icon" aria-hidden="true"></span>
+            <span><strong data-radar-zh="箱体突破看板" data-radar-en="Box Breakout">箱体突破看板</strong><small data-language-only="en">Crypto Breakout Scanner</small></span>
+            <em>04</em>
           </a>
           <a href="#execution-control" data-section="execution-control">
             <span class="nav-icon execution-icon" aria-hidden="true"></span>
-            <span><strong>交易执行中心</strong><small>Execution Control</small></span>
-            <em>04</em>
+            <span><strong data-radar-zh="交易执行中心" data-radar-en="Execution Control">交易执行中心</strong><small data-language-only="en">Execution Control</small></span>
+            <em>05</em>
           </a>
           <a href="#auto-trading" data-section="auto-trading">
             <span class="nav-icon automation-icon" aria-hidden="true">↻</span>
-            <span><strong>自动交易</strong><small>Auto Trading</small></span>
-            <em>05</em>
+            <span><strong data-radar-zh="自动交易" data-radar-en="Auto Trading">自动交易</strong><small data-language-only="en">Auto Trading</small></span>
+            <em>06</em>
           </a>
           <a href="#risk" data-section="risk">
             <span class="nav-icon shield-icon" aria-hidden="true"></span>
-            <span><strong>风控执行</strong><small>Risk Engine</small></span>
-            <em>06</em>
+            <span><strong data-radar-zh="风控执行" data-radar-en="Risk Engine">风控执行</strong><small data-language-only="en">Risk Engine</small></span>
+            <em>07</em>
           </a>
           <a href="#paper" data-section="paper">
             <span class="nav-icon order-icon" aria-hidden="true"></span>
-            <span><strong id="portfolio-nav-title">纸面交易</strong><small id="portfolio-nav-subtitle">Paper Trading Only</small></span>
-            <em>07</em>
+            <span><strong id="portfolio-nav-title" data-radar-zh="纸面交易" data-radar-en="Paper Trading">纸面交易</strong><small id="portfolio-nav-subtitle" data-language-only="en">Paper Trading Only</small></span>
+            <em>08</em>
           </a>
         </nav>
-
-        <section class="source-stack" aria-label="已连接信号源">
-          <div class="side-label"><span>数据源</span><em id="source-health-count">0 / 4</em></div>
-          <ul>
-            <li data-source-health="spot"><i class="source-dot"></i><span>Binance Spot</span><em>等待</em></li>
-            <li data-source-health="futures"><i class="source-dot"></i><span>Binance Futures</span><em>等待</em></li>
-            <li data-source-health="momentum"><i class="source-dot"></i><span>Crypto Bubbles · 1D</span><em>等待</em></li>
-            <li data-source-health="signals"><i class="source-dot"></i><span>BWE OI Monitor</span><em>等待</em></li>
-          </ul>
-        </section>
 
         <section class="safety-lock" id="execution-safety-lock">
           <div class="lock-glyph" aria-hidden="true"></div>
@@ -356,6 +354,45 @@
             </footer>
           </section>
 
+          <section class="panel alpha-box-panel" id="box-breakout" aria-labelledby="alpha-box-title">
+            <header class="alpha-box-head">
+              <div>
+                <span class="panel-kicker" data-language-only="en">CRYPTO BOX BREAKOUT</span>
+                <h2 id="alpha-box-title" data-radar-zh="箱体突破看板" data-radar-en="Box Breakout Dashboard">箱体突破看板</h2>
+                <p data-radar-zh="复用独立看板的实时加密扫描、箱体评分与报价能力，在雷达工作流内完成筛选。" data-radar-en="Use the live crypto scanner, box scoring and quotes directly inside the Radar workflow.">复用独立看板的实时加密扫描、箱体评分与报价能力，在雷达工作流内完成筛选。</p>
+              </div>
+              <a class="alpha-box-open" href="/box-breakout" target="_top"><span data-radar-zh="打开完整看板" data-radar-en="Open full dashboard">打开完整看板</span><b aria-hidden="true">↗</b></a>
+            </header>
+            <div class="alpha-box-sources" role="group" aria-label="加密市场扫描来源">
+              <button type="button" data-box-scan="crypto-radar"><i aria-hidden="true">◎</i><span><small>α-RadarTP</small><strong data-radar-zh="扫描异动排行榜" data-radar-en="Scan anomaly ranking">扫描异动排行榜</strong></span></button>
+              <button type="button" data-box-scan="crypto-mainstream"><i aria-hidden="true">☆</i><span><small>α-RadarTP</small><strong data-radar-zh="扫描热门精选主流" data-radar-en="Scan featured majors">扫描热门精选主流</strong></span></button>
+              <button class="primary" type="button" data-box-scan="crypto"><i aria-hidden="true">⌁</i><span><small>BINANCE</small><strong data-radar-zh="扫描涨幅 TOP 30" data-radar-en="Scan top 30 gainers">扫描涨幅 TOP 30</strong></span></button>
+            </div>
+            <div class="alpha-box-notice" id="alpha-box-notice" role="status" hidden></div>
+            <div class="alpha-box-metrics" aria-label="箱体扫描概览">
+              <article><span data-radar-zh="当前结果" data-radar-en="Scan universe">当前结果</span><strong id="alpha-box-total">—</strong><em id="alpha-box-source">等待扫描</em></article>
+              <article><span data-radar-zh="达标关注" data-radar-en="Qualified">达标关注</span><strong id="alpha-box-qualified">—</strong><em data-radar-zh="评分不低于 85" data-radar-en="Score at least 85">评分不低于 85</em></article>
+              <article><span data-radar-zh="突破观察" data-radar-en="Watch">突破观察</span><strong id="alpha-box-watch">—</strong><em data-radar-zh="评分 70 至 84" data-radar-en="Score 70 to 84">评分 70 至 84</em></article>
+              <article><span data-radar-zh="最近更新" data-radar-en="Last snapshot">最近更新</span><strong id="alpha-box-updated">—</strong><em data-radar-zh="报价每 3 秒更新" data-radar-en="Quotes refresh every 3 seconds">报价每 3 秒更新</em></article>
+            </div>
+            <div class="alpha-box-job" id="alpha-box-job" hidden>
+              <div><span id="alpha-box-job-label">正在准备扫描</span><strong id="alpha-box-job-count">0 / 0</strong></div>
+              <progress id="alpha-box-progress" max="1" value="0"></progress>
+              <small id="alpha-box-job-log"></small>
+            </div>
+            <div class="alpha-box-toolbar">
+              <div><strong id="alpha-box-pool-title" data-radar-zh="加密箱体机会池" data-radar-en="Crypto box opportunities">加密箱体机会池</strong><span id="alpha-box-visible-count">0</span></div>
+              <div>
+                <label><span class="sr-only" data-radar-zh="搜索代码或名称" data-radar-en="Search symbol or name">搜索代码或名称</span><input id="alpha-box-search" type="search" data-placeholder-zh="搜索代码或名称" data-placeholder-en="Search symbol or name" placeholder="搜索代码或名称" /></label>
+                <select id="alpha-box-filter" aria-label="信号筛选"><option value="all" data-radar-zh="全部扫描结果" data-radar-en="All results">全部扫描结果</option><option value="qualified" data-radar-zh="达标关注" data-radar-en="Qualified">达标关注</option><option value="watch" data-radar-zh="关注与观察" data-radar-en="Qualified and watch">关注与观察</option></select>
+                <select id="alpha-box-sort" aria-label="排序方式"><option value="change" data-radar-zh="涨幅排序" data-radar-en="Price change">涨幅排序</option><option value="score" data-radar-zh="共振评分" data-radar-en="Resonance score">共振评分</option><option value="volume" data-radar-zh="量比排序" data-radar-en="Volume ratio">量比排序</option></select>
+              </div>
+            </div>
+            <div class="alpha-box-results" id="alpha-box-results" aria-live="polite">
+              <div class="alpha-box-empty"><i aria-hidden="true">◎</i><strong data-radar-zh="等待加密市场扫描" data-radar-en="Ready for a crypto scan">等待加密市场扫描</strong><span data-radar-zh="选择一种真实数据源，扫描任务会在后台持续完成。" data-radar-en="Choose a live source; the scan continues safely in the background.">选择一种真实数据源，扫描任务会在后台持续完成。</span></div>
+            </div>
+          </section>
+
           <section class="panel execution-control-panel" id="execution-control" aria-labelledby="execution-control-title">
             <div class="panel-head execution-control-head">
               <div>
@@ -596,6 +633,19 @@
             </footer>
           </aside>
         </main>
+        <footer class="source-tape" aria-label="已连接信号源">
+          <div class="source-tape-label"><span data-radar-zh="数据源" data-radar-en="Data sources">数据源</span><strong id="source-health-count">0 / 4</strong></div>
+          <div class="source-tape-viewport">
+            <div class="source-tape-track" id="source-tape-track">
+              <div class="source-tape-group">
+                <div data-source-health="spot"><i class="source-dot"></i><span>Binance Spot</span><em>等待</em></div>
+                <div data-source-health="futures"><i class="source-dot"></i><span>Binance Futures</span><em>等待</em></div>
+                <div data-source-health="momentum"><i class="source-dot"></i><span>Crypto Bubbles · 1D</span><em>等待</em></div>
+                <div data-source-health="signals"><i class="source-dot"></i><span>BWE OI Monitor</span><em>等待</em></div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
 
@@ -668,8 +718,8 @@
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"><i>✓</i><span>交易意图已更新</span></div>
-    <script src="ui-translations.js"></script>
-    <script src="alpha-scanner.js?v=20260911-radar-v7"></script>
+    <script src="ui-translations.js?v=20260918-radar-v8"></script>
+    <script src="alpha-scanner.js?v=20260918-radar-v8"></script>
     <script src="alpha-auto-trading.js?v=20260911-auto-v5"></script>
     <script src="surf-assistant.js"></script>
   </body>

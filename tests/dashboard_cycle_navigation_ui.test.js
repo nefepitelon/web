@@ -29,7 +29,7 @@ test("valuation cards present explanations before daily source metadata", () => 
 
 test("trend index navigates all chart panels and adapts to narrow screens", () => {
   const panelIds = [...html.matchAll(/<article class="chart-panel[^>]+id="([^"]+-panel)"/g)].map((match) => match[1]);
-  assert.equal(panelIds.length, 32);
+  assert.equal(panelIds.length, 34);
   assert.match(html, /id="trend-index-list"/);
   assert.match(js, /const setupTrendNavigator = \(\) =>/);
   assert.match(js, /const getTrendScrollOffset = \(\) =>/);
@@ -80,6 +80,6 @@ test("wide dashboard containers use more desktop width and shorter chart stages"
 });
 
 test("dashboard assets use the latest matching cache key", () => {
-  assert.match(html, /dashboard\.css\?v=20260914-system-ui-v1/);
-  assert.match(html, /dashboard\.js\?v=20260914-system-ui-v1/);
+  assert.match(html, /dashboard\.css\?v=20260917-mvrv-zscore-watermark-v2/);
+  assert.match(html, /dashboard\.js\?v=20260917-mvrv-zscore-watermark-v2/);
 });

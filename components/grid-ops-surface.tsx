@@ -16,7 +16,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 const ENGINE_URL = "http://127.0.0.1:8080";
-const ENGINE_VERSION = "2.3.1";
+const ENGINE_VERSION = "2.3.3";
 const CONSOLE_API_VERSION = 8;
 const MIN_COMPATIBLE_ENGINE_VERSION = "1.2.3";
 const START_COMMAND = 'cd /d "%USERPROFILE%\\Documents\\welinkbtc-main" && npm run grid:start';
