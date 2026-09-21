@@ -1,4 +1,4 @@
-import { getViewer } from "@/lib/membership";
+import { getActiveViewerId, getViewer } from "@/lib/membership";
 import { dashboardState, executeCommand, limitRequests } from "@/lib/box-breakout/service";
 import { BoxError, errorResponse, readCommand } from "@/lib/box-breakout/validation";
 
@@ -9,9 +9,8 @@ const headers = { "Cache-Control": "private, no-store" };
 
 export async function GET(request: Request) {
   try {
-    const viewer = await getViewer();
-    const userId = viewer?.status === "ACTIVE" && !viewer.needsSecondFactor ? viewer.id : undefined;
-    await limitRequests(request, "state", 90, userId);
+    const userId = (await getActiveViewerId()) ?? undefined;
+    await limitRequests(request, "state", 90, userId, { persistent: false });
     const search = new URL(request.url).searchParams;
     const version = (name: string) => {
       const value = search.get(name);

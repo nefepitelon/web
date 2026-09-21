@@ -292,6 +292,38 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   return viewer;
 });
 
+/**
+ * Minimal identity check for high-frequency, read-only state requests.
+ *
+ * The full viewer projection joins profiles, roles, subscriptions and access
+ * grants. Box state reads only need an active user id and 2FA state, so keep
+ * this path deliberately narrow. getClaims still verifies the Supabase JWT;
+ * with asymmetric signing it normally does so locally.
+ */
+export async function getActiveViewerId(): Promise<string | null> {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase || !isDatabaseConfigured()) return null;
+
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = typeof data?.claims.sub === "string" ? data.claims.sub : "";
+  if (error || !data || !/^[0-9a-f-]{36}$/i.test(userId)) return null;
+
+  const record = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      status: true,
+      twoFactor: { select: { enabledAt: true } }
+    }
+  });
+  if (!record || record.status !== "ACTIVE") return null;
+  if (!record.twoFactor?.enabledAt) return record.id;
+
+  if (data.claims.aal === "aal2") return record.id;
+  const twoFactorCookie = (await cookies()).get("welinkbtc_2fa")?.value;
+  return await verifyTwoFactorPass(twoFactorCookie, record.id) ? record.id : null;
+}
+
 export async function requireViewer(returnTo = "/account", requireSecondFactor = true) {
   const viewer = await getViewer();
   if (!viewer) redirect(`/login?next=${encodeURIComponent(returnTo)}`);

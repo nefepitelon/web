@@ -10,16 +10,16 @@ import styles from "./box-breakout.module.css";
 const defaults: Settings = { pool: [], sectors: [], auto: false, autoTimes: ["11:30", "15:00"], telegramEnabled: false, telegramChat: "", telegramConfigured: false };
 const empty: DashboardState = { settings: defaults, job: null, stocks: [], crypto: [], topics: [], asOf: null, signedIn: false };
 const stamp = (value: string | null | undefined) => value ? new Date(value).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false }) : "尚未扫描";
-const modeNames: Record<ScanMode, string> = { market: "全市场扫描", quick: "快速扫描 · 200", pool: "自选池扫描", crypto: "加密扫描 · TOP 30", "crypto-radar": "α-RadarTP · 异动排行榜", "crypto-mainstream": "α-RadarTP · 热门精选主流" };
+const modeNames: Record<ScanMode, string> = { market: "全市场扫描", quick: "快速扫描 · 200", pool: "自选池扫描", crypto: "加密扫描 · TOP 30", "crypto-radar": "α-RadarTP · 异动排行榜", "crypto-mainstream": "α-RadarTP · 热门精选主流", "crypto-risk-pool": "Alpha 雷达 · 风控候选清单", "crypto-alpha-market-cap": "Binance Alpha · 小市值", "crypto-alpha-open-interest": "Binance Alpha · 持仓量" };
 const cryptoScans: { mode: CryptoScanMode; source: string; label: string; accessibleLabel: string }[] = [
   { mode: "crypto-radar", source: "α-RadarTP", label: "扫描异动排行榜", accessibleLabel: "扫描α-RadarTP异动排行榜" },
   { mode: "crypto-mainstream", source: "α-RadarTP", label: "扫描热门精选主流", accessibleLabel: "扫描α-RadarTP热门精选主流" },
   { mode: "crypto", source: "BINANCE · USDT 永续", label: "扫描涨幅 TOP 30", accessibleLabel: "扫描涨幅 TOP 30" },
 ];
-const cryptoPoolNames: Record<CryptoScanMode, string> = { crypto: "加密涨幅机会池", "crypto-radar": "α-RadarTP 异动机会池", "crypto-mainstream": "α-RadarTP 主流机会池" };
-const cryptoSourceDescriptions: Record<CryptoScanMode, string> = { crypto: "Binance USDT 永续 · 按 24h 涨幅", "crypto-radar": "α-RadarTP 异动排行榜 · 可用 USDT 永续", "crypto-mainstream": "α-RadarTP 热门精选主流 · 可用 USDT 永续" };
+const cryptoPoolNames: Record<CryptoScanMode, string> = { crypto: "加密涨幅机会池", "crypto-radar": "α-RadarTP 异动机会池", "crypto-mainstream": "α-RadarTP 主流机会池", "crypto-risk-pool": "雷达执行池箱体机会", "crypto-alpha-market-cap": "Alpha 小市值箱体机会", "crypto-alpha-open-interest": "Alpha 持仓量箱体机会" };
+const cryptoSourceDescriptions: Record<CryptoScanMode, string> = { crypto: "Binance USDT 永续 · 按 24h 涨幅", "crypto-radar": "α-RadarTP 异动排行榜 · 可用 USDT 永续", "crypto-mainstream": "α-RadarTP 热门精选主流 · 可用 USDT 永续", "crypto-risk-pool": "Alpha 雷达风控候选清单 · 可用 USDT 永续", "crypto-alpha-market-cap": "Binance Skills Hub Alpha · 市值从小到大", "crypto-alpha-open-interest": "Binance Skills Hub Alpha · 合约持仓量从高到低" };
 const ACTIVE_STATE_POLL_MS = 10_000;
-const IDLE_STATE_POLL_MS = 5 * 60_000;
+const IDLE_STATE_POLL_MS = 15 * 60_000;
 const QUOTE_POLL_MS: Record<Market, number> = { ashare: 30_000, crypto: 15_000 };
 const errorText = (error: unknown) => error instanceof Error ? error.message : "请求失败，请稍后重试。";
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -94,7 +94,20 @@ export function BoxBreakoutSurface({ signedIn, canOperate }: { signedIn: boolean
     finally { if (sequence === pollSequence.current) pollPending.current = false; if (mounted.current && !signal?.aborted) setLoading(false); }
   }, []);
   useEffect(() => { mounted.current = true; const abort = new AbortController(); void poll(abort.signal); return () => { mounted.current = false; abort.abort(); pollPending.current = false; pollSequence.current += 1; }; }, [poll]);
-  useEffect(() => { if (!signedIn) return; const abort = new AbortController(); const interval = setInterval(() => { if (!document.hidden) void poll(abort.signal); }, running ? ACTIVE_STATE_POLL_MS : IDLE_STATE_POLL_MS); return () => { clearInterval(interval); abort.abort(); }; }, [poll, running, signedIn]);
+  useEffect(() => {
+    if (!signedIn) return;
+    const abort = new AbortController();
+    const refreshWhenVisible = () => { if (!document.hidden) void poll(abort.signal); };
+    const interval = setInterval(refreshWhenVisible, running ? ACTIVE_STATE_POLL_MS : IDLE_STATE_POLL_MS);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    window.addEventListener("focus", refreshWhenVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.removeEventListener("focus", refreshWhenVisible);
+      abort.abort();
+    };
+  }, [poll, running, signedIn]);
   async function command(value: Command) {
     if (busy) return false;
     revision.current += 1;

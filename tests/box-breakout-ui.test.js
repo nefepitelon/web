@@ -99,7 +99,8 @@ test("dashboard and chart polling use egress-safe refresh windows", () => {
   const surface = read("components/box-breakout-surface.tsx");
   const chart = read("components/box-breakout-chart.tsx");
   assert.match(surface, /ACTIVE_STATE_POLL_MS = 10_000/);
-  assert.match(surface, /IDLE_STATE_POLL_MS = 5 \* 60_000/);
+  assert.match(surface, /IDLE_STATE_POLL_MS = 15 \* 60_000/);
+  assert.match(surface, /visibilitychange/);
   assert.match(chart, /CHART_CACHE_MS = 15 \* 60_000/);
 });
 

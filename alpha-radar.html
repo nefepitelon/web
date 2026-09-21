@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="alpha-scanner.css?v=20260918-radar-v8" />
+    <link rel="stylesheet" href="alpha-scanner.css?v=20260921-radar-v12" />
     <link rel="stylesheet" href="alpha-auto-trading.css?v=20260911-auto-v5" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
@@ -57,6 +57,7 @@
         <div class="sidebar-command-row">
           <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="收起导航" aria-controls="sidebar" aria-expanded="true"><span aria-hidden="true">‹</span><em data-radar-zh="收起导航" data-radar-en="Collapse">收起导航</em></button>
           <button class="layout-mode-toggle" id="layout-mode-toggle" type="button" aria-pressed="false"><i aria-hidden="true"></i><span data-radar-zh="分页浏览" data-radar-en="Tab view">分页浏览</span></button>
+          <button class="radar-skin-toggle" id="radar-skin-toggle" type="button" aria-pressed="false"><i aria-hidden="true"></i><span>淡墨绿</span></button>
         </div>
         <a class="sidebar-brand" href="index.html" aria-label="Alpha Radar Trading Platform">
           <span class="brand-orbit" aria-hidden="true"><i></i><b></b></span>
@@ -67,55 +68,46 @@
           <a class="active" href="#radar" data-section="radar">
             <span class="nav-icon radar-icon" aria-hidden="true"></span>
             <span><strong data-radar-zh="妖币雷达" data-radar-en="Meme Coin Radar">妖币雷达</strong><small data-language-only="en">Multi-Dimensional Scanner</small></span>
-            <em>01</em>
           </a>
           <a href="#signals" data-section="signals">
             <span class="nav-icon signal-icon" aria-hidden="true"></span>
             <span><strong data-radar-zh="动量与信号" data-radar-en="Momentum &amp; Signals">动量与信号</strong><small data-language-only="en">Momentum &amp; Signals</small></span>
-            <em>02</em>
           </a>
           <a href="#risk-pool" data-section="risk-pool">
             <span class="nav-icon pool-icon" aria-hidden="true"></span>
             <span><strong data-radar-zh="雷达执行池" data-radar-en="Radar Execution Pool">雷达执行池</strong><small data-language-only="en">Alpha Risk Pool</small></span>
-            <em>03</em>
           </a>
           <a href="#box-breakout" data-section="box-breakout">
             <span class="nav-icon box-icon" aria-hidden="true"></span>
             <span><strong data-radar-zh="箱体突破看板" data-radar-en="Box Breakout">箱体突破看板</strong><small data-language-only="en">Crypto Breakout Scanner</small></span>
-            <em>04</em>
           </a>
           <a href="#execution-control" data-section="execution-control">
             <span class="nav-icon execution-icon" aria-hidden="true"></span>
             <span><strong data-radar-zh="交易执行中心" data-radar-en="Execution Control">交易执行中心</strong><small data-language-only="en">Execution Control</small></span>
-            <em>05</em>
           </a>
           <a href="#auto-trading" data-section="auto-trading">
             <span class="nav-icon automation-icon" aria-hidden="true">↻</span>
             <span><strong data-radar-zh="自动交易" data-radar-en="Auto Trading">自动交易</strong><small data-language-only="en">Auto Trading</small></span>
-            <em>06</em>
           </a>
           <a href="#risk" data-section="risk">
             <span class="nav-icon shield-icon" aria-hidden="true"></span>
             <span><strong data-radar-zh="风控执行" data-radar-en="Risk Engine">风控执行</strong><small data-language-only="en">Risk Engine</small></span>
-            <em>07</em>
           </a>
           <a href="#paper" data-section="paper">
             <span class="nav-icon order-icon" aria-hidden="true"></span>
             <span><strong id="portfolio-nav-title" data-radar-zh="纸面交易" data-radar-en="Paper Trading">纸面交易</strong><small id="portfolio-nav-subtitle" data-language-only="en">Paper Trading Only</small></span>
-            <em>08</em>
           </a>
         </nav>
 
-        <section class="safety-lock" id="execution-safety-lock">
+        <section class="safety-lock side-footer sidebar-status-card" id="execution-safety-lock">
           <div class="lock-glyph" aria-hidden="true"></div>
-          <div><strong id="execution-lock-title">生产实盘默认加锁</strong><span id="execution-lock-copy">PAPER / LIVE · 风控与审计</span></div>
-        </section>
-
-        <div class="side-footer">
-          <div class="avatar">W</div>
-          <div><strong>Paper 研究账户</strong><span id="sidebar-equity">读取本机纸面账本…</span></div>
+          <div class="sidebar-status-copy">
+            <strong id="execution-lock-title">生产实盘默认加锁</strong>
+            <span id="execution-lock-copy">PAPER / LIVE · 风控与审计</span>
+            <small><b data-radar-zh="Paper 研究账户" data-radar-en="Paper research account">Paper 研究账户</b><em id="sidebar-equity">读取本机纸面账本…</em></small>
+          </div>
           <button type="button" aria-label="更多账户选项">•••</button>
-        </div>
+        </section>
       </aside>
 
       <div class="workspace">
@@ -166,12 +158,6 @@
               </div>
             </div>
 
-            <div class="stage-banner">
-              <span class="stage-icon">!</span>
-              <p><strong>强制安全链路：</strong>信号只能创建 Trade Intent；Paper 与 Live 均必须经过 Risk Engine、Execution Plan、订单监控与对账。</p>
-              <button type="button" id="show-roadmap">查看上线门槛 <span>→</span></button>
-            </div>
-
             <div class="metric-grid">
               <article>
                 <div class="metric-label"><span>扫描标的</span><em>SPOT + PERP</em></div>
@@ -202,11 +188,14 @@
                     <span class="panel-kicker" id="scanner-mode-kicker">2H LIVE SCAN · BINANCE USDT</span>
                     <h2 class="sr-only" id="scanner-mode-title">异动排行榜</h2>
                     <div class="ranking-universe-tabs" role="tablist" aria-label="排行榜切换">
-                      <button class="active" type="button" data-ranking-universe="anomaly" role="tab" aria-selected="true" aria-controls="token-ranking-table">异动排行榜</button>
-                      <button type="button" data-ranking-universe="mainstream" role="tab" aria-selected="false" aria-controls="token-ranking-table">热门精选主流 <em>13</em></button>
+                      <button class="active" type="button" data-ranking-universe="anomaly" role="tab" aria-selected="true" aria-controls="token-ranking-table"><span data-radar-zh="异动排行榜" data-radar-en="Anomaly ranking">异动排行榜</span></button>
+                      <button type="button" data-ranking-universe="mainstream" role="tab" aria-selected="false" aria-controls="token-ranking-table"><span data-radar-zh="热门精选主流" data-radar-en="Featured majors">热门精选主流</span> <em>13</em></button>
+                      <button type="button" data-ranking-universe="alpha-market-cap" role="tab" aria-selected="false" aria-controls="token-ranking-table"><span data-radar-zh="Alpha 小市值" data-radar-en="Alpha small cap">Alpha 小市值</span> <em id="alpha-market-cap-count">20</em></button>
+                      <button type="button" data-ranking-universe="alpha-open-interest" role="tab" aria-selected="false" aria-controls="token-ranking-table"><span data-radar-zh="Alpha 持仓量" data-radar-en="Alpha open interest">Alpha 持仓量</span> <em id="alpha-open-interest-count">20</em></button>
                     </div>
                   </div>
                   <div class="scan-controls">
+                    <button class="alpha-list-refresh" id="refresh-alpha-lists" type="button" hidden><i aria-hidden="true">↻</i><span data-radar-zh="实时刷新" data-radar-en="Refresh now">实时刷新</span></button>
                     <label class="search-box">
                       <span aria-hidden="true"></span>
                       <input id="token-search" type="search" placeholder="搜索币种" autocomplete="off" />
@@ -237,13 +226,13 @@
                   <table class="token-table" id="token-ranking-table">
                     <thead>
                       <tr>
-                        <th>排名 / 标的</th>
-                        <th>24H</th>
-                        <th>成交异动</th>
-                        <th>资金费率</th>
-                        <th>OI 变化</th>
-                        <th>Alpha 分</th>
-                        <th>方向</th>
+                        <th id="ranking-symbol-head">排名 / 标的</th>
+                        <th id="ranking-change-head">24H</th>
+                        <th id="ranking-volume-head">成交异动</th>
+                        <th id="ranking-funding-head">资金费率</th>
+                        <th id="ranking-oi-head">OI 变化</th>
+                        <th id="ranking-score-head">Alpha 分</th>
+                        <th id="ranking-bias-head">方向</th>
                         <th><span class="sr-only">操作</span></th>
                       </tr>
                     </thead>
@@ -261,7 +250,6 @@
                 </nav>
                 <footer class="panel-foot">
                   <span id="scan-cycle-label"><i></i>正在连接两小时扫描快照</span>
-                  <button type="button" id="expand-universe">查看上线门槛 <em>→</em></button>
                 </footer>
               </section>
 
@@ -356,18 +344,19 @@
 
           <section class="panel alpha-box-panel" id="box-breakout" aria-labelledby="alpha-box-title">
             <header class="alpha-box-head">
-              <div>
+              <div class="alpha-box-title">
                 <span class="panel-kicker" data-language-only="en">CRYPTO BOX BREAKOUT</span>
                 <h2 id="alpha-box-title" data-radar-zh="箱体突破看板" data-radar-en="Box Breakout Dashboard">箱体突破看板</h2>
-                <p data-radar-zh="复用独立看板的实时加密扫描、箱体评分与报价能力，在雷达工作流内完成筛选。" data-radar-en="Use the live crypto scanner, box scoring and quotes directly inside the Radar workflow.">复用独立看板的实时加密扫描、箱体评分与报价能力，在雷达工作流内完成筛选。</p>
               </div>
-              <a class="alpha-box-open" href="/box-breakout" target="_top"><span data-radar-zh="打开完整看板" data-radar-en="Open full dashboard">打开完整看板</span><b aria-hidden="true">↗</b></a>
+              <div class="alpha-box-sources" role="group" aria-label="加密市场扫描来源">
+                <button class="primary" type="button" data-box-scan="crypto-risk-pool"><i aria-hidden="true">◇</i><span><small>RISK POOL</small><strong data-radar-zh="扫描雷达执行池" data-radar-en="Scan Radar risk pool">扫描雷达执行池</strong></span></button>
+                <button type="button" data-box-scan="crypto-radar"><i aria-hidden="true">◎</i><span><small>α-RadarTP</small><strong data-radar-zh="扫描异动排行榜" data-radar-en="Scan anomaly ranking">扫描异动排行榜</strong></span></button>
+                <button type="button" data-box-scan="crypto-mainstream"><i aria-hidden="true">☆</i><span><small>α-RadarTP</small><strong data-radar-zh="扫描热门精选主流" data-radar-en="Scan featured majors">扫描热门精选主流</strong></span></button>
+                <button type="button" data-box-scan="crypto-alpha-market-cap"><i aria-hidden="true">α</i><span><small>SKILLS HUB</small><strong data-radar-zh="扫描 Alpha 小市值" data-radar-en="Scan Alpha small cap">扫描 Alpha 小市值</strong></span></button>
+                <button type="button" data-box-scan="crypto-alpha-open-interest"><i aria-hidden="true">OI</i><span><small>SKILLS HUB</small><strong data-radar-zh="扫描 Alpha 持仓量" data-radar-en="Scan Alpha open interest">扫描 Alpha 持仓量</strong></span></button>
+                <button type="button" data-box-scan="crypto"><i aria-hidden="true">⌁</i><span><small>BINANCE</small><strong data-radar-zh="扫描涨幅 TOP 30" data-radar-en="Scan top 30 gainers">扫描涨幅 TOP 30</strong></span></button>
+              </div>
             </header>
-            <div class="alpha-box-sources" role="group" aria-label="加密市场扫描来源">
-              <button type="button" data-box-scan="crypto-radar"><i aria-hidden="true">◎</i><span><small>α-RadarTP</small><strong data-radar-zh="扫描异动排行榜" data-radar-en="Scan anomaly ranking">扫描异动排行榜</strong></span></button>
-              <button type="button" data-box-scan="crypto-mainstream"><i aria-hidden="true">☆</i><span><small>α-RadarTP</small><strong data-radar-zh="扫描热门精选主流" data-radar-en="Scan featured majors">扫描热门精选主流</strong></span></button>
-              <button class="primary" type="button" data-box-scan="crypto"><i aria-hidden="true">⌁</i><span><small>BINANCE</small><strong data-radar-zh="扫描涨幅 TOP 30" data-radar-en="Scan top 30 gainers">扫描涨幅 TOP 30</strong></span></button>
-            </div>
             <div class="alpha-box-notice" id="alpha-box-notice" role="status" hidden></div>
             <div class="alpha-box-metrics" aria-label="箱体扫描概览">
               <article><span data-radar-zh="当前结果" data-radar-en="Scan universe">当前结果</span><strong id="alpha-box-total">—</strong><em id="alpha-box-source">等待扫描</em></article>
@@ -634,7 +623,7 @@
           </aside>
         </main>
         <footer class="source-tape" aria-label="已连接信号源">
-          <div class="source-tape-label"><span data-radar-zh="数据源" data-radar-en="Data sources">数据源</span><strong id="source-health-count">0 / 4</strong></div>
+          <div class="source-tape-label"><span data-radar-zh="数据源" data-radar-en="Data sources">数据源</span><strong id="source-health-count">0 / 5</strong></div>
           <div class="source-tape-viewport">
             <div class="source-tape-track" id="source-tape-track">
               <div class="source-tape-group">
@@ -642,6 +631,7 @@
                 <div data-source-health="futures"><i class="source-dot"></i><span>Binance Futures</span><em>等待</em></div>
                 <div data-source-health="momentum"><i class="source-dot"></i><span>Crypto Bubbles · 1D</span><em>等待</em></div>
                 <div data-source-health="signals"><i class="source-dot"></i><span>BWE OI Monitor</span><em>等待</em></div>
+                <div data-source-health="alpha"><i class="source-dot"></i><span>Binance Skills Hub Alpha</span><em>等待</em></div>
               </div>
             </div>
           </div>
@@ -702,24 +692,26 @@
       </footer>
     </aside>
 
-    <dialog class="roadmap-dialog" id="roadmap-dialog">
+    <dialog class="alpha-box-chart-dialog" id="alpha-box-chart-dialog" aria-labelledby="alpha-box-chart-dialog-title">
       <form method="dialog">
-        <header><div><span class="panel-kicker">GO-LIVE GATES</span><h2>实盘上线门槛</h2></div><button value="close" aria-label="关闭">×</button></header>
-        <p>只有当每一项验证完成，才允许用小资金开启真实 Binance 合约权限。</p>
-        <ol>
-          <li class="done"><i>✓</i><span><strong>扫描与七维评分</strong><small>两小时 Binance 快照、异常值处理、可解释输出</small></span><em>LIVE β</em></li>
-          <li><i>02</i><span><strong>止损与仓位模型</strong><small>滑点、手续费与最小下单量已纳入</small></span><em>待验证</em></li>
-          <li><i>03</i><span><strong>去重与风控熔断</strong><small>重复信号、连续亏损和 API 异常保护</small></span><em>待验证</em></li>
-          <li><i>04</i><span><strong>回测与前向测试</strong><small>跨市场阶段验证，排除幸存者偏差</small></span><em>待验证</em></li>
-          <li><i>05</i><span><strong>Paper 前向验证</strong><small>订单、止损、撤单与异常恢复记录</small></span><em>以实际记录为准</em></li>
-        </ol>
-        <button class="primary-button dialog-close" value="close">了解，继续纸面验证</button>
+        <header>
+          <div><span data-radar-zh="箱体突破复盘" data-radar-en="Box breakout review">箱体突破复盘</span><h2 id="alpha-box-chart-dialog-title">—</h2></div>
+          <button type="submit" value="close" aria-label="关闭图表">×</button>
+        </header>
+        <div class="alpha-box-chart-stage">
+          <canvas id="alpha-box-expanded-chart" width="1440" height="720" aria-label="箱体突破日线复盘图"></canvas>
+        </div>
+        <footer>
+          <div id="alpha-box-chart-summary">—</div>
+          <p id="alpha-box-chart-caption">—</p>
+          <a id="alpha-box-chart-full-link" href="/box-breakout" target="_top" data-radar-zh="进入完整看板 ↗" data-radar-en="Open full dashboard ↗">进入完整看板 ↗</a>
+        </footer>
       </form>
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"><i>✓</i><span>交易意图已更新</span></div>
-    <script src="ui-translations.js?v=20260918-radar-v8"></script>
-    <script src="alpha-scanner.js?v=20260918-radar-v8"></script>
+    <script src="ui-translations.js?v=20260921-radar-v12"></script>
+    <script src="alpha-scanner.js?v=20260921-radar-v12"></script>
     <script src="alpha-auto-trading.js?v=20260911-auto-v5"></script>
     <script src="surf-assistant.js"></script>
   </body>

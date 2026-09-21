@@ -18,6 +18,13 @@ const rankingPages = document.querySelector("#ranking-pages");
 const rankingPrev = document.querySelector("#ranking-prev");
 const rankingNext = document.querySelector("#ranking-next");
 const tokenTableWrap = document.querySelector(".token-table-wrap");
+const refreshAlphaLists = document.querySelector("#refresh-alpha-lists");
+const alphaMarketCapCount = document.querySelector("#alpha-market-cap-count");
+const alphaOpenInterestCount = document.querySelector("#alpha-open-interest-count");
+const rankingVolumeHead = document.querySelector("#ranking-volume-head");
+const rankingOiHead = document.querySelector("#ranking-oi-head");
+const rankingScoreHead = document.querySelector("#ranking-score-head");
+const rankingBiasHead = document.querySelector("#ranking-bias-head");
 const drawer = document.querySelector("#detail-drawer");
 const drawerBackdrop = document.querySelector("#drawer-backdrop");
 const detailDirectionPicker = document.querySelector("#detail-direction-picker");
@@ -95,6 +102,12 @@ const boxProgress = document.querySelector("#alpha-box-progress");
 const boxJobLabel = document.querySelector("#alpha-box-job-label");
 const boxJobCount = document.querySelector("#alpha-box-job-count");
 const boxJobLog = document.querySelector("#alpha-box-job-log");
+const boxChartDialog = document.querySelector("#alpha-box-chart-dialog");
+const boxExpandedChart = document.querySelector("#alpha-box-expanded-chart");
+const boxChartDialogTitle = document.querySelector("#alpha-box-chart-dialog-title");
+const boxChartSummary = document.querySelector("#alpha-box-chart-summary");
+const boxChartCaption = document.querySelector("#alpha-box-chart-caption");
+const boxChartFullLink = document.querySelector("#alpha-box-chart-full-link");
 const tradeIntentForm = document.querySelector("#trade-intent-form");
 const riskDecisionView = document.querySelector("#risk-decision-view");
 const riskSubmit = document.querySelector("#risk-submit");
@@ -161,6 +174,11 @@ let activeRankingPage = 1;
 const rankingPageSize = 12;
 let activeToken = tokenUniverse[0];
 let mainstreamUniverse = [];
+let alphaMarketCapUniverse = [];
+let alphaOpenInterestUniverse = [];
+let alphaListsMeta = null;
+let alphaListsTimer = null;
+let alphaListsLoading = false;
 let selectedNeutralDirection = null;
 let toastTimer;
 let marketSocket = null;
@@ -273,10 +291,12 @@ function updateSourceHealth(key, state = "live", timestamp = Date.now()) {
 
 function renderSourceHealth() {
   const healthyKeys = new Set();
+  const configuredKeys = new Set();
   document.querySelectorAll("[data-source-health]").forEach((row) => {
     const key = row.dataset.sourceHealth;
+    configuredKeys.add(key);
     const source = sourceHealth.get(key);
-    const ttl = key === "signals" ? telegramSignalRefreshMs + 60_000 : key === "momentum" ? cryptoBubblesRefreshMs + 60_000 : 120_000;
+    const ttl = key === "alpha" ? alphaScanRefreshMs + 5 * 60_000 : key === "signals" ? telegramSignalRefreshMs + 60_000 : key === "momentum" ? cryptoBubblesRefreshMs + 60_000 : 120_000;
     const fresh = source && source.state === "live" && Date.now() - source.timestamp < ttl;
     if (fresh) healthyKeys.add(key);
     row.querySelector("i").className = `source-dot${fresh ? " live" : ""}`;
@@ -284,7 +304,7 @@ function renderSourceHealth() {
     row.title = source ? `${radarText("最近同步", "Last sync")} ${new Date(source.timestamp).toLocaleTimeString(platformLang === "en" ? "en-GB" : "zh-CN", { hour12: false })}` : radarText("尚未收到数据", "No data received yet");
   });
   const count = document.querySelector("#source-health-count");
-  if (count) count.textContent = `${healthyKeys.size} / 4`;
+  if (count) count.textContent = `${healthyKeys.size} / ${configuredKeys.size}`;
 }
 
 function renderLiveSummaryMetrics() {
@@ -445,7 +465,7 @@ async function hydrateAlphaScan({ announce = false } = {}) {
     if (!response.ok) throw new Error(`Alpha scan ${response.status}`);
     const payload = await response.json();
     if (!Array.isArray(payload.items) || !payload.items.length) throw new Error("Alpha scan returned no candidates");
-    const watched = new Set([...tokenUniverse, ...mainstreamUniverse].filter((token) => token.watched).map((token) => token.symbol));
+    const watched = new Set([...tokenUniverse, ...mainstreamUniverse, ...alphaMarketCapUniverse, ...alphaOpenInterestUniverse].filter((token) => token.watched).map((token) => token.symbol));
     tokenUniverse = payload.items.map((token) => ({ ...token, watched: watched.has(token.symbol) }));
     mainstreamUniverse = buildMainstreamUniverse(payload.featuredItems, watched);
     activeToken = tokenUniverse[0];
@@ -929,6 +949,121 @@ function prepareMarketTape() {
   track.append(clone);
 }
 
+function formatRankingUsd(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return "—";
+  return `$${new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: amount >= 1_000_000_000 ? 2 : 1 }).format(amount)}`;
+}
+
+function alphaListDetailToken(item, listKind, watchedSymbols) {
+  const marketCap = Number(item.marketCap);
+  const openInterestUsd = Number(item.openInterestUsd);
+  const marketCapLabel = formatRankingUsd(marketCap);
+  const openInterestLabel = formatRankingUsd(openInterestUsd);
+  const chainLabel = item.chainName || item.chainId || "—";
+  const isMarketCap = listKind === "market-cap";
+  return {
+    symbol: String(item.symbol || "—").toUpperCase(),
+    name: item.name || item.symbol,
+    type: radarText("Alpha 合约交集", "Alpha-perpetual match"),
+    market: "perp",
+    price: formatMomentumPrice(item.price),
+    change: Number.isFinite(Number(item.change24h)) ? Number(item.change24h) : null,
+    volume: null,
+    funding: Number.isFinite(Number(item.funding)) ? Number(item.funding) : null,
+    fundingAvailable: Number.isFinite(Number(item.funding)),
+    oi: null,
+    score: null,
+    bias: "neutral",
+    signalType: radarText("结构筛选", "Screened universe"),
+    watched: watchedSymbols.has(String(item.symbol || "").toUpperCase()),
+    dimensions: Array(7).fill(null),
+    dimensionAvailability: Array(7).fill(false),
+    reason: isMarketCap
+      ? radarText(`该标的已上 Binance Alpha、未上 Binance 现货且已上 U 本位永续；当前市值 ${marketCapLabel}，清单按市值从小到大排序。`, `Listed on Binance Alpha and USDⓈ-M perpetuals, but not Binance Spot. Current market cap is ${marketCapLabel}; this list is sorted smallest first.`)
+      : radarText(`该标的已上 Binance Alpha、未上 Binance 现货且已上 U 本位永续；当前合约持仓名义价值 ${openInterestLabel}。`, `Listed on Binance Alpha and USDⓈ-M perpetuals, but not Binance Spot. Current futures open-interest notional is ${openInterestLabel}.`),
+    detailMode: "alpha-list",
+    sourceKind: "binance-alpha-list",
+    detailDrawerKicker: isMarketCap ? "BINANCE ALPHA · SMALL CAP TOP 20" : "BINANCE ALPHA · OPEN INTEREST TOP 20",
+    detailDrawerTitle: radarText("Alpha 合约交集详情", "Alpha-perpetual match details"),
+    detailSubtitle: `${chainLabel} · ${item.futureSymbol || `${item.symbol}USDT`} · ${radarText("仅研究筛选", "Research screen only")}`,
+    detailSignal: "ALPHA × PERP · NO SPOT",
+    dimensionTitle: radarText("清单筛选条件", "List eligibility"),
+    dimensionWindow: radarText("Binance Skills Hub · 每两小时刷新", "Binance Skills Hub · refreshed every 2 hours"),
+    heatTitle: radarText("数据来源与口径", "Sources and methodology"),
+    heatLabel: radarText("Alpha、现货与永续元数据实时交叉验证", "Cross-checked Alpha, Spot and perpetual metadata"),
+    headlineTitle: radarText("清单数据摘要", "List data summary"),
+    headlineWindow: radarText("当前实时快照", "Current live snapshot"),
+    kolLabel: radarText("数据来源", "Data sources"),
+    kolMetric: "2H",
+    heat: null,
+    kols: ["Binance Skills Hub", "Binance USDⓈ-M Futures"],
+    risks: [
+      radarText("清单仅表示上市结构与排序，不构成买入或卖出信号", "The list reflects listing structure and ranking only, not a buy or sell signal"),
+      radarText("小市值与高持仓合约都可能伴随高波动和流动性风险", "Small-cap and high-OI contracts may carry elevated volatility and liquidity risk"),
+      radarText("任何交易意图仍须经过风控审批", "Any trade intent must still pass risk approval")
+    ],
+    headlines: [
+      `${radarText("市值", "Market cap")} ${marketCapLabel} · ${radarText("合约持仓", "Futures OI")} ${openInterestLabel}`,
+      `${radarText("链", "Chain")} ${chainLabel} · ${radarText("合约地址", "Contract")} ${item.contractAddress || "—"}`
+    ],
+    marketCap: Number.isFinite(marketCap) ? marketCap : null,
+    openInterestUsd: Number.isFinite(openInterestUsd) ? openInterestUsd : null,
+    chainName: chainLabel,
+    contractAddress: item.contractAddress || "",
+    futureSymbol: item.futureSymbol || `${item.symbol}USDT`,
+    listKind
+  };
+}
+
+function scheduleAlphaLists(nextRefreshAt) {
+  window.clearTimeout(alphaListsTimer);
+  if (document.hidden) return;
+  const next = nextRefreshAt ? new Date(nextRefreshAt).getTime() : Number.NaN;
+  const delay = Number.isFinite(next) ? Math.max(60_000, next - Date.now() + 5_000) : alphaScanRefreshMs;
+  alphaListsTimer = window.setTimeout(() => hydrateBinanceAlphaLists(), delay);
+}
+
+function setAlphaListsLoading(loading) {
+  if (!refreshAlphaLists) return;
+  refreshAlphaLists.disabled = loading;
+  refreshAlphaLists.classList.toggle("loading", loading);
+  const label = refreshAlphaLists.querySelector("span");
+  if (label) label.textContent = loading ? radarText("同步中…", "Syncing…") : radarText("实时刷新", "Refresh now");
+}
+
+async function hydrateBinanceAlphaLists({ force = false, announce = false } = {}) {
+  if (alphaListsLoading || (document.hidden && !force)) return;
+  alphaListsLoading = true;
+  setAlphaListsLoading(true);
+  window.clearTimeout(alphaListsTimer);
+  try {
+    const query = force ? `?refresh=${Date.now()}` : "";
+    const response = await fetch(`/api/binance-alpha-lists${query}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Binance Alpha lists ${response.status}`);
+    const payload = await response.json();
+    if (!Array.isArray(payload.marketCapItems) || !Array.isArray(payload.openInterestItems)) throw new Error("Binance Alpha lists returned an invalid payload");
+    const watched = new Set([...tokenUniverse, ...mainstreamUniverse, ...alphaMarketCapUniverse, ...alphaOpenInterestUniverse].filter((token) => token.watched).map((token) => token.symbol));
+    alphaMarketCapUniverse = payload.marketCapItems.map((item) => alphaListDetailToken(item, "market-cap", watched));
+    alphaOpenInterestUniverse = payload.openInterestItems.map((item) => alphaListDetailToken(item, "open-interest", watched));
+    alphaListsMeta = payload;
+    updateSourceHealth("alpha", payload.stale ? "cached" : "live", Date.parse(payload.refreshedAt) || Date.now());
+    if (alphaMarketCapCount) alphaMarketCapCount.textContent = alphaMarketCapUniverse.length;
+    if (alphaOpenInterestCount) alphaOpenInterestCount.textContent = alphaOpenInterestUniverse.length;
+    if (activeRankingUniverse.startsWith("alpha-")) renderRows();
+    scheduleAlphaLists(payload.nextRefreshAt);
+    if (announce) showToast(radarText("Binance Alpha 两份清单已实时刷新", "Both Binance Alpha lists are now refreshed"));
+  } catch (error) {
+    console.warn("Binance Alpha lists unavailable", error);
+    updateSourceHealth("alpha", "error");
+    scheduleAlphaLists(null);
+    if (announce) showToast(radarText("Alpha 清单暂时不可用，已安排自动重试", "Alpha lists are temporarily unavailable; retry scheduled"), true);
+  } finally {
+    alphaListsLoading = false;
+    setAlphaListsLoading(false);
+  }
+}
+
 function prepareSourceTape() {
   const track = document.querySelector("#source-tape-track");
   const sourceGroup = track?.querySelector(".source-tape-group");
@@ -1107,8 +1242,11 @@ function radarText(zh, en) {
 }
 
 function boxSourceLabel(mode) {
+  if (mode === "crypto-risk-pool") return radarText("Alpha 雷达风控候选清单", "Alpha Radar risk candidates");
   if (mode === "crypto-radar") return radarText("α-RadarTP 异动排行榜", "α-RadarTP anomaly ranking");
   if (mode === "crypto-mainstream") return radarText("α-RadarTP 热门精选主流", "α-RadarTP featured majors");
+  if (mode === "crypto-alpha-market-cap") return radarText("Binance Skills Hub Alpha 小市值", "Binance Skills Hub Alpha small cap");
+  if (mode === "crypto-alpha-open-interest") return radarText("Binance Skills Hub Alpha 持仓量", "Binance Skills Hub Alpha open interest");
   return radarText("Binance 永续涨幅 TOP 30", "Binance futures top 30 gainers");
 }
 
@@ -1163,17 +1301,83 @@ function formatBoxPrice(value) {
   return `$${price.toLocaleString("en-US", { maximumFractionDigits: digits })}`;
 }
 
+function boxConditionPercent(candidate, key) {
+  const condition = (candidate.conditions || []).find((item) => item.key === key);
+  const points = Number(condition?.points);
+  const maximum = Number(condition?.maximum);
+  return Number.isFinite(points) && maximum > 0 ? Math.round(Math.max(0, Math.min(100, points / maximum * 100))) : null;
+}
+
+function boxCandidateDetailToken(candidate) {
+  const symbol = String(candidate.symbol || "").replace(/USDT$/i, "").toUpperCase();
+  const quote = boxQuotes.get(candidate.symbol) || candidate.quote || {};
+  const existing = findToken(symbol)
+    || alphaMarketCapUniverse.find((token) => token.symbol === symbol)
+    || alphaOpenInterestUniverse.find((token) => token.symbol === symbol);
+  const dimensions = Array.isArray(existing?.dimensions) ? [...existing.dimensions] : Array(7).fill(null);
+  const volumeScore = boxConditionPercent(candidate, "volume");
+  const momentumScore = boxConditionPercent(candidate, "momentum");
+  if (momentumScore != null) dimensions[0] = momentumScore;
+  if (volumeScore != null) dimensions[1] = volumeScore;
+  const availability = dimensions.map((value) => value != null && Number.isFinite(Number(value)));
+  const source = boxSourceLabel(boxBreakoutState?.cryptoSourceMode || "crypto");
+  const boxSummary = candidate.box
+    ? `${radarText("箱体", "Box")} ${formatBoxPrice(candidate.box.low)} — ${formatBoxPrice(candidate.box.high)} · ${radarText("位置", "Position")} ${Number(candidate.box.positionPct || 0).toFixed(1)}% · ${radarText("上沿试盘", "Upper tests")} ${candidate.box.tests || 0}`
+    : radarText("当前尚未形成有效箱体", "No valid box is currently formed");
+  return {
+    ...(existing || {}),
+    symbol,
+    name: candidate.name || symbol,
+    type: radarText("箱体突破候选", "Box-breakout candidate"),
+    market: "perp",
+    price: formatBoxPrice(quote.price),
+    change: Number.isFinite(Number(quote.changePct)) ? Number(quote.changePct) : null,
+    score: Number(candidate.score || 0),
+    scoreLabel: "BOX",
+    bias: "neutral",
+    signalType: boxStatusLabel(candidate),
+    watched: Boolean(existing?.watched),
+    dimensions,
+    dimensionAvailability: availability,
+    reason: radarText(`该标的来自${source}；箱体评分 ${Number(candidate.score || 0)}/100。${boxSummary}。方向保持中性，须由用户明确选择后才能送入风控审批。`, `This candidate comes from ${source} with a box score of ${Number(candidate.score || 0)}/100. ${boxSummary}. Direction remains neutral until explicitly selected for risk approval.`),
+    heat: existing?.heat ?? null,
+    kols: [radarText("箱体突破扫描", "Box breakout scan"), source],
+    risks: [
+      radarText("箱体突破可能出现假突破与快速回落", "Box breakouts may fail and reverse quickly"),
+      ...(candidate.dataWarnings || []).slice(0, 2),
+      radarText("送审前必须人工选择方向，仍须经过 Risk Engine", "Choose a direction manually; Risk Engine approval is still required")
+    ],
+    headlines: [
+      `${radarText("箱体评分", "Box score")} ${Number(candidate.score || 0)}/100 · ${boxStatusLabel(candidate)}`,
+      boxSummary,
+      `${radarText("24 小时涨跌", "24h change")} ${Number(quote.changePct || 0) >= 0 ? "+" : ""}${Number(quote.changePct || 0).toFixed(2)}% · ${radarText("量比", "Volume ratio")} ${Number(candidate.volume?.ratio || 0).toFixed(2)}×`
+    ],
+    intentSource: "alpha-radar",
+    sourceKind: "box-breakout",
+    detailDrawerKicker: "BOX BREAKOUT · 7D DETAIL",
+    detailDrawerTitle: radarText("箱体突破七维信号明细", "Box-breakout seven-dimension detail"),
+    detailSubtitle: `${source} · Binance USDT ${radarText("永续", "perpetual")}`,
+    dimensionTitle: radarText("七维信号与箱体评分", "Seven dimensions and box score"),
+    dimensionWindow: radarText("箱体日线 · 七维实时快照", "Daily box · live seven-dimension snapshot"),
+    detailReason: radarText("箱体评分只覆盖价格、成交与结构条件；缺失的七维数据会明确标记，不使用模拟值。", "Box scoring covers price, volume and structure only. Missing dimensions are explicitly marked and never simulated."),
+    headlineTitle: radarText("箱体扫描摘要", "Box scan summary"),
+    headlineWindow: radarText("当前扫描快照", "Current scan snapshot"),
+    kolLabel: radarText("数据来源", "Data sources"),
+    kolMetric: `${availability.filter(Boolean).length}/7`
+  };
+}
+
 function renderBoxCandidate(candidate) {
   const quote = boxQuotes.get(candidate.symbol) || candidate.quote || {};
   const change = Number(quote.changePct || 0);
   const warnings = Array.isArray(candidate.dataWarnings) ? candidate.dataWarnings.length : 0;
-  const conditions = Array.isArray(candidate.conditions) ? candidate.conditions : [];
+  const conditions = Array.isArray(candidate.conditions) ? candidate.conditions.slice(0, 3) : [];
   return `<article class="alpha-box-card">
     <header><div><small>${escapeHtml(String(candidate.symbol || "").replace(/USDT$/i, ""))} / USDT</small><h3>${escapeHtml(candidate.name || String(candidate.symbol || "").replace(/USDT$/i, ""))}</h3></div><strong>${Number(candidate.score || 0)}<em>/100</em></strong></header>
     <div class="alpha-box-quote"><b>${formatBoxPrice(quote.price)}</b><span class="${change >= 0 ? "up" : "down"}">${change >= 0 ? "+" : ""}${change.toFixed(2)}%</span><em>${boxStatusLabel(candidate)}</em></div>
     <canvas class="alpha-box-chart" data-box-chart="${escapeHtml(candidate.symbol)}" width="520" height="150" aria-label="${escapeHtml(candidate.symbol)} ${radarText("日线箱体图", "daily box chart")}"></canvas>
     <div class="alpha-box-conditions">${conditions.map((condition) => `<div class="${condition.passed ? "passed" : ""}"><span>${escapeHtml(boxConditionLabel(condition))}<b>${Number(condition.points || 0)} / ${Number(condition.maximum || 0)}</b></span><small>${escapeHtml(boxConditionDetail(condition, candidate))}</small></div>`).join("")}</div>
-    <footer><span>${candidate.box ? `${radarText("箱体位置", "Box position")} ${Number(candidate.box.positionPct || 0).toFixed(1)}% · ${radarText("试盘", "Tests")} ${candidate.box.tests || 0}` : radarText("尚未形成有效箱体", "No valid box yet")}</span><a href="/box-breakout" target="_top">${radarText("完整复盘", "Full review")} ↗</a></footer>
+    <footer><span>${candidate.box ? `${radarText("箱体位置", "Box position")} ${Number(candidate.box.positionPct || 0).toFixed(1)}% · ${radarText("试盘", "Tests")} ${candidate.box.tests || 0}` : radarText("尚未形成有效箱体", "No valid box yet")}</span><div class="alpha-box-card-actions"><button type="button" data-box-detail="${escapeHtml(candidate.symbol)}">${radarText("七维明细", "7D detail")}</button><button type="button" data-box-expand="${escapeHtml(candidate.symbol)}">${radarText("展开图表", "Expand chart")}</button><a href="/box-breakout" target="_top">${radarText("完整复盘", "Full review")} ↗</a></div></footer>
     ${warnings ? `<p class="alpha-box-warning">${radarText(`${warnings} 项数据说明`, `${warnings} data note${warnings === 1 ? "" : "s"}`)}</p>` : ""}
   </article>`;
 }
@@ -1194,14 +1398,20 @@ function renderBoxBreakout() {
     ? radarText("α-RadarTP 异动机会池", "α-RadarTP anomaly opportunities")
     : mode === "crypto-mainstream"
       ? radarText("α-RadarTP 主流机会池", "α-RadarTP major opportunities")
-      : radarText("加密涨幅机会池", "Crypto gainer opportunities");
+      : mode === "crypto-risk-pool"
+        ? radarText("雷达执行池箱体机会", "Radar risk-pool box opportunities")
+        : mode === "crypto-alpha-market-cap"
+          ? radarText("Alpha 小市值箱体机会", "Alpha small-cap box opportunities")
+          : mode === "crypto-alpha-open-interest"
+            ? radarText("Alpha 持仓量箱体机会", "Alpha open-interest box opportunities")
+            : radarText("加密涨幅机会池", "Crypto gainer opportunities");
   const updated = boxBreakoutState?.asOf ? new Date(boxBreakoutState.asOf) : null;
   document.querySelector("#alpha-box-updated").textContent = updated && !Number.isNaN(updated.getTime())
     ? updated.toLocaleString(platformLang === "en" ? "en-GB" : "zh-CN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
     : "—";
 
   const job = boxBreakoutState?.job;
-  const cryptoJob = job && ["crypto", "crypto-radar", "crypto-mainstream"].includes(job.mode);
+  const cryptoJob = job && ["crypto", "crypto-radar", "crypto-mainstream", "crypto-risk-pool", "crypto-alpha-market-cap", "crypto-alpha-open-interest"].includes(job.mode);
   boxJob.hidden = !cryptoJob;
   if (cryptoJob) {
     const jobState = { queued: ["排队中", "Queued"], running: ["进行中", "Running"], complete: ["已完成", "Complete"], cancelled: ["已取消", "Cancelled"], failed: ["失败", "Failed"] }[job.status] || [job.status, job.status];
@@ -1236,7 +1446,12 @@ function renderBoxBreakout() {
   scheduleBoxQuoteRefresh();
 }
 
-function drawBoxChart(canvas, bars, box) {
+function boxChartColor(name, fallback) {
+  const value = getComputedStyle(document.body).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+function drawBoxChart(canvas, bars, box, { expanded = false } = {}) {
   const context = canvas.getContext("2d");
   if (!context || !Array.isArray(bars) || !bars.length) return;
   const ratio = window.devicePixelRatio || 1;
@@ -1246,32 +1461,78 @@ function drawBoxChart(canvas, bars, box) {
   canvas.height = Math.round(height * ratio);
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
   context.clearRect(0, 0, width, height);
-  const shown = bars.slice(-64);
+  const shown = bars.slice(expanded ? -160 : -64);
   const low = Math.min(...shown.map((bar) => Number(bar.low)));
   const high = Math.max(...shown.map((bar) => Number(bar.high)));
   const range = Math.max(high - low, high * 0.002, 0.000001);
   const xStep = width / shown.length;
   const y = (value) => 8 + (high - Number(value)) / range * (height - 22);
-  context.strokeStyle = "rgba(126, 164, 222, .12)";
+  context.strokeStyle = boxChartColor("--box-chart-grid", "rgba(126, 164, 222, .12)");
   context.lineWidth = 1;
   [0.25, 0.5, 0.75].forEach((part) => { context.beginPath(); context.moveTo(0, height * part); context.lineTo(width, height * part); context.stroke(); });
   if (box) {
-    context.fillStyle = "rgba(132, 164, 255, .07)";
+    context.fillStyle = boxChartColor("--box-chart-zone", "rgba(132, 164, 255, .07)");
     context.fillRect(0, y(box.high), width, Math.max(1, y(box.low) - y(box.high)));
     context.setLineDash([4, 4]);
-    context.strokeStyle = "rgba(244, 196, 93, .62)";
+    context.strokeStyle = boxChartColor("--box-chart-boundary", "rgba(244, 196, 93, .62)");
     [box.high, box.low].forEach((value) => { context.beginPath(); context.moveTo(0, y(value)); context.lineTo(width, y(value)); context.stroke(); });
     context.setLineDash([]);
   }
   shown.forEach((bar, index) => {
     const x = index * xStep + xStep / 2;
     const rising = Number(bar.close) >= Number(bar.open);
-    context.strokeStyle = rising ? "#75ddb1" : "#ee8d94";
-    context.fillStyle = rising ? "#75ddb1" : "#ee8d94";
+    context.strokeStyle = rising ? boxChartColor("--box-chart-up", "#75ddb1") : boxChartColor("--box-chart-down", "#ee8d94");
+    context.fillStyle = context.strokeStyle;
     context.beginPath(); context.moveTo(x, y(bar.high)); context.lineTo(x, y(bar.low)); context.stroke();
     const top = Math.min(y(bar.open), y(bar.close));
     context.fillRect(x - Math.max(1, xStep * 0.26), top, Math.max(2, xStep * 0.52), Math.max(1, Math.abs(y(bar.open) - y(bar.close))));
   });
+  if (expanded) {
+    context.fillStyle = boxChartColor("--box-chart-label", "#91a4bd");
+    context.font = "12px ui-monospace, SFMono-Regular, Consolas, monospace";
+    context.textAlign = "right";
+    context.fillText(formatBoxPrice(high), width - 12, 18);
+    context.fillText(formatBoxPrice(low), width - 12, height - 8);
+    if (box) {
+      context.textAlign = "left";
+      context.fillText(`${radarText("箱顶", "Top")} ${formatBoxPrice(box.high)}`, 12, Math.max(18, y(box.high) - 7));
+      context.fillText(`${radarText("箱底", "Bottom")} ${formatBoxPrice(box.low)}`, 12, Math.min(height - 8, y(box.low) + 15));
+    }
+  }
+}
+
+async function boxChartBars(symbol) {
+  const cached = boxChartCache.get(symbol);
+  if (cached && Date.now() - cached.at < 60_000) return cached.bars;
+  const response = await fetch(`/api/box-breakout/chart?market=crypto&symbol=${encodeURIComponent(symbol)}`, { cache: "no-store" });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || radarText("图表数据暂不可用", "Chart data is unavailable"));
+  boxChartCache.set(symbol, { at: Date.now(), bars: payload.bars });
+  return payload.bars;
+}
+
+async function openBoxChart(symbol) {
+  const candidate = (boxBreakoutState?.crypto || []).find((item) => item.symbol === symbol);
+  if (!candidate || !boxChartDialog || !boxExpandedChart) return;
+  const quote = boxQuotes.get(symbol) || candidate.quote || {};
+  const change = Number(quote.changePct || 0);
+  boxChartDialog.dataset.symbol = symbol;
+  boxChartDialogTitle.textContent = `${candidate.name || symbol.replace(/USDT$/i, "")} / USDT · ${radarText("日 K 复盘", "Daily review")}`;
+  boxChartSummary.textContent = `${radarText("共振评分", "Confluence score")} ${Number(candidate.score || 0)} / 100 · ${radarText("最新价", "Last price")} ${formatBoxPrice(quote.price)} · 24H ${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
+  boxChartCaption.textContent = candidate.box
+    ? `${radarText("箱体", "Box")} ${formatBoxPrice(candidate.box.low)} — ${formatBoxPrice(candidate.box.high)} · ${radarText("位置", "Position")} ${Number(candidate.box.positionPct || 0).toFixed(1)}% · ${radarText("试盘", "Tests")} ${candidate.box.tests || 0}`
+    : radarText("当前尚未形成有效箱体，图表保留完整价格轨迹供复盘。", "No valid box is formed yet; the full price path remains available for review.");
+  boxChartFullLink.href = `/box-breakout?market=crypto&symbol=${encodeURIComponent(symbol)}`;
+  if (!boxChartDialog.open) boxChartDialog.showModal();
+  boxExpandedChart.setAttribute("aria-busy", "true");
+  try {
+    const bars = await boxChartBars(symbol);
+    requestAnimationFrame(() => drawBoxChart(boxExpandedChart, bars, candidate.box, { expanded: true }));
+  } catch (error) {
+    boxChartCaption.textContent = error instanceof Error ? error.message : radarText("图表数据暂不可用", "Chart data is unavailable");
+  } finally {
+    boxExpandedChart.removeAttribute("aria-busy");
+  }
 }
 
 async function hydrateBoxCharts() {
@@ -1288,11 +1549,9 @@ async function hydrateBoxCharts() {
       return;
     }
     try {
-      const response = await fetch(`/api/box-breakout/chart?market=crypto&symbol=${encodeURIComponent(symbol)}`, { cache: "no-store" });
-      const payload = await response.json();
-      if (!response.ok || requestId !== boxChartRequest) return;
-      boxChartCache.set(symbol, { at: Date.now(), bars: payload.bars });
-      drawBoxChart(canvas, payload.bars, candidate.box);
+      const bars = await boxChartBars(symbol);
+      if (requestId !== boxChartRequest) return;
+      drawBoxChart(canvas, bars, candidate.box);
     } catch {}
   }));
 }
@@ -1332,7 +1591,16 @@ async function startBoxBreakoutScan(mode) {
     boxNotice.textContent = radarText("扫描任务正在提交…", "Submitting the scan…");
   }
   try {
-    const response = await fetch("/api/box-breakout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "scan", mode }) });
+    const command = { action: "scan", mode };
+    if (mode === "crypto-risk-pool") {
+      const symbols = [...new Set(buildRiskPoolModel().candidates
+        .map((candidate) => normalizeRiskPoolSymbol(candidate.symbol))
+        .filter((symbol) => /^[A-Z0-9]{2,24}$/.test(symbol))
+        .map((symbol) => `${symbol}USDT`))].slice(0, 100);
+      if (!symbols.length) throw new Error(radarText("风控候选清单尚未生成，请先刷新雷达数据。", "The risk candidate list is not ready. Refresh Radar data first."));
+      command.symbols = symbols;
+    }
+    const response = await fetch("/api/box-breakout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(command) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || radarText("扫描提交失败", "Unable to start scan"));
     boxBreakoutState = payload;
@@ -1427,18 +1695,55 @@ function buildMainstreamUniverse(items = [], watchedSymbols = new Set()) {
 }
 
 function activeRankingTokens() {
-  return activeRankingUniverse === "mainstream" ? mainstreamUniverse : tokenUniverse;
+  if (activeRankingUniverse === "mainstream") return mainstreamUniverse;
+  if (activeRankingUniverse === "alpha-market-cap") return alphaMarketCapUniverse;
+  if (activeRankingUniverse === "alpha-open-interest") return alphaOpenInterestUniverse;
+  return tokenUniverse;
 }
 
 function renderRankingModeMeta() {
-  const mainstream = activeRankingUniverse === "mainstream";
-  if (scannerModeKicker) scannerModeKicker.textContent = mainstream ? "REAL-TIME · BINANCE FEATURED 13" : "2H LIVE SCAN · BINANCE USDT";
-  if (scannerModeTitle) scannerModeTitle.textContent = mainstream ? "热门精选主流" : "异动排行榜";
-  if (rankingMethodTitle) rankingMethodTitle.textContent = mainstream ? "热门主流 ≠ 自动交易" : "异常强度 ≠ 买入信号";
-  if (rankingMethodCopy) rankingMethodCopy.textContent = mainstream
-    ? "固定覆盖顶部 BTC、ETH、BNB、SOL、DOGE、ZEC、TAO、ENA、ONDO、UNI、XRP、SUI、HYPE；沿用同一套七维评分、详情与风控送审链路。"
-    : "价格、成交、资金费率、多空比、爆仓代理、社交趋势与媒体资讯分别评分，再判断共振或反指过热。";
-  if (scanCycleLabel && mainstream) scanCycleLabel.innerHTML = "<i></i>顶部 13 个行情币种 · Binance 实时价格";
+  const modes = {
+    anomaly: {
+      kicker: "2H LIVE SCAN · BINANCE USDT",
+      title: radarText("异动排行榜", "Anomaly ranking"),
+      method: radarText("异常强度 ≠ 买入信号", "Anomaly intensity ≠ buy signal"),
+      copy: radarText("价格、成交、资金费率、多空比、爆仓代理、社交趋势与媒体资讯分别评分，再判断共振或反指过热。", "Price, volume, funding, positioning, liquidation proxy, social and media signals are scored before resonance or contrarian-overheat classification."),
+      cycle: radarText("每 2 小时扫描 · Binance 现货与永续", "Scans every 2 hours · Binance Spot and perpetuals")
+    },
+    mainstream: {
+      kicker: "REAL-TIME · BINANCE FEATURED 13",
+      title: radarText("热门精选主流", "Featured majors"),
+      method: radarText("热门主流 ≠ 自动交易", "Featured majors ≠ automatic trade"),
+      copy: radarText("固定覆盖顶部 13 个主流标的；沿用同一套七维评分、详情与风控送审链路。", "Covers 13 featured majors with the same seven-dimension detail and risk-approval workflow."),
+      cycle: radarText("顶部 13 个行情币种 · Binance 实时价格", "13 featured markets · live Binance prices")
+    },
+    "alpha-market-cap": {
+      kicker: "2H · BINANCE SKILLS HUB · MARKET CAP ASC",
+      title: radarText("Alpha 小市值前 20", "Alpha smallest market caps"),
+      method: radarText("Alpha 已上 × 现货未上 × 合约已上", "Alpha listed × no Spot × perpetual listed"),
+      copy: radarText("通过 Binance Skills Hub Alpha 榜单与交易所元数据实时交叉验证，按市值从小到大展示前 20 名。", "Cross-checks the Binance Skills Hub Alpha rank with exchange metadata, then shows the 20 smallest market caps."),
+      cycle: radarText("每 2 小时刷新 · 可手动实时同步", "Refreshes every 2 hours · manual live sync available")
+    },
+    "alpha-open-interest": {
+      kicker: "2H · BINANCE SKILLS HUB · OPEN INTEREST",
+      title: radarText("Alpha 合约持仓前 20", "Alpha open-interest leaders"),
+      method: radarText("Alpha 已上 × 现货未上 × 合约已上", "Alpha listed × no Spot × perpetual listed"),
+      copy: radarText("对同一交集清单读取 U 本位永续实时持仓数量与标记价格，按持仓名义价值从高到低展示前 20 名。", "For the same intersection, multiplies live USDⓈ-M open interest by mark price and ranks the top 20 notional values."),
+      cycle: radarText("每 2 小时刷新 · 可手动实时同步", "Refreshes every 2 hours · manual live sync available")
+    }
+  };
+  const mode = modes[activeRankingUniverse] || modes.anomaly;
+  const alphaList = activeRankingUniverse.startsWith("alpha-");
+  if (scannerModeKicker) scannerModeKicker.textContent = mode.kicker;
+  if (scannerModeTitle) scannerModeTitle.textContent = mode.title;
+  if (rankingMethodTitle) rankingMethodTitle.textContent = mode.method;
+  if (rankingMethodCopy) rankingMethodCopy.textContent = mode.copy;
+  if (scanCycleLabel) scanCycleLabel.innerHTML = `<i></i>${mode.cycle}${alphaList && alphaListsMeta?.refreshedAt ? ` · ${radarText("更新", "updated")} ${formatScanTime(alphaListsMeta.refreshedAt)}` : ""}`;
+  if (refreshAlphaLists) refreshAlphaLists.hidden = !alphaList;
+  if (rankingVolumeHead) rankingVolumeHead.textContent = alphaList ? radarText("市值", "Market cap") : radarText("成交异动", "Volume anomaly");
+  if (rankingOiHead) rankingOiHead.textContent = alphaList ? radarText("合约持仓", "Futures OI") : radarText("OI 变化", "OI change");
+  if (rankingScoreHead) rankingScoreHead.textContent = alphaList ? radarText("筛选状态", "Eligibility") : radarText("Alpha 分", "Alpha score");
+  if (rankingBiasHead) rankingBiasHead.textContent = alphaList ? radarText("用途", "Use") : radarText("方向", "Direction");
   rankingUniverseTabs.forEach((button) => {
     const selected = button.dataset.rankingUniverse === activeRankingUniverse;
     button.classList.toggle("active", selected);
@@ -1513,18 +1818,31 @@ function renderRows() {
     const fundingCell = token.fundingAvailable === false || token.funding == null
       ? '<td class="dim">—</td>'
       : `<td class="${token.funding < 0 ? "up" : token.funding > 0.04 ? "down" : ""}">${token.funding > 0 ? "+" : ""}${token.funding.toFixed(3)}%</td>`;
-    const oiCell = token.oi == null
-      ? '<td class="dim">—</td>'
-      : `<td class="${oiClass}">${token.oi > 0 ? "+" : ""}${token.oi.toFixed(1)}%</td>`;
+    const alphaList = token.sourceKind === "binance-alpha-list";
+    const volumeCell = alphaList
+      ? `<td class="alpha-list-metric">${formatRankingUsd(token.marketCap)}</td>`
+      : `<td>${token.volume == null ? '<span class="dim">—</span>' : `<span class="volume-cell"><i style="--volume:${Math.min(100, token.volume * 22)}%"></i>${token.volume.toFixed(1)}×</span>`}</td>`;
+    const oiCell = alphaList
+      ? `<td class="alpha-list-metric">${formatRankingUsd(token.openInterestUsd)}</td>`
+      : token.oi == null
+        ? '<td class="dim">—</td>'
+        : `<td class="${oiClass}">${token.oi > 0 ? "+" : ""}${token.oi.toFixed(1)}%</td>`;
+    const scoreCell = alphaList
+      ? `<td><span class="alpha-qualified-badge">ALPHA × PERP</span></td>`
+      : `<td><span class="score-cell" style="--score:${token.score ?? 0};--score-color:${scoreColor(token.score)}"><i><strong>${token.score ?? "—"}</strong></i></span></td>`;
+    const biasCell = alphaList
+      ? `<td><span class="bias-tag neutral">${radarText("研究清单", "Research list")}</span></td>`
+      : `<td><span class="bias-tag ${token.bias}">${biasLabel(token.bias)}</span></td>`;
+    const chainMeta = alphaList ? `<b class="token-meta-separator">·</b><i class="token-meta-chain">${escapeHtml(token.chainName)}</i>` : "";
     return `
       <tr tabindex="0" data-symbol="${escapeHtml(token.symbol)}" aria-label="查看 ${escapeHtml(token.symbol)} 七维信号明细">
-        <td><div class="token-cell"><span class="token-rank">${String(rank).padStart(2, "0")}</span><span class="token-avatar ${avatarClass(token.symbol)}">${escapeHtml(token.symbol[0])}</span><span><strong>${escapeHtml(token.symbol)}</strong><small>${marketMeta}<b class="token-meta-separator">·</b><i class="token-meta-signal ${token.bias}">${escapeHtml(token.type)}</i></small></span></div></td>
+        <td><div class="token-cell"><span class="token-rank">${String(rank).padStart(2, "0")}</span><span class="token-avatar ${avatarClass(token.symbol)}">${escapeHtml(token.symbol[0])}</span><span><strong>${escapeHtml(token.symbol)}</strong><small>${marketMeta}${chainMeta}<b class="token-meta-separator">·</b><i class="token-meta-signal ${token.bias}">${escapeHtml(token.type)}</i></small></span></div></td>
         <td class="${token.change == null ? "dim" : deltaClass}" data-ranking-change="${escapeHtml(token.symbol)}">${formatSignalPercent(token.change)}</td>
-        <td>${token.volume == null ? '<span class="dim">—</span>' : `<span class="volume-cell"><i style="--volume:${Math.min(100, token.volume * 22)}%"></i>${token.volume.toFixed(1)}×</span>`}</td>
+        ${volumeCell}
         ${fundingCell}
         ${oiCell}
-        <td><span class="score-cell" style="--score:${token.score ?? 0};--score-color:${scoreColor(token.score)}"><i><strong>${token.score ?? "—"}</strong></i></span></td>
-        <td><span class="bias-tag ${token.bias}">${biasLabel(token.bias)}</span></td>
+        ${scoreCell}
+        ${biasCell}
         <td><button class="row-open" type="button" data-open="${escapeHtml(token.symbol)}" aria-label="打开 ${escapeHtml(token.symbol)} 详情">›</button></td>
       </tr>`;
   }).join("");
@@ -1547,7 +1865,9 @@ function renderRows() {
 function findToken(symbol) {
   return activeRankingTokens().find((token) => token.symbol === symbol)
     || tokenUniverse.find((token) => token.symbol === symbol)
-    || mainstreamUniverse.find((token) => token.symbol === symbol);
+    || mainstreamUniverse.find((token) => token.symbol === symbol)
+    || alphaMarketCapUniverse.find((token) => token.symbol === symbol)
+    || alphaOpenInterestUniverse.find((token) => token.symbol === symbol);
 }
 
 function setNeutralDetailDirection(side) {
@@ -3911,6 +4231,7 @@ rankingUniverseTabs.forEach((tab) => {
     activeFilter = "all";
     directionTabs.forEach((button) => button.classList.toggle("active", button.dataset.filter === "all"));
     renderRows();
+    if (nextUniverse.startsWith("alpha-") && !alphaListsMeta) hydrateBinanceAlphaLists();
   });
 });
 
@@ -4060,6 +4381,7 @@ paperViewTabs.forEach((tab, index) => {
 }));
 
 document.querySelector("#refresh-scan").addEventListener("click", () => hydrateAlphaScan({ announce: true }));
+refreshAlphaLists?.addEventListener("click", () => hydrateBinanceAlphaLists({ force: true, announce: true }));
 refreshTriggers?.addEventListener("click", () => hydrateRecentSignals({ announce: true, force: true }));
 
 document.querySelector("#mode-toggle").addEventListener("click", () => {
@@ -4119,9 +4441,6 @@ document.querySelector("#intent-market")?.addEventListener("change", (event) => 
   if (alphaExecutionAuthorized) void refreshIntentReferencePrice().catch(() => undefined);
 });
 
-document.querySelector("#show-roadmap").addEventListener("click", () => document.querySelector("#roadmap-dialog").showModal());
-document.querySelector("#expand-universe").addEventListener("click", () => document.querySelector("#roadmap-dialog").showModal());
-
 const riskControls = document.querySelectorAll(".risk-rules select");
 riskControls.forEach((control) => {
   const saved = window.localStorage.getItem(`alpha-radar-${control.id}`);
@@ -4166,15 +4485,18 @@ const mobileMenu = document.querySelector("#mobile-menu");
 const sidebar = document.querySelector("#sidebar");
 const sidebarToggle = document.querySelector("#sidebar-toggle");
 const layoutModeToggle = document.querySelector("#layout-mode-toggle");
+const radarSkinToggle = document.querySelector("#radar-skin-toggle");
 const appShell = document.querySelector(".app-shell");
 const sidebarMedia = window.matchMedia("(max-width: 1440px)");
 let platformLang = localStorage.getItem("welinkbtc-language") === "en" ? "en" : "zh";
 let platformThemeMode = localStorage.getItem("welinkbtc-theme") || "dark";
 let sidebarPreference = null;
 let workspaceLayoutMode = "grid";
+let radarSkinMode = "ink";
 let activeWorkspaceSection = "radar";
 try { sidebarPreference = localStorage.getItem("alpha-radar-sidebar"); } catch {}
 try { workspaceLayoutMode = localStorage.getItem("alpha-radar-layout-mode") === "tabs" ? "tabs" : "grid"; } catch {}
+try { radarSkinMode = localStorage.getItem("alpha-radar-color-skin") === "navy" ? "navy" : "ink"; } catch {}
 const requestedSection = window.location.hash.replace(/^#/, "");
 if (document.querySelector(`.side-nav a[data-section="${CSS.escape(requestedSection)}"]`)) activeWorkspaceSection = requestedSection;
 
@@ -4184,6 +4506,35 @@ function updateLayoutModeLabel() {
   layoutModeToggle.setAttribute("aria-pressed", String(tabs));
   layoutModeToggle.setAttribute("aria-label", tabs ? radarText("切换为整体平铺", "Switch to full layout") : radarText("切换为分页浏览", "Switch to tab view"));
   layoutModeToggle.querySelector("span").textContent = tabs ? radarText("整体平铺", "Full layout") : radarText("分页浏览", "Tab view");
+}
+
+function updateRadarSkinLabel() {
+  if (!radarSkinToggle) return;
+  const navy = radarSkinMode === "navy";
+  radarSkinToggle.setAttribute("aria-pressed", String(navy));
+  radarSkinToggle.setAttribute("aria-label", navy
+    ? radarText("切换为淡墨绿色", "Switch to ink green")
+    : radarText("切换为深蓝色", "Switch to deep blue"));
+  radarSkinToggle.querySelector("span").textContent = navy
+    ? radarText("深蓝色", "Deep blue")
+    : radarText("淡墨绿", "Ink green");
+}
+
+function applyRadarSkin(persist = false) {
+  document.documentElement.dataset.radarSkin = radarSkinMode;
+  document.body.dataset.radarSkin = radarSkinMode;
+  appShell.dataset.radarSkin = radarSkinMode;
+  updateRadarSkinLabel();
+  if (persist) {
+    try { localStorage.setItem("alpha-radar-color-skin", radarSkinMode); } catch {}
+  }
+  requestAnimationFrame(() => {
+    hydrateBoxCharts();
+    const symbol = boxChartDialog?.open ? boxChartDialog.dataset.symbol : "";
+    const candidate = (boxBreakoutState?.crypto || []).find((item) => item.symbol === symbol);
+    const cached = symbol ? boxChartCache.get(symbol) : null;
+    if (candidate && cached && boxExpandedChart) drawBoxChart(boxExpandedChart, cached.bars, candidate.box, { expanded: true });
+  });
 }
 
 function selectWorkspaceSection(section, { updateHash = false } = {}) {
@@ -4234,7 +4585,12 @@ document.querySelectorAll(".side-nav a").forEach((link) => {
   });
 });
 layoutModeToggle?.addEventListener("click", () => setWorkspaceLayout(workspaceLayoutMode === "tabs" ? "grid" : "tabs", true));
+radarSkinToggle?.addEventListener("click", () => {
+  radarSkinMode = radarSkinMode === "ink" ? "navy" : "ink";
+  applyRadarSkin(true);
+});
 setWorkspaceLayout(workspaceLayoutMode);
+applyRadarSkin();
 
 const platformMenuToggle = document.querySelector("#platform-menu-toggle");
 const platformNav = document.querySelector("#platform-nav");
@@ -4277,7 +4633,9 @@ function applyPlatformLanguage() {
   radarUiTranslator?.setLanguage(platformLang);
   document.title = platformLang === "zh" ? "阿尔法雷达平台" : "Alpha Radar Trading Platform";
   updateLayoutModeLabel();
+  updateRadarSkinLabel();
   renderSourceHealth();
+  renderRows();
   if (boxBreakoutState) renderBoxBreakout();
   requestAnimationFrame(() => document.querySelectorAll(".side-nav a").forEach((link) => {
     link.setAttribute("aria-label", link.querySelector("strong")?.textContent || "");
@@ -4337,6 +4695,26 @@ boxScanButtons.forEach((button) => button.addEventListener("click", () => startB
 boxSearch?.addEventListener("input", renderBoxBreakout);
 boxFilter?.addEventListener("change", renderBoxBreakout);
 boxSort?.addEventListener("change", renderBoxBreakout);
+boxResults?.addEventListener("click", (event) => {
+  const detailTrigger = event.target.closest("[data-box-detail]");
+  if (detailTrigger) {
+    const candidate = (boxBreakoutState?.crypto || []).find((item) => item.symbol === detailTrigger.dataset.boxDetail);
+    if (candidate) openDrawer(boxCandidateDetailToken(candidate));
+    return;
+  }
+  const trigger = event.target.closest("[data-box-expand]");
+  if (trigger) openBoxChart(trigger.dataset.boxExpand);
+});
+boxChartDialog?.addEventListener("click", (event) => {
+  if (event.target === boxChartDialog) boxChartDialog.close();
+});
+window.addEventListener("resize", () => {
+  if (!boxChartDialog?.open) return;
+  const symbol = boxChartDialog.dataset.symbol;
+  const candidate = (boxBreakoutState?.crypto || []).find((item) => item.symbol === symbol);
+  const cached = boxChartCache.get(symbol);
+  if (candidate && cached && boxExpandedChart) drawBoxChart(boxExpandedChart, cached.bars, candidate.box, { expanded: true });
+});
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
@@ -4345,6 +4723,7 @@ document.addEventListener("visibilitychange", () => {
     window.clearTimeout(futuresReconnectTimer);
     window.clearTimeout(cryptoBubblesTimer);
     window.clearTimeout(alphaScanTimer);
+    window.clearTimeout(alphaListsTimer);
     window.clearTimeout(telegramSignalTimer);
     window.clearTimeout(strongTradeIntentExpiryTimer);
     window.clearTimeout(surfPulseTimer);
@@ -4364,6 +4743,7 @@ document.addEventListener("visibilitychange", () => {
   connectFuturesMarketFeed();
   hydrateCryptoBubbles();
   hydrateAlphaScan();
+  hydrateBinanceAlphaLists();
   hydrateRecentSignals({ force: true });
   hydrateSurfPulse();
   hydrateBoxBreakout();
@@ -4378,6 +4758,7 @@ window.addEventListener("beforeunload", () => {
   window.clearTimeout(futuresReconnectTimer);
   window.clearTimeout(cryptoBubblesTimer);
   window.clearTimeout(alphaScanTimer);
+  window.clearTimeout(alphaListsTimer);
   window.clearTimeout(telegramSignalTimer);
   window.clearTimeout(strongTradeIntentExpiryTimer);
   window.clearTimeout(surfPulseTimer);
@@ -4395,6 +4776,7 @@ startMarketFeed();
 window.setInterval(renderSourceHealth, 30_000);
 hydrateCryptoBubbles();
 hydrateAlphaScan();
+hydrateBinanceAlphaLists();
 hydrateRecentSignals({ force: true });
 hydrateSurfPulse();
 hydrateBoxBreakout();

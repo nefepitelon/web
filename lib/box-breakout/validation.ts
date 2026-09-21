@@ -7,14 +7,27 @@ export class BoxError extends Error {
 export const stockSymbol = z.string().regex(/^(?:00[0-9]{4}|30[0-9]{4}|60[0-9]{4}|68[0-9]{4})$/, "请输入沪深 A 股六位代码");
 export const cryptoSymbol = z.string().regex(/^[A-Z0-9]{2,24}USDT$/, "请输入 USDT 交易对代码");
 const time = z.string().regex(/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/, "时间格式须为 HH:mm");
+const scanCommand = z.object({
+  action: z.literal("scan"),
+  mode: z.enum(["market", "quick", "pool", "crypto", "crypto-radar", "crypto-mainstream", "crypto-risk-pool", "crypto-alpha-market-cap", "crypto-alpha-open-interest"]),
+  symbols: z.array(cryptoSymbol).min(1).max(100).optional(),
+}).strict();
 export const commandSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("scan"), mode: z.enum(["market", "quick", "pool", "crypto", "crypto-radar", "crypto-mainstream"]) }).strict(),
+  scanCommand,
   z.object({ action: z.literal("cancel") }).strict(),
   z.object({ action: z.literal("pool-add"), symbol: stockSymbol, name: z.string().trim().min(1).max(40).optional() }).strict(),
   z.object({ action: z.literal("pool-remove"), symbol: stockSymbol }).strict(),
   z.object({ action: z.literal("settings"), sectors: z.array(z.string().trim().min(1).max(40)).max(30).optional(), auto: z.boolean().optional(), autoTimes: z.array(time).min(1).max(4).optional(), telegramEnabled: z.boolean().optional(), telegramChat: z.string().trim().max(100).regex(/^(?:-?[0-9]{1,20}|@[A-Za-z][A-Za-z0-9_]{3,31})?$/, "Telegram Chat ID 格式无效").optional(), telegramToken: z.string().trim().max(150).regex(/^(?:[0-9]{5,20}:[A-Za-z0-9_-]{20,100})?$/, "Telegram Bot Token 格式无效").optional() }).strict(),
   z.object({ action: z.literal("telegram-test") }).strict(),
-]);
+]).superRefine((command, context) => {
+  if (command.action !== "scan") return;
+  if (command.mode === "crypto-risk-pool" && !command.symbols?.length) {
+    context.addIssue({ code: "custom", path: ["symbols"], message: "雷达执行池暂无可扫描候选" });
+  }
+  if (command.mode !== "crypto-risk-pool" && command.symbols !== undefined) {
+    context.addIssue({ code: "custom", path: ["symbols"], message: "该扫描模式不接受自定义标的" });
+  }
+});
 
 export function validateSymbol(symbol: string, market: Market) {
   return (market === "ashare" ? stockSymbol : cryptoSymbol).parse(symbol);

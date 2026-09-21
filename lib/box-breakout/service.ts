@@ -45,13 +45,19 @@ export async function dashboardState(userId?: string, knownVersions?: SnapshotVe
   return result;
 }
 
-export async function createScan(userId: string, mode: ScanMode, scheduleSlot?: string) {
+export async function createScan(userId: string, mode: ScanMode, scheduleSlot?: string, sourceSymbols?: string[]) {
   const jobId = randomUUID();
   const state = await mutateState(userId, draft => {
     if (activeJob(draft.job)) throw new BoxError("已有扫描正在运行，请等待完成或先取消", 409);
     if (mode === "pool" && draft.settings.pool.length === 0) throw new BoxError("请先添加自选股");
     const now = new Date().toISOString();
-    draft.job = { id: jobId, mode, status: "queued", total: 0, processed: 0, qualified: 0, errors: 0, startedAt: now, completedAt: null, heartbeatAt: now, runId: null, notified: false, ...(scheduleSlot ? { scheduleSlot } : {}), logs: ["扫描任务已排队，正在读取真实行情；上次完成结果将保留至本次完成。"] };
+    draft.job = {
+      id: jobId, mode, status: "queued", total: 0, processed: 0, qualified: 0, errors: 0,
+      startedAt: now, completedAt: null, heartbeatAt: now, runId: null, notified: false,
+      ...(scheduleSlot ? { scheduleSlot } : {}),
+      ...(mode === "crypto-risk-pool" ? { sourceSymbols: [...new Set(sourceSymbols ?? [])].map(symbol => ({ symbol, name: symbol.replace(/USDT$/, "") })) } : {}),
+      logs: ["扫描任务已排队，正在读取真实行情；上次完成结果将保留至本次完成。"],
+    };
   });
   return { jobId, state };
 }
@@ -68,7 +74,7 @@ async function launchScan(userId: string, jobId: string) {
 
 export async function executeCommand(userId: string, command: Command) {
   if (command.action === "scan") {
-    const { jobId } = await createScan(userId, command.mode);
+    const { jobId } = await createScan(userId, command.mode, undefined, command.symbols);
     await launchScan(userId, jobId);
   } else if (command.action === "cancel") {
     await mutateState(userId, draft => {
@@ -169,7 +175,16 @@ export async function prepareScan(userId: string, jobId: string, attempt = 1): P
     let universe: Stock[];
     if (market === "crypto") {
       const contracts = await fetchCryptoUniverse();
-      if (state.job.mode === "crypto-radar" || state.job.mode === "crypto-mainstream") {
+      if (state.job.mode === "crypto-risk-pool") {
+        stage = "Alpha 雷达风控候选清单";
+        await progress(`正在校验${stage}；仅保留 Binance USDT 永续合约。`);
+        const supported = new Set(contracts.map(contract => contract.symbol));
+        const requested = state.job.sourceSymbols ?? [];
+        universe = requested.filter(stock => supported.has(stock.symbol));
+        const skipped = requested.filter(stock => !supported.has(stock.symbol)).map(stock => stock.symbol);
+        warnings.push(`${stage} · 候选 ${requested.length} 项，匹配 ${universe.length} 项。`);
+        if (skipped.length) warnings.push(`跳过 ${skipped.length} 个无有效永续行情的候选：${skipped.join("、").slice(0, 140)}。`);
+      } else if (state.job.mode === "crypto-radar" || state.job.mode === "crypto-mainstream" || state.job.mode === "crypto-alpha-market-cap" || state.job.mode === "crypto-alpha-open-interest") {
         stage = RADAR_SOURCE_LABELS[state.job.mode];
         await progress(`正在读取${stage}；沿用雷达七维扫描源，并校验 USDT 永续合约。`);
         const source = await fetchRadarUniverse(state.job.mode, contracts);
@@ -194,8 +209,13 @@ export async function prepareScan(userId: string, jobId: string, attempt = 1): P
     const saved = await mutateState(userId, draft => {
       if (draft.job?.id !== jobId || !activeJob(draft.job)) return;
       draft.job.total = universe.length; draft.job.heartbeatAt = new Date().toISOString();
+      const sourceLabel = mode === "crypto-risk-pool"
+        ? "Alpha 雷达风控候选"
+        : mode === "crypto-radar" || mode === "crypto-mainstream" || mode === "crypto-alpha-market-cap" || mode === "crypto-alpha-open-interest"
+          ? RADAR_SOURCE_LABELS[mode]
+          : market === "crypto" ? "USDT 永续涨幅榜" : "沪深 A 股";
       draft.job.logs = [...draft.job.logs, ...warnings, universe.length
-        ? `已载入 ${universe.length} 个${mode === "crypto-radar" || mode === "crypto-mainstream" ? RADAR_SOURCE_LABELS[mode] : market === "crypto" ? "USDT 永续涨幅榜" : "沪深 A 股"}标的；分片持久扫描已开始。`
+        ? `已载入 ${universe.length} 个${sourceLabel}标的；分片持久扫描已开始。`
         : "行情已有效读取，但没有符合量比或换手率条件的快速扫描候选；这是零匹配结果，不是行情获取失败。"].slice(-40);
     });
     if (saved.job?.id !== jobId || !activeJob(saved.job)) return null;

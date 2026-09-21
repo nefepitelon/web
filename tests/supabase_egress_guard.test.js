@@ -12,19 +12,34 @@ test("internal workflow transport bypasses Supabase auth", async () => {
   assert.match(proxy, /matcher:[\s\S]*\\\.well-known\/workflow\//);
 });
 
-test("public box market data bypasses auth and persistent rate-limit egress", async () => {
-  const [proxy, service, quotes, chart, rateLimit] = await Promise.all([
+test("polled read-only APIs bypass duplicate auth and persistent rate-limit egress", async () => {
+  const [proxy, service, route, surface, quotes, chart, rateLimit, membership] = await Promise.all([
     read("proxy.ts"),
     read("lib/box-breakout/service.ts"),
+    read("app/api/box-breakout/route.ts"),
+    read("components/box-breakout-surface.tsx"),
     read("app/api/box-breakout/quotes/route.ts"),
     read("app/api/box-breakout/chart/route.ts"),
     read("lib/rate-limit.ts"),
+    read("lib/membership.ts"),
   ]);
-  assert.match(proxy, /isPublicMarketDataPath/);
+  assert.match(proxy, /bypassSupabaseAuth/);
+  assert.match(proxy, /request\.method !== "GET"[\s\S]*request\.method !== "HEAD"[\s\S]*request\.method !== "OPTIONS"/);
+  assert.match(proxy, /request\.nextUrl\.pathname === "\/api\/box-breakout"/);
   assert.match(proxy, /\/api\/box-breakout\/quotes/);
   assert.match(proxy, /\/api\/box-breakout\/chart/);
-  assert.ok(proxy.indexOf("if (isPublicMarketDataPath") < proxy.indexOf("supabase.auth.getClaims"));
+  assert.match(proxy, /\/api\/alpha-scan/);
+  assert.match(proxy, /\/api\/binance-alpha-lists/);
+  assert.match(proxy, /\/api\/cryptobubbles/);
+  assert.match(proxy, /\/api\/surf-pulse/);
+  assert.match(proxy, /\/api\/telegram-signal-collector/);
+  assert.ok(proxy.indexOf("if (bypassSupabaseAuth") < proxy.indexOf("supabase.auth.getClaims"));
   assert.match(service, /options\.persistent !== false && isDatabaseConfigured\(\)/);
+  assert.match(route, /getActiveViewerId/);
+  assert.match(route, /"state", 90, userId, \{ persistent: false \}/);
+  assert.match(membership, /select: \{[\s\S]*id: true,[\s\S]*status: true,[\s\S]*twoFactor: \{ select: \{ enabledAt: true \} \}/);
+  assert.match(surface, /IDLE_STATE_POLL_MS = 15 \* 60_000/);
+  assert.match(surface, /visibilitychange/);
   assert.match(quotes, /persistent: false/);
   assert.match(chart, /persistent: false/);
   assert.match(quotes, /s-maxage=10/);

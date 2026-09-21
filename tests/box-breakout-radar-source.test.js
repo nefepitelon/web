@@ -4,11 +4,18 @@ const Module = require("node:module");
 require("tsx/cjs");
 const originalLoad = Module._load;
 let sourceCalls = 0;
+let alphaSourceCalls = 0;
 const scannedAt = new Date().toISOString();
 const payload = { scannedAt, items: [{ symbol: "ZEC", name: "Zcash", market: "both", score: 95 }, { symbol: "BTC", market: "both", score: 70 }], featuredItems: [{ symbol: "BTC", market: "both" }, { symbol: "ETH", market: "both" }] };
+const alphaPayload = {
+  refreshedAt: scannedAt,
+  marketCapItems: [{ symbol: "ZEC", futureSymbol: "ZECUSDT" }, { symbol: "MISSING", futureSymbol: "MISSINGUSDT" }],
+  openInterestItems: [{ symbol: "ETH", futureSymbol: "ETHUSDT" }, { symbol: "BTC", futureSymbol: "BTCUSDT" }],
+};
 Module._load = function (name, parent, main) {
   if (name === "server-only") return {};
   if (name === "@/api/alpha-scan.js") return { async buildAlphaScanSnapshot() { sourceCalls++; return payload; } };
+  if (name === "@/api/binance-alpha-lists.js") return { async getBinanceAlphaLists() { alphaSourceCalls++; return alphaPayload; } };
   return originalLoad.call(this, name, parent, main);
 };
 const { normalizeRadarUniverse, fetchRadarUniverse } = require("../lib/box-breakout/radar-source.ts");
@@ -39,6 +46,15 @@ test("radar scans share a bounded read-only snapshot load without sharing select
   const [radar, mainstream] = await Promise.all([fetchRadarUniverse("crypto-radar", contracts), fetchRadarUniverse("crypto-mainstream", contracts)]);
   assert.equal(sourceCalls, 1);
   assert.equal(radar.universe[0].symbol, "ZECUSDT"); assert.equal(mainstream.universe[0].symbol, "BTCUSDT");
+});
+
+test("Skills Hub Alpha box sources preserve the two ranked lists and revalidate perpetual support", async () => {
+  const marketCap = await fetchRadarUniverse("crypto-alpha-market-cap", contracts);
+  const openInterest = await fetchRadarUniverse("crypto-alpha-open-interest", contracts);
+  assert.deepEqual(marketCap.universe.map(item => [item.symbol, item.sourceRank]), [["ZECUSDT", 1]]);
+  assert.deepEqual(marketCap.skippedSymbols, ["MISSINGUSDT"]);
+  assert.deepEqual(openInterest.universe.map(item => item.symbol), ["ETHUSDT", "BTCUSDT"]);
+  assert.equal(alphaSourceCalls, 2);
 });
 
 test("original alpha endpoint and box module use the same scanner implementation", () => {

@@ -59,11 +59,12 @@ Module._load = function (name, parent, main) {
   if (name === "./workflow" && parent?.filename.includes("box-breakout")) return { boxScanWorkflow() {}, boxScheduleWorkflow() {} };
   if (name === "./market" && parent?.filename.includes("box-breakout")) return market;
   if (name === "./radar-source" && parent?.filename.includes("box-breakout")) return {
-    RADAR_SOURCE_LABELS: { "crypto-radar": "α-RadarTP 异动排行榜", "crypto-mainstream": "α-RadarTP 热门精选主流" },
+    RADAR_SOURCE_LABELS: { "crypto-radar": "α-RadarTP 异动排行榜", "crypto-mainstream": "α-RadarTP 热门精选主流", "crypto-alpha-market-cap": "Binance Skills Hub Alpha 小市值", "crypto-alpha-open-interest": "Binance Skills Hub Alpha 持仓量" },
     async fetchRadarUniverse(mode, contracts) {
       radarCalls.push({ mode, contracts: contracts.length });
       if (radarError) throw radarError;
-      return { universe: [{ symbol: mode === "crypto-radar" ? "COIN400USDT" : "COIN410USDT", name: "真实源夹具", sourceRank: 2 }], sourceCount: 2, skippedSymbols: ["SPOTONLYUSDT"], scannedAt: new Date().toISOString() };
+      const symbols = { "crypto-radar": "COIN400USDT", "crypto-mainstream": "COIN410USDT", "crypto-alpha-market-cap": "COIN420USDT", "crypto-alpha-open-interest": "COIN430USDT" };
+      return { universe: [{ symbol: symbols[mode], name: "真实源夹具", sourceRank: 2 }], sourceCount: 2, skippedSymbols: ["SPOTONLYUSDT"], scannedAt: new Date().toISOString() };
     },
   };
   return originalLoad.call(this, name, parent, main);
@@ -150,16 +151,35 @@ test("box crypto selects exactly top 30 perpetuals, not all 510", async () => {
 });
 
 test("box new crypto commands validate explicitly and unknown source modes remain rejected", () => {
-  for (const mode of ["crypto", "crypto-radar", "crypto-mainstream"]) assert.equal(validation.commandSchema.parse({ action: "scan", mode }).mode, mode);
+  for (const mode of ["crypto", "crypto-radar", "crypto-mainstream", "crypto-alpha-market-cap", "crypto-alpha-open-interest"]) assert.equal(validation.commandSchema.parse({ action: "scan", mode }).mode, mode);
+  assert.deepEqual(validation.commandSchema.parse({ action: "scan", mode: "crypto-risk-pool", symbols: ["COIN4USDT"] }).symbols, ["COIN4USDT"]);
+  assert.throws(() => validation.commandSchema.parse({ action: "scan", mode: "crypto-risk-pool" }), /雷达执行池暂无可扫描候选/);
+  assert.throws(() => validation.commandSchema.parse({ action: "scan", mode: "crypto-risk-pool", symbols: ["../BTCUSDT"] }));
   assert.throws(() => validation.commandSchema.parse({ action: "scan", mode: "crypto-arbitrary" }));
   assert.throws(() => validation.commandSchema.parse({ action: "scan", mode: "crypto-radar", symbols: ["BTCUSDT"] }));
 });
 
-test("box radar and mainstream modes route genuine sources and update only successful crypto snapshots", async () => {
+test("box risk-pool mode persists the visible Radar candidates and revalidates futures support", async () => {
+  reset();
+  const { jobId } = await service.createScan("alice", "crypto-risk-pool", undefined, ["COIN4USDT", "MISSINGUSDT", "COIN4USDT"]);
+  const queued = await store.readState("alice");
+  assert.deepEqual(queued.job.sourceSymbols.map(stock => stock.symbol), ["COIN4USDT", "MISSINGUSDT"]);
+  assert.equal((await service.dashboardState("alice")).job.sourceSymbols, undefined);
+  const prepared = await service.prepareScan("alice", jobId);
+  assert.deepEqual(prepared.universe.map(stock => stock.symbol), ["COIN4USDT"]);
+  const logs = (await service.dashboardState("alice")).job.logs.join("\n");
+  assert.match(logs, /风控候选清单.*候选 2 项，匹配 1 项/);
+  assert.match(logs, /跳过 1.*MISSINGUSDT/);
+  await service.processScanChunk("alice", jobId, prepared, 0);
+  await service.finishScan("alice", jobId, []);
+  assert.equal((await service.dashboardState("alice")).cryptoSourceMode, "crypto-risk-pool");
+});
+
+test("box radar, mainstream and Skills Hub Alpha modes route genuine sources and update only successful crypto snapshots", async () => {
   reset();
   await store.mutateState("alice", state => { state.stocks = [candidate({ symbol: "600000", name: "A股保留" })]; state.crypto = [candidate({ symbol: "OLDUSDT", name: "涨幅榜保留" }, "crypto")]; });
   assert.equal((await service.dashboardState("alice")).cryptoSourceMode, "crypto");
-  for (const mode of ["crypto-radar", "crypto-mainstream"]) {
+  for (const mode of ["crypto-radar", "crypto-mainstream", "crypto-alpha-market-cap", "crypto-alpha-open-interest"]) {
     const before = await service.dashboardState("alice");
     const { jobId } = await service.createScan("alice", mode);
     const prepared = await service.prepareScan("alice", jobId);
@@ -390,10 +410,10 @@ test("box Telegram is encrypted/redacted and notification claims prevent duplica
   } finally { global.fetch = originalFetch; }
 });
 
-test("box optional notifications for both radar modes use crypto candidates, never A-share rows", async () => {
+test("box optional notifications for every ranked crypto source use crypto candidates, never A-share rows", async () => {
   const originalFetch = global.fetch;
   try {
-    for (const mode of ["crypto-radar", "crypto-mainstream"]) {
+    for (const mode of ["crypto-radar", "crypto-mainstream", "crypto-alpha-market-cap", "crypto-alpha-open-interest"]) {
       reset(); const messages = [];
       global.fetch = async (_url, options) => { messages.push(JSON.parse(options.body).text); return Response.json({ ok: true }); };
       await store.mutateState("alice", state => { state.telegramEncrypted = "encrypted:fixture"; state.settings.telegramEnabled = true; state.settings.telegramChat = "12345"; });

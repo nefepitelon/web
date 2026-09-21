@@ -27,6 +27,7 @@ const loaders: Record<string, () => Promise<HandlerModule>> = {
   "ai-ops-polish": () => import("@/api/ai-ops-polish.js"),
   "ai-ops-publish": () => import("@/api/ai-ops-publish.js"),
   "alpha-scan": () => import("@/api/alpha-scan.js"),
+  "binance-alpha-lists": () => import("@/api/binance-alpha-lists.js"),
   "alphaops-feed": () => import("@/api/alphaops-feed.js"),
   "alphaops-projects": () => import("@/api/alphaops-projects.js"),
   coinglass: () => import("@/api/coinglass.js"),

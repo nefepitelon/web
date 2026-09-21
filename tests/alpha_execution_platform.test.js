@@ -245,9 +245,9 @@ test("scanner switches between anomaly ranking and the exact 13 featured market 
   const scanApi = read("api/alpha-scan.js");
   assert.match(html, /data-ranking-universe="anomaly"/);
   assert.match(html, /data-ranking-universe="mainstream"/);
-  assert.match(html, /热门精选主流 <em>13<\/em>/);
+  assert.match(html, /热门精选主流<\/span> <em>13<\/em>/);
   assert.match(client, /const featuredMarketSymbols = trackedMarketSymbols/);
-  assert.match(client, /activeRankingUniverse === "mainstream" \? mainstreamUniverse : tokenUniverse/);
+  assert.match(client, /if \(activeRankingUniverse === "mainstream"\) return mainstreamUniverse/);
   assert.match(client, /featuredToken\.price = formatMarketPrice/);
   assert.match(scanApi, /const FEATURED_SYMBOLS = \["BTC", "ETH", "BNB", "SOL", "DOGE", "ZEC", "TAO", "ENA", "ONDO", "UNI", "XRP", "SUI", "HYPE"\]/);
   assert.match(scanApi, /featuredItems/);

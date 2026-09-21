@@ -29,8 +29,19 @@ export function isInternalWorkflowPath(pathname: string) {
   return pathname === "/.well-known/workflow" || pathname.startsWith("/.well-known/workflow/");
 }
 
-export function isPublicMarketDataPath(pathname: string) {
-  return pathname === "/api/box-breakout/quotes" || pathname === "/api/box-breakout/chart";
+const PUBLIC_MARKET_DATA_PATHS = new Set([
+  "/api/alpha-scan",
+  "/api/binance-alpha-lists",
+  "/api/box-breakout/chart",
+  "/api/box-breakout/quotes",
+  "/api/cryptobubbles",
+  "/api/surf-pulse",
+  "/api/telegram-signal-collector"
+]);
+
+export function bypassSupabaseAuth(request: NextRequest) {
+  if (request.method !== "GET" && request.method !== "HEAD" && request.method !== "OPTIONS") return false;
+  return request.nextUrl.pathname === "/api/box-breakout" || PUBLIC_MARKET_DATA_PATHS.has(request.nextUrl.pathname);
 }
 
 export async function proxy(request: NextRequest) {
@@ -45,10 +56,10 @@ export async function proxy(request: NextRequest) {
   const canonicalRedirect = redirectToCanonicalHost(request);
   if (canonicalRedirect) return canonicalRedirect;
 
-  // These endpoints only proxy public market data. Running Supabase session
-  // validation for every quote/chart refresh creates avoidable Auth egress and
-  // database work, while providing no authorization boundary.
-  if (isPublicMarketDataPath(request.nextUrl.pathname)) {
+  // Public feeds and the read-only box state handler enforce their own access
+  // rules. Re-validating the same session here duplicates Supabase Auth traffic
+  // on every browser poll without adding an authorization boundary.
+  if (bypassSupabaseAuth(request)) {
     return NextResponse.next({ request });
   }
 

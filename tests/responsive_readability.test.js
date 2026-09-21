@@ -14,7 +14,8 @@ test("Alpha Radar reclaims its sidebar and raises dense labels on laptop widths"
   assert.match(css, /@media \(min-width: 821px\) and \(max-width: 1440px\)/);
   assert.match(css, /\.sidebar\.open \{ transform: translateX\(0\); \}/);
   assert.match(css, /\.scanner-table td[\s\S]*font-size: 10px/);
-  assert.match(html, /alpha-scanner\.css\?v=20260918-radar-v8/);
+  assert.match(html, /alpha-scanner\.css\?v=20260921-radar-v12/);
+  assert.match(css, /@media \(min-width: 1441px\)[\s\S]*?body \{ font-size: 15px; \}/);
 });
 
 test("bStockAlpha switches to a two-column workspace before text becomes cramped", () => {
