@@ -41,7 +41,8 @@ const PUBLIC_MARKET_DATA_PATHS = new Set([
 
 const SELF_AUTHENTICATING_READ_PATHS = new Set([
   "/api/alpha-execution/status",
-  "/api/alpha-execution/automation"
+  "/api/alpha-execution/automation",
+  "/api/alpha-execution/pnl"
 ]);
 
 export function bypassSupabaseAuth(request: NextRequest) {

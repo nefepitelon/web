@@ -51,11 +51,12 @@ test("polled read-only APIs bypass duplicate auth and persistent rate-limit egre
 });
 
 test("alpha execution polls use a narrow access projection and longer idle intervals", async () => {
-  const [membership, access, statusRoute, automationRoute, scanner, automation] = await Promise.all([
+  const [membership, access, statusRoute, automationRoute, pnlRoute, scanner, automation] = await Promise.all([
     read("lib/membership.ts"),
     read("lib/alpha-execution/access.ts"),
     read("app/api/alpha-execution/status/route.ts"),
     read("app/api/alpha-execution/automation/route.ts"),
+    read("app/api/alpha-execution/pnl/route.ts"),
     read("alpha-scanner.js"),
     read("alpha-auto-trading.js")
   ]);
@@ -68,7 +69,10 @@ test("alpha execution polls use a narrow access projection and longer idle inter
   assert.doesNotMatch(statusRoute, /requireAlphaOperator\(\)/);
   assert.match(automationRoute, /export async function GET\(\)[\s\S]*requireAlphaReadOperator\(\)/);
   assert.match(automationRoute, /export async function POST[\s\S]*requireAlphaOperator\(\)/);
+  assert.match(pnlRoute, /requireAlphaReadOperator\(\)/);
+  assert.doesNotMatch(pnlRoute, /requireAlphaOperator\(\)/);
   assert.match(scanner, /alphaExecutionIdleRefreshMs = 15 \* 60_000/);
+  assert.match(scanner, /livePnlRefreshMs = 15 \* 60_000/);
   assert.match(automation, /running\(\) \|\| finishing\(\) \? 15_000 : 15 \* 60_000/);
 });
 
