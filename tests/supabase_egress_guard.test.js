@@ -33,6 +33,9 @@ test("polled read-only APIs bypass duplicate auth and persistent rate-limit egre
   assert.match(proxy, /\/api\/cryptobubbles/);
   assert.match(proxy, /\/api\/surf-pulse/);
   assert.match(proxy, /\/api\/telegram-signal-collector/);
+  assert.match(proxy, /SELF_AUTHENTICATING_READ_PATHS/);
+  assert.match(proxy, /\/api\/alpha-execution\/status/);
+  assert.match(proxy, /\/api\/alpha-execution\/automation/);
   assert.ok(proxy.indexOf("if (bypassSupabaseAuth") < proxy.indexOf("supabase.auth.getClaims"));
   assert.match(service, /options\.persistent !== false && isDatabaseConfigured\(\)/);
   assert.match(route, /getActiveViewerId/);
@@ -45,6 +48,28 @@ test("polled read-only APIs bypass duplicate auth and persistent rate-limit egre
   assert.match(quotes, /s-maxage=10/);
   assert.match(chart, /s-maxage=900/);
   assert.match(rateLimit, /select: \{ count: true \}/);
+});
+
+test("alpha execution polls use a narrow access projection and longer idle intervals", async () => {
+  const [membership, access, statusRoute, automationRoute, scanner, automation] = await Promise.all([
+    read("lib/membership.ts"),
+    read("lib/alpha-execution/access.ts"),
+    read("app/api/alpha-execution/status/route.ts"),
+    read("app/api/alpha-execution/automation/route.ts"),
+    read("alpha-scanner.js"),
+    read("alpha-auto-trading.js")
+  ]);
+  assert.match(membership, /export async function getActiveViewerAccess/);
+  assert.match(membership, /roles: \{[\s\S]*where: \{ role: \{ key: "admin" \} \}/);
+  assert.match(membership, /subscriptions: \{[\s\S]*planKey: "max"/);
+  assert.match(membership, /accessRedemptions: \{[\s\S]*select: \{ id: true \}/);
+  assert.match(access, /requireAlphaReadOperator/);
+  assert.match(statusRoute, /requireAlphaReadOperator\(\)/);
+  assert.doesNotMatch(statusRoute, /requireAlphaOperator\(\)/);
+  assert.match(automationRoute, /export async function GET\(\)[\s\S]*requireAlphaReadOperator\(\)/);
+  assert.match(automationRoute, /export async function POST[\s\S]*requireAlphaOperator\(\)/);
+  assert.match(scanner, /alphaExecutionIdleRefreshMs = 15 \* 60_000/);
+  assert.match(automation, /running\(\) \|\| finishing\(\) \? 15_000 : 15 \* 60_000/);
 });
 
 test("normal viewer reads do not rewrite the full user projection", async () => {

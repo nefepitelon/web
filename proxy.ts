@@ -39,9 +39,16 @@ const PUBLIC_MARKET_DATA_PATHS = new Set([
   "/api/telegram-signal-collector"
 ]);
 
+const SELF_AUTHENTICATING_READ_PATHS = new Set([
+  "/api/alpha-execution/status",
+  "/api/alpha-execution/automation"
+]);
+
 export function bypassSupabaseAuth(request: NextRequest) {
   if (request.method !== "GET" && request.method !== "HEAD" && request.method !== "OPTIONS") return false;
-  return request.nextUrl.pathname === "/api/box-breakout" || PUBLIC_MARKET_DATA_PATHS.has(request.nextUrl.pathname);
+  return request.nextUrl.pathname === "/api/box-breakout"
+    || PUBLIC_MARKET_DATA_PATHS.has(request.nextUrl.pathname)
+    || SELF_AUTHENTICATING_READ_PATHS.has(request.nextUrl.pathname);
 }
 
 export async function proxy(request: NextRequest) {
@@ -56,9 +63,10 @@ export async function proxy(request: NextRequest) {
   const canonicalRedirect = redirectToCanonicalHost(request);
   if (canonicalRedirect) return canonicalRedirect;
 
-  // Public feeds and the read-only box state handler enforce their own access
+  // Public feeds and self-authenticating read handlers enforce their own access
   // rules. Re-validating the same session here duplicates Supabase Auth traffic
-  // on every browser poll without adding an authorization boundary.
+  // on every browser poll without adding an authorization boundary. Method
+  // filtering above keeps every mutation behind the normal proxy validation.
   if (bypassSupabaseAuth(request)) {
     return NextResponse.next({ request });
   }

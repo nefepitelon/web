@@ -1,7 +1,7 @@
 import "server-only";
 import { ZodError } from "zod";
 import type { Viewer } from "@/lib/membership";
-import { getViewer } from "@/lib/membership";
+import { getActiveViewerAccess, getViewer } from "@/lib/membership";
 
 export class AlphaExecutionAccessError extends Error {
   status: number;
@@ -25,6 +25,17 @@ export async function requireAlphaOperator(options: { live?: boolean } = {}): Pr
     throw new AlphaExecutionAccessError("生产实盘仅允许已启用并通过双重验证的管理员", 403);
   }
   return viewer;
+}
+
+export async function requireAlphaReadOperator(): Promise<{ id: string }> {
+  const viewer = await getActiveViewerAccess();
+  if (!viewer) throw new AlphaExecutionAccessError("请先登录后配置交易执行器", 401);
+  if (viewer.status !== "ACTIVE") throw new AlphaExecutionAccessError("当前账户不可用", 403);
+  if (!viewer.isAdmin && !viewer.hasMaxAccess) {
+    throw new AlphaExecutionAccessError("Binance 执行器仅向 Max 或管理员账户开放", 403);
+  }
+  if (!viewer.twoFactorPassed) throw new AlphaExecutionAccessError("请先完成双重验证", 403);
+  return { id: viewer.id };
 }
 
 export function alphaExecutionErrorResponse(caught: unknown) {

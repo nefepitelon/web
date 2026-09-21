@@ -296,7 +296,7 @@
     el("aat-form-error").hidden = true;
     return settings;
   }
-  function schedule() { window.clearTimeout(timer); if (!document.hidden) timer = window.setTimeout(refresh, stale ? 30_000 : running() || finishing() ? 15_000 : 5 * 60_000); }
+  function schedule() { window.clearTimeout(timer); if (!document.hidden) timer = window.setTimeout(refresh, stale ? 30_000 : running() || finishing() ? 15_000 : 15 * 60_000); }
   async function refresh() {
     if (document.hidden || busy || dialog.open) { schedule(); return; }
     const generation = ++readGeneration;

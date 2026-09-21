@@ -3,7 +3,7 @@ import { z } from "zod";
 import { start } from "workflow/api";
 import { prisma } from "@/lib/prisma";
 import { assertSameOrigin } from "@/lib/request-security";
-import { alphaExecutionErrorResponse, requireAlphaOperator } from "@/lib/alpha-execution/access";
+import { alphaExecutionErrorResponse, requireAlphaOperator, requireAlphaReadOperator } from "@/lib/alpha-execution/access";
 import { autoConfig, autoEvent, automationSnapshot, currentAutoGrant, saveAutomationSettings, stopAutomation, TERMINAL_AUTO_ORDER } from "@/lib/alpha-execution/automation-data";
 import { alphaAutomationSettingsSchema } from "@/lib/alpha-execution/automation-strategy";
 import { readSavedAutomationSettings, requiresAutomationStrategySelection } from "@/lib/alpha-execution/automation-settings";
@@ -24,7 +24,7 @@ const schema = z.discriminatedUnion("action", [
 const response = (value: unknown) => Response.json(value, { headers: { "Cache-Control": "private, no-store" } });
 
 export async function GET() {
-  try { const viewer = await requireAlphaOperator(); return response(await automationSnapshot(viewer.id)); }
+  try { const viewer = await requireAlphaReadOperator(); return response(await automationSnapshot(viewer.id)); }
   catch (caught) { return alphaExecutionErrorResponse(caught); }
 }
 export async function POST(request: Request) {

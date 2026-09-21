@@ -37,6 +37,15 @@ export type Viewer = {
   entitlements: string[];
 };
 
+export type ActiveViewerAccess = {
+  id: string;
+  status: "ACTIVE" | "SUSPENDED" | "DELETED";
+  isAdmin: boolean;
+  hasMaxAccess: boolean;
+  twoFactorEnabled: boolean;
+  twoFactorPassed: boolean;
+};
+
 function authProvider(user: SupabaseUser) {
   const provider = String(user.app_metadata?.provider ?? "email").toUpperCase();
   return provider === "GOOGLE" ? "GOOGLE" : "EMAIL";
@@ -322,6 +331,72 @@ export async function getActiveViewerId(): Promise<string | null> {
   if (data.claims.aal === "aal2") return record.id;
   const twoFactorCookie = (await cookies()).get("welinkbtc_2fa")?.value;
   return await verifyTwoFactorPass(twoFactorCookie, record.id) ? record.id : null;
+}
+
+/**
+ * Small authorization projection for frequently polled private APIs.
+ *
+ * It keeps the same active-account, Max/admin and 2FA decisions as getViewer,
+ * while avoiding profile fields, subscription history and access-code labels.
+ */
+export async function getActiveViewerAccess(): Promise<ActiveViewerAccess | null> {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase || !isDatabaseConfigured()) return null;
+
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = typeof data?.claims.sub === "string" ? data.claims.sub : "";
+  if (error || !data || !/^[0-9a-f-]{36}$/i.test(userId)) return null;
+
+  const now = new Date();
+  const record = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      status: true,
+      roles: {
+        where: { role: { key: "admin" } },
+        take: 1,
+        select: { roleId: true }
+      },
+      subscriptions: {
+        where: {
+          planKey: "max",
+          OR: [
+            {
+              status: { in: ["ACTIVE", "TRIALING"] },
+              OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gt: now } }]
+            },
+            { status: "CANCELED", currentPeriodEnd: { gt: now } }
+          ]
+        },
+        take: 1,
+        select: { id: true }
+      },
+      accessRedemptions: {
+        where: { startsAt: { lte: now }, endsAt: { gt: now } },
+        take: 1,
+        select: { id: true }
+      },
+      twoFactor: { select: { enabledAt: true } }
+    }
+  });
+  if (!record) return null;
+
+  const twoFactorEnabled = Boolean(record.twoFactor?.enabledAt);
+  let twoFactorPassed = !twoFactorEnabled || data.claims.aal === "aal2";
+  if (!twoFactorPassed) {
+    const twoFactorCookie = (await cookies()).get("welinkbtc_2fa")?.value;
+    twoFactorPassed = await verifyTwoFactorPass(twoFactorCookie, record.id);
+  }
+
+  return {
+    id: record.id,
+    status: record.status,
+    isAdmin: record.roles.length > 0,
+    hasMaxAccess: record.subscriptions.length > 0 || record.accessRedemptions.length > 0,
+    twoFactorEnabled,
+    twoFactorPassed
+  };
 }
 
 export async function requireViewer(returnTo = "/account", requireSecondFactor = true) {
