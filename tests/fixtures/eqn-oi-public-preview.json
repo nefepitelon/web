@@ -1,0 +1,133 @@
+{
+  "sourceUrl": "https://t.me/s/EQN_OI_Price_monitor",
+  "capturedAt": "2026-11-18T11:58:23.557Z",
+  "description": "Public channel HTML text/time captures; capture clock is not message publication time.",
+  "messages": [
+    {
+      "rawText": "🔴 价格与OI异动 · 🕒 06:02:16\n\n🇨🇳 ASTERUSDT 多头平仓：币安未平仓合约量 -6.0%，过去 1 小时价格下跌 18.4%，未平仓合约量 7250 万美元，OI/市值 5.4%，24 小时 +3.6%\n\n🇺🇸 ASTERUSDT Longs unwinding: Binance OI -6.0%, price -18.4% in the past 1 hour, OI $72.5M, OI/market cap 5.4%, 24h +3.6%\n\n💵 24h Vol $417M · Funding -0.0091%/4h\n💰 MC: ASTER $1.3B\n🌐 eqn.news/monitor/15095",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20644",
+        "signalTime": "2026-11-15T22:02:17+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🔴 价格与OI异动 · 🕒 10:45:43\n\n🇨🇳 AKEUSDT 多头平仓：币安未平仓合约量 -8.1%，过去 1 小时价格下跌 19.5%，未平仓合约量 1790 万美元，OI/市值 8.3%，24 小时 -20.7%\n\n🇺🇸 AKEUSDT Longs unwinding: Binance OI -8.1%, price -19.5% in the past 1 hour, OI $17.9M, OI/market cap 8.3%, 24h -20.7%\n\n💵 24h Vol $389M · Funding -0.0397%/4h\n💰 MC: AKE $215M\n🌐 eqn.news/monitor/15145",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20645",
+        "signalTime": "2026-11-16T02:45:45+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动 · 🕒 17:33:43\n\n🇨🇳 BLESSUSDT 多头进场：币安未平仓合约量 +9.8%，过去 1 小时价格上涨 24.2%，未平仓合约量 1000 万美元，OI/市值 46.1%，24 小时 +26.7%\n\n🇺🇸 BLESSUSDT Longs building: Binance OI +9.8%, price +24.2% in the past 1 hour, OI $10.0M, OI/market cap 46.1%, 24h +26.7%\n\n💵 24h Vol $20M · Funding +0.0088%/4h\n💰 MC: BLESS $22M\n🌐 eqn.news/monitor/15240",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20646",
+        "signalTime": "2026-11-16T09:33:45+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🔴 价格与OI异动 · 🕒 18:32:45\n\n🇨🇳 LITUSDT 空头进场：币安未平仓合约量 +9.0%，过去 1 小时价格下跌 12.9%，未平仓合约量 3050 万美元，OI/市值 5.1%，24 小时 -21.8%\n\n🇺🇸 LITUSDT Shorts building: Binance OI +9.0%, price -12.9% in the past 1 hour, OI $30.5M, OI/market cap 5.1%, 24h -21.8%\n\n💵 24h Vol $63M · Funding -0.0073%/4h\n💰 MC: LIT $599M\n🌐 eqn.news/monitor/15254",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20647",
+        "signalTime": "2026-11-16T10:32:46+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 [龙虾USDT] 多头进场：币安未平仓合约量 +8.3%，过去 1 小时价格上涨 33.2%，未平仓合约量 1010 万美元，OI/市值 59.6%，24 小时 +28.0%\n\n🇺🇸 [龙虾USDT] Longs building: Binance OI +8.3%, price +33.2% in the past 1 hour, OI $10.1M, OI/market cap 59.6%, 24h +28.0%\n\n💵 24h Vol $9M · Funding +0.0050%/4h\n💰 MC: 龙虾 $17M\n🌐 eqn.news/monitor/15413\n🕒 2026-11-17 13:26:31 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20648",
+        "signalTime": "2026-11-17T05:26:33+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 BREVUSDT 多头进场：币安未平仓合约量 +40.1%，过去 1 小时价格上涨 22.3%，未平仓合约量 1000 万美元，OI/市值 41.6%，24 小时 +66.4%\n\n🇺🇸 BREVUSDT Longs building: Binance OI +40.1%, price +22.3% in the past 1 hour, OI $10.0M, OI/market cap 41.6%, 24h +66.4%\n\n💵 24h Vol $138M · Funding -2.0000%/4h\n💰 MC: BREV $24M\n🌐 eqn.news/monitor/15540\n🕒 2026-11-17 22:44:16 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20649",
+        "signalTime": "2026-11-17T14:44:18+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 BREVUSDT 多头进场：币安未平仓合约量 +8.7%，过去 1 小时价格上涨 30.7%，未平仓合约量 1200 万美元，OI/市值 42.7%，24 小时 +96.2%\n\n🇺🇸 BREVUSDT Longs building: Binance OI +8.7%, price +30.7% in the past 1 hour, OI $12.0M, OI/market cap 42.7%, 24h +96.2%\n\n💵 24h Vol $207M · Funding -2.0000%/4h\n💰 MC: BREV $28M\n🌐 eqn.news/monitor/15545\n🕒 2026-11-17 23:19:16 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20650",
+        "signalTime": "2026-11-17T15:19:18+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 PENGUUSDT 多头进场：币安未平仓合约量 +5.4%，过去 1 小时价格上涨 8.8%，未平仓合约量 2190 万美元，OI/市值 6.9%，24 小时 +3.6%\n\n🇺🇸 PENGUUSDT Longs building: Binance OI +5.4%, price +8.8% in the past 1 hour, OI $21.9M, OI/market cap 6.9%, 24h +3.6%\n\n💵 24h Vol $50M · Funding +0.0011%/4h\n💰 MC: PENGU $318M\n🌐 eqn.news/monitor/15586\n🕒 2026-11-18 03:43:12 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20651",
+        "signalTime": "2026-11-17T19:43:14+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🔴 价格与OI异动\n\n🇨🇳 BREVUSDT 多头平仓：币安未平仓合约量 -9.3%，过去 1 小时价格下跌 11.0%，未平仓合约量 1250 万美元，OI/市值 47.3%，24 小时 +88.2%\n\n🇺🇸 BREVUSDT Longs unwinding: Binance OI -9.3%, price -11.0% in the past 1 hour, OI $12.5M, OI/market cap 47.3%, 24h +88.2%\n\n💵 24h Vol $702M · Funding -0.3756%/1h\n💰 MC: BREV $26M\n🌐 eqn.news/monitor/15626\n🕒 2026-11-18 10:23:47 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20652",
+        "signalTime": "2026-11-18T02:23:50+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 MMTUSDT 多头进场：币安未平仓合约量 +8.4%，过去 1 小时价格上涨 19.3%，未平仓合约量 1310 万美元，OI/市值 37.1%，24 小时 +50.4%\n\n🇺🇸 MMTUSDT Longs building: Binance OI +8.4%, price +19.3% in the past 1 hour, OI $13.1M, OI/market cap 37.1%, 24h +50.4%\n\n💵 24h Vol $227M · Funding -0.0003%/4h\n💰 MC: MMT $35M\n🌐 eqn.news/monitor/15669\n🕒 2026-11-18 13:20:21 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20654",
+        "signalTime": "2026-11-18T05:20:24+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 MMTUSDT 多头进场：币安未平仓合约量 +21.0%，过去 1 小时价格上涨 30.0%，未平仓合约量 1700 万美元，OI/市值 42.2%，24 小时 +70.0%\n\n🇺🇸 MMTUSDT Longs building: Binance OI +21.0%, price +30.0% in the past 1 hour, OI $17.0M, OI/market cap 42.2%, 24h +70.0%\n\n💵 24h Vol $272M · Funding -0.0029%/4h\n💰 MC: MMT $40M\n🌐 eqn.news/monitor/15677\n🕒 2026-11-18 13:51:21 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20656",
+        "signalTime": "2026-11-18T05:51:24+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 MMTUSDT 多头进场：币安未平仓合约量 +21.0%，过去 1 小时价格上涨 39.3%，未平仓合约量 2100 万美元，OI/市值 45.6%，24 小时 +97.1%\n\n🇺🇸 MMTUSDT Longs building: Binance OI +21.0%, price +39.3% in the past 1 hour, OI $21.0M, OI/market cap 45.6%, 24h +97.1%\n\n💵 24h Vol $338M · Funding -0.0029%/4h\n💰 MC: MMT $46M\n🌐 eqn.news/monitor/15692\n🕒 2026-11-18 14:36:21 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20658",
+        "signalTime": "2026-11-18T06:36:24+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 PIPPINUSDT 多头进场：币安未平仓合约量 +10.3%，过去 1 小时价格上涨 10.6%，未平仓合约量 1090 万美元，OI/市值 59.9%，24 小时 +65.6%\n\n🇺🇸 PIPPINUSDT Longs building: Binance OI +10.3%, price +10.6% in the past 1 hour, OI $10.9M, OI/market cap 59.9%, 24h +65.6%\n\n💵 24h Vol $71M · Funding +0.0474%/4h\n💰 MC: PIPPIN $18M\n🌐 eqn.news/monitor/15736\n🕒 2026-11-18 18:04:22 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20660",
+        "signalTime": "2026-11-18T10:04:24+00:00",
+        "sourceMode": "public_preview"
+      }
+    },
+    {
+      "rawText": "🟢 价格与OI异动\n\n🇨🇳 PIPPINUSDT 多头进场：币安未平仓合约量 +17.2%，过去 1 小时价格上涨 27.6%，未平仓合约量 1380 万美元，OI/市值 64.7%，24 小时 +93.8%\n\n🇺🇸 PIPPINUSDT Longs building: Binance OI +17.2%, price +27.6% in the past 1 hour, OI $13.8M, OI/market cap 64.7%, 24h +93.8%\n\n💵 24h Vol $100M · Funding +0.0574%/4h\n💰 MC: PIPPIN $21M\n🌐 eqn.news/monitor/15747\n🕒 2026-11-18 18:34:23 (UTC+8)",
+      "options": {
+        "channelUsername": "EQN_OI_Price_monitor",
+        "messageId": "20662",
+        "signalTime": "2026-11-18T10:34:25+00:00",
+        "sourceMode": "public_preview"
+      }
+    }
+  ]
+}

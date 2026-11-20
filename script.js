@@ -60,6 +60,9 @@ let alphaContentTombstones = [];
 let alphaServerSyncTimer = null;
 let alphaServerSyncStatus = "idle";
 let alphaServerSyncLabel = "服务器同步待命";
+// Capabilities come from the authenticated API, never localStorage or the URL.
+let alphaCanManageProjects = false;
+let alphaCanContribute = false;
 
 try {
   alphaRemovedProjects = JSON.parse(localStorage.getItem(ALPHA_REMOVED_STORAGE_KEY) || "[]");
@@ -740,7 +743,13 @@ function alphaProjectHue(name) {
 }
 
 function alphaProjectIcon(project) {
-  if (project.icon) return project.icon;
+  if (project.icon) {
+    const icon = String(project.icon).trim();
+    // Uploaded image data is displayed only as an image, never parsed as HTML.
+    if (/^data:image\/(?:png|jpe?g|gif|webp|avif|svg\+xml);base64,[a-z0-9+/=\s]+$/i.test(icon)) return icon;
+    if (/^\/(?!\/)[^\s\\]*$/.test(icon)) return icon;
+    return alphaSafeExternalUrl(icon);
+  }
   const handle = alphaXHandle(project);
   return handle ? `https://unavatar.io/x/${encodeURIComponent(handle)}` : "";
 }
@@ -1368,6 +1377,7 @@ function applyAlphaServerState(state) {
 }
 
 async function persistAlphaServerState(options = {}) {
+  if (!alphaCanContribute) return false;
   const payload = JSON.stringify(getAlphaServerState());
   setAlphaServerSyncStatus("syncing", "正在保存到服务器");
   let errorLabel = "服务器同步失败";
@@ -1394,7 +1404,7 @@ async function persistAlphaServerState(options = {}) {
 }
 
 function queueAlphaServerSync(delayMs = 0) {
-  if (!alphaProjectLibrary) return;
+  if (!alphaProjectLibrary || !alphaCanContribute) return;
   setAlphaServerSyncStatus("syncing", "待保存到服务器");
   if (alphaServerSyncTimer) window.clearTimeout(alphaServerSyncTimer);
   alphaServerSyncTimer = window.setTimeout(() => {
@@ -1404,7 +1414,7 @@ function queueAlphaServerSync(delayMs = 0) {
 }
 
 function flushAlphaServerSync() {
-  if (!alphaProjectLibrary) return;
+  if (!alphaProjectLibrary || !alphaCanContribute) return;
   if (alphaServerSyncTimer) {
     window.clearTimeout(alphaServerSyncTimer);
     alphaServerSyncTimer = null;
@@ -1433,11 +1443,21 @@ async function loadAlphaServerState() {
     const response = await fetch(ALPHA_SERVER_SYNC_ENDPOINT, { cache: "no-store" });
     if (!response.ok) throw new Error(`Load failed: ${response.status}`);
     const payload = await response.json();
+    const permissionsChanged = alphaCanManageProjects !== (payload.canManageProjects === true);
+    alphaCanManageProjects = payload.canManageProjects === true;
+    alphaCanContribute = payload.canContribute === true;
+    if (!alphaCanManageProjects && payload.state) {
+      alphaManualPendingProjects = [];
+      alphaHiddenPendingProjects = [];
+      alphaRemovedItems = [];
+      alphaManualMainProjects = alphaArray(payload.state.main);
+      alphaRemovedProjects = alphaArray(payload.state.removedProjects);
+    }
     if (payload?.configured === false) {
       setAlphaServerSyncStatus("error", "服务器存储未配置");
       return;
     }
-    if (applyAlphaServerState(payload?.state)) {
+    if (applyAlphaServerState(payload?.state) || permissionsChanged) {
       renderAlphaProjectLibrary();
       applyLanguage();
     } else {
@@ -1455,12 +1475,14 @@ function saveAlphaRemovedProjects(sync = true) {
 }
 
 function removeAlphaProject(name) {
+  if (!alphaCanManageProjects) return;
   if (!alphaRemovedProjects.includes(name)) alphaRemovedProjects.push(name);
   saveAlphaRemovedProjects();
   renderAlphaProjectLibrary();
 }
 
 function restoreAlphaProject(name) {
+  if (!alphaCanManageProjects) return;
   const removedItem = alphaRemovedItems.find((project) => project.name === name);
   if (removedItem) {
     alphaManualMainProjects.unshift({
@@ -1539,6 +1561,7 @@ function readAlphaIconFile(file) {
 }
 
 async function addAlphaPendingProject(form) {
+  if (!alphaCanManageProjects) return;
   const formData = new FormData(form);
   const iconFile = form.querySelector('input[name="icon"]')?.files?.[0];
   const icon = await readAlphaIconFile(iconFile);
@@ -1575,6 +1598,7 @@ function removePendingSource(project) {
 }
 
 function movePendingProjectToMain(id) {
+  if (!alphaCanManageProjects) return;
   const source = getAlphaPendingProjectById(id);
   if (!source) return;
   const project = normalizeAlphaPendingProject(source);
@@ -1595,6 +1619,7 @@ function movePendingProjectToMain(id) {
 }
 
 function deletePendingProject(id) {
+  if (!alphaCanManageProjects) return;
   const source = getAlphaPendingProjectById(id);
   if (!source) return;
   const project = normalizeAlphaPendingProject(source);
@@ -1614,6 +1639,7 @@ function deletePendingProject(id) {
 }
 
 function moveRemovedProjectToPending(name) {
+  if (!alphaCanManageProjects) return;
   const tracked = alphaTrackedProjects.find((project) => project.name === name);
   const manualMain = alphaManualMainProjects.find((project) => project.name === name);
   const removedItem = alphaRemovedItems.find((project) => project.name === name);
@@ -1642,6 +1668,7 @@ function moveRemovedProjectToPending(name) {
 }
 
 function permanentlyDeleteRemovedProject(name) {
+  if (!alphaCanManageProjects) return;
   alphaRemovedProjects = alphaRemovedProjects.filter((projectName) => projectName !== name);
   alphaManualMainProjects = alphaManualMainProjects.filter((project) => project.name !== name);
   alphaRemovedItems = alphaRemovedItems.filter((project) => project.name !== name);
@@ -1658,6 +1685,7 @@ function openEditPendingProject(id) {
 }
 
 async function updatePendingProject(form) {
+  if (!alphaCanManageProjects) return;
   const formData = new FormData(form);
   const id = String(formData.get("id") || "");
   const source = getAlphaPendingProjectById(id);
@@ -1751,7 +1779,7 @@ function renderAlphaProjectLibrary() {
               <p>模型分两层：项目/机会层判断项目本身是否值得关注；用户钱包层判断当前钱包是否适合参与。MVP 先实现 Campaign Score、Wallet Fit Score、Project/Growth Score 和 Risk Penalty，后续可用真实结果训练模型。</p>
             </div>
           </details>
-          <details class="alpha-manual-add">
+          ${alphaCanManageProjects ? `<details class="alpha-manual-add">
             <summary>手动添加项目</summary>
             <form class="alpha-manual-form" id="alpha-manual-form">
               <label class="alpha-icon-upload">
@@ -1796,6 +1824,7 @@ function renderAlphaProjectLibrary() {
               </div>
             </form>
           </details>
+          ` : ""}
           <span class="alpha-sync-status" id="alpha-sync-status" data-status="${alphaServerSyncStatus}">${alphaServerSyncLabel}</span>
         </div>
         <p>已整理为 AlphaOps 的项目池，用于空投、积分、大使活动、链上异动与风险链接检查。</p>
@@ -1810,7 +1839,7 @@ function renderAlphaProjectLibrary() {
       <div class="alpha-library-grid">
       ${pagedProjects.length ? pagedProjects.map((project, index) => `
         <article class="alpha-project-card">
-          <details class="alpha-delete-popover">
+          ${alphaCanManageProjects ? `<details class="alpha-delete-popover">
             <summary aria-label="删除 ${escapeHtml(project.name)}">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M9 3h6l1 2h4v2H4V5h4l1-2Z"></path>
@@ -1826,15 +1855,15 @@ function renderAlphaProjectLibrary() {
                 <button type="button" data-alpha-delete-cancel>取消</button>
               </div>
             </div>
-          </details>
+          </details>` : ""}
           <div class="alpha-project-top">
             <span>#${String(alphaProjectPageStart + index + 1).padStart(2, "0")}</span>
             <div class="alpha-project-identity">
               <div class="alpha-project-icon" style="--project-hue: ${alphaProjectHue(project.name)}">
                 <span>${escapeHtml(alphaProjectInitials(project.name))}</span>
-                ${alphaProjectIcon(project) ? `<img src="${alphaProjectIcon(project)}" alt="${escapeHtml(project.name)} icon" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" />` : ""}
+                ${alphaProjectIcon(project) ? `<img src="${escapeHtml(alphaProjectIcon(project))}" alt="${escapeHtml(project.name)} icon" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" />` : ""}
               </div>
-              <strong>${project.name}</strong>
+              <strong>${escapeHtml(project.name)}</strong>
             </div>
             <div class="alpha-score-topline" title="社区热度 S：${project.alpha.components.S}">
               <b>${Array.from({ length: alphaHeatFlames(project.alpha.components.S) }, () => "🔥").join("")}</b>
@@ -1861,8 +1890,8 @@ function renderAlphaProjectLibrary() {
               </div>
             </details>
           </div>
-          <p>${project.note}</p>
-          <small>${project.status || "早期关注"}</small>
+          <p>${escapeHtml(project.note)}</p>
+          <small>${escapeHtml(project.status || "早期关注")}</small>
           <div class="alpha-score-breakdown" aria-label="Alpha Score breakdown">
             <span>P ${project.alpha.components.P}</span>
             <span>G ${project.alpha.components.G}</span>
@@ -1873,8 +1902,8 @@ function renderAlphaProjectLibrary() {
             <span>R -${project.alpha.components.R}</span>
           </div>
           <div class="alpha-project-links">
-            ${project.site ? `<a class="alpha-task-link" href="${project.site}" target="_blank" rel="noopener noreferrer">官网/任务</a>` : ""}
-            ${project.x ? `<a href="${project.x}" target="_blank" rel="noopener noreferrer">X</a>` : ""}
+            ${alphaSafeExternalUrl(project.site) ? `<a class="alpha-task-link" href="${escapeHtml(alphaSafeExternalUrl(project.site))}" target="_blank" rel="noopener noreferrer">官网/任务</a>` : ""}
+            ${alphaSafeExternalUrl(project.x) ? `<a href="${escapeHtml(alphaSafeExternalUrl(project.x))}" target="_blank" rel="noopener noreferrer">X</a>` : ""}
           </div>
           <div class="alpha-project-contributions" aria-label="${escapeHtml(project.name)} 内容协作">
             <button type="button" data-alpha-add-tutorial="${escapeHtml(project.name)}">
@@ -1902,7 +1931,7 @@ function renderAlphaProjectLibrary() {
           </div>
         </nav>
       ` : ""}
-      <details class="alpha-watch-pool" aria-label="AlphaOps project watch pool">
+      ${alphaCanManageProjects ? `<details class="alpha-watch-pool" aria-label="AlphaOps project watch pool">
       <summary class="alpha-watch-head">
         <div>
           <span>Watch Pool</span>
@@ -1923,7 +1952,7 @@ function renderAlphaProjectLibrary() {
                 <div class="alpha-watch-project-head">
                   <div class="alpha-watch-icon" style="--project-hue: ${alphaProjectHue(project.name)}">
                     <span>${escapeHtml(alphaProjectInitials(project.name))}</span>
-                    ${project.icon ? `<img src="${escapeHtml(project.icon)}" alt="${escapeHtml(project.name)} icon" />` : ""}
+                    ${alphaProjectIcon(project) ? `<img src="${escapeHtml(alphaProjectIcon(project))}" alt="${escapeHtml(project.name)} icon" referrerpolicy="no-referrer" />` : ""}
                   </div>
                   <div>
                     <strong>${escapeHtml(project.name)}</strong>
@@ -1935,8 +1964,8 @@ function renderAlphaProjectLibrary() {
                 ${project.note ? `<p>${escapeHtml(project.note)}</p>` : ""}
                 ${(project.site || project.x) ? `
                   <div class="alpha-watch-links">
-                    ${project.site ? `<a href="${escapeHtml(project.site)}" target="_blank" rel="noopener noreferrer">官网/任务</a>` : ""}
-                    ${project.x ? `<a href="${escapeHtml(project.x)}" target="_blank" rel="noopener noreferrer">X</a>` : ""}
+                    ${alphaSafeExternalUrl(project.site) ? `<a href="${escapeHtml(alphaSafeExternalUrl(project.site))}" target="_blank" rel="noopener noreferrer">官网/任务</a>` : ""}
+                    ${alphaSafeExternalUrl(project.x) ? `<a href="${escapeHtml(alphaSafeExternalUrl(project.x))}" target="_blank" rel="noopener noreferrer">X</a>` : ""}
                   </div>
                 ` : ""}
                 <div class="alpha-watch-actions">
@@ -2002,8 +2031,8 @@ function renderAlphaProjectLibrary() {
           <div class="alpha-watch-list">
             ${removedProjects.length ? removedProjects.map((project) => `
               <div class="alpha-watch-item">
-                <strong>${project.name}</strong>
-                <p>${project.note}</p>
+                <strong>${escapeHtml(project.name)}</strong>
+                <p>${escapeHtml(project.note)}</p>
                 <div class="alpha-watch-actions removed">
                   <button type="button" data-alpha-removed-to-pending="${escapeHtml(project.name)}">移入待添加项目</button>
                   <details class="alpha-removed-delete">
@@ -2023,7 +2052,7 @@ function renderAlphaProjectLibrary() {
           </div>
         </article>
       </div>
-      </details>
+      </details>` : ""}
     </div>
     <aside class="alpha-x-feed-panel" id="alpha-x-feed-panel" aria-label="AlphaOps content feed">
       <div class="alpha-x-feed-head">
@@ -2276,7 +2305,7 @@ function renderAlphaProjectLibrary() {
   const rankList = document.querySelector(".rank-list");
   if (rankList) {
     rankList.innerHTML = ranked.slice(0, 8).map((project, index) => `
-      <div><span>${String(index + 1).padStart(2, "0")}</span><strong>${project.name}</strong><em>${project.alpha.score}</em></div>
+      <div><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(project.name)}</strong><em>${project.alpha.score}</em></div>
     `).join("");
   }
 }

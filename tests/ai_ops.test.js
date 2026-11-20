@@ -25,7 +25,7 @@ test("AI 运营台 exposes the complete human-review MVP surface", () => {
 test("AI content endpoint returns five usable demo drafts without a key", async () => {
   const prior = process.env.OPENAI_API_KEY;
   delete process.env.OPENAI_API_KEY;
-  const handler = require(path.join(root, "api", "ai-ops-generate.js"));
+  const handler = require(path.join(root, "lib", "legacy-handlers", "ai-ops-generate.js"));
   let statusCode = 0;
   let payload;
   const response = { status(code) { statusCode = code; return this; }, json(value) { payload = value; return this; } };
@@ -225,7 +225,7 @@ test("OpenAI configuration status is server-only and auto-detectable", async () 
 test("material library supports manual import and fails clearly when X credentials are absent", async () => {
   const prior = process.env.X_BEARER_TOKEN;
   delete process.env.X_BEARER_TOKEN;
-  const handler = require(path.join(root, "api", "ai-ops-library.js"));
+  const handler = require(path.join(root, "lib", "legacy-handlers", "ai-ops-library.js"));
   const invoke = async (body) => {
     let statusCode = 0; let payload;
     const response = { status(code) { statusCode = code; return this; }, json(value) { payload = value; return this; } };
@@ -298,7 +298,7 @@ test("all-platform console exposes four freely selectable publishing methods", (
 test("master drafts are adapted to validated platform posts", async () => {
   const prior = process.env.OPENAI_API_KEY;
   delete process.env.OPENAI_API_KEY;
-  const handler = require(path.join(root, "api", "ai-ops-adapt.js"));
+  const handler = require(path.join(root, "lib", "legacy-handlers", "ai-ops-adapt.js"));
   const invoke = async (platformId, draft) => {
     let statusCode = 0; let payload;
     const response = { status(code) { statusCode = code; return this; }, json(value) { payload = value; return this; } };
@@ -319,7 +319,7 @@ test("master drafts are adapted to validated platform posts", async () => {
 });
 
 test("official API publishing is gated by human confirmation and credentials", async () => {
-  const handler = require(path.join(root, "api", "ai-ops-publish.js"));
+  const handler = require(path.join(root, "lib", "legacy-handlers", "ai-ops-publish.js"));
   const invoke = async (body) => {
     let statusCode = 0; let payload;
     const response = { status(code) { statusCode = code; return this; }, json(value) { payload = value; return this; } };
@@ -408,7 +408,8 @@ test("floating Xiaowei assistant connects every selected platform to SURF with O
   assert.match(source, /welinkbtc-surf-bot-top/);
   assert.match(css, /\.surf-assistant \{[^}]*position: fixed/);
   assert.match(css, /right: 16px/);
-  assert.equal(vercel.functions["api/surf-research.js"].maxDuration, 300);
+  assert.equal(vercel.functions["api/surf-research.js"], undefined, "paid research must not bypass Next authorization as a native function");
+  assert.match(fs.readFileSync(path.join(root, "app/api/[legacy]/route.ts"), "utf8"), /export const maxDuration = 300/);
 });
 
 test("Xiaowei is a shared welinkBTC research layer across every main surface", () => {
@@ -432,7 +433,7 @@ test("Xiaowei is a shared welinkBTC research layer across every main surface", (
 });
 
 test("SURF research stays server-side and returns grounded response text", async () => {
-  const handler = require(path.join(root, "api", "surf-research.js"));
+  const handler = require(path.join(root, "lib", "legacy-handlers", "surf-research.js"));
   const previousKey = process.env.SURF_API_KEY;
   const previousOpenAIKey = process.env.OPENAI_API_KEY;
   const previousFetch = global.fetch;
@@ -473,7 +474,7 @@ test("SURF research stays server-side and returns grounded response text", async
 });
 
 test("Xiaowei falls back to OpenAI web research when SURF returns no result", async () => {
-  const handler = require(path.join(root, "api", "surf-research.js"));
+  const handler = require(path.join(root, "lib", "legacy-handlers", "surf-research.js"));
   const previousSurfKey = process.env.SURF_API_KEY;
   const previousOpenAIKey = process.env.OPENAI_API_KEY;
   const previousModel = process.env.OPENAI_RESEARCH_MODEL;
@@ -559,7 +560,7 @@ test("Xiaowei frontend keeps provider conversations separate and reports the fal
 });
 
 test("Xiaowei cleans raw Markdown, emoji, broken characters and English quotes from Chinese research", () => {
-  const { normalizeResearchAnswer } = require(path.join(root, "api", "surf-research.js"));
+  const { normalizeResearchAnswer } = require(path.join(root, "lib", "legacy-handlers", "surf-research.js"));
   const raw = `# BTC 实现利润与实现损失比\n\n## TL;DR\n\n**BTC 指标**可以理解为市场中"卖出赚钱"与"卖出亏钱"的强弱。\n\n---\n\n## 核心结论\n\n1. **1** 通常表示获利了结占优。\n2. 低于 1 需要结合价格趋势。 🚀\uFFFD`;
   const result = normalizeResearchAnswer(raw, "zh");
   assert.match(result, /【BTC 实现利润与实现损失比】/);

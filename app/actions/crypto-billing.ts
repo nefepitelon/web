@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { put } from "@vercel/blob";
 import { z } from "zod";
-import { createCryptoInvoice, submitManualPayment, verifyCryptoInvoice, type PaymentMethod } from "@/lib/crypto-payments";
+import { createCryptoInvoice, requireManualPaymentInvoice, submitManualPayment, verifyCryptoInvoice, type PaymentMethod } from "@/lib/crypto-payments";
+import { storePaymentProof } from "@/lib/payment-proofs";
 import { requireViewer } from "@/lib/membership";
 import type { BillablePlan, BillingInterval } from "@/lib/plans";
 
@@ -41,15 +41,10 @@ export async function submitManualPaymentAction(invoiceId: string, formData: For
   const proof = formData.get("proof");
   let proofUrl: string | undefined;
 
-  if (proof instanceof File && proof.size > 0) {
-    if (proof.size > 5 * 1024 * 1024) redirect(`/account/subscription/crypto/${invoiceId}?error=proof_too_large`);
-    if (!["image/jpeg", "image/png", "image/webp"].includes(proof.type)) redirect(`/account/subscription/crypto/${invoiceId}?error=invalid_proof`);
-    const safeName = proof.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-80) || "payment-proof.webp";
-    const blob = await put(`payment-proofs/${viewer.id}/${invoiceId}-${safeName}`, proof, { access: "public", addRandomSuffix: true });
-    proofUrl = blob.url;
-  }
-
   try {
+    // Authenticate record ownership and eligibility before any storage write.
+    await requireManualPaymentInvoice(viewer.id, invoiceId);
+    if (proof instanceof File && proof.size > 0) proofUrl = await storePaymentProof(proof, invoiceId, viewer.id);
     await submitManualPayment(viewer.id, invoiceId, { paymentReference, proofUrl });
   } catch (caught) {
     const code = caught instanceof Error ? caught.message.toLowerCase() : "submission_failed";

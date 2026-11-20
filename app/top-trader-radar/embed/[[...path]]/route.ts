@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { EXTERNAL_EMBED_CSP } from "@/lib/external-embed-security";
 
 const UPSTREAM_ORIGIN = "https://traderadar.qianyuwing.com";
 const LOCAL_BASE = "/top-trader-radar/embed";
@@ -53,6 +54,7 @@ function responseHeaders(contentType: string | null, cacheable: boolean) {
     "Cross-Origin-Resource-Policy": "cross-origin",
     "Referrer-Policy": "no-referrer",
     "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": EXTERNAL_EMBED_CSP,
   };
 }
 

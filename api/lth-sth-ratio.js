@@ -1,3 +1,5 @@
+import { fetchCompleteHistory, completeHistoryCoverage } from "../lib/onchain-history.js";
+
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 20_000;
@@ -41,7 +43,7 @@ export default async function handler(request, response) {
   }
 
   const now = Date.now();
-  const cache = globalThis.__welinkLthSthRatioCache;
+  const cache = globalThis.__welinkLthSthRatioCacheV2;
   if (cache?.payload && now - cache.savedAt < CACHE_TTL_MS) {
     sendPayload(response, cache.payload, "HIT");
     return;
@@ -49,7 +51,7 @@ export default async function handler(request, response) {
 
   try {
     const payload = await buildLthSthPayload();
-    globalThis.__welinkLthSthRatioCache = { savedAt: now, payload };
+    globalThis.__welinkLthSthRatioCacheV2 = { savedAt: now, payload };
     sendPayload(response, payload, "MISS");
   } catch (error) {
     if (cache?.payload && now - cache.savedAt < MAX_STALE_MS) {
@@ -77,18 +79,19 @@ function sendPayload(response, payload, cacheState) {
 }
 
 async function buildLthSthPayload() {
-  const [priceRows, lthRows, sthRows, livePrice] = await Promise.all([
-    fetchPublicCsv(PUBLIC_SERIES.price),
-    fetchPublicCsv(PUBLIC_SERIES.lth),
-    fetchPublicCsv(PUBLIC_SERIES.sth),
+  const [priceHistory, lthHistory, sthHistory, livePrice] = await Promise.all([
+    fetchCompleteHistory("price"),
+    fetchCompleteHistory("lth"),
+    fetchCompleteHistory("sth"),
     fetchLiveBtcPrice().catch(() => null)
   ]);
-  const series = mergeLthSthSeries(priceRows, lthRows, sthRows);
+  const series = mergeLthSthSeries(priceHistory.rows, lthHistory.rows, sthHistory.rows);
   if (series.length < 365) throw new Error("Public LTH/STH history returned too few aligned observations");
 
   return {
     ok: true,
-    stale: false,
+    stale: Date.now() - Date.parse(series.at(-1).date) > 3 * DAY_MS,
+    historyCoverage: completeHistoryCoverage(series),
     generatedAt: new Date().toISOString(),
     cacheSeconds: CACHE_TTL_MS / 1000,
     cadence: "daily",
@@ -97,7 +100,7 @@ async function buildLthSthPayload() {
     series,
     sources: {
       price: livePrice?.source || "BGeometrics public BTC price",
-      history: "BGeometrics public daily API",
+      history: "BGeometrics public archive + Bitbo public weekly STH observations before 2015-06-01",
       lth: PUBLIC_SERIES.lth.url,
       sth: PUBLIC_SERIES.sth.url,
       methodology: "LTH Realized Price / STH Realized Price"

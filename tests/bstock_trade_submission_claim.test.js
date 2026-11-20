@@ -297,6 +297,18 @@ test("automatic broadcast respects refreshed order, exposure and loss-adjusted b
   assert.doesNotThrow(() => validate(executionEvidence({ side: "sell", notionalUsd: 100, cmc: null, reportCompletedAt: null, botEquityUsd: -10 })));
 });
 
+test("manual hot selection is revalidated at broadcast without restricting risk exits", () => {
+  const validate = guardModule.validateBstockAutoExecution;
+  const selected = executionEvidence({
+    asset: { contractAddress: "0xstock", multiplier: "1", marketUpdatedAt: now.toISOString(), symbol: "NVDAB", campaignEligibility: "CONFIRMED" },
+    settings: { budgetUsd: 100, orderUsd: 20, selectionMode: "manual_hot", selectedSymbols: ["NVDAB"] }
+  });
+  assert.doesNotThrow(() => validate(selected));
+  assert.throws(() => validate({ ...selected, settings: { ...selected.settings, selectedSymbols: ["AAMDB"] } }), { code: "AUTOMATION_SELECTION_CHANGED" });
+  assert.throws(() => validate({ ...selected, asset: { ...selected.asset, campaignEligibility: "UNCONFIRMED" } }), { code: "AUTOMATION_SELECTION_CHANGED" });
+  assert.doesNotThrow(() => validate({ ...selected, side: "sell", settings: { ...selected.settings, selectedSymbols: [] } }));
+});
+
 test("submission timeout consumes the intent and a retry never broadcasts it twice", async () => {
   const db = database();
   let broadcasts = 0;

@@ -37,6 +37,8 @@
   ],
   "exclude": [
     "node_modules",
+    ".codex-*",
+    "artifacts",
     "chrome-extension"
   ]
 }

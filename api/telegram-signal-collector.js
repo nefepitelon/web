@@ -3,6 +3,8 @@ const {
   collectPublicPreviewSignals,
   collectTelegramSignals,
   createStoreFromEnv,
+  publicSignalsForChannel,
+  targetChannelUsername,
   verifiedSignalTime
 } = require("../workers/telegram_signal_collector");
 const telegramSignalSnapshot = require("../data/telegram-signals-snapshot");
@@ -64,13 +66,14 @@ function isWebhookAuthorized(request) {
 
 module.exports = async function telegramSignalCollectorHandler(request, response) {
   const store = createStoreFromEnv();
+  const channelUsername = targetChannelUsername();
   const health = String(request.query?.health || "") === "1";
 
   if (request.method === "GET" && health) {
     sendJson(response, 200, {
       ok: true,
       worker: "telegram_signal_collector",
-      target_channel: process.env.TELEGRAM_TARGET_CHANNEL || "BWE_OI_Price_monitor",
+      target_channel: channelUsername,
       storage: store.name,
       storage_configured: store.name !== "memory",
       webhook_secret_configured: Boolean(process.env.TELEGRAM_WEBHOOK_SECRET),
@@ -85,7 +88,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
     if (!refreshRequested) {
       let cached = [];
       try {
-        cached = (await store.listRecent(RECENT_SIGNAL_LIMIT)).filter((signal) => signal.source_mode !== "mock");
+        cached = publicSignalsForChannel(await store.listRecent(RECENT_SIGNAL_LIMIT, channelUsername));
       } catch {
         cached = [];
       }
@@ -93,7 +96,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
         sendJson(response, 200, {
           ok: true,
           worker: "telegram_signal_collector",
-          target_channel: process.env.TELEGRAM_TARGET_CHANNEL || "BWE_OI_Price_monitor",
+          target_channel: channelUsername,
           refreshed_at: new Date().toISOString(),
           stale: true,
           fallback: "persistent_cache",
@@ -101,16 +104,8 @@ module.exports = async function telegramSignalCollectorHandler(request, response
         }, "public, s-maxage=15, stale-while-revalidate=45");
         return;
       }
-      sendJson(response, 200, {
-        ok: true,
-        worker: "telegram_signal_collector",
-        target_channel: process.env.TELEGRAM_TARGET_CHANNEL || "BWE_OI_Price_monitor",
-        refreshed_at: new Date().toISOString(),
-        stale: true,
-        fallback: "build_snapshot",
-        latest: telegramSignalSnapshot.slice(0, RECENT_SIGNAL_LIMIT).map(toPublicSignal)
-      }, "public, s-maxage=15, stale-while-revalidate=45");
-      return;
+      // A channel migration starts with no matching cache. Collect the actual
+      // new source immediately instead of showing a previous channel's feed.
     }
     try {
       const result = await collectPublicPreviewSignals({ store });
@@ -126,13 +121,13 @@ module.exports = async function telegramSignalCollectorHandler(request, response
         stale: false,
         storage: result.storage,
         storage_degraded: result.storage_degraded,
-        latest: result.latest.filter((signal) => signal.source_mode !== "mock").map(toPublicSignal),
+        latest: publicSignalsForChannel(result.latest).map(toPublicSignal),
         ...(debugRequested ? { attempts: result.attempts, storage_error: result.storage_error } : {})
       }, "public, s-maxage=15, stale-while-revalidate=45");
     } catch (error) {
       let cached = [];
       try {
-        cached = (await store.listRecent(RECENT_SIGNAL_LIMIT)).filter((signal) => signal.source_mode !== "mock");
+        cached = publicSignalsForChannel(await store.listRecent(RECENT_SIGNAL_LIMIT, channelUsername));
       } catch {
         cached = [];
       }
@@ -140,7 +135,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
         sendJson(response, 200, {
           ok: true,
           worker: "telegram_signal_collector",
-          target_channel: process.env.TELEGRAM_TARGET_CHANNEL || "BWE_OI_Price_monitor",
+          target_channel: channelUsername,
           refreshed_at: new Date().toISOString(),
           stale: true,
           fallback: "persistent_cache",
@@ -155,7 +150,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
       sendJson(response, 200, {
         ok: true,
         worker: "telegram_signal_collector",
-        target_channel: process.env.TELEGRAM_TARGET_CHANNEL || "BWE_OI_Price_monitor",
+        target_channel: channelUsername,
         refreshed_at: new Date().toISOString(),
         stale: true,
         fallback: "build_snapshot",
@@ -163,7 +158,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
           refresh_error: error instanceof Error ? error.message : String(error),
           attempts: Array.isArray(error?.attempts) ? error.attempts : []
         } : {}),
-        latest: telegramSignalSnapshot.slice(0, RECENT_SIGNAL_LIMIT).map(toPublicSignal)
+        latest: publicSignalsForChannel(telegramSignalSnapshot).map(toPublicSignal)
       }, "public, s-maxage=15, stale-while-revalidate=45");
     }
     return;
@@ -177,7 +172,7 @@ module.exports = async function telegramSignalCollectorHandler(request, response
     sendJson(response, 200, {
       worker: "telegram_signal_collector",
       storage: store.name,
-      latest: await store.listRecent(RECENT_SIGNAL_LIMIT)
+      latest: (await store.listRecent(RECENT_SIGNAL_LIMIT, channelUsername)).filter((signal) => String(signal.channel_username).toLowerCase() === channelUsername.toLowerCase())
     });
     return;
   }

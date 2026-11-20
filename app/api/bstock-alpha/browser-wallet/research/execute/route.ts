@@ -4,7 +4,7 @@ import {
   decodePaymentSignatureHeader,
   encodePaymentSignatureHeader
 } from "@x402/core/http";
-import type { PaymentPayload } from "@x402/core/types";
+import type { PaymentPayload, PaymentRequirements } from "@x402/core/types";
 import {
   isPermit2PaymentPayload,
   recoverEip3009Payer,
@@ -22,7 +22,7 @@ import {
 } from "@/lib/bstock-browser-wallet";
 import { fetchOfficialBstockMarket } from "@/lib/bstock-alpha-live";
 import { evmNetworkLabel, getEvmPublicClient, isEvmCaip2Network, parseEvmCaip2Network } from "@/lib/bstock-evm";
-import { sameX402Requirement } from "@/lib/bstock-x402";
+import { canonicalizeReviewedX402Payment, sameX402Requirement } from "@/lib/bstock-x402";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -211,11 +211,12 @@ export async function POST(request: NextRequest) {
     if (!isEvmCaip2Network(requirement.network)) {
       return json({ error: "付款网络不是有效的 EVM CAIP-2 网络，已阻止重放。" }, 409);
     }
-    const paymentPayload = decodePaymentSignatureHeader(input.paymentHeaderValue);
+    let paymentPayload = decodePaymentSignatureHeader(input.paymentHeaderValue);
     if (paymentPayload.x402Version !== 2
       || !sameX402Requirement(paymentPayload.accepted, requirement)) {
       return json({ error: "钱包签名与已审阅的付款网络、资产、金额或收款地址不一致。" }, 409);
     }
+    paymentPayload = canonicalizeReviewedX402Payment(paymentPayload, requirement as unknown as PaymentRequirements);
     const payer = payerFromPayload(paymentPayload.payload);
     if (!payer || getAddress(payer) !== identity.address) {
       return json({ error: "x402 付款签名的付款地址与当前浏览器钱包不一致。" }, 403);

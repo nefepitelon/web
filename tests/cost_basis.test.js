@@ -58,12 +58,15 @@ test("cost-basis endpoint returns an aligned live payload", async () => {
   const module = await import("../api/cost-basis.js");
   const originalFetch = global.fetch;
   const originalKey = process.env.COINGLASS_API_KEY;
-  delete global.__welinkCostBasisCache;
+  delete global.__welinkCostBasisCacheV2;
   process.env.COINGLASS_API_KEY = "test-key";
-  const dates = Array.from({ length: 7 }, (_, index) => new Date(Date.UTC(2026, 6, 27 + index)));
+  const dates = Array.from({ length: 7 }, (_, index) => new Date(Date.UTC(2026, 10, 5 + index)));
 
   global.fetch = async (url) => {
     const value = String(url);
+    if (value.includes("true_market_mean.json")) {
+      return new Response(JSON.stringify(dates.map((date, index) => [date.getTime(), 87000 + index * 20])));
+    }
     if (value.includes("true-market-mean")) {
       const rows = dates.map((date, index) => `${date.toISOString().slice(0, 10)},${date.getTime() / 1000},${87000 + index * 20}`);
       return new Response(["d,unixTs,trueMarketMean", ...rows].join("\n"));
@@ -95,16 +98,18 @@ test("cost-basis endpoint returns an aligned live payload", async () => {
   try {
     await module.default({ method: "GET" }, response);
     assert.equal(response.statusCode, 200);
-    assert.equal(body.series.length, 7);
+    assert.ok(body.series.length > 4000, "a short current feed must not replace older cycles");
+    assert.equal(body.series[0].date, "2011-07-19");
+    assert.equal(body.series.at(-1).date, "2026-11-11");
     assert.equal(body.snapshot.price, 78250);
     assert.equal(body.snapshot.deathCrossActive, true);
-    assert.equal(body.ratioSnapshot.trend, "declining");
+    assert.ok(body.ratioSnapshot.dailySlope < 0);
     assert.ok(body.ratioSnapshot.current > 0.8);
     assert.match(headers["Cache-Control"], /s-maxage=21600/);
   } finally {
     global.fetch = originalFetch;
     if (originalKey === undefined) delete process.env.COINGLASS_API_KEY;
     else process.env.COINGLASS_API_KEY = originalKey;
-    delete global.__welinkCostBasisCache;
+    delete global.__welinkCostBasisCacheV2;
   }
 });

@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import archiver from 'archiver';
+import { isPrivatePackagePath } from './package-source-policy.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceDir = path.resolve(scriptDir, '..');
@@ -47,6 +48,7 @@ async function collectFiles(directoryPath) {
   const files = [];
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     const absolutePath = path.join(directoryPath, entry.name);
+    if (entry.isSymbolicLink() || isPrivatePackagePath(path.relative(engineDir, absolutePath))) continue;
     if (entry.isDirectory()) files.push(...await collectFiles(absolutePath));
     else if (entry.isFile()) files.push(absolutePath);
   }

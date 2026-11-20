@@ -5,6 +5,7 @@ import { decryptTradingSecret, encryptTradingSecret } from "@/lib/alpha-executio
 import { agentWalletOwnerKey, normalizeBscWalletAddress } from "@/lib/bstock-agentic-wallet-client";
 import { BSTOCK_REGISTRY_BASELINE_ASSETS } from "@/lib/bstock-eligible-snapshot";
 import { prisma } from "@/lib/prisma";
+import { fetchPublicResearchReport } from "@/lib/public-research-report";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -84,6 +85,7 @@ async function pollStoredJob(input: z.infer<typeof pollSchema>) {
   const upstream = await fetch(`https://stock-agent.bnbchain.org/x402/jobs/${encodeURIComponent(record.jobId)}`, {
     headers: { "Accept": "application/json", "X-Job-Token": jobToken },
     cache: "no-store",
+    redirect: "error",
     signal: AbortSignal.timeout(15_000)
   });
   const raw = await upstream.json().catch(() => ({ status: "error" }));
@@ -95,6 +97,7 @@ async function pollStoredJob(input: z.infer<typeof pollSchema>) {
       method: "POST",
       headers: { "Accept": "application/json", "X-Job-Token": jobToken },
       cache: "no-store",
+      redirect: "error",
       signal: AbortSignal.timeout(15_000)
     });
     if (!resume.ok) {
@@ -131,13 +134,7 @@ async function pollStoredJob(input: z.infer<typeof pollSchema>) {
     || payload.result?.downloadUrl
     || payload.result?.download_url;
   if (status === "succeeded" && resolvedDownloadUrl) {
-    const downloadUrl = new URL(resolvedDownloadUrl);
-    if (downloadUrl.protocol !== "https:") throw new Error("Agent Studio returned an unsafe download URL.");
-    const reportResponse = await fetch(downloadUrl, {
-      headers: { "Accept": "application/json, text/markdown, text/plain;q=0.9" },
-      cache: "no-store",
-      signal: AbortSignal.timeout(15_000)
-    });
+    const reportResponse = await fetchPublicResearchReport(resolvedDownloadUrl);
     if (!reportResponse.ok) {
       await prisma.bstockResearchJob.update({
         where: { id: record.id },

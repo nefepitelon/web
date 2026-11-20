@@ -9,7 +9,7 @@ const css = fs.readFileSync(path.join(root, "dashboard.css"), "utf8");
 
 const functionBody = (start, end) => js.slice(js.indexOf(start), js.indexOf(end));
 
-test("all thirty-four on-chain trend charts use the unified icon and text watermark", () => {
+test("all thirty-five on-chain trend charts use the unified icon and text watermark", () => {
   assert.match(js, /chartBrandWatermark\.src = "\/welinkbtc-orbit-brand\.webp"/);
   assert.match(js, /chartBrandWatermark\.loading = "eager"/);
   assert.match(js, /chartBrandWatermark\.decode\(\)\.catch/);
@@ -21,6 +21,9 @@ test("all thirty-four on-chain trend charts use the unified icon and text waterm
   assert.match(css, /\.cost-basis-stage\.is-watermark-visible::after/);
   assert.match(css, /@keyframes chart-watermark-curtain/);
   assert.equal((js.match(/drawBrandWatermark\(context,/g) || []).length, 34);
+  const rplrm = fs.readFileSync(path.join(root, "rplrm-dashboard.js"), "utf8");
+  assert.match(js, /window\.WelinkChartBrandWatermark = drawBrandWatermark/);
+  assert.match(rplrm, /window\.WelinkChartBrandWatermark\(context,/);
   assert.doesNotMatch(js, /context\.fillText\("welinkBTC"/);
 });
 

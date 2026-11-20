@@ -145,7 +145,7 @@ function providerRecommender({env,fetchImpl,provider}) {
     if(name==='./automation-strategy')return strategy;
     if(name==='./automation-market')return {};
     if(name==='../../grid-ops/src/ai/provider.js')return provider;
-    if(name==='../../api/surf-research.js')return {buildOpenAIRequest:()=>({model:'gpt-5.6-terra',reasoning:{effort:'low'}}),extractText:payload=>payload.output_text};
+    if(name==='../legacy-handlers/surf-research.js')return {buildOpenAIRequest:()=>({model:'gpt-5.6-terra',reasoning:{effort:'low'}}),extractText:payload=>payload.output_text};
     throw new Error(`Unexpected dependency ${name}`);
   },Date,Error,JSON,Number,Math,Set,Promise,process:{env},fetch:fetchImpl,AbortSignal,setTimeout,clearTimeout});
   return isolated.exports.createAlphaAutomationRecommender({now:()=>now,loadAccount:async()=>account(),loadMarket:async()=>market()});

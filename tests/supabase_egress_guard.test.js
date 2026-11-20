@@ -40,7 +40,9 @@ test("polled read-only APIs bypass duplicate auth and persistent rate-limit egre
   assert.match(service, /options\.persistent !== false && isDatabaseConfigured\(\)/);
   assert.match(route, /getActiveViewerId/);
   assert.match(route, /"state", 90, userId, \{ persistent: false \}/);
-  assert.match(membership, /select: \{[\s\S]*id: true,[\s\S]*status: true,[\s\S]*twoFactor: \{ select: \{ enabledAt: true \} \}/);
+  assert.match(membership, /select: \{[\s\S]*id: true,[\s\S]*status: true,[\s\S]*twoFactor: \{ select: \{ factorId: true, enabledAt: true \} \}/);
+  assert.match(membership, /twoFactorBindingFromClaims\(data\.claims, record\.id, record\.twoFactor\.factorId, record\.twoFactor\.enabledAt\)/);
+  assert.match(membership, /verifyTwoFactorPass\(twoFactorCookie, record\.id, binding\)/);
   assert.match(surface, /IDLE_STATE_POLL_MS = 15 \* 60_000/);
   assert.match(surface, /visibilitychange/);
   assert.match(quotes, /persistent: false/);
@@ -97,8 +99,9 @@ test("idle hosted bots stop instead of polling large snapshots", async () => {
   assert.match(service, /ACTIVE_RUN_HEARTBEAT_GRACE_MS = 60_000/);
   assert.match(service, /heartbeatIsFresh && \["STARTING", "RUNNING", "ERROR"\]\.includes\(bot\.status\)/);
   assert.match(service, /if \(pending\) return ensureHostedGridOpsRun\(bot\)/);
-  assert.match(runtime, /state\.status === "READY"\) return \{ stop: true, delayMs: 0 \}/);
-  assert.match(runtime, /select: \{ id: true, status: true, configEncrypted: true, snapshot: true \}/);
+  assert.match(runtime, /state!?\.status === "READY"\) return \{ stop: true, delayMs: 0 \}/);
+  assert.match(runtime, /if \(!state \|\| hostedGridOpsWorkerStopped\(state\)\) return \{ stop: true/);
+  assert.match(runtime, /select: \{ id: true, status: true, lastError: true, configEncrypted: true, snapshot: true \}/);
   assert.match(runtime, /const \{ markets = \{\}, \.\.\.runtimeSnapshot \} = snapshot/);
   assert.match(route, /readHostedGridOpsView\(viewer.id, bot.id, "markets", target\)/);
   const readModel = await read("lib/grid-ops-hosted/read-model.ts");

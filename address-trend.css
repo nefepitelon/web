@@ -1,0 +1,107 @@
+.address-flow-view-switch { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.address-flow-view-switch button {
+  --view-button-fill: var(--surface);
+  --view-beam-cyan: #72e8f3;
+  --view-beam-mint: #a9f6c4;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.address-flow-view-switch button::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  left: 50%;
+  top: 50%;
+  width: 180%;
+  aspect-ratio: 1;
+  background: conic-gradient(from 0deg, transparent 0deg 205deg, var(--view-beam-cyan) 250deg, #f2fff9 280deg, var(--view-beam-mint) 307deg, transparent 338deg 360deg);
+  opacity: .72;
+  transform: translate(-50%, -50%) rotate(0turn);
+  animation: address-view-border-flow 5.5s linear infinite;
+  animation-play-state: paused;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+.address-flow-view-switch button::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
+  border-radius: 6px;
+  background: var(--view-button-fill);
+  pointer-events: none;
+}
+.address-flow-view-switch button:nth-child(2)::before { animation-delay: -2.75s; }
+.address-flow-view-switch button[aria-pressed="true"] {
+  --view-button-fill: linear-gradient(120deg, #a2efb7, #6ed9cc);
+  color: #07170f;
+  box-shadow: 0 0 15px #6ed9cc16;
+}
+.address-flow-view-switch button[aria-pressed="true"]::before,
+.address-flow-view-switch button:hover::before,
+.address-flow-view-switch button:focus-visible::before { opacity: 1; }
+.address-flow-view-switch button:focus-visible { outline: 2px solid var(--view-beam-cyan); outline-offset: 2px; }
+.address-flow-view-switch[data-motion="running"] button::before { animation-play-state: running; }
+body[data-theme="light"] .address-flow-view-switch button { --view-beam-cyan: #147f94; --view-beam-mint: #288d5b; }
+@keyframes address-view-border-flow {
+  to { transform: translate(-50%, -50%) rotate(1turn); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .address-flow-view-switch button::before { animation: none; transition: none; }
+}
+#address-balance-flow [hidden] { display: none !important; }
+.address-trend { --trend-gold: #e9c969; --trend-price: #a8bac5; padding: 22px 26px 18px; border-top: 1px solid var(--line); background: radial-gradient(ellipse at 25% 5%, #e2bc4710, transparent 54%); }
+body[data-theme="light"] .address-trend { --trend-gold: #9d7410; --trend-price: #657885; }
+.address-trend-controls, .address-trend-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+.address-trend-controls { margin-bottom: 16px; }
+.address-trend-cohort { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+.address-trend select { min-width: 150px; padding: 9px 30px 9px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface); font: inherit; font-size: 12px; }
+.address-trend-periods { display: inline-flex; padding: 4px; gap: 3px; border: 1px solid var(--line); border-radius: 9px; }
+.address-trend-periods button { padding: 6px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font: 700 11px "JetBrains Mono", monospace; cursor: pointer; }
+.address-trend-periods button[aria-pressed="true"] { color: var(--trend-gold); background: color-mix(in srgb, var(--trend-gold) 15%, transparent); }
+.address-trend-heading strong { display: block; color: var(--ink); font-size: 19px; line-height: 1.4; }
+.address-trend-heading small { display: block; margin-top: 5px; color: var(--muted); font: 10px "JetBrains Mono", monospace; }
+.address-trend-metrics { display: flex; gap: 25px; }
+.address-trend-metrics span { display: block; color: var(--muted); font-size: 10px; }
+.address-trend-metrics b { display: block; margin-top: 4px; color: var(--trend-gold); font: 700 23px "JetBrains Mono", monospace; }
+.address-trend-metrics .address-trend-price b { color: var(--trend-price); }
+.address-trend-stage { position: relative; margin-top: 14px; }
+#address-trend-chart { display: block; width: 100%; height: 390px; touch-action: pan-y; outline-offset: -3px; }
+.address-trend-readout { min-height: 33px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); font: 11px "JetBrains Mono", monospace; }
+.address-trend-readout strong { color: var(--ink); }
+.address-trend-readout b { color: var(--trend-gold); }
+.address-trend-readout .price { color: var(--trend-price); }
+.address-trend-legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 11px 0; color: var(--muted); font-size: 11px; }
+.address-trend-legend span::before { content: ""; display: inline-block; width: 19px; height: 2px; margin-right: 7px; background: var(--trend-gold); vertical-align: middle; }
+.address-trend-legend span:last-child::before { background: var(--trend-price); }
+.address-trend-navigator { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--surface) 60%, transparent); }
+#address-trend-overview { display: block; width: 100%; height: 62px; }
+.address-trend-selection { position: absolute; inset-block: 0; border-inline: 2px solid var(--trend-gold); background: color-mix(in srgb, var(--trend-gold) 8%, transparent); pointer-events: none; }
+.address-trend-brush { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 9px; }
+.address-trend-brush label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
+.address-trend-brush input { min-width: 0; width: 100%; height: 18px; accent-color: var(--trend-gold); cursor: ew-resize; }
+.address-trend-bounds { margin: 7px 0 0; color: var(--muted); font: 10px "JetBrains Mono", monospace; text-align: center; }
+.address-trend-note { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-top: 13px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.address-trend-note a { color: var(--trend-gold); }
+.address-trend-refresh { padding: 5px 11px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.address-trend-loading { width: 100%; min-height: 240px; display: grid; place-content: center; gap: 14px; color: var(--muted); text-align: center; font-size: 13px; }
+.address-trend-loading button { justify-self: center; }
+@media (max-width: 700px) {
+  .address-trend { padding: 15px 10px; }
+  .address-trend-heading strong { font-size: 16px; }
+  .address-trend-metrics { gap: 18px; }
+  .address-trend-metrics b { font-size: 18px; }
+  #address-trend-chart { height: 330px; }
+  .address-trend-cohort { flex-wrap: wrap; }
+  .address-flow-view-switch button { padding: 7px 10px; font-size: 11px; }
+}

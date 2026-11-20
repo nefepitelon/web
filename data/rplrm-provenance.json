@@ -1,0 +1,14 @@
+{
+  "archivedOn": "2026-11-08",
+  "entityAdjusted": false,
+  "sources": {
+    "ratio": {
+      "url": "https://charts.bgeometrics.com/files/realized_profit_loss_ratio.json",
+      "sha256": "7e94082428160e04e0af64fade24ca722bb5713a9aa7e114d84cace64da59313"
+    },
+    "price": {
+      "url": "https://charts.bgeometrics.com/files/realized_profit_loss_ratio_btc_price.json",
+      "sha256": "375d5b8fbae89f208afbd2306d291214769eb70283dd0e4f9e82a0913fca02e1"
+    }
+  }
+}

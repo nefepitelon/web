@@ -1,4 +1,5 @@
 import "server-only";
+import { redactSecretData, redactSecretText } from "@/lib/secret-redaction";
 import { AlphaExecutionMode, AlphaMarketType, Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -49,11 +50,11 @@ export function auditScope(userId: string, query: AuditQuery, now = new Date()) 
 export function publicAuditRow(row: AuditRow) {
   const metadata = row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata) ? row.metadata as Record<string, unknown> : {};
   return {
-    id: row.id, createdAt: row.createdAt.toISOString(), state: row.state, status: row.status, message: row.message,
+    id: row.id, createdAt: row.createdAt.toISOString(), state: row.state, status: row.status, message: redactSecretText(row.message),
     environment: row.order?.environment || row.plan?.environment || row.intent?.environment || metadata.environment || metadata.mode || null,
     market: row.order?.market || row.plan?.market || row.intent?.market || metadata.market || null,
     symbol: row.order?.symbol || row.plan?.intent?.symbol || row.intent?.symbol || null,
-    intentId: row.intentId, planId: row.planId, orderId: row.orderId, metadata: row.metadata,
+    intentId: row.intentId, planId: row.planId, orderId: row.orderId, metadata: redactSecretData(row.metadata),
   };
 }
 

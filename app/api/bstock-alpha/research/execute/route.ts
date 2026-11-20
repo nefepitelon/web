@@ -31,9 +31,10 @@ import {
 import { prisma } from "@/lib/prisma";
 import { evmNetworkLabel, getEvmPublicClientByChainId } from "@/lib/bstock-evm";
 import { AgentX402ValidationError, validateAgentX402Signature } from "@/lib/bstock-agentic-wallet-x402";
+import { researchPaymentRejection } from "@/lib/bstock-research-payment-response";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 45;
+export const maxDuration = 90;
 
 const inputSchema = z.object({
   intent: z.string().min(20).max(40_000),
@@ -224,7 +225,7 @@ export async function POST(request: NextRequest) {
     const signature = signSchema.parse(signed.data);
     phase = "validate_signature";
     const merchant = merchantRequest(intent.provider, asset, intent.requestId);
-    const { paymentHeaderName } = validateAgentX402Signature(signature, reviewedOption, intent.resourceUrl);
+    const { paymentHeaderName, paymentHeaderValue } = validateAgentX402Signature(signature, reviewedOption, intent.resourceUrl);
     console.info("[bstock:agent-x402]", JSON.stringify({
       event: "signature_validated", provider: intent.provider, network: reviewedOption.requirement.network,
       hasApprovalTransaction: Boolean(signature.approveTxHash), approvalChainId: signature.binanceChainId ?? null
@@ -258,14 +259,24 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         "Accept": merchant.accept,
         ...merchant.headers,
-        [paymentHeaderName]: signature.paymentHeaderValue
+        [paymentHeaderName]: paymentHeaderValue
       },
       body: JSON.stringify(merchant.body),
       cache: "no-store",
-      signal: AbortSignal.timeout(20_000)
+      redirect: "error",
+      signal: AbortSignal.timeout(40_000)
     });
     const settlement = decodePaymentResponse(replay.headers.get("payment-response"));
     console.info("[bstock:agent-x402]", JSON.stringify({ event: "merchant_response", provider: intent.provider, status: replay.status }));
+
+    if (replay.status === 402) {
+      const rejection = await researchPaymentRejection(replay, intent.provider, reviewedOption.requirement.network);
+      console.warn("[bstock:agent-x402]", JSON.stringify({ event: "payment_rejected", provider: intent.provider,
+        upstreamCode: rejection.body.upstreamCode, paymentStatus: rejection.body.paymentStatus,
+        settlementSuccess: rejection.body.settlementSuccess, receiptNetwork: rejection.body.receiptNetwork,
+        network: reviewedOption.requirement.network, transferMethod: reviewedOption.requirement.extra.assetTransferMethod }));
+      return persistAgentSession(json(rejection.body, rejection.status), state);
+    }
 
     if (intent.provider === "cmc") {
       const responseBody = await replay.text();

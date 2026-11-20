@@ -12,7 +12,7 @@ function load(file, imports) {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
   }).outputText;
   vm.runInNewContext(code, { module, exports: module.exports, Date, Error, Response, Request, URL,
-    require(name) { if (name in imports) return imports[name]; throw new Error(`Unmocked dependency: ${name}`); } });
+    require(name) { if (name === '@/lib/secret-redaction') return load('lib/secret-redaction.ts', {}); if (name in imports) return imports[name]; throw new Error(`Unmocked dependency: ${name}`); } });
   return module.exports;
 }
 const agreements = { acknowledgeRealFunds: true, acknowledgeNoWithdrawPermission: true };
@@ -26,7 +26,10 @@ function fixture(options = {}) {
   const access = load("lib/alpha-execution/access.ts", { "server-only": {}, zod: require("zod"), "@/lib/membership": {
     getViewer: async () => { calls.viewers += 1; return viewer; },
   } });
-  const security = load("lib/request-security.ts", { "next/headers": { headers() { throw new Error("Unexpected ambient headers access"); } } });
+  const security = load("lib/request-security.ts", {
+    "node:net": require("node:net"),
+    "next/headers": { headers() { throw new Error("Unexpected ambient headers access"); } }
+  });
   const route = load("app/api/alpha-execution/live-unlock/route.ts", {
     zod: require("zod"), "@prisma/client": { AlphaExecutionMode: { LIVE: "LIVE", PAPER: "PAPER" }, AlphaExecutionState: { RISK_APPROVED: "RISK_APPROVED", CANCELED: "CANCELED" } },
     "@/lib/alpha-execution/access": access, "@/lib/request-security": security,

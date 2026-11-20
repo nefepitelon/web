@@ -6,6 +6,7 @@ import { AUTH_NEXT_COOKIE, authLoginErrorUrl, safeAuthNext } from "@/lib/auth-re
 import { syncAuthenticatedUser } from "@/lib/membership";
 import { hasSupabaseXIdentity, syncSupabaseXIdentity } from "@/lib/social-connections";
 import { applyAuthResponseHeaders } from "@/lib/supabase/response";
+import { supabaseCookieOptions } from "@/lib/supabase/cookie-options";
 
 function authFailureResponse(url: URL, error: string, next: string) {
   const response = applyAuthResponseHeaders(
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
   if (code) {
     const response = applyAuthResponseHeaders(NextResponse.redirect(new URL(next, url.origin)));
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookieOptions: supabaseCookieOptions,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet, headers) {
@@ -124,6 +126,7 @@ export async function GET(request: NextRequest) {
       }
       response.cookies.set(AUTH_NEXT_COOKIE, "", { expires: new Date(0), path: "/" });
       response.cookies.set(PENDING_ACCESS_CODE_COOKIE, "", { expires: new Date(0), path: "/" });
+      response.cookies.set("welinkbtc_2fa", "", { expires: new Date(0), httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/" });
       return response;
     }
     console.error("[auth:callback] Code exchange failed", {

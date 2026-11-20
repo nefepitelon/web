@@ -9,6 +9,7 @@ import { ResearchComposer } from "@/components/research-composer";
 import { ResearchImporter } from "@/components/research-importer";
 import { getViewer } from "@/lib/membership";
 import { prisma } from "@/lib/prisma";
+import { canManageResearch } from "@/lib/research-access";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ function isResearchSort(value: string): value is keyof typeof researchSorts {
 export default async function ResearchPage({ searchParams }: ResearchPageProps) {
   const query = await searchParams;
   const viewer = await getViewer();
-  const isAdmin = viewer?.role === "admin";
+  const isAdmin = canManageResearch(viewer);
   const now = new Date();
   const searchQuery = query.q?.trim().slice(0, 100) ?? "";
   const selectedCategory = query.category?.trim().slice(0, 80) ?? "";

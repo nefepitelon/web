@@ -1,4 +1,5 @@
 import "server-only";
+import { redactSecretText } from "@/lib/secret-redaction";
 
 import { createHash } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
@@ -29,7 +30,7 @@ export class AgenticWalletRequestError extends Error {
   readonly terminal: boolean;
 
   constructor(message: string, options: { status?: number; code?: string; terminal?: boolean } = {}) {
-    super(message);
+    super(redactSecretText(message));
     this.name = "AgenticWalletRequestError";
     this.status = options.status ?? 502;
     this.code = options.code ?? "UPSTREAM_ERROR";
@@ -122,7 +123,7 @@ export async function agentWalletRequest<T = unknown>(
     });
   }
   if (envelope.data.code !== BINANCE_SUCCESS_CODE) {
-    throw new AgenticWalletRequestError(envelope.data.message || "Binance Agentic Wallet 拒绝了请求。", {
+    throw new AgenticWalletRequestError(redactSecretText(envelope.data.message || "Binance Agentic Wallet 拒绝了请求。", [state.agentSessionId]), {
       status: terminalCodes.has(envelope.data.code) ? 401 : 502,
       code: envelope.data.code,
       terminal: terminalCodes.has(envelope.data.code)

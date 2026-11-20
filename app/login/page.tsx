@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { LoginForm } from "@/components/login-form";
 import { getViewer } from "@/lib/membership";
+import { safeAuthNext } from "@/lib/auth-redirect";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "登录 / 注册" };
@@ -18,12 +19,11 @@ export default async function LoginPage({
 
   const params = await searchParams;
   const requestedNext = params.next;
-  const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
-    ? requestedNext
-    : "/account";
+  const next = safeAuthNext(requestedNext);
   const errorMessages: Record<string, string> = {
     not_configured: "认证服务尚未配置，请联系管理员。",
     oauth_start_failed: "无法启动 Google 登录，请稍后重试。",
+    rate_limited: "认证请求过于频繁或保护服务暂不可用，请稍后重试。",
     provider_failed: "Google 没有完成授权，请重新选择账号并允许登录。",
     link_expired: "登录链接已过期或已经使用。请重新发送登录链接，并只点击最新一封邮件中的链接。",
     callback_failed: "登录回调已失效或无法建立会话，请重新登录。",
@@ -60,7 +60,7 @@ export default async function LoginPage({
           <section className="auth-panel auth-panel--login">
             <p className="eyebrow">WELCOME TO WELINKBTC</p>
             <h2>登录或创建账户</h2>
-            <p>首次验证成功会自动创建 Free 账户，随后设置你的专属用户名。</p>
+            <p>首次验证成功会自动创建账户，并通过预填的 WELINK Access Code 免费开通 3 个月 MAX 权益。</p>
             <LoginForm next={next} initialError={initialError} />
             <p className="legal-note">继续即表示你同意 welinkBTC 的服务条款与隐私政策。我们不会要求钱包助记词或私钥。</p>
           </section>

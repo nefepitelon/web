@@ -9,11 +9,13 @@ function load(file, imports = {}, globals = {}) {
   vm.runInNewContext(code, {module,exports:module.exports,require(name) {
     if (name === 'server-only') return {};
     if (name in imports) return imports[name];
+    if (name === '@/lib/secret-redaction') return secretRedaction;
     if (name === '@prisma/client') return require(name);
     throw Error(name);
   }, Date, Buffer, structuredClone, ...globals});
   return module.exports;
 }
+const secretRedaction = load('lib/secret-redaction.ts');
 const automationOrigin = load('lib/alpha-execution/automation-origin.ts');
 test('immutable snapshots coalesce reads and isolate users and caller mutations', async () => {
   const cached = load('lib/box-breakout/snapshot-cache.ts').createSnapshotCache();

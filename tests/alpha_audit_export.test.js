@@ -10,6 +10,7 @@ function load(file, imports) {
   const module = {exports:{}};
   vm.runInNewContext(code,{module,exports:module.exports,require(name){
     if(name==='server-only') return {};
+    if(name==='@/lib/secret-redaction') return load('lib/secret-redaction.ts', {});
     if(name in imports) return imports[name];
     if(name==='@prisma/client'||name==='zod')return require(name);
     throw new Error(`Unmocked import ${name}`);

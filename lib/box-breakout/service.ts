@@ -3,6 +3,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { start } from "workflow/api";
 import { encryptTradingSecret, decryptTradingSecret } from "@/lib/alpha-execution/credentials";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { trustedRequestIp } from "@/lib/request-security";
 import { isDatabaseConfigured, prisma } from "@/lib/prisma";
 import type { Candidate, Command, Market, ScanMode, Stock, Topic } from "./types";
 import { isCryptoScanMode } from "./types";
@@ -17,7 +18,7 @@ const MAX_PUBLIC_RESULTS = 1000;
 export const SCAN_CHUNK_SIZE = 8;
 const localLimits = new Map<string, { count: number; until: number }>();
 export async function limitRequests(request: Request, scope: string, maximum: number, userId?: string, options: { persistent?: boolean } = {}) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
+  const ip = trustedRequestIp(request.headers) ?? "unknown";
   const key = `box:${scope}:${createHash("sha256").update(userId ?? ip).digest("hex").slice(0, 32)}`;
   if (options.persistent !== false && isDatabaseConfigured()) {
     if (!(await checkRateLimit(key, maximum, 60_000)).allowed) throw new BoxError("请求过于频繁，请稍后再试", 429);

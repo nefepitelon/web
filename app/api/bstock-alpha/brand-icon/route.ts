@@ -61,6 +61,8 @@ export async function GET(request: NextRequest) {
   return new Response(bstockBrandFallbackSvg(symbol), {
     headers: {
       ...cacheHeaders,
+      // A transient image-provider failure must not pin initials for a month.
+      "Cache-Control": "public, max-age=300, s-maxage=300",
       "Content-Type": "image/svg+xml; charset=utf-8"
     }
   });

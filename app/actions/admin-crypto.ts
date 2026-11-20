@@ -56,17 +56,19 @@ export async function updateCryptoPaymentSettingsAction(formData: FormData) {
     }
   };
 
-  await prisma.systemSetting.upsert({
-    where: { key: "crypto.payment" },
-    update: { value: value as Prisma.InputJsonValue, updatedBy: admin.id },
-    create: { key: "crypto.payment", value: value as Prisma.InputJsonValue, updatedBy: admin.id, description: "多通道订阅收款设置" }
-  });
-  await writeAudit({
-    actorUserId: admin.id,
-    action: "crypto.payment.settings_updated",
-    targetType: "system_setting",
-    targetId: "crypto.payment",
-    metadata: { methods: ["TRON_USDT", "BSC_USDT", "BINANCE_UID", "WECHAT"], invoiceExpiryMinutes: expiry, reviewSlaHours }
+  await prisma.$transaction(async (tx) => {
+    await tx.systemSetting.upsert({
+      where: { key: "crypto.payment" },
+      update: { value: value as Prisma.InputJsonValue, updatedBy: admin.id },
+      create: { key: "crypto.payment", value: value as Prisma.InputJsonValue, updatedBy: admin.id, description: "多通道订阅收款设置" }
+    });
+    await writeAudit({
+      actorUserId: admin.id,
+      action: "crypto.payment.settings_updated",
+      targetType: "system_setting",
+      targetId: "crypto.payment",
+      metadata: { methods: ["TRON_USDT", "BSC_USDT", "BINANCE_UID", "WECHAT"], invoiceExpiryMinutes: expiry, reviewSlaHours }
+    }, tx);
   });
   revalidatePath("/account/subscription");
   revalidatePath("/admin/crypto-payments");

@@ -6,6 +6,8 @@ const vm = require("node:vm");
 const ts = require("typescript");
 const { createHash } = require("node:crypto");
 const { Prisma } = require("@prisma/client");
+require("tsx/cjs");
+const { gridOrderUsd, selectGridAddition } = require("../lib/bstock-auto-strategy.ts");
 
 const PENDING = ["QUOTING", "QUOTED", "SUBMITTING", "PENDING", "UNKNOWN"];
 const walletAddress = "0x1111111111111111111111111111111111111111";
@@ -123,6 +125,7 @@ function harness(options = {}) {
       safeParse: value => options.invalidSettings ? { success: false } : { success: true, data: value }
     },
       selectAutoSignal: () => ({ action: "buy", barTime, score: 80, strategy: "trend", reason: "BREAKOUT", indicators: { expectedUpsidePct: 6 } }),
+      gridOrderUsd, selectGridAddition,
       selectAutoExit: input => { calls.exitInputs.push(input); return { exit: false, reason: "HOLD" }; }, assessAutoQuoteFriction: () => ({ allowed: true, reason: "PASS" }) },
     "@/lib/bstock-auto-data": data,
     "@/lib/bstock-trading-quote-handler": { handleBstockTradingQuote: async request => {
@@ -148,6 +151,60 @@ function pendingOrder(overrides = {}) {
     tradeRecordId: "trade-pending", status: "PENDING", orderId: "wallet-order", requestedAmount: "5", createdAt: new Date(), submittedAt: new Date(),
     decision: { asset: { contractAddress, multiplier: "1" }, usdtPriceUsd: 1, bnbPriceUsd: 600 }, ...overrides };
 }
+
+const gridSettings = { ...defaults, strategy: "martingale_grid", gridLayers: 3, gridMultiplier: 2, gridStepPct: 1, selectionMode: "manual_hot", selectedSymbols: ["NVDAB"] };
+test("manual hot scan excludes unselected and unconfirmed assets without placing orders", async () => {
+  for (const settings of [{ ...gridSettings, selectedSymbols: ["AAPLB"] }, gridSettings]) {
+    const h = harness();
+    const scan = await h.scanAutoCandidates("owner", "agent", settings);
+    assert.equal(scan.candidates.length, 0); // fixture is not officially confirmed
+    assert.equal(h.calls.quote + h.calls.execute, 0);
+  }
+});
+function gridFixture(extra = {}) {
+  const entry = { id: "grid-entry", ownerKey: "owner", symbol: "NVDAB", status: "FINISHED", side: "buy", strategy: "martingale_grid",
+    actualUsd: 5, actualQuantity: "0.5", realizedPnlUsd: null, completedAt: new Date(), decision: { settings: gridSettings, grid: { layer: 0 } } };
+  const position = { id: "grid-position", ownerKey: "owner", symbol: "NVDAB", quantity: "0.5", costUsd: new Prisma.Decimal(5), highPrice: 10,
+    strategy: "martingale_grid", contractAddress, multiplier: "1", entryOrderId: entry.id };
+  return harness({ config: { settings: gridSettings }, positions: [position], orders: [entry],
+    market: { assets: [{ symbol: "NVDAB", ticker: "NVDA", contractAddress, multiplier: "1", price: 9.89, quoteVolume: 1000000,
+      marketUpdatedAt: new Date().toISOString(), campaignEligibility: "CONFIRMED", leveragedOrInverse: false }] },
+    wallet: { bstockBalances: [{ address: contractAddress, balanceExact: "0.5", valueUsd: 4.945 }] }, ...extra });
+}
+test("grid first entry starts small and later confirmed layer can add even at max position count", async () => {
+  const first = harness({ config: { settings: { ...gridSettings, selectionMode: "auto" } } });
+  await first.runAutoCycle("owner", "generation");
+  assert.equal(first.calls.execute, 1); assert.equal(Number(first.state.orders[0].requestedAmount), 5);
+  assert.equal(first.state.orders[0].decision.grid.layer, 0);
+  const h = gridFixture({ config: { settings: { ...gridSettings, maxPositions: 1 } } });
+  await h.runAutoCycle("owner", "generation");
+  assert.equal(h.calls.execute, 1);
+  const added = h.state.orders.find(o => o.id !== "grid-entry");
+  assert.equal(Number(added.requestedAmount), 10);
+  assert.equal(added.decision.grid.layer, 1); assert.equal(added.decision.grid.cycleEntryOrderId, "grid-entry");
+  await h.runAutoCycle("owner", "generation"); assert.equal(h.calls.execute, 1); // awaiting receipt, no duplicate
+});
+test("grid cannot reconsume an existing layer key or change an active ladder's parameters", async () => {
+  const h = gridFixture();
+  h.state.orders.push({ id: "old-layer", ownerKey: "owner", status: "SKIPPED", signalKey: createHash("sha256").update("owner:grid-entry:grid:1").digest("hex") });
+  await h.runAutoCycle("owner", "generation"); assert.equal(h.calls.execute, 0);
+  const changed = gridFixture({ config: { settings: { ...gridSettings, gridMultiplier: 1.5 } } });
+  await changed.runAutoCycle("owner", "generation"); assert.equal(changed.calls.execute, 0);
+  assert.match(changed.state.configs[0].lastError, /参数已变化/);
+});
+test("confirmed grid addition aggregates actual quantities and cost once without replacing the cycle anchor", async () => {
+  const order = pendingOrder({ id: "grid-add", side: "buy", strategy: "martingale_grid", requestedAmount: "10",
+    decision: { asset: { contractAddress, multiplier: "1" }, usdtPriceUsd: 1, bnbPriceUsd: 600, grid: { layer: 1, cycleEntryOrderId: "grid-entry" } } });
+  const h = gridFixture({ config: { enabled: false, settings: gridSettings }, orders: [order],
+    trades: [{ id: "trade-pending", status: "SUBMITTED", orderId: "wallet-order" }],
+    settlement: { paymentAmount: "10", usd: "10", rawQuantity: "1.01", quantity: "1.01", gasUsd: "0.01" },
+    receipt: { final: true, successful: true, txHash, matchStrategy: "ORDER_ID" } });
+  await h.runAutoCycle("owner", "generation");
+  assert.equal(h.state.orders[0].status, "FINISHED");
+  assert.equal(h.state.positions[0].quantity, "1.51"); assert.equal(Number(h.state.positions[0].costUsd), 15);
+  assert.equal(h.state.positions[0].entryOrderId, "grid-entry");
+  await h.runAutoCycle("owner", "generation"); assert.equal(Number(h.state.positions[0].costUsd), 15);
+});
 
 test("disabled robot without pending orders stops without accessing wallet or markets and releases lease", async () => {
   const h = harness({ config: { enabled: false } });

@@ -46,6 +46,8 @@ const primaryNav = [
   { href: "/alpha-radar", zh: "α-RadarTP", en: "α-RadarTP", path: "/alpha-radar" },
   { href: "/bstock-alpha", zh: "bStockAlpha", en: "bStockAlpha", path: "/bstock-alpha" },
   { href: "/grid-ops", zh: "AI网格", en: "AI Grid", path: "/grid-ops" },
+  { href: "/hedge-ops", zh: "套利对冲Ops", en: "Hedge Ops", path: "/hedge-ops" },
+  { href: "/stm-hunt", zh: "STM hunt", en: "STM hunt", path: "/stm-hunt" },
   { href: "/tidesight-quant", zh: "观潮量化", en: "TideSight", path: "/tidesight-quant" },
 ] as const;
 

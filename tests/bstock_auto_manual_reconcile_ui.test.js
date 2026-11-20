@@ -6,7 +6,7 @@ const vm = require("node:vm");
 
 const script = fs.readFileSync(path.join(__dirname, "../bstock-autotrade.js"), "utf8");
 const html = fs.readFileSync(path.join(__dirname, "../bstock-alpha.html"), "utf8");
-const defaults = { strategy: "adaptive", budgetUsd: 100, orderUsd: 20, maxPositions: 3, stopLossPct: 3, takeProfitPct: 6, maxDrawdownPct: 10, dailyLossPct: 5, intervalSeconds: 60 };
+const defaults = { strategy: "adaptive", selectionMode: "auto", gridLayers: 3, gridMultiplier: 2, gridStepPct: 1, budgetUsd: 100, orderUsd: 20, maxPositions: 3, stopLossPct: 3, takeProfitPct: 6, maxDrawdownPct: 10, dailyLossPct: 5, intervalSeconds: 60 };
 const walletAddress = "0x1111111111111111111111111111111111111111";
 const response = (payload, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => structuredClone(payload) });
 const snapshot = (extra = {}) => ({ ok: true, capability: "agentic", config: null, events: [], positions: [], manualBlockers: [], manualBlockerCount: 0, ...extra });
@@ -73,6 +73,38 @@ function harness(fetchImpl) {
     setWallet: value => { context = value; window.emit("bstock:wallet-context"); }
   };
 }
+
+test("manual hot and bounded-grid UI submits the reviewed settings once, with a fresh acknowledgement", async () => {
+  let config = null;
+  const app = harness(call => { if (call.method === "POST") config = { ...call.body.settings, enabled: true }; return response(snapshot({ config })); });
+  app.window.BstockAutoWalletContext.getHotAssets = () => [{ symbol: "NVDAB", nameZh: "英伟达", name: "NVIDIA" }];
+  await flush(); app.el("configure").click();
+  app.form.elements.strategy.value = "martingale_grid";
+  app.form.elements.strategy.emit("change");
+  app.form.elements.selectionMode.value = "manual_hot";
+  app.form.elements.selectionMode.emit("change");
+  assert.equal(app.el("grid-settings").hidden, false); assert.equal(app.el("hot-selection").hidden, false);
+  assert.match(app.el("grid-preview").textContent, /5\.00.*10\.00.*20\.00/);
+  const checkbox = app.el("hot-assets").children[0].children[0];
+  checkbox.checked = true; checkbox.emit("change");
+  app.el("acknowledged").checked = true; app.form.emit("input", { target: app.el("acknowledged") });
+  app.el("acknowledged").emit("change");
+  assert.equal(app.el("acknowledged").checked, true);
+  app.form.emit("submit"); await flush();
+  const posts = app.calls.filter(call => call.method === "POST");
+  assert.equal(posts.length, 1); assert.equal(posts[0].body.settings.strategy, "martingale_grid");
+  assert.deepEqual(posts[0].body.settings.selectedSymbols, ["NVDAB"]);
+  assert.equal(posts[0].body.settings.gridLayers, 3);
+  assert.equal(app.form.elements.strategy.disabled, true);
+});
+test("changing a strategy input revokes consent and the execution loop is the last content section", async () => {
+  const app = harness(() => response(snapshot())); await flush(); app.el("configure").click();
+  app.el("acknowledged").checked = true;
+  app.form.emit("input", { target: app.form.elements.gridLayers });
+  assert.equal(app.el("acknowledged").checked, false);
+  assert.ok(html.indexOf('class="cycle-panel') > html.indexOf('class="portfolio-panel'));
+  assert.ok(html.indexOf('class="cycle-panel') < html.indexOf('class="terminal-footer'));
+});
 
 test("manual blocker card shows total, first ten records and active quote deadline without asserting completion", async () => {
   const blockers = Array.from({ length: 12 }, (_, index) => ({ id: `record-${index}`, symbol: index === 0 ? "<img src=x>" : "NVDAB", side: "buy", status: index === 0 ? "SUBMISSION_UNKNOWN" : "INTENT_CREATED", orderId: `order-${index}`, createdAt: new Date().toISOString(), quoteValidUntil: index === 0 ? null : new Date(Date.now() + 60_000).toISOString() }));

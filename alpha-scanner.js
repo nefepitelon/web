@@ -238,6 +238,7 @@ let alphaExecutionConfigSaveTimer = null;
 let livePortfolioPullTimer = null;
 let livePortfolioPulling = false;
 const livePnlRefreshMs = 15 * 60_000;
+const livePnlRetryMs = 60_000;
 let livePnlSnapshot = null;
 let livePnlMarket = null;
 let livePnlLoading = false;
@@ -328,14 +329,23 @@ function renderLiveSummaryMetrics() {
     result.title = known ? `LIVE ${executionMarketLabel()} · ${pnl.periodStart || ""} 至 ${pnl.periodEnd || ""} · 已实现盈亏、手续费和资金费的 USDT 净额` : "仅展示交易所核验完成的 LIVE 结算记录";
   }
   if (pnlDetail) pnlDetail.textContent = known
-    ? `近 89 天 · ${executionMarketLabel()} · ${Number(pnl.recordCount) || 0} 条结算记录`
+    ? pnl.refreshError
+      ? `上次核验 ${new Date(pnl.refreshedAt || pnl.periodEnd).toLocaleTimeString("zh-CN", { hour12: false })} · ${pnl.refreshError}`
+      : `近 89 天 · ${executionMarketLabel()} · ${Number(pnl.recordCount) || 0} 条结算记录`
     : pnl?.message || (alphaExecutionAuthorized ? "正在同步 LIVE 历史结算记录" : "请登录后读取实盘历史结算记录");
+  const refreshButton = document.querySelector("#refresh-live-pnl");
+  if (refreshButton) {
+    refreshButton.disabled = !alphaExecutionAuthorized || livePnlLoading;
+    refreshButton.textContent = livePnlLoading ? "同步中…" : "刷新盈亏";
+  }
   if (alphaExecutionConfig.activeMode === "live") {
     if (portfolioRealizedPnl) {
       portfolioRealizedPnl.textContent = known ? formatSignedMoney(pnl.amount) : "—";
       portfolioRealizedPnl.className = known ? Number(pnl.amount) >= 0 ? "up" : "down" : "";
     }
-    if (portfolioRealizedCount) portfolioRealizedCount.textContent = known ? `近 89 天 · ${Number(pnl.recordCount) || 0} 条结算记录` : "等待完整实盘结算记录";
+    if (portfolioRealizedCount) portfolioRealizedCount.textContent = known
+      ? pnl.refreshError ? "上次已核验结算 · 正在重试同步" : `近 89 天 · ${Number(pnl.recordCount) || 0} 条结算记录`
+      : "等待完整实盘结算记录";
   }
   const auditButton = document.querySelector("#export-audit");
   if (auditButton) auditButton.disabled = !alphaExecutionAuthorized || liveAuditExporting;
@@ -348,14 +358,26 @@ function ensureLivePnlSchedule() {
   window.clearTimeout(livePnlTimer);
   if (document.hidden || !alphaExecutionAuthorized || livePnlLoading) return;
   const elapsed = Date.now() - livePnlLastAttempt;
-  if (livePnlMarket !== alphaExecutionConfig.defaultMarket || elapsed >= livePnlRefreshMs) {
+  const delay = livePnlSnapshot?.refreshError || ["partial", "unavailable"].includes(livePnlSnapshot?.status)
+    ? livePnlRetryMs : livePnlRefreshMs;
+  if (livePnlMarket !== alphaExecutionConfig.defaultMarket || elapsed >= delay) {
     void hydrateLivePnl();
     return;
   }
-  livePnlTimer = window.setTimeout(() => hydrateLivePnl(), Math.max(1000, livePnlRefreshMs - elapsed));
+  livePnlTimer = window.setTimeout(() => hydrateLivePnl(), Math.max(1000, delay - elapsed));
 }
 
-async function hydrateLivePnl() {
+function acceptLivePnlSnapshot(snapshot, market) {
+  if (!alphaExecutionAuthorized || alphaExecutionConfig.defaultMarket !== market || livePnlMarket !== market) return;
+  const complete = value => value?.status === "ready" && value.coverageComplete === true && value.asset === "USDT"
+    && value.amount != null && Number.isFinite(Number(value.amount));
+  livePnlSnapshot = !complete(snapshot) && complete(livePnlSnapshot) && snapshot.accountVersion
+    && snapshot.accountVersion === livePnlSnapshot.accountVersion
+    ? { ...livePnlSnapshot, refreshError: snapshot.message || "本次同步暂不可用，稍后自动重试" }
+    : snapshot;
+}
+
+async function hydrateLivePnl({ refresh = false } = {}) {
   if (livePnlLoading || !alphaExecutionAuthorized || document.hidden) return;
   const market = alphaExecutionConfig.defaultMarket;
   livePnlLoading = true;
@@ -364,12 +386,16 @@ async function hydrateLivePnl() {
   livePnlMarket = market;
   renderLiveSummaryMetrics();
   try {
-    const snapshot = await executionRequest(`/pnl?${new URLSearchParams({ market })}`);
-    if (alphaExecutionAuthorized && alphaExecutionConfig.defaultMarket === market) livePnlSnapshot = snapshot;
+    const snapshot = await executionRequest(`/pnl?${new URLSearchParams({ market, ...(refresh ? { refresh: "1" } : {}) })}`, { signal: AbortSignal.timeout(58_000) });
+    acceptLivePnlSnapshot(snapshot, market);
   } catch (error) {
-    if (alphaExecutionConfig.defaultMarket === market) livePnlSnapshot = { status: "unavailable", amount: null, message: error.message || "实盘结算数据暂时不可用" };
+    if ([401, 403].includes(error.status)) {
+      alphaExecutionAuthorized = false;
+      livePnlSnapshot = null;
+    } else acceptLivePnlSnapshot({ status: "unavailable", amount: null, message: error.message || "实盘结算数据暂时不可用" }, market);
   } finally {
     livePnlLoading = false;
+    livePnlLastAttempt = Date.now();
     renderLiveSummaryMetrics();
     ensureLivePnlSchedule();
   }
@@ -821,7 +847,7 @@ function riskPoolCandidateToDetailToken(candidate) {
     detailSignal: bias === "long" ? "LONG TRIGGER" : bias === "short" ? "SHORT TRIGGER" : "OBSERVE",
     reason: `${signalSummary || "Telegram 信号已进入候选池"}。当前仅完成消息解析，资金费率、账户多空比、爆仓、社交与媒体数据等待七维扫描补充。`,
     heat: confidence,
-    kols: ["BWE OI Monitor", "Telegram"],
+    kols: ["EQN OI Monitor", "Telegram"],
     risks: ["外部信号只作为交易意图触发源", "进入候选池不代表已通过 Risk Engine", "七维市场数据待补充"],
     headlines: [`${candidate.symbol} 进入 Alpha 雷达风控执行池 · ${sourceSummary}`, signalSummary || "Telegram 最新信号已解析"],
     dimensions: [priceMomentumScore, 50, 50, 50, 50, 50, 50],
@@ -1641,6 +1667,35 @@ function avatarClass(symbol) {
   return names[symbol] || "";
 }
 
+function updateTokenAvatar(element, symbol) {
+  if (!element) return;
+  const assetSymbol = String(symbol || "").toUpperCase();
+  element.className = `token-avatar ${avatarClass(assetSymbol)}`;
+  element.setAttribute("aria-hidden", "true");
+  const fallback = document.createElement("span");
+  fallback.className = "token-avatar-fallback";
+  fallback.textContent = assetSymbol[0] || "?";
+  element.replaceChildren(fallback);
+  // Only known featured assets resolve to bundled files; feed-provided URLs are never used.
+  if (!Object.hasOwn(featuredMarketMeta, assetSymbol)) return;
+  const image = document.createElement("img");
+  image.className = "token-avatar-image";
+  image.alt = "";
+  image.width = 32;
+  image.height = 32;
+  image.decoding = "async";
+  image.addEventListener("load", () => {
+    if (image.parentElement === element) element.classList.add("has-token-icon");
+  }, { once: true });
+  image.addEventListener("error", () => {
+    if (image.parentElement !== element) return;
+    image.remove();
+    element.classList.remove("has-token-icon");
+  }, { once: true });
+  image.src = `/token-icons/${assetSymbol.toLowerCase()}.webp?v=20261118`;
+  element.append(image);
+}
+
 function biasLabel(bias) {
   return bias === "long" ? "偏多" : bias === "short" ? "偏空" : "中性";
 }
@@ -1836,7 +1891,7 @@ function renderRows() {
     const chainMeta = alphaList ? `<b class="token-meta-separator">·</b><i class="token-meta-chain">${escapeHtml(token.chainName)}</i>` : "";
     return `
       <tr tabindex="0" data-symbol="${escapeHtml(token.symbol)}" aria-label="查看 ${escapeHtml(token.symbol)} 七维信号明细">
-        <td><div class="token-cell"><span class="token-rank">${String(rank).padStart(2, "0")}</span><span class="token-avatar ${avatarClass(token.symbol)}">${escapeHtml(token.symbol[0])}</span><span><strong>${escapeHtml(token.symbol)}</strong><small>${marketMeta}${chainMeta}<b class="token-meta-separator">·</b><i class="token-meta-signal ${token.bias}">${escapeHtml(token.type)}</i></small></span></div></td>
+        <td><div class="token-cell"><span class="token-rank">${String(rank).padStart(2, "0")}</span><span class="token-avatar" data-token-avatar="${escapeHtml(token.symbol)}" aria-hidden="true"></span><span><strong>${escapeHtml(token.symbol)}</strong><small>${marketMeta}${chainMeta}<b class="token-meta-separator">·</b><i class="token-meta-signal ${token.bias}">${escapeHtml(token.type)}</i></small></span></div></td>
         <td class="${token.change == null ? "dim" : deltaClass}" data-ranking-change="${escapeHtml(token.symbol)}">${formatSignalPercent(token.change)}</td>
         ${volumeCell}
         ${fundingCell}
@@ -1847,6 +1902,7 @@ function renderRows() {
       </tr>`;
   }).join("");
 
+  rowsRoot.querySelectorAll("[data-token-avatar]").forEach((element) => updateTokenAvatar(element, element.dataset.tokenAvatar));
   emptyState.hidden = visible.length > 0;
   renderRankingPagination(visible.length, totalPages);
   watchCount.textContent = rankingTokens.filter((token) => token.watched).length;
@@ -1913,8 +1969,7 @@ function openDrawer(token) {
   const momentumOnly = detailMode === "momentum";
   const momentumDetail = momentumOnly || String(token.sourceKind || "").startsWith("crypto-bubbles");
   const avatar = document.querySelector("#detail-avatar");
-  avatar.className = `token-avatar ${avatarClass(token.symbol)}`;
-  avatar.textContent = token.symbol[0];
+  updateTokenAvatar(avatar, token.symbol);
   document.querySelector("#detail-drawer-kicker").textContent = token.detailDrawerKicker || (momentumDetail ? "1D MOMENTUM DETAIL" : "SIGNAL DETAIL");
   document.querySelector("#detail-drawer-title").textContent = token.detailDrawerTitle || (momentumOnly ? "1 日动量明细" : momentumDetail ? "动量与七维信号明细" : "七维信号明细");
   document.querySelector("#detail-name").innerHTML = `${escapeHtml(token.symbol)} <span>/ USDT</span>`;
@@ -2129,6 +2184,27 @@ function renderSignalStreamState(title, detail, state = "empty") {
   signalStream.innerHTML = `<div class="stream-state ${state}"><i></i><strong>${escapeHtml(title)}</strong><span>${escapeHtml(detail)}</span></div>`;
 }
 
+const TELEGRAM_SIGNAL_CHANNEL = "eqn_oi_price_monitor";
+
+function normalizeTelegramSignalChannel(value) {
+  return String(value || "").trim().replace(/^@/, "").toLowerCase();
+}
+
+function currentTelegramSignals(signals) {
+  return (Array.isArray(signals) ? signals : []).filter((signal) => {
+    if (normalizeTelegramSignalChannel(signal?.channel_username) !== TELEGRAM_SIGNAL_CHANNEL) return false;
+    if (!["webhook", "public_preview", "public_preview_markdown"].includes(signal.source_mode)) return false;
+    if (!["parsed", "partial"].includes(signal.parse_status) || !signal.symbol || signal.symbol === "UNKNOWN") return false;
+    if (signal.oi_change_pct == null && signal.price_change_pct == null) return false;
+    if (!signal.source_message_url) return true;
+    return /^https:\/\/t\.me\/EQN_OI_Price_monitor\/[0-9]+$/i.test(signal.source_message_url);
+  }).slice(0, 20);
+}
+
+function telegramFeedAllowsAuto(payload) {
+  return normalizeTelegramSignalChannel(payload?.target_channel) === TELEGRAM_SIGNAL_CHANNEL && !payload.stale && !payload.fallback;
+}
+
 function strongSignalIdentity(signal) {
   return String(signal?.dedupe_hash || signal?.telegram_message_id || signal?.source_message_url || [
     signal?.symbol,
@@ -2232,7 +2308,8 @@ async function createStrongTradeIntentOrder(meta) {
 
 function renderRecentSignals(signals, { allowAuto = true } = {}) {
   if (!signalStream) return;
-  if (!signals.length) {
+  const latestSignals = currentTelegramSignals(signals);
+  if (!latestSignals.length) {
     window.clearTimeout(strongTradeIntentExpiryTimer);
     latestTelegramSignals = [];
     latestTelegramSignalsAutoEligible = false;
@@ -2241,7 +2318,6 @@ function renderRecentSignals(signals, { allowAuto = true } = {}) {
     return;
   }
 
-  const latestSignals = signals.slice(0, 20);
   latestTelegramSignals = latestSignals;
   latestTelegramSignalsAutoEligible = allowAuto;
   const symbolCounts = latestSignals.reduce((counts, signal) => {
@@ -2269,7 +2345,7 @@ function renderRecentSignals(signals, { allowAuto = true } = {}) {
       ...detailToken,
       detailDrawerKicker: "RECENT TRIGGER DETAIL",
       detailDrawerTitle: "信号流水七维信号明细",
-      detailSubtitle: `Telegram · BWE OI Price Monitor · ${formatSignalTimestamp(signal.signal_time)}`,
+      detailSubtitle: `Telegram · EQN OI Price Monitor · ${formatSignalTimestamp(signal.signal_time)}`,
       detailReason: `${riskPoolSignalSummary(signal)}。${scannerToken ? `已合并 ${candidate.symbol} 当前七维雷达快照。` : "其余七维数据暂无同窗口扫描结果，界面明确标记为待补充。"}`,
       headlineTitle: "Telegram 信号与七维摘要",
       headlines: [riskPoolSignalSummary(signal), ...(detailToken.headlines || [])].filter(Boolean).slice(0, 4),
@@ -2305,7 +2381,7 @@ async function hydrateRecentSignals({ announce = false, force = false } = {}) {
   telegramSignalLoading = true;
   telegramSignalLastRequestAt = requestStartedAt;
   refreshTriggers?.classList.add("loading");
-  if (!signalStream?.querySelector(".signal-stream-item")) renderSignalStreamState("正在同步 Telegram 最新 20 条消息", "@BWE_OI_Price_monitor", "loading");
+  if (!signalStream?.querySelector(".signal-stream-item")) renderSignalStreamState("正在同步 Telegram 最新 20 条消息", "@EQN_OI_Price_monitor", "loading");
   setTriggerLive("loading", "同步中");
 
   try {
@@ -2313,8 +2389,9 @@ async function hydrateRecentSignals({ announce = false, force = false } = {}) {
     const response = await fetch(`/api/telegram-signal-collector${query}`, force ? { cache: "no-store" } : {});
     if (!response.ok) throw new Error(`signal stream ${response.status}`);
     const payload = await response.json();
-    const signals = Array.isArray(payload.latest) ? payload.latest : [];
-    renderRecentSignals(signals, { allowAuto: !payload.stale });
+    if (normalizeTelegramSignalChannel(payload.target_channel) !== TELEGRAM_SIGNAL_CHANNEL) throw new Error("Unexpected Telegram signal channel");
+    const signals = currentTelegramSignals(payload.latest);
+    renderRecentSignals(signals, { allowAuto: telegramFeedAllowsAuto(payload) });
     signalStream.setAttribute("aria-busy", "false");
     const latestTime = signals[0]?.signal_time ? formatSignalTimestamp(signals[0].signal_time) : "—";
     setTriggerLive(payload.stale ? "stale" : "live", `${payload.stale ? "缓存" : "实时"} · ${signals.length} 条 · ${latestTime}`);
@@ -4380,7 +4457,11 @@ paperViewTabs.forEach((tab, index) => {
   showToast("纸面持仓已人工平仓");
 }));
 
-document.querySelector("#refresh-scan").addEventListener("click", () => hydrateAlphaScan({ announce: true }));
+document.querySelector("#refresh-scan").addEventListener("click", () => {
+  void hydrateAlphaScan({ announce: true });
+  void hydrateLivePnl({ refresh: true });
+});
+document.querySelector("#refresh-live-pnl")?.addEventListener("click", () => hydrateLivePnl({ refresh: true }));
 refreshAlphaLists?.addEventListener("click", () => hydrateBinanceAlphaLists({ force: true, announce: true }));
 refreshTriggers?.addEventListener("click", () => hydrateRecentSignals({ announce: true, force: true }));
 

@@ -388,19 +388,24 @@ export async function verifyCryptoInvoice(userId: string, invoiceId: string, txH
   return prisma.cryptoPayment.findUniqueOrThrow({ where: { id: invoice.id } });
 }
 
-export async function submitManualPayment(userId: string, invoiceId: string, input: { paymentReference?: string; proofUrl?: string }) {
-  const invoice = await prisma.cryptoPayment.findFirst({ where: { id: invoiceId, userId } });
+export async function requireManualPaymentInvoice(userId: string, invoiceId: string) {
+  const invoice = await prisma.cryptoPayment.findFirst({ where: { id: invoiceId, userId }, select: { id: true, paymentMethod: true, status: true, expiresAt: true } });
   if (!invoice) throw new Error("INVOICE_NOT_FOUND");
   if (!["BINANCE_UID", "WECHAT"].includes(invoice.paymentMethod)) throw new Error("CHAIN_PAYMENT_REQUIRED");
-  if (invoice.status === "PAID") return invoice;
+  if (!["PENDING", "REVIEW"].includes(invoice.status)) throw new Error("PAYMENT_NOT_PENDING");
   if (invoice.expiresAt.getTime() < Date.now()) throw new Error("INVOICE_EXPIRED");
+  return invoice;
+}
+
+export async function submitManualPayment(userId: string, invoiceId: string, input: { paymentReference?: string; proofUrl?: string }) {
+  const invoice = await requireManualPaymentInvoice(userId, invoiceId);
   const paymentReference = input.paymentReference?.trim().slice(0, 300) || null;
   const proofUrl = input.proofUrl?.trim() || null;
   if (!paymentReference && !proofUrl) throw new Error("PAYMENT_PROOF_REQUIRED");
   const settings = await getCryptoPaymentSettings();
   const now = new Date();
-  return prisma.cryptoPayment.update({
-    where: { id: invoice.id },
+  const changed = await prisma.cryptoPayment.updateMany({
+    where: { id: invoice.id, userId, status: { in: ["PENDING", "REVIEW"] }, expiresAt: { gt: now } },
     data: {
       paymentReference,
       proofUrl,
@@ -409,6 +414,8 @@ export async function submitManualPayment(userId: string, invoiceId: string, inp
       reviewDueAt: new Date(now.getTime() + settings.reviewSlaHours * 60 * 60_000)
     }
   });
+  if (changed.count !== 1) throw new Error("PAYMENT_ALREADY_PROCESSED");
+  return prisma.cryptoPayment.findFirstOrThrow({ where: { id: invoice.id, userId } });
 }
 
 export async function reviewManualPayment(input: { invoiceId: string; adminUserId: string; approved: boolean; note?: string }) {

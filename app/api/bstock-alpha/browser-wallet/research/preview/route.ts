@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
       provider: input.provider,
       symbol: asset.symbol,
       ticker: asset.ticker,
-      contractAddress: asset.contractAddress,
+      contractAddress: getAddress(asset.contractAddress),
       requestId,
       paymentRequired: filteredPaymentRequired as unknown as Record<string, unknown>,
       requirements: requirements as unknown as Array<Record<string, unknown>>,

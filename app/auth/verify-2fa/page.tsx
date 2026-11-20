@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { TwoFactorChallenge } from "@/components/two-factor-challenge";
 import { getViewer } from "@/lib/membership";
+import { safeAuthNext } from "@/lib/auth-redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function VerifyTwoFactorPage({
 }) {
   const viewer = await getViewer();
   const requestedNext = (await searchParams).next;
-  const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/account";
+  const next = safeAuthNext(requestedNext);
   if (!viewer) redirect(`/login?next=${encodeURIComponent(next)}`);
   if (!viewer.needsSecondFactor) redirect(next);
 

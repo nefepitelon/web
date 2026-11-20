@@ -7,7 +7,7 @@ import { AGENT_SESSION_COOKIE, decodeAgentSession, encodeAgentSession, type Agen
 import { agentSessionKey, agentWalletOwnerKey } from "@/lib/bstock-agentic-wallet-client";
 import { fetchAgentWalletData, walletSnapshotDto } from "@/lib/bstock-agentic-wallet-data";
 import { fetchOfficialBstockMarket, fetchCmcLiveSnapshot, fetchBstockMarketHistory, compareDecimals, multiplyDecimals, resolveBstockSellRawAmount } from "@/lib/bstock-alpha-live";
-import { AUTO_STRATEGY_VERSION, autoSettingsSchema, selectAutoSignal, selectAutoExit, assessAutoQuoteFriction, type AutoSettings } from "@/lib/bstock-auto-strategy";
+import { AUTO_STRATEGY_VERSION, autoSettingsSchema, selectAutoSignal, selectAutoExit, selectGridAddition, gridOrderUsd, assessAutoQuoteFriction, type AutoSettings } from "@/lib/bstock-auto-strategy";
 import { AUTO_PENDING, acquireAutoLease, autoEvent, jsonValue, pauseAuto, safeAutoError, withAutoLock } from "@/lib/bstock-auto-data";
 import { handleBstockTradingQuote } from "@/lib/bstock-trading-quote-handler";
 import { handleBstockTradingExecute } from "@/lib/bstock-trading-execute-handler";
@@ -79,6 +79,7 @@ export async function scanAutoCandidates(ownerKey: string, sessionKey: string, s
   const byTicker = new Map<string, typeof reports[number]>();
   for (const report of reports) if (!byTicker.has(report.symbol)) byTicker.set(report.symbol, report);
   const reviewed = market.assets.filter(asset => !asset.leveragedOrInverse && asset.price != null && Number.isFinite(asset.price) && asset.price > 0
+    && (settings.selectionMode !== "manual_hot" || (settings.selectedSymbols.includes(asset.symbol) && asset.campaignEligibility === "CONFIRMED"))
     && Number.isFinite(asset.quoteVolume) && (asset.quoteVolume || 0) >= 100_000 && fresh(asset.marketUpdatedAt, 120_000) && byTicker.has(asset.ticker))
     .sort((a, b) => (b.quoteVolume || 0) - (a.quoteVolume || 0));
   // Bounded parallel reads; the rest of the pool rotates by hour to avoid starvation.
@@ -97,7 +98,7 @@ export async function scanAutoCandidates(ownerKey: string, sessionKey: string, s
     "asset" in value && Boolean(value.asset) && "signal" in value && Boolean(value.signal))
     .sort((a, b) => b.signal.score - a.signal.score);
   return { candidates, diagnostics: { pool: market.assets.length, qualified: reviewed.length, scanned: batch.length,
-    excluded: market.assets.length - reviewed.length, reportMaxAgeDays: 7,
+    excluded: market.assets.length - reviewed.length, reportMaxAgeDays: 7, selectionMode: settings.selectionMode || "auto", selectedSymbols: settings.selectedSymbols || [],
     evaluations: evaluated.map(item => "asset" in item && item.asset && "signal" in item && item.signal
       ? { symbol: item.asset.symbol, ...item.signal, reportId: item.reportId }
       : item) } };
@@ -170,11 +171,25 @@ async function reconcileOrder(config: BstockAutoConfig, state: AgentSessionState
     let pnl: Prisma.Decimal | null = null;
     if (order.side === "buy") {
       const existing = await tx.bstockAutoPosition.findUnique({ where: { ownerKey_symbol: { ownerKey: config.ownerKey, symbol: order.symbol } } });
-      if (existing && number(existing.quantity) > 0) throw new Error("自动仓位已存在，禁止重复入账");
+      if (existing && number(existing.quantity) > 0) {
+        const grid = object(evidence.grid);
+        if (order.strategy !== "martingale_grid" || existing.strategy !== "martingale_grid"
+          || grid.cycleEntryOrderId !== existing.entryOrderId || !Number.isInteger(grid.layer) || number(grid.layer) < 1) {
+          throw new Error("自动仓位已存在，且不是同一网格周期的已确认加仓");
+        }
+        const held = new Prisma.Decimal(existing.quantity);
+        const combinedCost = existing.costUsd.add(usd);
+        const combinedQty = held.add(quantity);
+        await tx.bstockAutoPosition.update({ where: { id: existing.id }, data: {
+          quantity: combinedQty.toFixed(), costUsd: combinedCost,
+          highPrice: Prisma.Decimal.max(existing.highPrice, usd.div(quantity))
+        } });
+      } else {
       const position = { quantity: settlement.quantity, costUsd: usd, highPrice: usd.div(quantity), strategy: order.strategy,
         contractAddress: asset.contractAddress, multiplier: asset.multiplier, entryOrderId: order.id };
       await tx.bstockAutoPosition.upsert({ where: { ownerKey_symbol: { ownerKey: config.ownerKey, symbol: order.symbol } },
         create: { ownerKey: config.ownerKey, symbol: order.symbol, ...position }, update: position });
+      }
     } else {
       const position = await tx.bstockAutoPosition.findUniqueOrThrow({ where: { ownerKey_symbol: { ownerKey: config.ownerKey, symbol: order.symbol } } });
       const held = new Prisma.Decimal(position.quantity);
@@ -363,11 +378,17 @@ export async function runAutoCycle(ownerKey: string, generation: string): Promis
       const entryPrice = number(position.costUsd) / number(position.quantity);
       const highPrice = Math.max(number(position.highPrice), asset.price!);
       await prisma.bstockAutoPosition.update({ where: { id: position.id }, data: { highPrice } });
-      const entryOrder = position.strategy === "mean_reversion" ? await prisma.bstockAutoOrder.findUnique({ where: { id: position.entryOrderId }, select: { decision: true } }) : null;
+      const entryOrder = position.strategy !== "trend" ? await prisma.bstockAutoOrder.findUnique({ where: { id: position.entryOrderId } }) : null;
       const entryMidBand = object(object(object(entryOrder?.decision).signal).indicators).midBand;
       const midBand = typeof entryMidBand === "number" && Number.isFinite(entryMidBand) && entryMidBand > 0 ? entryMidBand : null;
       const exit = selectAutoExit({ price: asset.price!, entryPrice, highPrice, ...settings,
-        strategy: position.strategy === "trend" ? "trend" : "mean_reversion", midBand });
+        strategy: position.strategy === "martingale_grid" ? "martingale_grid" : position.strategy === "trend" ? "trend" : "mean_reversion", midBand });
+      // Grid averaging must not move the original hard stop further down.
+      if (position.strategy === "martingale_grid") {
+        if (!entryOrder || entryOrder.status !== "FINISHED" || number(entryOrder.actualQuantity) <= 0) throw new Error("网格首笔成交证据缺失，禁止加仓");
+        const anchor = number(entryOrder.actualUsd) / number(entryOrder.actualQuantity);
+        if (asset.price! <= anchor * (1 - settings.stopLossPct / 100)) { exit.exit = true; exit.reason = "GRID_ANCHOR_STOP_LOSS"; }
+      }
       if (exit.exit || circuit) {
         const rawToken = wallet.tokens.find(t => t.contractAddress.toLowerCase() === asset.contractAddress.toLowerCase());
         if (!rawToken) throw new Error("机器人持仓的链上余额不可用");
@@ -392,7 +413,8 @@ export async function runAutoCycle(ownerKey: string, generation: string): Promis
       await autoEvent(ownerKey, generation, "WAIT", "宏观风险或数据新鲜度不满足开仓条件");
       return { stop: false, waitMs: settings.intervalSeconds * 1000 };
     }
-    if (open.length >= settings.maxPositions || cost + settings.orderUsd > Math.min(settings.budgetUsd, botEquity) || spentToday + settings.orderUsd > settings.budgetUsd * 2) {
+    const minimumBuy = settings.strategy === "martingale_grid" ? gridOrderUsd(settings, 0) : settings.orderUsd;
+    if (cost + minimumBuy > Math.min(settings.budgetUsd, botEquity) || spentToday + minimumBuy > settings.budgetUsd * 2) {
       await autoEvent(ownerKey, generation, "WAIT", "仓位数、可用预算或每日成交周转上限已达到");
       return { stop: false, waitMs: settings.intervalSeconds * 1000 };
     }
@@ -400,20 +422,48 @@ export async function runAutoCycle(ownerKey: string, generation: string): Promis
     await autoEvent(ownerKey, generation, "SCAN", `已扫描 ${scan.diagnostics.scanned} 个具有有效研报和流动性的标的`, { metadata: scan.diagnostics });
     for (const candidate of scan.candidates) {
       const { asset, signal } = candidate;
-      if (signal.action !== "buy" || !signal.barTime || open.some(p => p.symbol === asset.symbol)) continue;
+      if (!signal.barTime) continue;
+      const position = open.find(p => p.symbol === asset.symbol);
+      let buyUsd = minimumBuy;
+      let grid: Record<string, unknown> | undefined;
+      let reason = signal.reason;
+      let identity = `${ownerKey}:${asset.symbol}:${signal.barTime}:buy`;
+      if (position) {
+        if (settings.strategy !== "martingale_grid" || position.strategy !== "martingale_grid") continue;
+        const buys = await prisma.bstockAutoOrder.findMany({ where: { ownerKey, symbol: asset.symbol, strategy: "martingale_grid", side: "buy", status: "FINISHED" }, orderBy: { completedAt: "asc" } });
+        const entry = buys.find(o => o.id === position.entryOrderId);
+        if (!entry) throw new Error("网格首笔成交记录缺失，禁止加仓");
+        const original = object(object(entry.decision).settings);
+        if (["orderUsd", "gridLayers", "gridMultiplier", "gridStepPct"].some(key => original[key] !== settings[key as keyof AutoSettings])) throw new Error("网格周期参数已变化，请保持原设置或先退出策略持仓");
+        const cycle = buys.filter(o => o.id === entry.id || object(object(o.decision).grid).cycleEntryOrderId === entry.id);
+        if (cycle.length > settings.gridLayers || cycle.some((o, i) => object(object(o.decision).grid).layer !== i)) throw new Error("网格层次证据不连续，禁止重复加仓");
+        const last = cycle[cycle.length - 1];
+        const addition = selectGridAddition({ settings, price: asset.price!,
+          anchorPrice: number(entry.actualUsd) / number(entry.actualQuantity), lastFillPrice: number(last.actualUsd) / number(last.actualQuantity),
+          filledLayers: cycle.length, entryPrice: number(position.costUsd) / number(position.quantity), highPrice: number(position.highPrice) });
+        if (!addition.buy) continue;
+        buyUsd = addition.orderUsd;
+        grid = { ...addition, cycleEntryOrderId: entry.id };
+        reason = addition.reason;
+        identity = `${ownerKey}:${entry.id}:grid:${addition.layer}`;
+      } else {
+        if (signal.action !== "buy" || open.length >= settings.maxPositions) continue;
+        if (settings.strategy === "martingale_grid") grid = { layer: 0 };
+      }
+      if (cost + buyUsd > Math.min(settings.budgetUsd, botEquity) || spentToday + buyUsd > settings.budgetUsd * 2) continue;
       const existing = dto.bstockBalances.find(p => p.address.toLowerCase() === asset.contractAddress.toLowerCase());
-      if ((existing?.valueUsd || 0) + settings.orderUsd >= dto.totalWalletValueUsd * 0.25) continue;
+      if ((existing?.valueUsd || 0) + buyUsd >= dto.totalWalletValueUsd * 0.25) continue;
       const usd = dto.paymentBalances.USDT;
       if (!usd || !Number.isFinite(usd.price) || !Number.isFinite(usd.balance) || usd.price < 0.98 || usd.price > 1.02
-        || usd.balance * usd.price < settings.orderUsd || (dto.paymentBalances.BNB?.balance || 0) < 0.0002) continue;
+        || usd.balance * usd.price < buyUsd || (dto.paymentBalances.BNB?.balance || 0) < 0.0002) continue;
       // Express budget in actual USD using the live USDT rate; floor, never round up.
-      const amount = (Math.floor(settings.orderUsd / usd.price * 1e6) / 1e6).toFixed(6);
-      const signalKey = createHash("sha256").update(`${ownerKey}:${asset.symbol}:${signal.barTime}:buy`).digest("hex");
+      const amount = (Math.floor(buyUsd / usd.price * 1e6) / 1e6).toFixed(6);
+      const signalKey = createHash("sha256").update(identity).digest("hex");
       if (await prisma.bstockAutoOrder.findUnique({ where: { signalKey }, select: { id: true } })) continue;
-      await submitOrder(config, state, { asset, side: "buy", amount, strategy: signal.strategy, reason: signal.reason, signalKey,
+      await submitOrder(config, state, { asset, side: "buy", amount, strategy: settings.strategy === "martingale_grid" ? "martingale_grid" : signal.strategy, reason, signalKey,
         leaseToken: lease, usdtPriceUsd: usd.price, bnbPriceUsd: number(dto.paymentBalances.BNB?.price), availableCapitalUsd: Math.min(settings.budgetUsd, botEquity) - cost,
         targetPct: signal.indicators.expectedUpsidePct || settings.takeProfitPct,
-        decision: { signal, reportId: candidate.reportId, reportCompletedAt: candidate.reportCompletedAt, cmc: { score: cmc.score, regime: cmc.regime, fetchedAt: cmc.fetchedAt }, settings } });
+        decision: { signal, ...(grid ? { grid } : {}), reportId: candidate.reportId, reportCompletedAt: candidate.reportCompletedAt, cmc: { score: cmc.score, regime: cmc.regime, fetchedAt: cmc.fetchedAt }, settings } });
       break;
     }
     return { stop: false, waitMs: settings.intervalSeconds * 1000 };

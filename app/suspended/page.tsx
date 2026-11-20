@@ -13,7 +13,7 @@ export default async function SuspendedPage() {
           <p className="eyebrow">ACCOUNT STATUS</p>
           <h1>账户当前不可用。</h1>
           <p>该账户已被暂停。公开内容仍可查看；如需复核，请通过 welinkBTC 官方支持渠道联系管理员。</p>
-          <div className="gate-actions"><Link className="button" href="/">返回公开首页</Link><Link className="button button--outline" href="/logout">退出登录</Link></div>
+          <div className="gate-actions"><Link className="button" href="/">返回公开首页</Link><form action="/logout" method="post"><button className="button button--outline" type="submit">退出登录</button></form></div>
         </section>
       </main>
     </AppShell>

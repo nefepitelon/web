@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PARALLAX — 对冲刷量 · Arcus × Lighter</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080b10'/%3E%3Crect x='7' y='6' width='8' height='20' fill='%23b6f36b'/%3E%3Crect x='18' y='10' width='8' height='20' fill='%23b6f36b' opacity='.45'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<div class="noise"></div>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <span class="brand-mark"><i></i><i></i></span>
+      <span><b>PARALLAX</b><small>ARCUS × LIGHTER</small></span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <button class="nav-item active" data-page="funding">
+        <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/></svg>
+        <span>资金费总览</span><em id="nav-count">0</em>
+      </button>
+      <button class="nav-item" data-page="tasks">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+        <span>轮换任务</span><em id="nav-tasks">0</em>
+      </button>
+      <button class="nav-item" data-page="system">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        <span>系统</span>
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="gauge-card" id="gauge-card">
+        <div class="gauge-head"><span>日交易量预估</span><em id="gauge-pct">—</em></div>
+        <svg class="gauge" viewBox="0 0 220 130" role="img" aria-labelledby="gauge-title">
+          <title id="gauge-title">当前任务预估日交易量与理论上限</title>
+          <path class="gauge-track" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" />
+          <path class="gauge-fill" id="gauge-fill" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" stroke-dasharray="0 100" />
+          <g id="gauge-ticks"></g>
+          <line class="gauge-actual" id="gauge-actual" x1="110" y1="14" x2="110" y2="28" style="display:none" />
+          <g id="gauge-needle" transform="rotate(-90 110 110)">
+            <line class="gauge-needle" x1="110" y1="110" x2="110" y2="30" />
+          </g>
+          <circle class="gauge-hub" cx="110" cy="110" r="5" />
+        </svg>
+        <div class="gauge-value"><b id="gauge-current">—</b><small>当前任务 / 天</small></div>
+        <div class="gauge-rows">
+          <div><span><i class="dot max"></i>理论上限</span><b id="gauge-max">—</b></div>
+          <div><span><i class="dot actual"></i>近 24h 实际</span><b id="gauge-actual-text">—</b></div>
+        </div>
+      </div>
+      <div class="connection-card" id="conn-card">
+        <span class="pulse-dot"></span>
+        <div><b id="conn-title">连接中</b><small id="conn-sub">正在拉取费率</small></div>
+      </div>
+      <div class="mini-meta"><span>版本</span><b id="meta-version">—</b></div>
+      <div class="mini-meta"><span>端口</span><b id="meta-port">8004</b></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="page-heading">
+        <span class="eyebrow">FUNDING RATE MONITOR</span>
+        <h1 id="page-title">资金费总览</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="mode-pill" id="mode-pill"><span></span><b>连接中</b></div>
+        <span class="clock" id="clock">—</span>
+        <button class="icon-button" id="refresh-button" aria-label="刷新">
+          <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page active" id="page-funding" style="padding:24px 30px 40px">
+      <section class="ledger-panel" id="ledger-panel">
+        <header class="ledger-head">
+          <div><span class="kicker">ACCOUNT &amp; VOLUME</span><h2>账户与交易统计</h2></div>
+          <span class="clock" id="ledger-meta">加载中…</span>
+        </header>
+        <div class="ledger-grid" id="ledger-grid"></div>
+        <p class="ledger-note" id="ledger-note" style="display:none"></p>
+        <div class="ledger-table-wrap">
+          <table class="funding-table ledger-table">
+            <thead><tr>
+              <th>任务</th>
+              <th>开仓次数</th>
+              <th>Lighter 交易量</th>
+              <th>Arcus 交易量</th>
+              <th>合计交易量</th>
+              <th>手续费</th>
+              <th>价差损益</th>
+              <th>净损益</th>
+              <th>每万美元磨损</th>
+            </tr></thead>
+            <tbody id="ledger-body"><tr><td colspan="9" class="dim" style="text-align:center;padding:26px">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="assumption-note">
+        <b>下面的费率表只用来看，不会因为它下单。</b>
+        目的是先用肉眼确认费率数字和方向判断是对的 —— 资金费的单位或周期一旦解析错，
+        方向就会选反，实盘代价远大于不开仓。表里任何标了
+        <span class="warn-badge">存疑</span> 的币种都已被拒绝参与开仓。
+        「回本小时」按往返成本 <input class="cost-input" id="cost-input" value="8" /> bps 估算
+        （假设值：Arcus 吃单费 2.25 bps × 2 + 两所半价差；Lighter 0 费率。冷门币会高得多）。
+      </p>
+
+      <div id="period-warnings" style="display:none"></div>
+      <div id="unmanaged-warn-top" style="display:none"></div>
+
+      <div class="venue-grid" id="venue-grid"></div>
+
+      <div class="stats-grid" id="stats-grid" style="margin-bottom:20px"></div>
+
+      <div class="panel" style="padding:20px 22px;margin-bottom:20px">
+        <header class="panel-header compact">
+          <div><span class="kicker">LIQUIDATION MONITOR</span><h2>持仓与强平距离</h2></div>
+          <span class="clock" id="pos-meta">—</span>
+        </header>
+        <p class="acct-note" id="acct-note" style="margin-top:14px"></p>
+        <div class="pos-grid" id="pos-grid"></div>
+      </div>
+
+      <div class="panel table-panel">
+        <header class="panel-header compact">
+          <div><span class="kicker">FUNDING DIFFERENTIAL</span><h2>共有币种费率排名</h2></div>
+          <span class="clock" id="table-meta">—</span>
+        </header>
+        <div class="table-scroll">
+          <table class="funding-table">
+            <thead><tr>
+              <th>币种</th>
+              <th>Lighter bps/h</th>
+              <th>Arcus bps/h</th>
+              <th>净 bps/h</th>
+              <th>建议方向</th>
+              <th>年化</th>
+              <th>净 bps/天</th>
+              <th>回本小时</th>
+              <th>最大杠杆</th>
+            </tr></thead>
+            <tbody id="funding-body"><tr><td colspan="9" class="dim" style="text-align:center;padding:40px">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-tasks" style="padding:24px 30px 40px">
+      <div id="unmanaged-warn" style="display:none"></div>
+      <p class="dry-banner" id="dry-banner"></p>
+
+      <div class="task-form">
+        <div class="field"><label>币种 <small id="spread-hint" style="opacity:.6;font-weight:400"></small></label><select id="f-asset" style="min-width:260px"></select></div>
+        <div class="field"><label>杠杆</label><input id="f-leverage" type="number" step="1" min="1" value="6" /></div>
+        <div class="field"><label>轮换周期 最短（小时）</label><input id="f-rotation" type="number" step="0.1" min="0.1" value="1" /></div>
+        <div class="field"><label>最长（小时，留空=固定）</label><input id="f-rotation-max" type="number" step="0.1" min="0.1" value="2" placeholder="固定" /></div>
+        <div class="field"><label>开仓金额 最小（USDC，留空=开满）</label><input id="f-notional" type="number" step="10" min="0" placeholder="不限" /></div>
+        <div class="field"><label>最大（USDC，留空=固定）</label><input id="f-notional-max" type="number" step="10" min="0" placeholder="固定" /></div>
+        <div class="field"><label>Arcus 下单方式</label><select id="f-order-type">
+          <option value="limit">限价（挂单，0 手续费）</option>
+          <option value="market">市价（吃单，立刻成交）</option>
+        </select></div>
+        <button class="primary-button" id="f-save"><span>＋</span> 保存任务</button>
+      </div>
+
+      <div class="panel" style="padding:18px 20px;margin-bottom:18px">
+        <header class="panel-header compact"><div><span class="kicker">ROTATION TASKS</span><h2>任务列表</h2></div>
+          <button class="mini-btn" id="run-preflight" style="margin-right:6px">实盘预检</button>
+          <button class="mini-btn" id="run-cycle">立即跑一轮</button></header>
+        <div id="task-list" style="margin-top:12px"></div>
+      </div>
+
+      <div id="preflight-box" style="display:none;margin-bottom:18px"></div>
+
+      <div class="panel" style="padding:18px 20px">
+        <header class="panel-header compact"><div><span class="kicker">CYCLE LOG</span><h2>执行记录</h2></div></header>
+        <div id="cycle-log" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-system" style="padding:24px 30px 40px">
+      <div class="panel" style="padding:20px 22px">
+        <header class="panel-header compact"><div><span class="kicker">SYSTEM</span><h2>运行状态</h2></div></header>
+        <pre id="system-dump" style="margin:14px 0 0;color:var(--muted);font:11px var(--mono);white-space:pre-wrap"></pre>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

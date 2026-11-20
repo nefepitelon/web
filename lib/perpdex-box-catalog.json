@@ -1,0 +1,986 @@
+[
+  {
+    "id": "hyperliquid",
+    "name": "Hyperliquid",
+    "category": "dex",
+    "tradeUrl": "https://app.hyperliquid.xyz",
+    "color": "#24a28c",
+    "makerFeePct": 0.015,
+    "takerFeePct": 0.045,
+    "maxLeverage": 40,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.hyperliquid.xyz",
+    "oiIncludesChildren": true,
+    "coingeckoIds": [
+      "hyperliquid"
+    ],
+    "llamaTvlSlugs": [
+      "hyperliquid-bridge"
+    ],
+    "referenceId": "hyperliquid"
+  },
+  {
+    "id": "tradexyz",
+    "name": "trade.xyz",
+    "category": "hip3",
+    "tradeUrl": "https://app.trade.xyz",
+    "color": "#b08a1e",
+    "makerFeePct": 0.003,
+    "takerFeePct": 0.009,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.trade.xyz",
+    "parentId": "hyperliquid",
+    "hyperliquidDex": "xyz",
+    "referenceId": "trade_xyz"
+  },
+  {
+    "id": "variational",
+    "name": "Variational",
+    "category": "dex",
+    "tradeUrl": "https://omni.variational.io",
+    "color": "#2a3557",
+    "makerFeePct": 0,
+    "takerFeePct": 0,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://omni.variational.io",
+    "coingeckoIds": [
+      "variational-omni"
+    ],
+    "referenceId": "variational"
+  },
+  {
+    "id": "aster",
+    "name": "Aster",
+    "category": "dex",
+    "tradeUrl": "https://www.asterdex.com",
+    "color": "#bb8233",
+    "makerFeePct": 0,
+    "takerFeePct": 0.04,
+    "maxLeverage": 100,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://www.asterdex.com",
+    "coingeckoIds": [
+      "aster"
+    ],
+    "llamaTvlSlugs": [
+      "aster-bridge"
+    ],
+    "referenceId": "asterdex"
+  },
+  {
+    "id": "lighter",
+    "name": "Lighter",
+    "category": "dex",
+    "tradeUrl": "https://app.lighter.xyz",
+    "color": "#1f1f23",
+    "makerFeePct": 0,
+    "takerFeePct": 0,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.lighter.xyz",
+    "coingeckoIds": [
+      "lighter"
+    ],
+    "llamaTvlSlugs": [
+      "lighter-bridge"
+    ],
+    "referenceId": "lighter"
+  },
+  {
+    "id": "grvt",
+    "name": "GRVT",
+    "category": "dex",
+    "tradeUrl": "https://grvt.io",
+    "color": "#68a12b",
+    "makerFeePct": -0.0001,
+    "takerFeePct": 0.045,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://grvt.io",
+    "coingeckoIds": [
+      "grvt_futures"
+    ],
+    "llamaTvlSlugs": [
+      "grvt-bridge"
+    ],
+    "referenceId": "gravitymarkets"
+  },
+  {
+    "id": "qfex",
+    "name": "QFEX",
+    "category": "dex",
+    "tradeUrl": "https://qfex.com",
+    "color": "#3f9e99",
+    "makerFeePct": 0.02,
+    "takerFeePct": 0.05,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://qfex.com",
+    "coingeckoIds": [
+      "qfex"
+    ],
+    "referenceId": "qfex"
+  },
+  {
+    "id": "edgex",
+    "name": "edgeX",
+    "category": "dex",
+    "tradeUrl": "https://pro.edgex.exchange",
+    "color": "#0fa34a",
+    "makerFeePct": 0.04,
+    "takerFeePct": 0.045,
+    "maxLeverage": 100,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://pro.edgex.exchange",
+    "coingeckoIds": [
+      "edgex"
+    ],
+    "llamaTvlSlugs": [
+      "edgex-bridge"
+    ],
+    "referenceId": "edgex"
+  },
+  {
+    "id": "gmx",
+    "name": "GMX",
+    "category": "dex",
+    "tradeUrl": "https://app.gmx.io",
+    "color": "#3d8be0",
+    "makerFeePct": 0.04,
+    "takerFeePct": 0.06,
+    "maxLeverage": 100,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.gmx.io",
+    "coingeckoIds": [
+      "gmx-perpetuals-v2-solana",
+      "gmx-perpetuals-v2-arbitrum",
+      "gmx-perpetuals-v2-avalanche"
+    ],
+    "llamaTvlSlugs": [
+      "gmx-evm",
+      "gmx-solana"
+    ],
+    "referenceId": "gmx"
+  },
+  {
+    "id": "arcus",
+    "name": "Arcus",
+    "category": "dex",
+    "tradeUrl": "https://arcus.xyz",
+    "color": "#a38a54",
+    "makerFeePct": 0,
+    "takerFeePct": 0.0225,
+    "maxLeverage": 40,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://arcus.xyz",
+    "coingeckoIds": [
+      "arcus-futures"
+    ],
+    "llamaTvlSlugs": [
+      "arcus-perps"
+    ],
+    "referenceId": "arcus"
+  },
+  {
+    "id": "entropy",
+    "name": "entropy.io",
+    "category": "hip3",
+    "tradeUrl": "https://entropy.io",
+    "color": "#5c5c68",
+    "makerFeePct": 0.003,
+    "takerFeePct": 0.009,
+    "maxLeverage": 25,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://entropy.io",
+    "parentId": "hyperliquid",
+    "hyperliquidDex": "io",
+    "referenceId": "entropy"
+  },
+  {
+    "id": "extended",
+    "name": "Extended",
+    "category": "dex",
+    "tradeUrl": "https://extended.exchange",
+    "color": "#00a877",
+    "makerFeePct": 0,
+    "takerFeePct": 0.025,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://extended.exchange",
+    "coingeckoIds": [
+      "extended"
+    ],
+    "llamaTvlSlugs": [
+      "extended-perps"
+    ],
+    "referenceId": "extended_starknet"
+  },
+  {
+    "id": "apex",
+    "name": "ApeX Omni",
+    "category": "dex",
+    "tradeUrl": "https://omni.apex.exchange",
+    "color": "#ad8410",
+    "makerFeePct": 0.02,
+    "takerFeePct": 0.05,
+    "maxLeverage": 100,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://omni.apex.exchange",
+    "coingeckoIds": [
+      "apex-omni"
+    ],
+    "llamaTvlSlugs": [
+      "apex-omni"
+    ],
+    "referenceId": "apex"
+  },
+  {
+    "id": "pacifica",
+    "name": "Pacifica",
+    "category": "dex",
+    "tradeUrl": "https://app.pacifica.fi",
+    "color": "#3e9db3",
+    "makerFeePct": 0.015,
+    "takerFeePct": 0.04,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.pacifica.fi",
+    "coingeckoIds": [
+      "pacifica"
+    ],
+    "llamaTvlSlugs": [
+      "pacifica-bridge"
+    ],
+    "referenceId": "pacifica"
+  },
+  {
+    "id": "backpack",
+    "name": "Backpack",
+    "category": "dex",
+    "tradeUrl": "https://backpack.exchange",
+    "color": "#d02536",
+    "makerFeePct": 0.02,
+    "takerFeePct": 0.05,
+    "maxLeverage": 75,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://backpack.exchange",
+    "coingeckoIds": [
+      "backpack-futures"
+    ]
+  },
+  {
+    "id": "orderly",
+    "name": "Orderly",
+    "category": "dex",
+    "tradeUrl": "https://orderly.network",
+    "color": "#7447ad",
+    "makerFeePct": 0,
+    "takerFeePct": 0.01,
+    "maxLeverage": 100,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://orderly.network",
+    "coingeckoIds": [
+      "orderly_network_derivatives_evm"
+    ],
+    "llamaTvlSlugs": [
+      "orderly-bridge"
+    ]
+  },
+  {
+    "id": "nado",
+    "name": "Nado",
+    "category": "dex",
+    "tradeUrl": "https://app.nado.xyz",
+    "color": "#4b4b55",
+    "makerFeePct": 0.01,
+    "takerFeePct": 0.035,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.nado.xyz",
+    "coingeckoIds": [
+      "nado"
+    ],
+    "llamaTvlSlugs": [
+      "nado-spot"
+    ],
+    "referenceId": "nado"
+  },
+  {
+    "id": "risex",
+    "name": "RISEx",
+    "category": "dex",
+    "tradeUrl": "https://www.rise.trade",
+    "color": "#00a079",
+    "makerFeePct": 0.01,
+    "takerFeePct": 0.03,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://www.rise.trade",
+    "coingeckoIds": [
+      "risex"
+    ],
+    "llamaTvlSlugs": [
+      "risex"
+    ],
+    "referenceId": "risex"
+  },
+  {
+    "id": "ondo",
+    "name": "Ondo Perps",
+    "category": "dex",
+    "tradeUrl": "https://app.ondoperps.xyz",
+    "color": "#6b7280",
+    "makerFeePct": 0.01,
+    "takerFeePct": 0.025,
+    "maxLeverage": 20,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.ondoperps.xyz",
+    "feePromotion": {
+      "baseMakerFeePct": 0.02,
+      "baseTakerFeePct": 0.05,
+      "until": null
+    },
+    "coingeckoIds": [
+      "ondo-perps"
+    ],
+    "referenceId": "ondo"
+  },
+  {
+    "id": "vest",
+    "name": "Vest Exchange",
+    "category": "dex",
+    "tradeUrl": "https://trade.vest.exchange",
+    "color": "#b4483f",
+    "makerFeePct": 0,
+    "takerFeePct": 0.01,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://trade.vest.exchange",
+    "coingeckoIds": [
+      "vest-exchange-futures"
+    ],
+    "llamaTvlSlugs": [
+      "vest-markets"
+    ],
+    "referenceId": "vest_exchange"
+  },
+  {
+    "id": "dydx",
+    "name": "dYdX",
+    "category": "dex",
+    "tradeUrl": "https://dydx.trade",
+    "color": "#6966ff",
+    "makerFeePct": 0.01,
+    "takerFeePct": 0.05,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://dydx.trade",
+    "coingeckoIds": [
+      "dydx_chain"
+    ],
+    "llamaTvlSlugs": [
+      "dydx-v4"
+    ],
+    "referenceId": "dydx"
+  },
+  {
+    "id": "jupiter",
+    "name": "Jupiter Perps",
+    "category": "dex",
+    "tradeUrl": "https://jup.ag/perps",
+    "color": "#2a9c96",
+    "makerFeePct": 0.06,
+    "takerFeePct": 0.06,
+    "maxLeverage": 250,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://jup.ag/perps",
+    "llamaTvlSlugs": [
+      "jupiter-perpetual-exchange"
+    ],
+    "llamaOiSlug": "jupiter-perpetual-exchange"
+  },
+  {
+    "id": "txflow",
+    "name": "TxFlow",
+    "category": "dex",
+    "tradeUrl": "https://app.txflow.com",
+    "color": "#3ba02e",
+    "makerFeePct": 0.015,
+    "takerFeePct": 0.045,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.txflow.com",
+    "llamaTvlSlugs": [
+      "txflow-bridge"
+    ],
+    "llamaOiSlug": "txflow-perps",
+    "referenceId": "txflow"
+  },
+  {
+    "id": "paradex",
+    "name": "Paradex",
+    "category": "dex",
+    "tradeUrl": "https://www.paradex.trade",
+    "color": "#0898a8",
+    "makerFeePct": 0,
+    "takerFeePct": 0,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://www.paradex.trade",
+    "coingeckoIds": [
+      "paradex"
+    ],
+    "referenceId": "paradex"
+  },
+  {
+    "id": "paragon",
+    "name": "Paragon",
+    "category": "hip3",
+    "tradeUrl": "https://paragon.trade",
+    "color": "#2c8296",
+    "makerFeePct": 0.003,
+    "takerFeePct": 0.009,
+    "maxLeverage": 20,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://paragon.trade",
+    "parentId": "hyperliquid",
+    "hyperliquidDex": "para",
+    "referenceId": "paragon"
+  },
+  {
+    "id": "aevo",
+    "name": "Aevo",
+    "category": "dex",
+    "tradeUrl": "https://app.aevo.xyz",
+    "color": "#8a8a93",
+    "makerFeePct": 0.05,
+    "takerFeePct": 0.08,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.aevo.xyz",
+    "coingeckoIds": [
+      "aevo"
+    ]
+  },
+  {
+    "id": "ostium",
+    "name": "Ostium",
+    "category": "dex",
+    "tradeUrl": "https://app.ostium.com",
+    "color": "#d24c19",
+    "makerFeePct": 0.03,
+    "takerFeePct": 0.1,
+    "maxLeverage": 200,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.ostium.com",
+    "llamaTvlSlugs": [
+      "ostium"
+    ],
+    "llamaOiSlug": "ostium"
+  },
+  {
+    "id": "decibel",
+    "name": "Decibel",
+    "category": "dex",
+    "tradeUrl": "https://app.decibel.trade",
+    "color": "#3a3a42",
+    "makerFeePct": 0.015,
+    "takerFeePct": 0.045,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.decibel.trade",
+    "coingeckoIds": [
+      "decibel"
+    ],
+    "llamaTvlSlugs": [
+      "decibel"
+    ],
+    "referenceId": "decibel"
+  },
+  {
+    "id": "standx",
+    "name": "StandX",
+    "category": "dex",
+    "tradeUrl": "https://standx.com",
+    "color": "#55555e",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://standx.com",
+    "coingeckoIds": [
+      "standx"
+    ],
+    "llamaTvlSlugs": [
+      "standx-bridge"
+    ],
+    "referenceId": "standx"
+  },
+  {
+    "id": "reya",
+    "name": "Reya",
+    "category": "dex",
+    "tradeUrl": "https://app.reya.xyz",
+    "color": "#1c9e5a",
+    "makerFeePct": 0,
+    "takerFeePct": 0.03,
+    "maxLeverage": 100,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.reya.xyz",
+    "llamaTvlSlugs": [
+      "reya-perps"
+    ],
+    "llamaOiSlug": "reya-perps",
+    "referenceId": "reya"
+  },
+  {
+    "id": "kinetiq-markets",
+    "name": "Markets by Kinetiq",
+    "category": "hip3",
+    "tradeUrl": "https://markets.xyz",
+    "color": "#3d5a73",
+    "makerFeePct": 0.03,
+    "takerFeePct": 0.09,
+    "maxLeverage": 5,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://markets.xyz",
+    "parentId": "hyperliquid",
+    "hyperliquidDex": "mkts",
+    "referenceId": "km"
+  },
+  {
+    "id": "drift",
+    "name": "Velocity（原 Drift）",
+    "category": "dex",
+    "tradeUrl": "https://app.velocity.exchange",
+    "color": "#7556c7",
+    "makerFeePct": -0.0025,
+    "takerFeePct": 0.06,
+    "maxLeverage": 50,
+    "metadataAsOf": "2026-10-19",
+    "metadataSourceUrl": "https://zuoye.si/perpbox",
+    "metadataOfficialUrl": "https://app.velocity.exchange",
+    "llamaTvlSlugs": [
+      "drift-trade"
+    ]
+  },
+  {
+    "id": "01xyz",
+    "name": "01",
+    "category": "dex",
+    "tradeUrl": "https://01.xyz",
+    "color": "#64748b",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/01xyz",
+    "metadataOfficialUrl": "https://01.xyz",
+    "referenceId": "01xyz",
+    "llamaTvlSlugs": [
+      "01-exchange"
+    ],
+    "llamaOiSlug": "01-exchange"
+  },
+  {
+    "id": "aftermath",
+    "name": "Aftermath",
+    "category": "dex",
+    "tradeUrl": "https://aftermath.finance",
+    "color": "#7855c8",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/aftermath",
+    "metadataOfficialUrl": "https://aftermath.finance",
+    "referenceId": "aftermath",
+    "llamaTvlSlugs": [
+      "aftermath-aflp"
+    ],
+    "llamaOiSlug": "aftermath-perps",
+    "productLabel": "afLP 做市金库"
+  },
+  {
+    "id": "avantis",
+    "name": "Avantis",
+    "category": "dex",
+    "tradeUrl": "https://www.avantisfi.com",
+    "color": "#e6783c",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/avantis",
+    "metadataOfficialUrl": "https://www.avantisfi.com",
+    "referenceId": "avantis"
+  },
+  {
+    "id": "boros",
+    "name": "Boros",
+    "category": "dex",
+    "tradeUrl": "https://boros.pendle.finance/markets",
+    "color": "#ca568e",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/boros",
+    "metadataOfficialUrl": "https://boros.pendle.finance/markets",
+    "referenceId": "boros",
+    "llamaTvlSlugs": [
+      "boros"
+    ],
+    "productLabel": "利率衍生品",
+    "llamaOiSlug": "boros"
+  },
+  {
+    "id": "bulk",
+    "name": "Bulk",
+    "category": "dex",
+    "tradeUrl": "https://app.bulk.trade",
+    "color": "#9b4674",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/bulk",
+    "metadataOfficialUrl": "https://app.bulk.trade",
+    "referenceId": "bulk",
+    "llamaTvlSlugs": [
+      "bulk"
+    ],
+    "llamaOiSlug": "bulk",
+    "coingeckoIds": [
+      "bulk"
+    ]
+  },
+  {
+    "id": "bullet",
+    "name": "Bullet",
+    "category": "dex",
+    "tradeUrl": "https://app.bullet.xyz",
+    "color": "#c5dc65",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/bullet",
+    "metadataOfficialUrl": "https://app.bullet.xyz",
+    "referenceId": "bullet",
+    "llamaTvlSlugs": [
+      "bullet-perps"
+    ],
+    "llamaOiSlug": "bullet-perps"
+  },
+  {
+    "id": "ethereal",
+    "name": "Meridian（原 Ethereal）",
+    "category": "dex",
+    "tradeUrl": "https://app.meridian.xyz",
+    "color": "#9778c9",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/ethereal",
+    "metadataOfficialUrl": "https://app.meridian.xyz",
+    "referenceId": "ethereal",
+    "llamaTvlSlugs": [
+      "meridian-perps"
+    ],
+    "llamaOiSlug": "meridian-perps"
+  },
+  {
+    "id": "gains",
+    "name": "Gains Network",
+    "category": "dex",
+    "tradeUrl": "https://gains.trade",
+    "color": "#48a965",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/gains",
+    "metadataOfficialUrl": "https://gains.trade",
+    "referenceId": "gains",
+    "llamaTvlSlugs": [
+      "gains-network"
+    ],
+    "llamaOiSlug": "gains-network"
+  },
+  {
+    "id": "hello",
+    "name": "Hello",
+    "category": "dex",
+    "tradeUrl": "https://www.hello.trade",
+    "color": "#ee713b",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/hello",
+    "metadataOfficialUrl": "https://www.hello.trade",
+    "referenceId": "hello"
+  },
+  {
+    "id": "hibachi",
+    "name": "Hibachi",
+    "category": "dex",
+    "tradeUrl": "https://hibachi.xyz",
+    "color": "#ec8051",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/hibachi",
+    "metadataOfficialUrl": "https://hibachi.xyz",
+    "referenceId": "hibachi",
+    "llamaTvlSlugs": [
+      "hibachi-bridge"
+    ],
+    "llamaOiSlug": "hibachi"
+  },
+  {
+    "id": "hotstuff",
+    "name": "Hotstuff",
+    "category": "dex",
+    "tradeUrl": "https://app.hotstuff.trade",
+    "color": "#62ba78",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/hotstuff",
+    "metadataOfficialUrl": "https://app.hotstuff.trade",
+    "referenceId": "hotstuff",
+    "llamaTvlSlugs": [
+      "hotstuff-perps"
+    ],
+    "llamaOiSlug": "hotstuff-perps"
+  },
+  {
+    "id": "hyena",
+    "name": "HYENA",
+    "category": "hip3",
+    "tradeUrl": "https://docs.hyena.trade",
+    "color": "#7a8291",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/hyena",
+    "metadataOfficialUrl": "https://docs.hyena.trade/",
+    "referenceId": "hyena",
+    "parentId": "hyperliquid",
+    "hyperliquidDex": "hyna",
+    "productLabel": "已停止交易",
+    "tradingStatus": "closed"
+  },
+  {
+    "id": "kalshi",
+    "name": "Kalshi Perps",
+    "category": "cex",
+    "tradeUrl": "https://kalshi.com/perps",
+    "color": "#00bd85",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/kalshi",
+    "metadataOfficialUrl": "https://kalshi.com/perps",
+    "referenceId": "kalshi",
+    "productLabel": "CEX 永续",
+    "coingeckoIds": [
+      "kalshi"
+    ]
+  },
+  {
+    "id": "katana",
+    "name": "Katana Perps",
+    "category": "dex",
+    "tradeUrl": "https://perps.katana.network",
+    "color": "#bcc952",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/katana",
+    "metadataOfficialUrl": "https://perps.katana.network",
+    "referenceId": "katana",
+    "llamaTvlSlugs": [
+      "katana-perps"
+    ],
+    "llamaOiSlug": "katana-perps",
+    "coingeckoIds": [
+      "katana-perps"
+    ]
+  },
+  {
+    "id": "lighter-rh",
+    "name": "Lighter RH",
+    "category": "dex",
+    "tradeUrl": "https://robinhoodchain.lighter.xyz",
+    "color": "#9ca6b5",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/lighter_rh",
+    "metadataOfficialUrl": "https://robinhoodchain.lighter.xyz",
+    "referenceId": "lighter_rh",
+    "llamaTvlSlugs": [
+      "lighter-robinhood-perps"
+    ],
+    "llamaOiSlug": "lighter-robinhood-perps",
+    "coingeckoIds": [
+      "robinhood-chain-lighter-futures"
+    ]
+  },
+  {
+    "id": "papertrade",
+    "name": "Papertrade",
+    "category": "dex",
+    "tradeUrl": "https://papertrade.xyz",
+    "color": "#ba525b",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": 1000,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/papertrade",
+    "metadataOfficialUrl": "https://docs.papertrade.xyz/",
+    "referenceId": "papertrade",
+    "allowSynthetic": true,
+    "productLabel": "合成永续"
+  },
+  {
+    "id": "perpl",
+    "name": "Perpl",
+    "category": "dex",
+    "tradeUrl": "https://app.perpl.xyz",
+    "color": "#9871dc",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/perpl",
+    "metadataOfficialUrl": "https://app.perpl.xyz",
+    "referenceId": "perpl",
+    "llamaTvlSlugs": [
+      "perpl"
+    ],
+    "llamaOiSlug": "perpl"
+  },
+  {
+    "id": "phoenix",
+    "name": "Phoenix",
+    "category": "dex",
+    "tradeUrl": "https://phoenix.trade",
+    "color": "#c89041",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/phoenix",
+    "metadataOfficialUrl": "https://phoenix.trade",
+    "referenceId": "phoenix",
+    "llamaTvlSlugs": [
+      "phoenix-perp"
+    ],
+    "llamaOiSlug": "phoenix-perp",
+    "coingeckoIds": [
+      "phoenix"
+    ]
+  },
+  {
+    "id": "polymarket",
+    "name": "Polymarket Perps",
+    "category": "dex",
+    "tradeUrl": "https://polymarket.com/perps",
+    "color": "#4c80e6",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/polymarket",
+    "metadataOfficialUrl": "https://polymarket.com/perps",
+    "referenceId": "polymarket",
+    "llamaTvlSlugs": [
+      "polymarket-perps"
+    ],
+    "llamaOiSlug": "polymarket-perps",
+    "coingeckoIds": [
+      "polymarket-perps"
+    ]
+  },
+  {
+    "id": "popdex",
+    "name": "Popdex",
+    "category": "dex",
+    "tradeUrl": "https://app.popdex.xyz",
+    "color": "#8984ef",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/popdex",
+    "metadataOfficialUrl": "https://app.popdex.xyz",
+    "referenceId": "popdex",
+    "llamaTvlSlugs": [
+      "popdex-bridge"
+    ],
+    "llamaOiSlug": "popdex-perps"
+  },
+  {
+    "id": "rho",
+    "name": "Rho",
+    "category": "dex",
+    "tradeUrl": "https://x.rho.trading",
+    "color": "#e7905d",
+    "makerFeePct": null,
+    "takerFeePct": null,
+    "maxLeverage": null,
+    "metadataAsOf": "2026-11-07",
+    "metadataSourceUrl": "https://perpdexlist.com/exchanges/rho",
+    "metadataOfficialUrl": "https://x.rho.trading",
+    "referenceId": "rho",
+    "llamaTvlSlugs": [
+      "rho-x"
+    ],
+    "productLabel": "利率与永续",
+    "llamaOiSlug": "rho-x"
+  }
+]

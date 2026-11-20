@@ -3,9 +3,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { allEntitlements, type PlanKey, type RoleKey } from "@/lib/entitlements";
+import { hasActiveAuthSession } from "@/lib/auth-session";
+import { WELINK_ACCESS_CODE, WELINK_MAX_TRIAL_ANNOUNCEMENT_TASK } from "@/lib/max-trial";
 import { isDatabaseConfigured, prisma } from "@/lib/prisma";
 import { awardRegistrationReferral } from "@/lib/referrals";
-import { verifyTwoFactorPass } from "@/lib/security";
+import { twoFactorBindingFromClaims, verifyTwoFactorPass } from "@/lib/security";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export type Viewer = {
@@ -31,6 +33,8 @@ export type Viewer = {
     label: string;
     endsAt: string;
   } | null;
+  showMaxGiftAnnouncement: boolean;
+  maxGiftAnnouncementEndsAt: string | null;
   twoFactorEnabled: boolean;
   twoFactorPassed: boolean;
   needsSecondFactor: boolean;
@@ -81,7 +85,9 @@ async function attachPendingReferral(userId: string) {
 }
 
 export async function syncAuthenticatedUser(user: SupabaseUser) {
-  if (!user.email) throw new Error("Authenticated user does not have an email address");
+  // Only a server-verified Auth user may project an identity or bootstrap a
+  // configured administrator. User-editable metadata never grants a role.
+  if (!user.email || !user.email_confirmed_at) throw new Error("A verified email address is required");
 
   const email = user.email.toLowerCase();
   const provider = authProvider(user);
@@ -201,8 +207,12 @@ function findViewerRecord(userId: string) {
       accessRedemptions: {
         where: { startsAt: { lte: now }, endsAt: { gt: now } },
         orderBy: { endsAt: "desc" },
+        include: { accessCode: { select: { label: true, codeHint: true } } }
+      },
+      onboardingTasks: {
+        where: { taskKey: WELINK_MAX_TRIAL_ANNOUNCEMENT_TASK },
         take: 1,
-        include: { accessCode: { select: { label: true } } }
+        select: { id: true }
       },
       twoFactor: true
     }
@@ -214,8 +224,11 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   if (!supabase) return null;
 
   const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
+  if (error || !data.user?.email_confirmed_at) return null;
   if (!isDatabaseConfigured()) return null;
+
+  const { data: verified, error: claimsError } = await supabase.auth.getClaims();
+  if (claimsError || verified?.claims.sub !== data.user.id || !await hasActiveAuthSession(data.user.id, verified.claims.session_id)) return null;
 
   let record = await findViewerRecord(data.user.id);
   const projectionNeedsRepair =
@@ -244,6 +257,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
   const roles = record.roles.map((item) => item.role.key);
   const activeAccessGrant = record.accessRedemptions[0] ?? null;
+  const activeWelinkGrant = record.accessRedemptions.find(
+    (redemption) => redemption.accessCode.codeHint.toUpperCase() === WELINK_ACCESS_CODE
+  );
   const plan = effectivePlan(record.subscriptions, Boolean(activeAccessGrant));
   const role: RoleKey = roles.includes("admin")
     ? "admin"
@@ -256,13 +272,13 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
         : "free";
 
   const latestSubscription = record.subscriptions[0] ?? null;
-  let aal2 = false;
-  if (record.twoFactor?.enabledAt) {
-    const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    aal2 = assurance?.currentLevel === "aal2";
-  }
+  // getAuthenticatorAssuranceLevel decodes the stored session. Authorization
+  // instead uses signature-verified claims and a recovery pass bound to this
+  // exact Auth session and current factor enrollment.
+  const aal2 = verified.claims.aal === "aal2";
   const twoFactorCookie = (await cookies()).get("welinkbtc_2fa")?.value;
-  const backupPassed = await verifyTwoFactorPass(twoFactorCookie, record.id);
+  const binding = twoFactorBindingFromClaims(verified.claims, record.id, record.twoFactor?.factorId, record.twoFactor?.enabledAt);
+  const backupPassed = await verifyTwoFactorPass(twoFactorCookie, record.id, binding);
   const twoFactorPassed = !record.twoFactor?.enabledAt || aal2 || backupPassed;
 
   const viewer: Viewer = {
@@ -292,6 +308,8 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
           endsAt: activeAccessGrant.endsAt.toISOString()
         }
       : null,
+    showMaxGiftAnnouncement: Boolean(activeWelinkGrant && record.onboardingTasks.length === 0),
+    maxGiftAnnouncementEndsAt: activeWelinkGrant?.endsAt.toISOString() ?? null,
     twoFactorEnabled: Boolean(record.twoFactor?.enabledAt),
     twoFactorPassed,
     needsSecondFactor: Boolean(record.twoFactor?.enabledAt && !twoFactorPassed),
@@ -316,13 +334,14 @@ export async function getActiveViewerId(): Promise<string | null> {
   const { data, error } = await supabase.auth.getClaims();
   const userId = typeof data?.claims.sub === "string" ? data.claims.sub : "";
   if (error || !data || !/^[0-9a-f-]{36}$/i.test(userId)) return null;
+  if (!await hasActiveAuthSession(userId, data.claims.session_id)) return null;
 
   const record = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
       status: true,
-      twoFactor: { select: { enabledAt: true } }
+      twoFactor: { select: { factorId: true, enabledAt: true } }
     }
   });
   if (!record || record.status !== "ACTIVE") return null;
@@ -330,7 +349,8 @@ export async function getActiveViewerId(): Promise<string | null> {
 
   if (data.claims.aal === "aal2") return record.id;
   const twoFactorCookie = (await cookies()).get("welinkbtc_2fa")?.value;
-  return await verifyTwoFactorPass(twoFactorCookie, record.id) ? record.id : null;
+  const binding = twoFactorBindingFromClaims(data.claims, record.id, record.twoFactor.factorId, record.twoFactor.enabledAt);
+  return await verifyTwoFactorPass(twoFactorCookie, record.id, binding) ? record.id : null;
 }
 
 /**
@@ -346,6 +366,7 @@ export async function getActiveViewerAccess(): Promise<ActiveViewerAccess | null
   const { data, error } = await supabase.auth.getClaims();
   const userId = typeof data?.claims.sub === "string" ? data.claims.sub : "";
   if (error || !data || !/^[0-9a-f-]{36}$/i.test(userId)) return null;
+  if (!await hasActiveAuthSession(userId, data.claims.session_id)) return null;
 
   const now = new Date();
   const record = await prisma.user.findUnique({
@@ -377,7 +398,7 @@ export async function getActiveViewerAccess(): Promise<ActiveViewerAccess | null
         take: 1,
         select: { id: true }
       },
-      twoFactor: { select: { enabledAt: true } }
+      twoFactor: { select: { factorId: true, enabledAt: true } }
     }
   });
   if (!record) return null;
@@ -386,13 +407,14 @@ export async function getActiveViewerAccess(): Promise<ActiveViewerAccess | null
   let twoFactorPassed = !twoFactorEnabled || data.claims.aal === "aal2";
   if (!twoFactorPassed) {
     const twoFactorCookie = (await cookies()).get("welinkbtc_2fa")?.value;
-    twoFactorPassed = await verifyTwoFactorPass(twoFactorCookie, record.id);
+    const binding = twoFactorBindingFromClaims(data.claims, record.id, record.twoFactor?.factorId, record.twoFactor?.enabledAt);
+    twoFactorPassed = await verifyTwoFactorPass(twoFactorCookie, record.id, binding);
   }
 
   return {
     id: record.id,
     status: record.status,
-    isAdmin: record.roles.length > 0,
+    isAdmin: record.status === "ACTIVE" && record.roles.length > 0 && twoFactorEnabled && twoFactorPassed,
     hasMaxAccess: record.subscriptions.length > 0 || record.accessRedemptions.length > 0,
     twoFactorEnabled,
     twoFactorPassed

@@ -18,7 +18,7 @@ const fixtureRows = Array.from({length:730}, (_, index) => {
   const price = 17000 * Math.exp(index / 440) * (1 + 0.14 * Math.sin(index / 41) + 0.045 * Math.cos(index / 7));
   return {date:new Date(Date.UTC(2024, 8, 1) + index * 86400000).toISOString().slice(0, 10),price,
     sth:price*(0.84+0.075*Math.sin(index/51)),tmmp:price*(0.7+0.11*Math.cos(index/91)),
-    lth:price*0.55,median:price*0.48,ratio:1.3+0.9*Math.sin(index/63),value:1.3+0.9*Math.sin(index/63)};
+    lth:price*0.55,median:price*0.48,momentum:1.2+0.7*Math.sin(index/83),ratio:1.3+0.9*Math.sin(index/63),value:1.3+0.9*Math.sin(index/63)};
 });
 const fixtureData = {ok:true,series:fixtureRows,snapshot:{...fixtureRows.at(-1),current:1.7,average7:1.6,average30:1.4,asOf:'2026-08-31'},
   ratioSnapshot:{current:1.15,average7:1.1,average30:1.05,asOf:'2026-08-31'},
@@ -90,7 +90,8 @@ async function choose(page,id) {
   await click(page,'#power-model-toggle'); await click(page,`[data-model-option="${id}"]`); await ready(page,id);
 }
 async function afterFullInterval(page,before,after,failure=false) {
-  await page.clock.fastForward(24999); assert.equal(await indicator(page),before,'No switch before 25 seconds');
+  const interval=await page.locator('body').evaluate(element=>element.classList.contains('home-page')?15000:25000);
+  await page.clock.fastForward(interval-1); assert.equal(await indicator(page),before,'No switch before the configured interval');
   await page.clock.fastForward(1); await ready(page,after,failure);
 }
 
@@ -114,8 +115,8 @@ async function screenshots(browser, mode) {
       await h.page.locator('#power-law').screenshot({path:screenshot,animations:'allow'});
       reports.push({...dimensions,screenshot});
       process.stdout.write(JSON.stringify({mode,...dimensions,screenshot})+'\n');
-      assert.equal(dimensions.default3D,true,mode+' defaults to 3D');
-      assert.equal(dimensions.metricsCollapsed,width>=720,'Default metrics visibility at '+width);
+      assert.equal(dimensions.default3D,mode!=='home',mode+' default view');
+      assert.equal(dimensions.metricsCollapsed,mode!=='home'&&width>=720,'Default metrics visibility at '+width);
       assert.ok(dimensions.scrollWidth<=width+1,mode+' horizontal overflow at '+width);
       assert.deepEqual(h.errors,[],mode+' runtime errors');
     } finally { await h.context.close(); }
@@ -125,7 +126,7 @@ async function screenshots(browser, mode) {
 async function behavior(browser,mode) {
   const h=await createPage(browser,mode,{clock:true,failLoss:true}), {page}=h;
   try {
-    assert.equal(await page.locator('#power-law').evaluate(element=>element.classList.contains('is-3d')),true);
+    assert.equal(await page.locator('#power-law').evaluate(element=>element.classList.contains('is-3d')),mode!=='home');
     await afterFullInterval(page,'cost-basis','sth-ratio');
     await afterFullInterval(page,'sth-ratio','lth-loss',true);
     await afterFullInterval(page,'lth-loss','rpl');
@@ -139,7 +140,7 @@ async function behavior(browser,mode) {
     assert.equal(await indicator(page),'sth-ratio','Open menu pauses the cycle');
     await click(page,'#power-model-toggle'); await page.locator('#power-model-toggle').focus();
     await page.clock.fastForward(60000); assert.equal(await indicator(page),'sth-ratio','Closed menu focus pauses the cycle');
-    await page.locator('#power-law-canvas').focus();
+    await page.locator('#power-model-toggle').evaluate(element=>element.blur());
     await afterFullInterval(page,'sth-ratio','lth-loss',true);
     await choose(page,'cost-basis'); await click(page,'[data-view="3d"]');
     const box=await page.locator('#power-law-canvas').boundingBox();
@@ -163,8 +164,13 @@ async function behavior(browser,mode) {
     slow.release(); await ready(page,'lth-sth'); await afterFullInterval(page,'lth-sth','lth-rp');
     assert.equal(await page.locator('#power-law [data-view="3d"]').getAttribute('aria-pressed'),'true');
     assert.equal(await page.locator('#power-law [data-range="30"]').evaluate(element=>element.classList.contains('active')),true);
+    await choose(page,'rplrm');
+    assert.equal(await page.locator('#power-law [data-model-option]').count(),35);
+    assert.ok((await page.locator('#power-chart-legend').textContent()).includes('RPLR-M'));
+    await click(page,'[data-view="2d"]');
+    await ready(page,'rplrm');
     assert.deepEqual(h.errors,[],mode+' runtime errors');
-    process.stdout.write(`${mode}: 25-second order, failure recovery, 2D/3D and range preservation, manual reset, menu/focus/drag/offscreen and explicit pause passed.\n`);
+    process.stdout.write(`${mode}: configured cycle order, failure recovery, 2D/3D and range preservation, manual reset, menu/focus/drag/offscreen and explicit pause passed.\n`);
   } finally { await h.context.close(); }
 }
 (async()=>{

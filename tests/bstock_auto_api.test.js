@@ -20,7 +20,7 @@ function load(file, imports) {
   const exports = {};
   vm.runInNewContext(compiled.get(file), { exports, Date, Error, URL, Request, Response, Headers,
     process: { env: { NODE_ENV: "production" } }, console: { info() {}, warn() {}, error() {} },
-    require(name) { if (Object.hasOwn(imports, name)) return imports[name]; throw new Error(`Non-mocked import forbidden: ${name}`); }
+    require(name) { if (name === '@/lib/secret-redaction') return load('lib/secret-redaction.ts', {}); if (Object.hasOwn(imports, name)) return imports[name]; throw new Error(`Non-mocked import forbidden: ${name}`); }
   }, { filename: file });
   return exports;
 }
@@ -162,6 +162,16 @@ function fixture(options = {}) {
   return { calls, records: () => records, get: (query, headers) => route.GET(request("GET", null, query, headers)), post: (body, query, headers) => route.POST(request("POST", body, query, headers)) };
 }
 const startBody = () => ({ action: "start", settings: { ...defaults }, acknowledged: true });
+test("manual hot authorization rejects removed selections and persists a reviewed bounded grid", async () => {
+  const body = { ...startBody(), settings: { ...defaults, strategy: "martingale_grid", selectionMode: "manual_hot", selectedSymbols: ["NVDAB"], gridLayers: 3, gridMultiplier: 2, gridStepPct: 1 } };
+  const bad = fixture();
+  assert.equal((await bad.post(body)).status, 409); assert.equal(bad.calls.start.length, 0);
+  const good = fixture({ market: { assets: [{ symbol: "NVDAB", campaignEligibility: "CONFIRMED", leveragedOrInverse: false, contractAddress, multiplier: "1", price: 10 }] } });
+  assert.equal((await good.post(body)).status, 200);
+  assert.equal(good.calls.start.length, 1);
+  assert.equal(good.records().configs[0].settings.strategy, "martingale_grid");
+  assert.deepEqual(Array.from(good.records().configs[0].settings.selectedSymbols), ["NVDAB"]);
+});
 const config = (extra = {}) => ({ ownerKey, walletAddress, settings: defaults, enabled: true, status: "RUNNING", generation: "generation-one", sessionEncrypted: "do-not-export-session", leaseToken: "do-not-export-lease", ...extra });
 const manualTrade = (extra = {}) => ({ id: "old-manual-trade", ownerKey, agentKey: "retired-agent-session", symbol: "NVDAB", side: "buy", status: "SUBMITTED", orderId: "manual-upstream-order",
   createdAt: new Date(Date.now() - 14 * 86_400_000), submittedAt: new Date(Date.now() - 14 * 86_400_000), txHash: null, completedAt: null,

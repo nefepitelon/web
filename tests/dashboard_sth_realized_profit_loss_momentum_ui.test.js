@@ -20,7 +20,7 @@ test("dashboard exposes the thirty-third STH realized profit/loss momentum model
   assert.match(html, /id="sth-rpl-momentum-download"/);
   assert.match(html, /id="sth-rpl-momentum-fullscreen"/);
   assert.match(html, /113、139 与 103 天/);
-  assert.match(html, /INDEX \/ 34/);
+  assert.match(html, /INDEX \/ 35/);
   assert.ok(html.indexOf('id="sth-rpl-momentum-panel"') > html.indexOf('id="utxo-age-rp-panel"'));
   assert.ok(html.indexOf('id="sth-rpl-momentum-panel"') < html.indexOf('class="chart-panel halving-section"'));
 });
@@ -43,9 +43,9 @@ test("STH profit/loss momentum has dedicated styles and a homepage snapshot", ()
   assert.match(css, /\.sth-rpl-momentum-stage/);
   assert.match(css, /\.legend-sth-rpl-momentum-line/);
   assert.match(css, /\.legend-sth-rpl-momentum-reference/);
-  assert.match(css, /grid-row: 1 \/ span 34/);
+  assert.match(css, /grid-row: 1 \/ span 35/);
   assert.match(homepage, /data-model-option="sth-rpl-momentum"/);
-  assert.match(homepage, /class="power-copy-orbit"><strong>34<\/strong>/);
+  assert.match(homepage, /class="power-copy-orbit"><strong>35<\/strong>/);
   assert.match(product, /"sth-rpl-momentum": \{/);
   assert.match(product, /\/api\/sth-realized-profit-loss-momentum\?schema=1/);
   assert.match(fs.readFileSync(path.join(root, "styles.css"), "utf8"), /\.model-sth-rpl-momentum/);

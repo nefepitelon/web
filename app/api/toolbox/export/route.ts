@@ -16,6 +16,10 @@ function displayValue(value: unknown, type: string) {
 
 export async function GET(request: Request) {
   const viewer = await getViewer();
+  if (!viewer || viewer.status !== "ACTIVE" || viewer.needsSecondFactor
+    || (["admin", "operator"].includes(viewer.role) && !canManageToolbox(viewer))) {
+    return Response.json({ error: "请使用已通过验证的有效账户导出" }, { status: viewer ? 403 : 401 });
+  }
   if (!hasEntitlement(viewer, "toolbox.export")) {
     return Response.json({ error: "Pro、Max 或管理员账户可以导出百宝箱数据" }, { status: viewer ? 403 : 401 });
   }

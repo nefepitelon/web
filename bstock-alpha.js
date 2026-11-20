@@ -31,7 +31,9 @@
   let walletConnectionMode = "";
   let browserWalletVerified = false;
   window.BstockAutoWalletContext = {
-    getState: () => ({ mode: walletConnectionMode, address: walletAddress })
+    getState: () => ({ mode: walletConnectionMode, address: walletAddress }),
+    getHotAssets: () => Object.values(assets).filter(asset => asset.campaignEligibility === "CONFIRMED" && !asset.leveragedOrInverse)
+      .map(asset => ({ symbol: asset.symbol, nameZh: asset.nameZh, name: asset.name }))
   };
   let walletContextVersion = 0;
   let walletLoginVersion = 0;
@@ -75,7 +77,7 @@
   const publicDataCacheKey = bstockStorage.publicDataCacheKey;
 
   function brandIconUrl(symbol) {
-    return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(String(symbol || "").toUpperCase())}`;
+    return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(String(symbol || "").toUpperCase())}&v=20261024`;
   }
   try {
     const stored = JSON.parse(localStorage.getItem("bstock-alpha-watchlist") || "[]");
@@ -146,7 +148,7 @@
 
   async function loadBstockLocalization() {
     if (localizationRequest) return localizationRequest;
-    localizationRequest = fetch("/legacy/data/bstock-localization.json", {
+    localizationRequest = fetch("/legacy/data/bstock-localization.json?v=20261024", {
       headers: { Accept: "application/json" },
       cache: "force-cache"
     })
@@ -306,7 +308,6 @@
       weekly: visibleConfirmed.length,
       stock: tradable.filter((asset) => asset.kind === "stock").length,
       etf: tradable.filter((asset) => asset.kind === "etf").length,
-      recommended: tradable.filter(isRecommended).length,
       watchlist: tradable.filter((asset) => watchlist.has(asset.symbol)).length
     };
     selectors("[data-universe-filter]").forEach((button) => {
@@ -321,8 +322,8 @@
     const footer = byId("eligibility-week");
     if (footer && tradable.length) {
       footer.textContent = hiddenConfirmed.length
-        ? `${tradable.length} 个固定 · 周机会 ${visibleConfirmed.length}/${confirmed.length} · 长期保留`
-        : `${tradable.length} 个固定 · 周机会 ${confirmed.length} · 长期保留`;
+        ? `${tradable.length} 个固定 · 热门 ${visibleConfirmed.length}/${confirmed.length} · 长期保留`
+        : `${tradable.length} 个固定 · 热门 ${confirmed.length} · 长期保留`;
     }
   }
 
@@ -331,7 +332,6 @@
     row.className = `token-row${asset === selected ? " active" : ""}`;
     row.dataset.symbol = asset.symbol;
     row.dataset.kind = asset.kind;
-    row.dataset.recommended = isRecommended(asset) ? "true" : "false";
     row.dataset.weekly = asset.campaignEligibility === "CONFIRMED"
       && !hiddenWeeklyOpportunities.has(asset.symbol) ? "true" : "false";
     row.setAttribute("role", "button");
@@ -347,7 +347,7 @@
     const symbol = document.createElement("strong");
     symbol.textContent = asset.symbol;
     symbol.title = asset.campaignEligibility === "CONFIRMED"
-      ? "Binance 官方清单与 type=3 合约双重核验；已长期保留在周机会目录"
+      ? "Binance 官方清单与 type=3 合约双重核验；已长期保留在热门目录"
       : "Binance type=3 注册表已核验；当前活动周资格等待官方清单更新";
     const chineseName = document.createElement("em");
     chineseName.className = "token-name-zh";
@@ -368,7 +368,7 @@
     score.className = `score-pill${isRecommended(asset) ? " recommended" : ""}`;
     const decisionScore = currentDecisionScore(asset);
     score.textContent = Number.isFinite(decisionScore) ? String(Math.round(decisionScore)) : "—";
-    score.title = isRecommended(asset) ? "确定性策略评分 ≥ 70，已自动加入推荐" : "确定性策略评分";
+    score.title = "确定性策略评分";
     const watch = document.createElement("button");
     watch.type = "button";
     watch.className = `watch-toggle${watchlist.has(asset.symbol) ? " active" : ""}`;
@@ -386,14 +386,14 @@
     removeWeekly.className = "weekly-remove";
     removeWeekly.textContent = "×";
     removeWeekly.hidden = asset.campaignEligibility !== "CONFIRMED";
-    removeWeekly.setAttribute("aria-label", `从周机会移除 ${asset.symbol}`);
-    removeWeekly.title = "从周机会移除；标的仍保留在全部列表并可交易";
+    removeWeekly.setAttribute("aria-label", `从热门移除 ${asset.symbol}`);
+    removeWeekly.title = "从热门移除；标的仍保留在全部列表并可交易";
     removeWeekly.addEventListener("click", (event) => {
       event.stopPropagation();
       hiddenWeeklyOpportunities.add(asset.symbol);
       persistHiddenWeeklyOpportunities();
       renderUniverse();
-      showToast(`${asset.symbol} 已从周机会移除，仍保留在全部列表。`);
+      showToast(`${asset.symbol} 已从热门移除，仍保留在全部列表。`);
     });
     const rowActions = document.createElement("span");
     rowActions.className = "token-actions";
@@ -585,7 +585,6 @@
     byId("order-symbol").textContent = asset.symbol;
     const universeRow = document.querySelector(`.token-row[data-symbol="${asset.symbol}"]`);
     if (universeRow) {
-      universeRow.dataset.recommended = isRecommended(asset) ? "true" : "false";
       const score = universeRow.querySelector(".score-pill");
       if (score) {
         score.textContent = Number.isFinite(finalScore) ? String(Math.round(finalScore)) : "—";
@@ -3004,7 +3003,6 @@
       const matchesFilter = activeFilter === "all"
         || row.dataset.kind === activeFilter
         || (activeFilter === "weekly" && row.dataset.weekly === "true")
-        || (activeFilter === "recommended" && row.dataset.recommended === "true")
         || (activeFilter === "watchlist" && watchlist.has(symbol));
       row.hidden = !(matchesQuery && matchesFilter);
     });
@@ -3016,8 +3014,8 @@
         ? "没有匹配的 bStock 标的。"
         : activeFilter === "weekly"
           ? (hiddenWeeklyOpportunities.size
-            ? "周机会标的已被手动移除，可在列表底部恢复。"
-            : "Binance 官方周机会目录当前没有可展示标的。")
+            ? "热门标的已被手动移除，可在列表底部恢复。"
+            : "Binance 官方热门目录当前没有可展示标的。")
           : "当前筛选项没有标的。";
     }
   }
@@ -3130,7 +3128,7 @@
     hiddenWeeklyOpportunities.clear();
     persistHiddenWeeklyOpportunities();
     renderUniverse();
-    showToast("已恢复全部周机会标的。");
+    showToast("已恢复全部热门标的。");
   });
   selectors("[data-ledger-tab]").forEach((button) => button.addEventListener("click", () => {
     selectors("[data-ledger-tab]").forEach((item) => item.classList.toggle("active", item === button));

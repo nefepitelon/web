@@ -1,3 +1,6 @@
+import { authorizeLegacyAiRequest, consumeLegacyAiBudget, LegacyAiSecurityError, prepareResearchConversation, protectedLegacyAiRoutes, readLegacyAiBody, researchConversationResponse } from "@/lib/legacy-ai-security";
+import { applyAuthResponseHeaders } from "@/lib/supabase/response";
+
 type LegacyRequest = {
   method: string;
   query: Record<string, string | string[]>;
@@ -18,20 +21,22 @@ type LegacyHandler = (request: LegacyRequest, response: LegacyResponse) => unkno
 type HandlerModule = { default?: LegacyHandler } | LegacyHandler;
 
 const loaders: Record<string, () => Promise<HandlerModule>> = {
+  "address-balance-flow": () => import("@/api/address-balance-flow.js"),
+  "address-balance-history": () => import("@/api/address-balance-history.js"),
   "aicoin-pulse-collector": () => import("@/api/aicoin-pulse-collector.js"),
-  "ai-ops-adapt": () => import("@/api/ai-ops-adapt.js"),
+  "ai-ops-adapt": () => import("@/lib/legacy-handlers/ai-ops-adapt.js"),
   "ai-ops-config": () => import("@/api/ai-ops-config.js"),
-  "ai-ops-generate": () => import("@/api/ai-ops-generate.js"),
-  "ai-ops-image": () => import("@/api/ai-ops-image.js"),
-  "ai-ops-library": () => import("@/api/ai-ops-library.js"),
-  "ai-ops-polish": () => import("@/api/ai-ops-polish.js"),
-  "ai-ops-publish": () => import("@/api/ai-ops-publish.js"),
+  "ai-ops-generate": () => import("@/lib/legacy-handlers/ai-ops-generate.js"),
+  "ai-ops-image": () => import("@/lib/legacy-handlers/ai-ops-image.js"),
+  "ai-ops-library": () => import("@/lib/legacy-handlers/ai-ops-library.js"),
+  "ai-ops-polish": () => import("@/lib/legacy-handlers/ai-ops-polish.js"),
+  "ai-ops-publish": () => import("@/lib/legacy-handlers/ai-ops-publish.js"),
   "alpha-scan": () => import("@/api/alpha-scan.js"),
   "binance-alpha-lists": () => import("@/api/binance-alpha-lists.js"),
   "alphaops-feed": () => import("@/api/alphaops-feed.js"),
-  "alphaops-projects": () => import("@/api/alphaops-projects.js"),
   coinglass: () => import("@/api/coinglass.js"),
   "cost-basis": () => import("@/api/cost-basis.js"),
+  "cycle-seasons": () => import("@/api/cycle-seasons.js"),
   "cycle-timing": () => import("@/api/cycle-timing.js"),
   cryptobubbles: () => import("@/api/cryptobubbles.js"),
   cryptoquant: () => import("@/api/cryptoquant.js"),
@@ -42,6 +47,8 @@ const loaders: Record<string, () => Promise<HandlerModule>> = {
   "lth-spent-price": () => import("@/api/lth-spent-price.js"),
   "lth-sth-ratio": () => import("@/api/lth-sth-ratio.js"),
   "market-metrics": () => import("@/api/market-metrics.js"),
+  "market-heatmap": () => import("@/api/market-heatmap.js"),
+  "asset-daily-report": () => import("@/lib/legacy-handlers/asset-daily-report.js"),
   "median-realized-price": () => import("@/api/median-realized-price.js"),
   "mvrv-bands": () => import("@/api/mvrv-bands.js"),
   "vdd-multiple": () => import("@/api/vdd-multiple.js"),
@@ -50,6 +57,7 @@ const loaders: Record<string, () => Promise<HandlerModule>> = {
   "percent-supply-profit": () => import("@/api/percent-supply-profit.js"),
   "percent-supply-profit-ex-10y": () => import("@/api/percent-supply-profit-ex-10y.js"),
   "realized-profit-loss": () => import("@/api/realized-profit-loss.js"),
+  "rplr-m": () => import("@/api/rplr-m.js"),
   "realized-cap-hodl-waves": () => import("@/api/realized-cap-hodl-waves.js"),
   "rhodl-ratio": () => import("@/api/rhodl-ratio.js"),
   "slrv-ratio": () => import("@/api/slrv-ratio.js"),
@@ -68,7 +76,7 @@ const loaders: Record<string, () => Promise<HandlerModule>> = {
   "vdd-median-cycle": () => import("@/api/vdd-median-cycle.js"),
   "risk-engine": () => import("@/api/risk-engine.js"),
   "surf-pulse": () => import("@/api/surf-pulse.js"),
-  "surf-research": () => import("@/api/surf-research.js"),
+  "surf-research": () => import("@/lib/legacy-handlers/surf-research.js"),
   "telegram-signal-collector": () => import("@/api/telegram-signal-collector.js")
 };
 
@@ -102,6 +110,23 @@ function unwrapHandler(module: HandlerModule) {
 async function handle(request: Request, legacy: string) {
   const load = loaders[legacy];
   if (!load) return Response.json({ error: "Not found" }, { status: 404 });
+  const protectedAi = protectedLegacyAiRoutes.has(legacy);
+  if (protectedAi && request.method === "OPTIONS") {
+    return applyAuthResponseHeaders(new Response(null, { status: 204, headers: { Allow: legacy === "asset-daily-report" ? "GET, POST, OPTIONS" : "POST, OPTIONS" } }));
+  }
+  let requestBody: unknown;
+  let aiViewer: Awaited<ReturnType<typeof authorizeLegacyAiRequest>> = null;
+  try {
+    aiViewer = await authorizeLegacyAiRequest(request, legacy);
+    requestBody = aiViewer ? await readLegacyAiBody(request) : await bodyFrom(request);
+    if (aiViewer && legacy === "surf-research") requestBody = prepareResearchConversation(requestBody, aiViewer.id);
+    if (aiViewer) await consumeLegacyAiBudget(request, legacy, aiViewer);
+  } catch (error) {
+    return applyAuthResponseHeaders(Response.json({ ok: false, error: error instanceof LegacyAiSecurityError ? error.message : "安全验证服务暂不可用。" }, {
+      status: error instanceof LegacyAiSecurityError ? error.status : 503,
+      headers: error instanceof LegacyAiSecurityError && error.retryAfterSeconds ? { "Retry-After": String(error.retryAfterSeconds) } : undefined
+    }));
+  }
   const url = new URL(request.url);
   const headers = new Headers();
   let statusCode = 200;
@@ -122,7 +147,7 @@ async function handle(request: Request, legacy: string) {
     },
     json(value) {
       headers.set("Content-Type", "application/json; charset=utf-8");
-      responseBody = JSON.stringify(value);
+      responseBody = JSON.stringify(aiViewer && legacy === "surf-research" ? researchConversationResponse(value, requestBody, aiViewer.id) : value);
       return this;
     },
     send(value) {
@@ -143,13 +168,18 @@ async function handle(request: Request, legacy: string) {
   const legacyRequest: LegacyRequest = {
     method: request.method,
     query: queryFrom(url),
-    body: await bodyFrom(request),
+    body: requestBody,
     headers: Object.fromEntries(request.headers.entries())
   };
 
   try {
     const handler = unwrapHandler(await load());
     await handler(legacyRequest, legacyResponse);
+    if (protectedAi && request.method === "POST") {
+      headers.delete("Access-Control-Allow-Origin");
+      headers.delete("Access-Control-Allow-Credentials");
+      return applyAuthResponseHeaders(new Response(responseBody, { status: statusCode, headers }));
+    }
     return new Response(responseBody, { status: statusCode, headers });
   } catch (caught) {
     console.error(`Legacy API ${legacy} failed`, caught);

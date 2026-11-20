@@ -93,7 +93,7 @@ test("product demo rotates only while visible, exposes one panel and never annou
   assert.equal(h.count.textContent, "01 / 06");
   assert.equal(h.root.dataset.running, "false");
   h.intersect(true);
-  h.tick(5999);
+  h.tick(2999);
   assert.equal(h.count.textContent, "01 / 06");
   h.tick(1);
   assert.equal(h.count.textContent, "02 / 06");
@@ -113,7 +113,7 @@ test("hover and document visibility pause the remaining slide time", () => {
   h.tick(12000);
   assert.equal(h.count.textContent, "01 / 06");
   h.root.emit("pointerleave");
-  h.tick(3999);
+  h.tick(999);
   assert.equal(h.count.textContent, "01 / 06");
   h.tick(1);
   assert.equal(h.count.textContent, "02 / 06");
@@ -123,7 +123,7 @@ test("hover and document visibility pause the remaining slide time", () => {
   assert.equal(h.count.textContent, "02 / 06");
   h.document.hidden = false;
   h.document.emit("visibilitychange");
-  h.tick(6000);
+  h.tick(3000);
   assert.equal(h.count.textContent, "03 / 06");
 });
 
@@ -139,7 +139,7 @@ test("manual navigation stops rotation and deliberate Play can run with its butt
   h.focus(h.toggle);
   h.toggle.emit("click");
   assert.equal(h.root.dataset.running, "true");
-  h.tick(6000);
+  h.tick(3000);
   assert.equal(h.count.textContent, "05 / 06");
   h.focus(h.panels[4]);
   assert.equal(h.root.dataset.running, "false");
@@ -176,7 +176,7 @@ test("reduced motion starts paused and language changes translate leaves and pan
   h.tabs[5].emit("click");
   assert.equal(h.status.textContent, "Quant");
   h.toggle.emit("click");
-  h.tick(6000);
+  h.tick(3000);
   assert.equal(h.count.textContent, "01 / 06");
 });
 
@@ -186,7 +186,7 @@ test("product screenshots prewarm only the next slide after entering the viewpor
   h.intersect(true);
   assert.equal(h.images[1].loading, "eager");
   assert.equal(h.images.filter((image) => image.loading === "eager").length, 1);
-  h.tick(6000);
+  h.tick(3000);
   assert.equal(h.images[2].loading, "eager");
   assert.equal(h.images.filter((image) => image.loading === "eager").length, 2);
   h.intersect(false);
@@ -195,13 +195,13 @@ test("product screenshots prewarm only the next slide after entering the viewpor
   h.intersect(true);
   assert.equal(h.images[4].loading, "eager");
   const noImages = harness(false, false);
-  assert.doesNotThrow(() => { noImages.intersect(true); noImages.tick(6000); });
+  assert.doesNotThrow(() => { noImages.intersect(true); noImages.tick(3000); });
 });
 
 test("reselecting the current tab preserves its remaining progress when playback resumes", () => {
   const h = harness();
   h.intersect(true);
-  h.tick(4000);
+  h.tick(1000);
   h.tabs[0].emit("click");
   h.tick(12000);
   assert.equal(h.count.textContent, "01 / 06");

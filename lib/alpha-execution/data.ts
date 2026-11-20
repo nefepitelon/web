@@ -1,4 +1,5 @@
 import "server-only";
+import { redactSecretData, redactSecretText } from "@/lib/secret-redaction";
 import { AlphaExecutionMode, AlphaExecutionState, AlphaMarketType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { maskProxy } from "@/lib/alpha-execution/credentials";
@@ -40,11 +41,11 @@ export async function alphaCredentialSummary(userId: string) {
     orderBy: [{ environment: "asc" }, { market: "asc" }]
   });
 
-  return credentials.map((credential) => ({
+  return redactSecretData(credentials.map((credential) => ({
     ...credential,
     proxyConfigured: Boolean(credential.proxyEncrypted),
     proxyEncrypted: undefined
-  }));
+  })));
 }
 
 export async function writeAlphaAudit(input: {
@@ -62,11 +63,11 @@ export async function writeAlphaAudit(input: {
       userId: input.userId,
       state: input.state,
       status: input.status,
-      message: input.message,
+      message: redactSecretText(input.message),
       intentId: input.intentId ?? null,
       planId: input.planId ?? null,
       orderId: input.orderId ?? null,
-      metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined
+      metadata: (redactSecretData(input.metadata) ?? undefined) as Prisma.InputJsonValue | undefined
     },
     select: { id: true }
   });
@@ -213,7 +214,7 @@ export async function executionSnapshot(userId: string) {
     plans,
     orders: orders.map(row => ({ ...row, ...origin(row) })),
     positions: positions.map(row => ({ ...row, ...origin(row) })),
-    audits,
+    audits: audits.map((row) => ({ ...row, message: row.message ? redactSecretText(row.message) : row.message })),
     portfolioStats,
     riskMetrics: {
       windowStart: riskWindowStart.toISOString(),

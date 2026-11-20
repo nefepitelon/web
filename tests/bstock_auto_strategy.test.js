@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 require("tsx/cjs");
 const {
-  autoSettingsSchema, selectAutoSignal, selectAutoExit, assessAutoQuoteFriction
+  autoSettingsSchema, selectAutoSignal, selectAutoExit, selectGridAddition, gridOrderUsd, assessAutoQuoteFriction
 } = require("../lib/bstock-auto-strategy.ts");
 
 const now = Date.parse("2026-09-08T12:00:00.000Z");
@@ -15,11 +15,34 @@ function candles(values) {
 }
 const trend = () => candles(Array.from({ length: 48 }, (_, index) => 100 + index * 0.3));
 const range = () => candles([...Array.from({ length: 40 }, (_, index) => index % 2 ? 102 : 98), 101, 102, 104, 104, 104, 108, 94, 98]);
+test("manual hot selection and finite geometric ladder settings validate fail-closed", () => {
+  const settings = autoSettingsSchema.parse({ strategy: "martingale_grid", selectionMode: "manual_hot", selectedSymbols: ["NVDAB"] });
+  assert.deepEqual([0, 1, 2].map(layer => gridOrderUsd(settings, layer)), [5, 10, 20]);
+  assert.equal(gridOrderUsd(settings, 3), 0);
+  for (const bad of [{ selectionMode: "manual_hot" }, { selectedSymbols: ["NVDAB", "NVDAB"] },
+    { selectedSymbols: ["BAD<script>"] }, { gridLayers: 5 }, { gridLayers: 2.5 }, { gridMultiplier: 3 },
+    { gridStepPct: 0 }, { strategy: "martingale_grid", orderUsd: 10 }]) {
+    assert.equal(autoSettingsSchema.safeParse(bad).success, false);
+  }
+});
+test("grid additions require a level, keep initial-anchor stops, and terminate at the layer cap", () => {
+  const settings = autoSettingsSchema.parse({ strategy: "martingale_grid" });
+  const base = { settings, price: 99, anchorPrice: 100, lastFillPrice: 100, filledLayers: 1, entryPrice: 100, highPrice: 100 };
+  assert.equal(selectGridAddition({ ...base, price: 99.5 }).buy, false);
+  const second = selectGridAddition(base);
+  assert.equal(second.buy, true); assert.equal(second.orderUsd, 10); assert.equal(second.layer, 1);
+  assert.equal(selectGridAddition({ ...base, price: 98, entryPrice: 99, lastFillPrice: 99, filledLayers: 2 }).orderUsd, 20);
+  assert.equal(selectGridAddition({ ...base, filledLayers: 3, price: 98 }).reason, "GRID_LAYER_LIMIT");
+  assert.equal(selectGridAddition({ ...base, price: 96.9, entryPrice: 98 }).buy, false);
+  assert.equal(selectGridAddition({ ...base, price: NaN }).buy, false);
+  assert.equal(selectGridAddition({ ...base, price: 107 }).reason, "GRID_EXIT_PRIORITY");
+  assert.equal(signal(trend(), { strategy: "martingale_grid" }).strategy, "martingale_grid");
+});
 function signal(points = trend(), settings = {}) {
   return selectAutoSignal({ points, now, strategy: "adaptive", stopLossPct: 3, takeProfitPct: 6, ...settings });
 }
 
-test("auto settings default to a bounded budget and reject malformed or martingale settings", () => {
+test("auto settings default to a bounded budget and reject malformed or unbounded martingale settings", () => {
   const settings = autoSettingsSchema.parse({});
   assert.equal(settings.orderUsd, 20);
   assert.equal(settings.budgetUsd, 100);

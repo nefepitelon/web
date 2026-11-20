@@ -7,7 +7,7 @@
     ? new URL(".", loaderScript.src).pathname.replace(/\/$/, "")
     : "";
   const assetUrl = (file) => `${assetBase}/${file}`;
-  const experienceVersion = "20260917-mvrv-zscore-watermark-v2";
+  const experienceVersion = "20261109-trend-motion-v1";
 
   const adaptCarouselForDashboard = (section) => {
     const brand = section.querySelector(".power-law-brand");

@@ -60,7 +60,9 @@ test("cycle timing participates in language and fullscreen redraws", () => {
   assert.match(js, /if \(cycleTimingSnapshot\) refreshCycleTimingMode\(\)/);
   const fullscreenBlock = js.slice(js.indexOf('document.addEventListener("fullscreenchange"'), js.indexOf('document.querySelectorAll("[data-metric-filter]"'));
   assert.match(fullscreenBlock, /hideCycleTimingTooltip\(\)/);
-  assert.match(fullscreenBlock, /drawCycleTimingChart\(\)/);
+  assert.match(fullscreenBlock, /drawAllCharts\(\)/);
+  const redrawAll = js.slice(js.indexOf("const drawAllCharts ="), js.indexOf("const translateFearGreed ="));
+  assert.match(redrawAll, /drawCycleTimingChart\(\)/);
 });
 
 test("cycle timing projections use the documented UTC calendar windows", async () => {

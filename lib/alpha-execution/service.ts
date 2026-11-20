@@ -540,6 +540,12 @@ async function executeClaimedPlan(planId: string, userId: string, submissionToke
     const { assertAutoPlanExecution } = await import("./automation-runtime");
     await assertAutoPlanExecution(userId, plan.id, currentReferencePrice);
   }
+  if (plan.environment === AlphaExecutionMode.LIVE && plan.intent.source.startsWith("stm-hunt:")) {
+    // STM plans retain their account-wide daily-loss interlock when submitted
+    // through any execution route, inside the common live submission lock.
+    const { assertStmCexDailyRisk } = await import("@/lib/stm-hunt/cex-risk");
+    await assertStmCexDailyRisk(userId, { market: engineMarket(plan.market), planId: plan.id, referencePrice: currentReferencePrice });
+  }
   await writeAlphaAudit({
     userId,
     intentId: plan.intentId,

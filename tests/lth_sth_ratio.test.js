@@ -47,7 +47,7 @@ test("LTH/STH snapshot detects a rising recovery above 0.48", async () => {
 test("LTH/STH endpoint returns a cached public daily payload", async () => {
   const module = await import("../api/lth-sth-ratio.js");
   const originalFetch = global.fetch;
-  delete global.__welinkLthSthRatioCache;
+  delete global.__welinkLthSthRatioCacheV2;
   const start = Date.UTC(2024, 0, 1);
   const dates = Array.from({ length: 400 }, (_, index) => new Date(start + index * 86_400_000));
   const csv = (column, mapper) => [
@@ -78,13 +78,14 @@ test("LTH/STH endpoint returns a cached public daily payload", async () => {
     await module.default({ method: "GET" }, response);
     assert.equal(response.statusCode, 200);
     assert.equal(body.ok, true);
-    assert.equal(body.series.length, 400);
+    assert.ok(body.series.length > 4000);
+    assert.ok(body.series[0].date < "2013-01-01");
     assert.equal(body.snapshot.price, 78000);
     assert.equal(body.threshold, 0.48);
     assert.match(body.sources.history, /BGeometrics/);
     assert.match(headers["Cache-Control"], /s-maxage=43200/);
   } finally {
     global.fetch = originalFetch;
-    delete global.__welinkLthSthRatioCache;
+    delete global.__welinkLthSthRatioCacheV2;
   }
 });

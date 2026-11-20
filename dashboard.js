@@ -14,6 +14,7 @@ const trendIndexList = document.querySelector("#trend-index-list");
 
 const translations = {
   zh: {
+    "rplrm.title": "BTC：已实现盈亏比动量指标",
     "nav.network": "网络",
     "nav.products": "产品",
     "nav.research": "研究",
@@ -57,13 +58,34 @@ const translations = {
     "trendNav.title": "趋势指标导航",
     "trendNav.text": "点击名称快速定位",
     "section.overview": "市场概览",
+    "section.addressFlow": "地址层级",
+    "section.marketHeatmap": "市场热力图",
     "section.carousel": "2/3D指标轮询集",
+    "section.cyclePulse": "周期钟摆",
     "section.valuation": "周期估值",
     "section.network": "矿工与网络",
     "section.charts": "趋势图表",
     "section.reference": "指标库",
     "carousel.loading": "正在载入 2/3D 指标轮询集...",
     "carousel.error": "2/3D 指标轮询集暂时无法载入",
+    "addressFlow.title": "BTC持仓地址层级资金脉冲",
+    "addressFlow.subtitle": "追踪不同余额区间的地址数量脉冲，识别持仓层级的扩张、收缩与结构迁移。",
+    "addressFlow.syncing": "PUBLIC DAILY · 同步中",
+    "addressFlow.live": "PUBLIC DAILY · 最新",
+    "addressFlow.provisional": "PUBLIC DAILY · 当日暂定",
+    "addressFlow.stale": "PUBLIC DAILY · 缓存",
+    "addressFlow.unavailable": "PUBLIC DAILY · 暂不可用",
+    "addressFlow.loading": "正在同步公开地址余额数据...",
+    "addressFlow.under1": "0.001–1 BTC",
+    "addressFlow.addresses": "地址",
+    "addressFlow.source": "数据源",
+    "addressFlow.disclosure": "地址数不等于独立投资者或资金净流入；地址拆分、合并、找零地址、托管钱包整理及跨阈值移动都会改变计数。",
+    "addressFlow.tableCaption": "BTC 地址余额区间逐日变化",
+    "addressFlow.date": "日期",
+    "addressFlow.controls": "BTC 地址层级图表控制",
+    "addressFlow.rangeLabel": "图表周期",
+    "addressFlow.latestLabel": "最新地址层级变化",
+    "addressFlow.legendLabel": "图表所示日期",
     "power.subtitle": "链上趋势快照",
     "power.view": "View 视图",
     "power.model": "Indicator 指标",
@@ -1007,6 +1029,7 @@ const translations = {
     authorized: "待授权"
   },
   en: {
+    "rplrm.title": "BTC: Realized Profit/Loss Ratio Momentum",
     "nav.network": "Network",
     "nav.products": "Products",
     "nav.research": "Research",
@@ -1050,13 +1073,34 @@ const translations = {
     "trendNav.title": "Trend Index",
     "trendNav.text": "Select a metric to jump",
     "section.overview": "Overview",
+    "section.addressFlow": "Address Cohorts",
+    "section.marketHeatmap": "Market Heatmap",
     "section.carousel": "2D/3D Indicator Loop",
+    "section.cyclePulse": "Cycle Pendulum",
     "section.valuation": "Valuation",
     "section.network": "Miner & Network",
     "section.charts": "Charts",
     "section.reference": "Metric Library",
     "carousel.loading": "Loading the 2D/3D indicator loop...",
     "carousel.error": "The 2D/3D indicator loop is temporarily unavailable",
+    "addressFlow.title": "BTC Address Cohort Capital Pulse",
+    "addressFlow.subtitle": "Track address-count pulses across Bitcoin balance cohorts to reveal expansion, contraction and structural migration.",
+    "addressFlow.syncing": "PUBLIC DAILY · SYNCING",
+    "addressFlow.live": "PUBLIC DAILY · LATEST",
+    "addressFlow.provisional": "PUBLIC DAILY · PROVISIONAL",
+    "addressFlow.stale": "PUBLIC DAILY · CACHED",
+    "addressFlow.unavailable": "PUBLIC DAILY · UNAVAILABLE",
+    "addressFlow.loading": "Syncing public address-balance data...",
+    "addressFlow.under1": "0.001–1 BTC",
+    "addressFlow.addresses": "addresses",
+    "addressFlow.source": "Source",
+    "addressFlow.disclosure": "Address counts do not equal unique investors or net capital flow. Change addresses, splits, consolidation, custody operations and threshold crossings can all move the count.",
+    "addressFlow.tableCaption": "Daily changes across BTC address-balance cohorts",
+    "addressFlow.date": "Date",
+    "addressFlow.controls": "BTC address cohort chart controls",
+    "addressFlow.rangeLabel": "Chart period",
+    "addressFlow.latestLabel": "Latest address cohort changes",
+    "addressFlow.legendLabel": "Displayed dates",
     "power.subtitle": "On-Chain Trend Snapshots",
     "power.view": "View",
     "power.model": "Indicator",
@@ -2274,21 +2318,31 @@ let lthNuplStressZones = [];
 let lthNuplReferencePattern = null;
 let lthNuplRange = "all";
 let lthNuplChartState = null;
+let addressFlowBuckets = [];
+let addressFlowDates = [];
+let addressFlowAsOf = null;
+let addressFlowSource = null;
+let addressFlowMeta = {};
+let addressFlowRange = window.matchMedia("(max-width: 700px)").matches ? 7 : 18;
+let addressFlowChartState = null;
+let addressFlowFocusedDate = null;
 let publicDataWarnings = [];
 let resizeTimer;
 const metricSnapshot = { price: null, wma: null, fng: null, mvrv: null, funding: null, halvingDays: null };
 const API_BASE = window.WELINKBTC_DATA_API_BASE || "";
 const OVERVIEW_CACHE_KEY = "welinkbtc-onchain-overview-v1";
+const ADDRESS_FLOW_CACHE_KEY = "welinkbtc-address-balance-flow-v1";
+const ADDRESS_FLOW_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const EXTENDED_CACHE_KEY = "welinkbtc-market-metrics-v1";
 const HALVING_CACHE_KEY = "welinkbtc-halving-v1";
 const HALVING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 let halvingSnapshot = null;
 let halvingInFlight = null;
-const COST_BASIS_CACHE_KEY = "welinkbtc-cost-basis-v1";
+const COST_BASIS_CACHE_KEY = "welinkbtc-cost-basis-v2";
 const LTH_REALIZED_CACHE_KEY = "welinkbtc-lth-realized-price-v1";
 const REALIZED_PROFIT_LOSS_CACHE_KEY = "welinkbtc-realized-profit-loss-v1";
 const MEDIAN_REALIZED_CACHE_KEY = "welinkbtc-median-realized-price-v1";
-const LTH_STH_CACHE_KEY = "welinkbtc-lth-sth-ratio-v1";
+const LTH_STH_CACHE_KEY = "welinkbtc-lth-sth-ratio-v2";
 const LTH_LOSS_CACHE_KEY = "welinkbtc-lth-market-cap-loss-v6";
 const SUPPLY_PROFIT_LOSS_CACHE_KEY = "welinkbtc-supply-profit-loss-ratio-v1";
 const MVRV_BANDS_CACHE_KEY = "welinkbtc-mvrv-bands-v1";
@@ -2314,13 +2368,14 @@ const STH_BANDS_CACHE_KEY = "welinkbtc-sth-cost-basis-bands-v1";
 const PERCENT_PROFIT_EX_10Y_CACHE_KEY = "welinkbtc-percent-supply-profit-ex-10y-v1";
 const STH_MVRV_CACHE_KEY = "welinkbtc-sth-mvrv-v1";
 const VDD_CACHE_KEY = "welinkbtc-vdd-multiple-v1";
-const LTH_NUPL_CACHE_KEY = "welinkbtc-lth-nupl-v1";
+const LTH_NUPL_CACHE_KEY = "welinkbtc-lth-nupl-v2";
 const SURF_METRIC_CACHE_KEY = "welinkbtc-surf-metric-analysis-v1";
 const SURF_METRIC_CACHE_MS = 30 * 60 * 1000;
 
 const DASHBOARD_DATA_CACHE_KEYS = [
   HALVING_CACHE_KEY,
   OVERVIEW_CACHE_KEY,
+  ADDRESS_FLOW_CACHE_KEY,
   EXTENDED_CACHE_KEY,
   COST_BASIS_CACHE_KEY,
   LTH_REALIZED_CACHE_KEY,
@@ -2353,6 +2408,7 @@ const DASHBOARD_DATA_CACHE_KEYS = [
   STH_MVRV_CACHE_KEY,
   VDD_CACHE_KEY,
   LTH_NUPL_CACHE_KEY,
+  "welinkbtc-rplrm-v1",
   SURF_METRIC_CACHE_KEY
 ];
 
@@ -2531,6 +2587,93 @@ const fetchJsonWithRetry = async (url, { attempts = 3, timeout = 12000 } = {}) =
   throw lastError;
 };
 
+// Data loaders and controls can request a draw at any time. Keep the latest
+// request for each chart, but only spend canvas work on panels near the viewport.
+const createDashboardChartScheduler = () => {
+  const charts = new Map();
+  const targets = new Map();
+  let frame = 0;
+  let activeSelector = null;
+  const requestFrame = () => {
+    if (!frame && !document.hidden && [...charts.values()].some((chart) => chart.dirty && chart.visible)) {
+      frame = window.requestAnimationFrame(renderPending);
+    }
+  };
+  const render = (chart) => {
+    chart.dirty = false;
+    const previous = activeSelector;
+    activeSelector = chart.selector;
+    try { chart.draw(); } finally { activeSelector = previous; }
+  };
+  const renderPending = () => {
+    frame = 0;
+    if (document.hidden) return;
+    const started = performance.now();
+    for (const chart of charts.values()) {
+      if (!chart.dirty || !chart.visible) continue;
+      try { render(chart); } catch (error) { console.warn(`Chart render failed: ${chart.selector}`, error); }
+      // Yield between expensive full-history charts instead of creating a long
+      // startup/resize task that competes with touch and scroll input.
+      if (performance.now() - started >= 8) break;
+    }
+    requestFrame();
+  };
+  const intersectionObserver = "IntersectionObserver" in window ? new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const chart = targets.get(entry.target);
+      if (!chart) return;
+      chart.visible = entry.isIntersecting;
+      chart.target.classList.toggle("is-chart-visible", chart.visible && !document.hidden);
+    });
+    requestFrame();
+  }, { rootMargin: "300px 0px", threshold: 0 }) : null;
+  const resizeObserver = "ResizeObserver" in window ? new ResizeObserver((entries) => {
+    entries.forEach((entry) => {
+      for (const chart of charts.values()) {
+        if (chart.stage === entry.target) chart.dirty = true;
+      }
+    });
+    requestFrame();
+  }) : null;
+  const request = (selector, draw) => {
+    // Match by selector so an external chart's public wrapper can call its own
+    // renderer without recursively queuing itself.
+    if (activeSelector === selector) return false;
+    let chart = charts.get(selector);
+    if (!chart) {
+      const canvas = document.querySelector(selector);
+      if (!canvas) return true;
+      const target = canvas.closest(".chart-panel, .address-flow-panel") || canvas;
+      const stage = canvas.parentElement || canvas;
+      chart = { selector, draw, target, stage, dirty: true, visible: !intersectionObserver };
+      charts.set(selector, chart);
+      targets.set(target, chart);
+      intersectionObserver?.observe(target);
+      resizeObserver?.observe(stage);
+      target.classList.toggle("is-chart-visible", chart.visible && !document.hidden);
+    }
+    chart.draw = draw;
+    chart.dirty = true;
+    requestFrame();
+    return true;
+  };
+  const flush = (selector) => {
+    const chart = charts.get(selector);
+    if (chart) render(chart);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && frame) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    }
+    charts.forEach((chart) => chart.target.classList.toggle("is-chart-visible", chart.visible && !document.hidden));
+    requestFrame();
+  });
+  return { request, flush };
+};
+const dashboardChartScheduler = createDashboardChartScheduler();
+window.WelinkDashboardChartScheduler = dashboardChartScheduler;
+
 const setupCanvas = (canvas) => {
   const rect = canvas.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2668,6 +2811,7 @@ const formatAxisUsd = (value) => {
 };
 
 const drawCostBasisChart = () => {
+  if (dashboardChartScheduler.request("#cost-basis-chart", drawCostBasisChart)) return;
   const canvas = document.querySelector("#cost-basis-chart");
   const stage = canvas?.closest(".cost-basis-stage");
   const series = getCostBasisVisibleSeries();
@@ -2842,6 +2986,7 @@ const hideCostBasisTooltip = () => {
 };
 
 const drawSthRatioChart = () => {
+  if (dashboardChartScheduler.request("#sth-ratio-chart", drawSthRatioChart)) return;
   const canvas = document.querySelector("#sth-ratio-chart");
   const stage = canvas?.closest(".ratio-stage");
   const series = getSthRatioVisibleSeries();
@@ -3099,6 +3244,7 @@ const getLthRealizedVisibleSeries = () => {
 };
 
 const drawLthRealizedChart = () => {
+  if (dashboardChartScheduler.request("#lth-rp-chart", drawLthRealizedChart)) return;
   const canvas = document.querySelector("#lth-rp-chart");
   const stage = canvas?.closest(".lth-rp-stage");
   const series = getLthRealizedVisibleSeries();
@@ -3257,6 +3403,7 @@ const getRealizedProfitLossVisibleSeries = () => {
 };
 
 const drawRealizedProfitLossChart = () => {
+  if (dashboardChartScheduler.request("#rpl-chart", drawRealizedProfitLossChart)) return;
   const canvas = document.querySelector("#rpl-chart");
   const stage = canvas?.closest(".rpl-stage");
   const series = getRealizedProfitLossVisibleSeries();
@@ -3471,6 +3618,7 @@ const getMedianRealizedVisibleSeries = () => {
 };
 
 const drawMedianRealizedChart = () => {
+  if (dashboardChartScheduler.request("#median-rp-chart", drawMedianRealizedChart)) return;
   const canvas = document.querySelector("#median-rp-chart");
   const stage = canvas?.closest(".median-rp-stage");
   const series = getMedianRealizedVisibleSeries();
@@ -3709,6 +3857,7 @@ const getMedianMvrvVisibleSeries = () => {
 };
 
 const drawMedianMvrvChart = () => {
+  if (dashboardChartScheduler.request("#median-mvrv-chart", drawMedianMvrvChart)) return;
   const canvas = document.querySelector("#median-mvrv-chart");
   const stage = canvas?.closest(".median-mvrv-stage");
   const series = getMedianMvrvVisibleSeries();
@@ -3882,6 +4031,7 @@ const getMvrvBandsVisibleSeries = () => {
 };
 
 const drawMvrvBandsChart = () => {
+  if (dashboardChartScheduler.request("#mvrv-bands-chart", drawMvrvBandsChart)) return;
   const canvas = document.querySelector("#mvrv-bands-chart");
   const stage = canvas?.closest(".mvrv-bands-stage");
   const series = getMvrvBandsVisibleSeries();
@@ -4060,6 +4210,7 @@ const getMvrvPriceBandsVisibleSeries = () => {
 };
 
 const drawMvrvPriceBandsChart = () => {
+  if (dashboardChartScheduler.request("#mvrv-price-bands-chart", drawMvrvPriceBandsChart)) return;
   const canvas = document.querySelector("#mvrv-price-bands-chart");
   const stage = canvas?.closest(".mvrv-price-bands-stage");
   const series = getMvrvPriceBandsVisibleSeries();
@@ -4239,6 +4390,7 @@ const getStockToFlowVisibleSeries = () => {
 };
 
 const drawStockToFlowChart = () => {
+  if (dashboardChartScheduler.request("#stock-to-flow-chart", drawStockToFlowChart)) return;
   const canvas = document.querySelector("#stock-to-flow-chart");
   const stage = canvas?.closest(".stock-to-flow-stage");
   const series = getStockToFlowVisibleSeries();
@@ -4435,6 +4587,7 @@ const getCycleTimingVisibleSeries = () => {
 const getActiveCycleTimingMode = () => cycleTimingModes[cycleTimingMode] || null;
 
 const drawCycleTimingChart = () => {
+  if (dashboardChartScheduler.request("#cycle-timing-chart", drawCycleTimingChart)) return;
   const canvas = document.querySelector("#cycle-timing-chart");
   const stage = canvas?.closest(".cycle-timing-stage");
   const series = getCycleTimingVisibleSeries();
@@ -4699,6 +4852,7 @@ const getRhodlVisibleSeries = () => {
 };
 
 const drawRhodlChart = () => {
+  if (dashboardChartScheduler.request("#rhodl-chart", drawRhodlChart)) return;
   const canvas = document.querySelector("#rhodl-chart");
   const stage = canvas?.closest(".rhodl-stage");
   const series = getRhodlVisibleSeries();
@@ -4876,6 +5030,7 @@ const getLthRplVisibleSeries = () => {
 };
 
 const drawLthRplChart = () => {
+  if (dashboardChartScheduler.request("#lth-rpl-chart", drawLthRplChart)) return;
   const canvas = document.querySelector("#lth-rpl-chart");
   const stage = canvas?.closest(".lth-rpl-stage");
   const series = getLthRplVisibleSeries();
@@ -5061,6 +5216,7 @@ const getSlrvVisibleSeries = () => {
 };
 
 const drawSlrvChart = () => {
+  if (dashboardChartScheduler.request("#slrv-chart", drawSlrvChart)) return;
   const canvas = document.querySelector("#slrv-chart");
   const stage = canvas?.closest(".slrv-stage");
   const series = getSlrvVisibleSeries();
@@ -5231,6 +5387,7 @@ const getRealizedCapHodlVisibleSeries = () => {
 };
 
 const drawRealizedCapHodlChart = () => {
+  if (dashboardChartScheduler.request("#realized-cap-hodl-chart", drawRealizedCapHodlChart)) return;
   const canvas = document.querySelector("#realized-cap-hodl-chart");
   const stage = canvas?.closest(".realized-cap-hodl-stage");
   const series = getRealizedCapHodlVisibleSeries();
@@ -5442,6 +5599,7 @@ const getLthSpentVisibleSeries = () => {
 };
 
 const drawLthSpentChart = () => {
+  if (dashboardChartScheduler.request("#lth-spent-chart", drawLthSpentChart)) return;
   const canvas = document.querySelector("#lth-spent-chart");
   const stage = canvas?.closest(".lth-spent-stage");
   const series = getLthSpentVisibleSeries();
@@ -5622,6 +5780,7 @@ const getPercentProfitVisibleSeries = () => {
 };
 
 const drawPercentProfitChart = () => {
+  if (dashboardChartScheduler.request("#percent-profit-chart", drawPercentProfitChart)) return;
   const canvas = document.querySelector("#percent-profit-chart");
   const stage = canvas?.closest(".percent-profit-stage");
   const series = getPercentProfitVisibleSeries();
@@ -5842,6 +6001,7 @@ const getLthExchangeLossVisibleSeries = () => {
 };
 
 const drawLthExchangeLossChart = () => {
+  if (dashboardChartScheduler.request("#lth-exchange-loss-chart", drawLthExchangeLossChart)) return;
   const canvas = document.querySelector("#lth-exchange-loss-chart");
   const stage = canvas?.closest(".lth-exchange-loss-stage");
   const series = getLthExchangeLossVisibleSeries();
@@ -6055,6 +6215,7 @@ const getTwoWeekRsiVisibleSeries = () => {
 };
 
 const drawTwoWeekRsiChart = () => {
+  if (dashboardChartScheduler.request("#two-week-rsi-chart", drawTwoWeekRsiChart)) return;
   const canvas = document.querySelector("#two-week-rsi-chart");
   const stage = canvas?.closest(".two-week-rsi-stage");
   const series = getTwoWeekRsiVisibleSeries();
@@ -6253,6 +6414,7 @@ const getUnder3mHodlVisibleSeries = () => {
 };
 
 const drawUnder3mHodlChart = () => {
+  if (dashboardChartScheduler.request("#under-3m-hodl-chart", drawUnder3mHodlChart)) return;
   const canvas = document.querySelector("#under-3m-hodl-chart");
   const stage = canvas?.closest(".under-3m-hodl-stage");
   const series = getUnder3mHodlVisibleSeries();
@@ -6453,6 +6615,7 @@ const getUnder3mHeatVisibleSeries = () => {
 };
 
 const drawUnder3mHeatChart = () => {
+  if (dashboardChartScheduler.request("#under-3m-heat-chart", drawUnder3mHeatChart)) return;
   const canvas = document.querySelector("#under-3m-heat-chart");
   const stage = canvas?.closest(".under-3m-heat-stage");
   const history = getUnder3mHeatVisibleSeries();
@@ -6668,6 +6831,7 @@ const getUtxoAgeRpVisibleSeries = () => {
 };
 
 const drawUtxoAgeRpChart = () => {
+  if (dashboardChartScheduler.request("#utxo-age-rp-chart", drawUtxoAgeRpChart)) return;
   const canvas = document.querySelector("#utxo-age-rp-chart");
   const stage = canvas?.closest(".utxo-age-rp-stage");
   const history = getUtxoAgeRpVisibleSeries();
@@ -6895,6 +7059,7 @@ const getSthRplMomentumVisibleSeries = () => {
 };
 
 const drawSthRplMomentumChart = () => {
+  if (dashboardChartScheduler.request("#sth-rpl-momentum-chart", drawSthRplMomentumChart)) return;
   const canvas = document.querySelector("#sth-rpl-momentum-chart");
   const stage = canvas?.closest(".sth-rpl-momentum-stage");
   const history = getSthRplMomentumVisibleSeries();
@@ -7142,6 +7307,7 @@ const getMvrvZscoreVisibleSeries = () => {
 };
 
 const drawMvrvZscoreChart = () => {
+  if (dashboardChartScheduler.request("#mvrv-zscore-chart", drawMvrvZscoreChart)) return;
   const canvas = document.querySelector("#mvrv-zscore-chart");
   const stage = canvas?.closest(".mvrv-zscore-stage");
   const history = getMvrvZscoreVisibleSeries();
@@ -7370,6 +7536,7 @@ const getSth200dmaVisibleSeries = () => {
 };
 
 const drawSth200dmaChart = () => {
+  if (dashboardChartScheduler.request("#sth-200dma-chart", drawSth200dmaChart)) return;
   const canvas = document.querySelector("#sth-200dma-chart");
   const stage = canvas?.closest(".sth-200dma-stage");
   const series = getSth200dmaVisibleSeries();
@@ -7567,6 +7734,7 @@ const getVddMedianVisibleSeries = () => {
 };
 
 const drawVddMedianCycleChart = () => {
+  if (dashboardChartScheduler.request("#vdd-median-chart", drawVddMedianCycleChart)) return;
   const canvas = document.querySelector("#vdd-median-chart");
   const stage = canvas?.closest(".vdd-median-stage");
   const series = getVddMedianVisibleSeries();
@@ -7769,6 +7937,7 @@ const getSsrVisibleSeries = () => {
 };
 
 const drawSsrChart = () => {
+  if (dashboardChartScheduler.request("#ssr-chart", drawSsrChart)) return;
   const canvas = document.querySelector("#ssr-chart");
   const stage = canvas?.closest(".ssr-stage");
   const series = getSsrVisibleSeries();
@@ -7973,6 +8142,7 @@ const getSthBandsVisibleSeries = () => {
 };
 
 const drawSthBandsChart = () => {
+  if (dashboardChartScheduler.request("#sth-bands-chart", drawSthBandsChart)) return;
   const canvas = document.querySelector("#sth-bands-chart");
   const stage = canvas?.closest(".sth-bands-stage");
   const series = getSthBandsVisibleSeries();
@@ -8184,6 +8354,7 @@ const getPercentProfitEx10yVisibleSeries = () => {
 };
 
 const drawPercentProfitEx10yChart = () => {
+  if (dashboardChartScheduler.request("#percent-profit-ex-10y-chart", drawPercentProfitEx10yChart)) return;
   const canvas = document.querySelector("#percent-profit-ex-10y-chart");
   const stage = canvas?.closest(".percent-profit-ex-10y-stage");
   const series = getPercentProfitEx10yVisibleSeries();
@@ -8439,6 +8610,7 @@ const getSthMvrvVisibleSeries = () => {
 };
 
 const drawSthMvrvChart = () => {
+  if (dashboardChartScheduler.request("#sth-mvrv-chart", drawSthMvrvChart)) return;
   const canvas = document.querySelector("#sth-mvrv-chart");
   const stage = canvas?.closest(".sth-mvrv-stage");
   const series = getSthMvrvVisibleSeries();
@@ -8680,6 +8852,7 @@ const getVddVisibleSeries = () => {
 };
 
 const drawVddChart = () => {
+  if (dashboardChartScheduler.request("#vdd-chart", drawVddChart)) return;
   const canvas = document.querySelector("#vdd-chart");
   const stage = canvas?.closest(".vdd-stage");
   const series = getVddVisibleSeries();
@@ -8877,6 +9050,7 @@ const getLthNuplVisibleSeries = () => {
 };
 
 const drawLthNuplChart = () => {
+  if (dashboardChartScheduler.request("#lth-nupl-chart", drawLthNuplChart)) return;
   const canvas = document.querySelector("#lth-nupl-chart");
   const stage = canvas?.closest(".lth-nupl-stage");
   const series = getLthNuplVisibleSeries();
@@ -9101,6 +9275,7 @@ const getLthSthVisibleSeries = () => {
 };
 
 const drawLthSthChart = () => {
+  if (dashboardChartScheduler.request("#lth-sth-chart", drawLthSthChart)) return;
   const canvas = document.querySelector("#lth-sth-chart");
   const stage = canvas?.closest(".lth-sth-stage");
   const series = getLthSthVisibleSeries();
@@ -9286,6 +9461,7 @@ const getLthLossVisibleSeries = () => {
 };
 
 const drawLthLossChart = () => {
+  if (dashboardChartScheduler.request("#lth-loss-chart", drawLthLossChart)) return;
   const canvas = document.querySelector("#lth-loss-chart");
   const stage = canvas?.closest(".lth-loss-stage");
   const series = getLthLossVisibleSeries();
@@ -9484,6 +9660,7 @@ const getSupplyProfitLossVisibleSeries = () => {
 };
 
 const drawSupplyProfitLossChart = () => {
+  if (dashboardChartScheduler.request("#supply-pl-chart", drawSupplyProfitLossChart)) return;
   const canvas = document.querySelector("#supply-pl-chart");
   const stage = canvas?.closest(".supply-pl-stage");
   const series = getSupplyProfitLossVisibleSeries();
@@ -9690,7 +9867,397 @@ const hideSupplyProfitLossTooltip = () => {
   if (tooltip) tooltip.hidden = true;
 };
 
+const ADDRESS_FLOW_PALETTE = [
+  "#ff5a1f", "#ff9f1c", "#ffd21f", "#f7f43a", "#9cff3a", "#35e875",
+  "#16d7a1", "#13c7d9", "#2796ff", "#4c70e8", "#7454d8", "#9b4dcc",
+  "#c84cce", "#ef42be", "#ff27da", "#ff4e9a", "#ff6a5f", "#ff7d45",
+  "#ffb000", "#e6ff36", "#6fff5b", "#2df2b5", "#2ce8ff", "#3bb1ff",
+  "#5d7cff", "#875cff", "#b94fff", "#e54eff", "#ff43b7", "#ff596f"
+];
+const ADDRESS_FLOW_BUCKET_ORDER = ["under_1", "one_to_10", "ten_to_100", "over_100"];
+
+const addressFlowBucketLabel = (id) => ({
+  under_1: getCopy("addressFlow.under1"),
+  one_to_10: "1–10 BTC",
+  ten_to_100: "10–100 BTC",
+  over_100: "100+ BTC"
+})[id] || id;
+
+const formatSignedAddressCount = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "--";
+  return `${numeric > 0 ? "+" : ""}${formatNumber(Math.round(numeric))}`;
+};
+
+const compactSignedAddressCount = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "--";
+  if (numeric === 0) return "0";
+  return `${numeric > 0 ? "+" : "−"}${compactNumber(Math.abs(Math.round(numeric)))}`;
+};
+
+const getAddressFlowVisibleDates = () => addressFlowDates.slice(-Math.min(addressFlowRange, addressFlowDates.length));
+
+const getAddressFlowPoint = (bucket, date) => {
+  if (!bucket || !date) return null;
+  return bucket.series?.find((point) => point.date === date) || null;
+};
+
+const readAddressFlowCache = () => {
+  try {
+    const record = JSON.parse(localStorage.getItem(ADDRESS_FLOW_CACHE_KEY) || "null");
+    const savedAt = Number(record?.savedAt);
+    const age = Date.now() - savedAt;
+    if (!record?.payload || !Number.isFinite(savedAt) || age < -5 * 60 * 1000 || age > ADDRESS_FLOW_CACHE_MAX_AGE_MS) return null;
+    return record.payload;
+  } catch {
+    return null;
+  }
+};
+
+const finiteAddressFlowNumber = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+};
+
+const normalizeAddressFlowPayload = (payload) => {
+  const buckets = (Array.isArray(payload?.buckets) ? payload.buckets : [])
+    .map((bucket) => ({
+      id: String(bucket.id || bucket.key || ""),
+      label: String(bucket.label || ""),
+      latestCount: finiteAddressFlowNumber(bucket.latestCount),
+      latestChange: finiteAddressFlowNumber(bucket.latestChange),
+      series: (Array.isArray(bucket.series) ? bucket.series : Array.isArray(bucket.values) ? bucket.values : [])
+        .map((point) => ({
+          date: String(point.date || point.day || "").slice(0, 10),
+          count: finiteAddressFlowNumber(point.count),
+          change: finiteAddressFlowNumber(point.change ?? point.value ?? point.delta)
+        }))
+        .filter((point) => /^\d{4}-\d{2}-\d{2}$/.test(point.date) && Number.isFinite(point.change))
+        .sort((left, right) => left.date.localeCompare(right.date))
+    }))
+    .filter((bucket) => ADDRESS_FLOW_BUCKET_ORDER.includes(bucket.id) && bucket.series.length > 0)
+    .sort((left, right) => ADDRESS_FLOW_BUCKET_ORDER.indexOf(left.id) - ADDRESS_FLOW_BUCKET_ORDER.indexOf(right.id));
+  if (buckets.length !== ADDRESS_FLOW_BUCKET_ORDER.length) throw new Error("Address cohort payload is incomplete");
+  const derivedDates = [...new Set(buckets.flatMap((bucket) => bucket.series.map((point) => point.date)))].sort();
+  const dates = (Array.isArray(payload?.dates) ? payload.dates.map((date) => String(date).slice(0, 10)) : derivedDates)
+    .filter((date) => derivedDates.includes(date))
+    .slice(-30);
+  if (dates.length < 2) throw new Error("Address cohort history is too short");
+  return { buckets, dates };
+};
+
+const setAddressFlowStatus = () => {
+  const status = document.querySelector("#address-flow-status");
+  if (!status) return;
+  status.classList.toggle("is-stale", Boolean(addressFlowMeta.stale));
+  status.classList.remove("is-error");
+  const label = status.querySelector("span");
+  if (!label) return;
+  label.textContent = getCopy(addressFlowMeta.stale
+    ? "addressFlow.stale"
+    : addressFlowMeta.provisional
+      ? "addressFlow.provisional"
+      : "addressFlow.live");
+};
+
+const renderAddressFlowSummary = () => {
+  const visibleDates = getAddressFlowVisibleDates();
+  const latestDate = visibleDates.at(-1) || addressFlowAsOf;
+  addressFlowBuckets.forEach((bucket) => {
+    const card = document.querySelector(`[data-address-flow-bucket="${bucket.id}"]`);
+    if (!card) return;
+    const point = getAddressFlowPoint(bucket, latestDate) || bucket.series.at(-1);
+    const change = Number.isFinite(point?.change) ? point.change : bucket.latestChange;
+    const count = Number.isFinite(point?.count) ? point.count : bucket.latestCount;
+    const strong = card.querySelector("strong");
+    const label = card.querySelector("span");
+    const detail = card.querySelector("small");
+    if (label) label.textContent = addressFlowBucketLabel(bucket.id);
+    if (strong) {
+      strong.textContent = formatSignedAddressCount(change);
+      strong.classList.toggle("negative", Number(change) < 0);
+    }
+    if (detail) {
+      detail.textContent = Number.isFinite(count)
+        ? `${currentLanguage === "zh" ? "总地址" : "TOTAL"} ${formatNumber(Math.round(count))}`
+        : `${latestDate || "--"} · Δ ${getCopy("addressFlow.addresses")}`;
+    }
+  });
+};
+
+const renderAddressFlowLegend = () => {
+  const legend = document.querySelector("#address-flow-legend");
+  if (!legend) return;
+  const dates = getAddressFlowVisibleDates();
+  legend.replaceChildren();
+  dates.forEach((date, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.addressFlowDate = date;
+    const selected = date === addressFlowFocusedDate;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+    button.style.setProperty("--legend-color", ADDRESS_FLOW_PALETTE[index % ADDRESS_FLOW_PALETTE.length]);
+    button.textContent = date.slice(5).replace("-", "/");
+    button.setAttribute("aria-label", `${date} ${currentLanguage === "zh" ? "地址层级变化" : "address cohort changes"}`);
+    button.addEventListener("click", () => {
+      addressFlowFocusedDate = addressFlowFocusedDate === date ? null : date;
+      renderAddressFlowLegend();
+      drawAddressBalanceFlowChart();
+      updateAddressFlowAccessibleSummary(addressFlowFocusedDate || getAddressFlowVisibleDates().at(-1));
+    });
+    legend.append(button);
+  });
+};
+
+const renderAddressFlowTable = () => {
+  const body = document.querySelector("#address-flow-table-body");
+  if (!body) return;
+  body.replaceChildren();
+  getAddressFlowVisibleDates().forEach((date) => {
+    const row = document.createElement("tr");
+    const dateCell = document.createElement("th");
+    dateCell.scope = "row";
+    dateCell.textContent = date;
+    row.append(dateCell);
+    addressFlowBuckets.forEach((bucket) => {
+      const cell = document.createElement("td");
+      cell.textContent = formatSignedAddressCount(getAddressFlowPoint(bucket, date)?.change);
+      row.append(cell);
+    });
+    body.append(row);
+  });
+};
+
+const updateAddressFlowAccessibleSummary = (date = getAddressFlowVisibleDates().at(-1)) => {
+  const summary = document.querySelector("#address-flow-accessible-summary");
+  const canvas = document.querySelector("#address-flow-chart");
+  if (!date || !summary || !canvas) return;
+  const values = addressFlowBuckets.map((bucket) => ({
+    label: addressFlowBucketLabel(bucket.id),
+    change: getAddressFlowPoint(bucket, date)?.change
+  })).filter((item) => Number.isFinite(item.change));
+  const detail = values.map((item) => `${item.label} ${formatSignedAddressCount(item.change)}`).join(currentLanguage === "zh" ? "，" : ", ");
+  const text = currentLanguage === "zh"
+    ? `${date} BTC 地址余额区间日变化：${detail}。纵轴使用对称对数尺度。`
+    : `${date} daily BTC address changes: ${detail}. The y-axis uses a symmetric logarithmic scale.`;
+  summary.textContent = text;
+  canvas.setAttribute("aria-label", text);
+};
+
+const renderAddressFlowUi = () => {
+  document.querySelectorAll("[data-address-flow-range]").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.addressFlowRange) === addressFlowRange);
+    button.setAttribute("aria-pressed", String(Number(button.dataset.addressFlowRange) === addressFlowRange));
+  });
+  setAddressFlowStatus();
+  renderAddressFlowSummary();
+  renderAddressFlowLegend();
+  renderAddressFlowTable();
+  updateAddressFlowAccessibleSummary();
+  const asOf = document.querySelector("#address-flow-asof");
+  if (asOf) {
+    const sourceState = addressFlowMeta.stale
+      ? (currentLanguage === "zh" ? "缓存" : "cached")
+      : addressFlowMeta.provisional
+        ? (currentLanguage === "zh" ? "当日暂定" : "provisional")
+        : (currentLanguage === "zh" ? "已确认日线" : "confirmed daily");
+    asOf.textContent = `· ${addressFlowAsOf || "--"} · ${sourceState}`;
+  }
+};
+
+const applyAddressFlowPayload = (payload, fromCache = false) => {
+  const normalized = normalizeAddressFlowPayload(payload);
+  addressFlowBuckets = normalized.buckets;
+  addressFlowDates = normalized.dates;
+  addressFlowAsOf = String(payload.asOf || normalized.dates.at(-1) || "").slice(0, 10);
+  addressFlowSource = payload.sources || payload.source || null;
+  addressFlowMeta = {
+    stale: Boolean(payload.stale || fromCache),
+    provisional: Boolean(payload.provisional),
+    generatedAt: payload.generatedAt || null
+  };
+  if (!addressFlowDates.includes(addressFlowFocusedDate)) addressFlowFocusedDate = null;
+  renderAddressFlowUi();
+  hideChartLoading("#address-flow-loading");
+  drawAddressBalanceFlowChart();
+};
+
+const addressFlowSymlog = (value) => Math.sign(value) * Math.log10(1 + Math.abs(value) / 10);
+const addressFlowSymexp = (value) => Math.sign(value) * 10 * (10 ** Math.abs(value) - 1);
+
+const drawAddressBalanceFlowChart = () => {
+  if (dashboardChartScheduler.request("#address-flow-chart", drawAddressBalanceFlowChart)) return;
+  const canvas = document.querySelector("#address-flow-chart");
+  if (!canvas) return;
+  const compact = window.matchMedia("(max-width: 700px)").matches;
+  const medium = !compact && window.matchMedia("(max-width: 980px)").matches;
+  canvas.setAttribute("height", compact ? "390" : medium ? "430" : "480");
+  if (addressFlowBuckets.length !== 4 || addressFlowDates.length < 2) {
+    drawEmptyChart("#address-flow-chart", getCopy("addressFlow.loading"));
+    return;
+  }
+
+  const { context, width, height } = setupCanvas(canvas);
+  const colors = chartColors();
+  const dates = getAddressFlowVisibleDates();
+  const padding = { top: 42, right: compact ? 18 : 34, bottom: 62, left: compact ? 62 : 78 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const values = addressFlowBuckets.flatMap((bucket) => dates.map((date) => getAddressFlowPoint(bucket, date)?.change))
+    .filter(Number.isFinite);
+  const maxTransform = Math.max(1, ...values.map((value) => Math.abs(addressFlowSymlog(value)))) * 1.08;
+  const zeroY = padding.top + chartHeight / 2;
+  const yFor = (value) => zeroY - (addressFlowSymlog(value) / maxTransform) * (chartHeight / 2);
+
+  context.clearRect(0, 0, width, height);
+  context.font = `${compact ? 9 : 10}px "JetBrains Mono", monospace`;
+  context.textBaseline = "middle";
+
+  [-1, -0.5, 0, 0.5, 1].forEach((position) => {
+    const y = zeroY - position * chartHeight / 2;
+    context.strokeStyle = position === 0
+      ? (document.body.dataset.theme === "dark" ? "rgba(255,255,255,0.34)" : "rgba(15,36,26,0.34)")
+      : colors.line;
+    context.lineWidth = position === 0 ? 1.5 : 1;
+    context.setLineDash(position === 0 ? [] : [3, 6]);
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.setLineDash([]);
+    context.fillStyle = colors.muted;
+    context.textAlign = "right";
+    const tickValue = position === 0 ? 0 : addressFlowSymexp(position * maxTransform);
+    context.fillText(compactSignedAddressCount(tickValue), padding.left - 10, y);
+  });
+
+  const groupWidth = chartWidth / addressFlowBuckets.length;
+  addressFlowBuckets.forEach((bucket, bucketIndex) => {
+    const left = padding.left + bucketIndex * groupWidth;
+    if (bucketIndex > 0) {
+      context.strokeStyle = colors.line;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(left, padding.top);
+      context.lineTo(left, padding.top + chartHeight);
+      context.stroke();
+    }
+    context.fillStyle = colors.ink;
+    context.textAlign = "center";
+    context.font = `800 ${compact ? 10 : 11}px "JetBrains Mono", monospace`;
+    context.fillText(addressFlowBucketLabel(bucket.id), left + groupWidth / 2, height - 25);
+  });
+
+  const hitRegions = [];
+  addressFlowBuckets.forEach((bucket, bucketIndex) => {
+    const groupLeft = padding.left + bucketIndex * groupWidth;
+    const slotWidth = groupWidth / Math.max(dates.length + 1.5, 1);
+    const barWidth = Math.max(2.3, Math.min(compact ? 9 : 13, slotWidth * 0.72));
+    const barsWidth = slotWidth * dates.length;
+    const startX = groupLeft + (groupWidth - barsWidth) / 2;
+    dates.forEach((date, dateIndex) => {
+      const point = getAddressFlowPoint(bucket, date);
+      if (!point || !Number.isFinite(point.change)) return;
+      const x = startX + dateIndex * slotWidth + (slotWidth - barWidth) / 2;
+      const valueY = yFor(point.change);
+      const top = Math.min(zeroY, valueY);
+      const barHeight = Math.max(1.5, Math.abs(valueY - zeroY));
+      const color = ADDRESS_FLOW_PALETTE[dateIndex % ADDRESS_FLOW_PALETTE.length];
+      const focused = !addressFlowFocusedDate || addressFlowFocusedDate === date;
+      const gradient = context.createLinearGradient(0, top, 0, top + barHeight);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, `${color}${point.change >= 0 ? "9f" : "c9"}`);
+      context.save();
+      context.globalAlpha = focused ? 0.94 : 0.24;
+      context.fillStyle = gradient;
+      context.shadowColor = color;
+      context.shadowBlur = focused ? (compact ? 5 : 9) : 0;
+      context.fillRect(x, top, barWidth, barHeight);
+      if (addressFlowFocusedDate === date) {
+        context.globalAlpha = 1;
+        context.strokeStyle = "rgba(255,255,255,0.86)";
+        context.lineWidth = 1;
+        context.strokeRect(x - 0.5, top - 0.5, barWidth + 1, barHeight + 1);
+      }
+      context.restore();
+      hitRegions.push({ x, width: barWidth, top, height: barHeight, date, bucket, point, color });
+    });
+  });
+
+  context.fillStyle = colors.muted;
+  context.font = `800 ${compact ? 8 : 9}px "JetBrains Mono", monospace`;
+  context.textAlign = "right";
+  context.textBaseline = "alphabetic";
+  context.fillText("SYMLOG · DAILY Δ ADDRESSES", width - padding.right, 24);
+  context.textAlign = "left";
+  context.fillText(`${dates.at(0)} → ${dates.at(-1)}`, padding.left, 24);
+  addressFlowChartState = { hitRegions, width, height, dates, padding, chartWidth };
+};
+
+const showAddressFlowTooltip = (event) => {
+  const canvas = document.querySelector("#address-flow-chart");
+  const tooltip = document.querySelector("#address-flow-tooltip");
+  if (!canvas || !tooltip || !addressFlowChartState) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left) * (addressFlowChartState.width / Math.max(rect.width, 1));
+  const region = addressFlowChartState.hitRegions.reduce((best, candidate) => {
+    const distance = Math.abs(x - (candidate.x + candidate.width / 2));
+    return !best || distance < best.distance ? { ...candidate, distance } : best;
+  }, null);
+  if (!region || region.distance > 16) {
+    tooltip.hidden = true;
+    return;
+  }
+  tooltip.innerHTML = `<strong>${region.date}</strong><span>${addressFlowBucketLabel(region.bucket.id)} <i>${formatSignedAddressCount(region.point.change)}</i></span>${Number.isFinite(region.point.count) ? `<span>${currentLanguage === "zh" ? "区间地址总数" : "Cohort total"} <i>${formatNumber(Math.round(region.point.count))}</i></span>` : ""}<span>${currentLanguage === "zh" ? "口径" : "Measure"} <i>24H Δ</i></span>`;
+  tooltip.hidden = false;
+  const tooltipWidth = tooltip.offsetWidth || 220;
+  tooltip.style.left = `${Math.max(8, Math.min(rect.width - tooltipWidth - 8, event.clientX - rect.left + 14))}px`;
+  tooltip.style.top = `${Math.max(8, Math.min(rect.height - 108, event.clientY - rect.top - 62))}px`;
+};
+
+const hideAddressFlowTooltip = () => {
+  const tooltip = document.querySelector("#address-flow-tooltip");
+  if (tooltip) tooltip.hidden = true;
+};
+
+const loadAddressBalanceFlowMetrics = async () => {
+  const cached = readAddressFlowCache();
+  try {
+    const payload = await fetchJsonWithRetry(`${API_BASE}/api/address-balance-flow?days=30`, { attempts: 2, timeout: 28000 });
+    applyAddressFlowPayload(payload, false);
+    writeDashboardCache(ADDRESS_FLOW_CACHE_KEY, payload, "Address balance flow");
+    if (payload.stale) publicDataWarnings.push("address-flow-stale");
+    return payload;
+  } catch (error) {
+    if (cached) {
+      applyAddressFlowPayload({ ...cached, stale: true }, true);
+      publicDataWarnings.push("address-flow-cache");
+      return cached;
+    }
+    const status = document.querySelector("#address-flow-status");
+    status?.classList.add("is-error");
+    const label = status?.querySelector("span");
+    if (label) label.textContent = getCopy("addressFlow.unavailable");
+    const loading = document.querySelector("#address-flow-loading");
+    if (loading) {
+      loading.classList.add("is-error");
+      loading.setAttribute("role", "button");
+      loading.setAttribute("tabindex", "0");
+      const message = loading.querySelector("strong");
+      if (message) message.textContent = getCopy("status.error");
+    }
+    publicDataWarnings.push("address-flow-unavailable");
+    throw error;
+  }
+};
+
+window.WelinkChartBrandWatermark = drawBrandWatermark;
 const drawAllCharts = () => {
+  drawAddressBalanceFlowChart();
+  window.WelinkRplrm?.draw();
   drawCostBasisChart();
   drawSthRatioChart();
   drawLthRealizedChart();
@@ -9845,7 +10412,7 @@ const updateCycleRadar = () => {
   setText("#cycle-score-value", score);
   setText("#cycle-score-label", label);
   const spectrum = document.querySelector("#cycle-spectrum");
-  if (spectrum) spectrum.style.transform = `translateX(${Math.max(0, Math.min(100, score)) * 2.72}px)`;
+  if (spectrum) spectrum.style.left = `${Math.max(0, Math.min(100, score))}%`;
   const observation = assessment.fallback
     ? (currentLanguage === "zh"
       ? "公开数据源正在重试，当前显示中性基线 50/100。页面保留最近一次可用内容；仅供周期观察，不构成投资建议。"
@@ -14473,52 +15040,40 @@ const mergeExtendedWithCache = (livePayload, cachedPayload) => {
   };
 };
 
-const metricCadenceLabel = (cadence) => {
-  const labels = currentLanguage === "zh"
-    ? { realtime: "实时", daily: "日频", "rolling-24h": "滚动 24H" }
-    : { realtime: "LIVE", daily: "DAILY", "rolling-24h": "ROLLING 24H" };
-  return labels[cadence] || String(cadence || "LIVE").toUpperCase();
-};
-
 const applyExtendedPayload = (payload, cacheFallback = false) => {
   const metrics = payload?.metrics || {};
-  const sourceLabel = (metric) => {
-    const stale = metric?.stale || cacheFallback ? " · CACHE" : "";
-    return `${metric?.source || "Data source"}${stale} · ${metricCadenceLabel(metric?.cadence)}`;
-  };
-  const update = (key, valueSelector, sourceSelector, formatter) => {
+  const update = (key, valueSelector, formatter) => {
     const metric = metrics[key];
     const numeric = Number(metric?.value);
     if (!metric || !Number.isFinite(numeric)) return false;
     setText(valueSelector, formatter(numeric));
-    if (sourceSelector) setText(sourceSelector, sourceLabel(metric));
     return true;
   };
 
-  update("balancedPrice", "#balanced-price", "#balanced-source", formatUsd);
-  update("mvrvZ", "#mvrv-z-value", "#mvrv-z-source", (value) => value.toFixed(3));
-  if (update("nupl", "#nupl-value", "#nupl-source", (value) => value.toFixed(3))) {
+  update("balancedPrice", "#balanced-price", formatUsd);
+  update("mvrvZ", "#mvrv-z-value", (value) => value.toFixed(3));
+  if (update("nupl", "#nupl-value", (value) => value.toFixed(3))) {
     metricSnapshot.nupl = Number(metrics.nupl.value);
   }
-  if (update("sopr", "#sopr-value", "#sopr-source", (value) => value.toFixed(4))) {
+  if (update("sopr", "#sopr-value", (value) => value.toFixed(4))) {
     metricSnapshot.sopr = Number(metrics.sopr.value);
   }
-  if (update("puell", "#puell-value", "#puell-source", (value) => value.toFixed(3))) {
+  if (update("puell", "#puell-value", (value) => value.toFixed(3))) {
     metricSnapshot.puell = Number(metrics.puell.value);
   }
-  update("profitSupply", "#profit-supply-value", "#profit-supply-source", (value) => `${value.toFixed(1)}%`);
+  update("profitSupply", "#profit-supply-value", (value) => `${value.toFixed(1)}%`);
 
-  if (update("funding", "#funding-value", "#funding-source", (value) => `${value.toFixed(4)}%`)) {
+  if (update("funding", "#funding-value", (value) => `${value.toFixed(4)}%`)) {
     const value = Number(metrics.funding.value);
     metricSnapshot.funding = value;
     const state = Math.abs(value) < 0.01 ? getCopy("neutral") : value > 0 ? getCopy("warm") : getCopy("pressureLow");
     setText("#radar-funding", state);
     updateSignalLight("#radar-funding", Math.abs(value) > 0.03 ? "hot" : Math.abs(value) > 0.01 ? "warm" : "normal");
   }
-  update("openInterest", "#oi-value", "#oi-source", compactUsd);
-  update("optionsOi", "#options-oi-value", "#options-oi-source", compactUsd);
-  update("etfFlow", "#etf-flow-value", "#etf-flow-source", compactUsd);
-  update("liquidation", "#liquidation-value", "#liquidation-source", compactUsd);
+  update("openInterest", "#oi-value", compactUsd);
+  update("optionsOi", "#options-oi-value", compactUsd);
+  update("etfFlow", "#etf-flow-value", compactUsd);
+  update("liquidation", "#liquidation-value", compactUsd);
 
   updateCycleRadar();
 };
@@ -14685,6 +15240,7 @@ const downloadFile = (blob, filename) => {
 };
 
 const saveCostBasisSnapshot = () => {
+  dashboardChartScheduler.flush("#cost-basis-chart");
   const canvas = document.querySelector("#cost-basis-chart");
   if (!canvas || !costBasisSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14700,6 +15256,7 @@ const saveCostBasisSnapshot = () => {
 };
 
 const saveSthRatioSnapshot = () => {
+  dashboardChartScheduler.flush("#sth-ratio-chart");
   const canvas = document.querySelector("#sth-ratio-chart");
   if (!canvas || !costBasisSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14715,6 +15272,7 @@ const saveSthRatioSnapshot = () => {
 };
 
 const saveLthRealizedSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-rp-chart");
   const canvas = document.querySelector("#lth-rp-chart");
   if (!canvas || !lthRealizedSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14730,6 +15288,7 @@ const saveLthRealizedSnapshot = () => {
 };
 
 const saveRealizedProfitLossSnapshot = () => {
+  dashboardChartScheduler.flush("#rpl-chart");
   const canvas = document.querySelector("#rpl-chart");
   if (!canvas || !realizedProfitLossSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14745,6 +15304,7 @@ const saveRealizedProfitLossSnapshot = () => {
 };
 
 const saveMedianRealizedSnapshot = () => {
+  dashboardChartScheduler.flush("#median-rp-chart");
   const canvas = document.querySelector("#median-rp-chart");
   if (!canvas || !medianRealizedSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14760,6 +15320,7 @@ const saveMedianRealizedSnapshot = () => {
 };
 
 const saveLthSthSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-sth-chart");
   const canvas = document.querySelector("#lth-sth-chart");
   if (!canvas || !lthSthSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14775,6 +15336,7 @@ const saveLthSthSnapshot = () => {
 };
 
 const saveLthLossSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-loss-chart");
   const canvas = document.querySelector("#lth-loss-chart");
   if (!canvas || !lthLossSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14790,6 +15352,7 @@ const saveLthLossSnapshot = () => {
 };
 
 const saveSupplyProfitLossSnapshot = () => {
+  dashboardChartScheduler.flush("#supply-pl-chart");
   const canvas = document.querySelector("#supply-pl-chart");
   if (!canvas || !supplyProfitLossSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14805,6 +15368,7 @@ const saveSupplyProfitLossSnapshot = () => {
 };
 
 const saveMedianMvrvSnapshot = () => {
+  dashboardChartScheduler.flush("#median-mvrv-chart");
   const canvas = document.querySelector("#median-mvrv-chart");
   if (!canvas || !medianMvrvSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14820,6 +15384,7 @@ const saveMedianMvrvSnapshot = () => {
 };
 
 const saveMvrvBandsSnapshot = () => {
+  dashboardChartScheduler.flush("#mvrv-bands-chart");
   const canvas = document.querySelector("#mvrv-bands-chart");
   if (!canvas || !mvrvBandsSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14835,6 +15400,7 @@ const saveMvrvBandsSnapshot = () => {
 };
 
 const saveMvrvPriceBandsSnapshot = () => {
+  dashboardChartScheduler.flush("#mvrv-price-bands-chart");
   const canvas = document.querySelector("#mvrv-price-bands-chart");
   if (!canvas || !mvrvPriceBandsSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14850,6 +15416,7 @@ const saveMvrvPriceBandsSnapshot = () => {
 };
 
 const saveStockToFlowSnapshot = () => {
+  dashboardChartScheduler.flush("#stock-to-flow-chart");
   const canvas = document.querySelector("#stock-to-flow-chart");
   if (!canvas || !stockToFlowSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14865,6 +15432,7 @@ const saveStockToFlowSnapshot = () => {
 };
 
 const saveCycleTimingSnapshot = () => {
+  dashboardChartScheduler.flush("#cycle-timing-chart");
   const canvas = document.querySelector("#cycle-timing-chart");
   if (!canvas || !cycleTimingSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14880,6 +15448,7 @@ const saveCycleTimingSnapshot = () => {
 };
 
 const saveRhodlSnapshot = () => {
+  dashboardChartScheduler.flush("#rhodl-chart");
   const canvas = document.querySelector("#rhodl-chart");
   if (!canvas || !rhodlSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14895,6 +15464,7 @@ const saveRhodlSnapshot = () => {
 };
 
 const saveLthRplSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-rpl-chart");
   const canvas = document.querySelector("#lth-rpl-chart");
   if (!canvas || !lthRplSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14910,6 +15480,7 @@ const saveLthRplSnapshot = () => {
 };
 
 const saveSlrvSnapshot = () => {
+  dashboardChartScheduler.flush("#slrv-chart");
   const canvas = document.querySelector("#slrv-chart");
   if (!canvas || !slrvSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14925,6 +15496,7 @@ const saveSlrvSnapshot = () => {
 };
 
 const saveRealizedCapHodlSnapshot = () => {
+  dashboardChartScheduler.flush("#realized-cap-hodl-chart");
   const canvas = document.querySelector("#realized-cap-hodl-chart");
   if (!canvas || !realizedCapHodlSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14940,6 +15512,7 @@ const saveRealizedCapHodlSnapshot = () => {
 };
 
 const saveLthSpentSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-spent-chart");
   const canvas = document.querySelector("#lth-spent-chart");
   if (!canvas || !lthSpentSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14955,6 +15528,7 @@ const saveLthSpentSnapshot = () => {
 };
 
 const savePercentProfitSnapshot = () => {
+  dashboardChartScheduler.flush("#percent-profit-chart");
   const canvas = document.querySelector("#percent-profit-chart");
   if (!canvas || !percentProfitSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14970,6 +15544,7 @@ const savePercentProfitSnapshot = () => {
 };
 
 const saveLthExchangeLossSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-exchange-loss-chart");
   const canvas = document.querySelector("#lth-exchange-loss-chart");
   if (!canvas || !lthExchangeLossSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -14985,6 +15560,7 @@ const saveLthExchangeLossSnapshot = () => {
 };
 
 const saveTwoWeekRsiSnapshot = () => {
+  dashboardChartScheduler.flush("#two-week-rsi-chart");
   const canvas = document.querySelector("#two-week-rsi-chart");
   if (!canvas || !twoWeekRsiSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15000,6 +15576,7 @@ const saveTwoWeekRsiSnapshot = () => {
 };
 
 const saveUnder3mHodlSnapshot = () => {
+  dashboardChartScheduler.flush("#under-3m-hodl-chart");
   const canvas = document.querySelector("#under-3m-hodl-chart");
   if (!canvas || !under3mHodlSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15015,6 +15592,7 @@ const saveUnder3mHodlSnapshot = () => {
 };
 
 const saveUnder3mHeatSnapshot = () => {
+  dashboardChartScheduler.flush("#under-3m-heat-chart");
   const canvas = document.querySelector("#under-3m-heat-chart");
   if (!canvas || !under3mHodlSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15030,6 +15608,7 @@ const saveUnder3mHeatSnapshot = () => {
 };
 
 const saveUtxoAgeRpSnapshot = () => {
+  dashboardChartScheduler.flush("#utxo-age-rp-chart");
   const canvas = document.querySelector("#utxo-age-rp-chart");
   if (!canvas || !utxoAgeRpSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15045,6 +15624,7 @@ const saveUtxoAgeRpSnapshot = () => {
 };
 
 const saveSthRplMomentumSnapshot = () => {
+  dashboardChartScheduler.flush("#sth-rpl-momentum-chart");
   const canvas = document.querySelector("#sth-rpl-momentum-chart");
   if (!canvas || !sthRplMomentumSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15060,6 +15640,7 @@ const saveSthRplMomentumSnapshot = () => {
 };
 
 const saveMvrvZscoreSnapshot = () => {
+  dashboardChartScheduler.flush("#mvrv-zscore-chart");
   const canvas = document.querySelector("#mvrv-zscore-chart");
   if (!canvas || !mvrvZscoreSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15075,6 +15656,7 @@ const saveMvrvZscoreSnapshot = () => {
 };
 
 const saveSth200dmaSnapshot = () => {
+  dashboardChartScheduler.flush("#sth-200dma-chart");
   const canvas = document.querySelector("#sth-200dma-chart");
   if (!canvas || !sth200dmaSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15090,6 +15672,7 @@ const saveSth200dmaSnapshot = () => {
 };
 
 const saveVddMedianSnapshot = () => {
+  dashboardChartScheduler.flush("#vdd-median-chart");
   const canvas = document.querySelector("#vdd-median-chart");
   if (!canvas || !vddMedianSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15105,6 +15688,7 @@ const saveVddMedianSnapshot = () => {
 };
 
 const saveSsrSnapshot = () => {
+  dashboardChartScheduler.flush("#ssr-chart");
   const canvas = document.querySelector("#ssr-chart");
   if (!canvas || !ssrSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15120,6 +15704,7 @@ const saveSsrSnapshot = () => {
 };
 
 const saveSthBandsSnapshot = () => {
+  dashboardChartScheduler.flush("#sth-bands-chart");
   const canvas = document.querySelector("#sth-bands-chart");
   if (!canvas || !sthBandsSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15135,6 +15720,7 @@ const saveSthBandsSnapshot = () => {
 };
 
 const savePercentProfitEx10ySnapshot = () => {
+  dashboardChartScheduler.flush("#percent-profit-ex-10y-chart");
   const canvas = document.querySelector("#percent-profit-ex-10y-chart");
   if (!canvas || !percentProfitEx10ySeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15150,6 +15736,7 @@ const savePercentProfitEx10ySnapshot = () => {
 };
 
 const saveSthMvrvSnapshot = () => {
+  dashboardChartScheduler.flush("#sth-mvrv-chart");
   const canvas = document.querySelector("#sth-mvrv-chart");
   if (!canvas || !sthMvrvSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15165,6 +15752,7 @@ const saveSthMvrvSnapshot = () => {
 };
 
 const saveVddSnapshot = () => {
+  dashboardChartScheduler.flush("#vdd-chart");
   const canvas = document.querySelector("#vdd-chart");
   if (!canvas || !vddSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -15180,6 +15768,7 @@ const saveVddSnapshot = () => {
 };
 
 const saveLthNuplSnapshot = () => {
+  dashboardChartScheduler.flush("#lth-nupl-chart");
   const canvas = document.querySelector("#lth-nupl-chart");
   if (!canvas || !lthNuplSeries.length) return;
   const exportCanvas = document.createElement("canvas");
@@ -16295,6 +16884,10 @@ const toggleLthNuplFullscreen = async () => {
 };
 
 const surfMetricConfig = {
+  rplrm: {
+    name: "BTC RPLR-M · Public UTXO Reconstruction (not entity-adjusted)",
+    snapshot: () => window.WelinkRplrm?.snapshot() || { status: "data-not-ready; do not invent current values" }
+  },
   "cost-basis": {
     name: "BTC Key Cost-Basis Pricing Models",
     snapshot: () => costBasisSnapshot
@@ -16676,6 +17269,7 @@ const applyTheme = () => {
 let trendNavigationLock = null;
 let trendScrollFrame = 0;
 let trendNavigationStabilizer = null;
+let activeTrendPanel = null;
 
 const syncTrendNavigatorLayout = () => {
   const header = document.querySelector(".site-header");
@@ -16728,19 +17322,21 @@ const keepTrendLinkVisible = (link) => {
 
 const expandTrendAnalysis = (panel, firstPanel) => {
   const disclosure = panel?.querySelector(".cost-basis-analysis-disclosure");
-  if (disclosure) disclosure.open = true;
+  if (disclosure && !disclosure.open) disclosure.open = true;
   const firstDisclosure = firstPanel?.querySelector(".cost-basis-analysis-disclosure");
-  if (firstDisclosure) firstDisclosure.open = true;
+  if (firstDisclosure && !firstDisclosure.open) firstDisclosure.open = true;
 };
 
 const setActiveTrendPanel = (panel, panels, { expand = true } = {}) => {
   if (!panel || !trendIndexList) return;
+  if (expand) expandTrendAnalysis(panel, panels[0]);
+  if (panel === activeTrendPanel) return;
+  activeTrendPanel = panel;
   const activeLink = trendIndexList.querySelector(`[data-trend-target="${panel.id}"]`);
   trendIndexList.querySelectorAll(".trend-index-link").forEach((link) => {
     link.classList.toggle("active", link === activeLink);
   });
   panels.forEach((item) => item.classList.toggle("is-trend-current", item === panel));
-  if (expand) expandTrendAnalysis(panel, panels[0]);
   keepTrendLinkVisible(activeLink);
 };
 
@@ -16815,6 +17411,22 @@ const scrollToTrendPanel = (panel, panels) => {
   });
 };
 
+// Panels are in document order. A binary search keeps each scroll frame to at
+// most six geometry reads for the 35 indicators, without caching stale heights.
+const findTrendPanelAtMarker = (panels, marker) => {
+  let low = 0;
+  let high = panels.length - 1;
+  let current = panels[0];
+  while (low <= high) {
+    const middle = (low + high) >>> 1;
+    if (panels[middle].getBoundingClientRect().top <= marker) {
+      current = panels[middle];
+      low = middle + 1;
+    } else high = middle - 1;
+  }
+  return current;
+};
+
 const setupTrendNavigator = () => {
   if (!trendIndexList) return;
   syncTrendNavigatorLayout();
@@ -16850,10 +17462,7 @@ const setupTrendNavigator = () => {
     trendScrollFrame = 0;
     if (trendNavigationLock) return;
     const marker = getTrendScrollOffset() + 24;
-    let current = panels[0];
-    panels.forEach((panel) => {
-      if (panel.getBoundingClientRect().top <= marker) current = panel;
-    });
+    const current = findTrendPanelAtMarker(panels, marker);
     setActiveTrendPanel(current, panels);
   };
   const requestTrendSync = () => {
@@ -16889,6 +17498,9 @@ const applyLanguage = () => {
       || (currentText && currentText !== staticZh && currentText !== staticEn);
     if (!hasRuntimeText) element.textContent = getCopy(key);
   });
+  document.querySelectorAll("[data-i18n-aria]").forEach((element) => {
+    element.setAttribute("aria-label", getCopy(element.dataset.i18nAria));
+  });
   langButtons.forEach((button) => { button.textContent = currentLanguage === "zh" ? "EN" : "中"; });
   onchainSupportOpenButton?.setAttribute("aria-label", getCopy("support.open"));
   onchainSupportCloseButton?.setAttribute("aria-label", currentLanguage === "zh" ? "关闭链上支持" : "Close on-chain support");
@@ -16900,6 +17512,7 @@ const applyLanguage = () => {
   syncTrendNavigatorLabels();
   updateCycleRadar();
   renderReferences();
+  if (document.querySelector("#address-balance-flow") && typeof renderAddressFlowUi === "function") renderAddressFlowUi();
   if (cycleTimingSnapshot) refreshCycleTimingMode();
   if (halvingSnapshot && !applyHalvingPayload(halvingSnapshot)) renderHalvingUnavailable();
   else if (!halvingSnapshot && document.querySelector("#halving-data-state")?.dataset.state === "unavailable") renderHalvingUnavailable();
@@ -16941,6 +17554,7 @@ let analysisSyncStarted = false;
 let analysisObserver = null;
 
 const analysisLoaders = [
+  () => window.WelinkRplrm?.load(),
   loadCostBasisMetrics,
   loadLthRealizedMetrics,
   loadRealizedProfitLossMetrics,
@@ -17035,6 +17649,7 @@ const syncData = async () => {
     try {
       const results = await Promise.allSettled([
         loadOverviewMetrics(),
+        loadAddressBalanceFlowMetrics(),
         loadExtendedMetrics(),
         loadHalving(),
         loadNetwork()
@@ -17438,6 +18053,34 @@ document.querySelectorAll("[data-chart-tabs='lth-nupl'] button").forEach((button
     hideLthNuplTooltip();
     drawLthNuplChart();
   });
+});
+
+document.querySelectorAll("[data-address-flow-range]").forEach((button) => {
+  button.addEventListener("click", () => {
+    addressFlowRange = Number(button.dataset.addressFlowRange) || 18;
+    addressFlowFocusedDate = null;
+    renderAddressFlowUi();
+    hideAddressFlowTooltip();
+    drawAddressBalanceFlowChart();
+  });
+});
+
+document.querySelector("#address-flow-chart")?.addEventListener("pointermove", showAddressFlowTooltip);
+document.querySelector("#address-flow-chart")?.addEventListener("pointerleave", hideAddressFlowTooltip);
+document.querySelector("#address-flow-chart")?.addEventListener("keydown", (event) => {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  const dates = getAddressFlowVisibleDates();
+  if (!dates.length) return;
+  event.preventDefault();
+  let index = Math.max(0, dates.indexOf(addressFlowFocusedDate));
+  if (event.key === "ArrowLeft") index = Math.max(0, index - 1);
+  if (event.key === "ArrowRight") index = Math.min(dates.length - 1, index + 1);
+  if (event.key === "Home") index = 0;
+  if (event.key === "End") index = dates.length - 1;
+  addressFlowFocusedDate = dates[index];
+  renderAddressFlowLegend();
+  updateAddressFlowAccessibleSummary(addressFlowFocusedDate);
+  drawAddressBalanceFlowChart();
 });
 
 document.querySelectorAll("[data-surf-model]").forEach((button) => {
@@ -17861,7 +18504,20 @@ const retryLthNuplLoading = (event) => {
 };
 document.querySelector("#lth-nupl-loading")?.addEventListener("click", retryLthNuplLoading);
 document.querySelector("#lth-nupl-loading")?.addEventListener("keydown", retryLthNuplLoading);
+const retryAddressFlowLoading = (event) => {
+  const loading = event.currentTarget;
+  if (!loading.classList.contains("is-error")) return;
+  if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  loading.classList.remove("is-error");
+  const message = loading.querySelector("strong");
+  if (message) message.textContent = getCopy("addressFlow.loading");
+  loadAddressBalanceFlowMetrics().catch((error) => console.warn("Address balance flow retry failed", error));
+};
+document.querySelector("#address-flow-loading")?.addEventListener("click", retryAddressFlowLoading);
+document.querySelector("#address-flow-loading")?.addEventListener("keydown", retryAddressFlowLoading);
 document.addEventListener("fullscreenchange", () => window.setTimeout(() => {
+  hideAddressFlowTooltip();
   hideCostBasisTooltip();
   hideSthRatioTooltip();
   hideLthRealizedTooltip();
@@ -17895,40 +18551,7 @@ document.addEventListener("fullscreenchange", () => window.setTimeout(() => {
   hidePercentProfitEx10yTooltip();
   hideVddTooltip();
   hideLthNuplTooltip();
-  drawCostBasisChart();
-  drawSthRatioChart();
-  drawLthRealizedChart();
-  drawRealizedProfitLossChart();
-  drawMedianRealizedChart();
-  drawLthSthChart();
-  drawLthLossChart();
-  drawSupplyProfitLossChart();
-  drawMedianMvrvChart();
-  drawMvrvBandsChart();
-  drawMvrvPriceBandsChart();
-  drawStockToFlowChart();
-  drawCycleTimingChart();
-  drawRhodlChart();
-  drawLthRplChart();
-  drawSlrvChart();
-  drawRealizedCapHodlChart();
-  drawLthSpentChart();
-  drawPercentProfitChart();
-  drawLthExchangeLossChart();
-  drawTwoWeekRsiChart();
-  drawUnder3mHodlChart();
-  drawUnder3mHeatChart();
-  drawUtxoAgeRpChart();
-  drawSthRplMomentumChart();
-  drawMvrvZscoreChart();
-  drawSth200dmaChart();
-  drawVddMedianCycleChart();
-  drawSsrChart();
-  drawSthBandsChart();
-  drawPercentProfitEx10yChart();
-  drawSthMvrvChart();
-  drawVddChart();
-  drawLthNuplChart();
+  drawAllCharts();
 }, 80));
 
 document.querySelectorAll("[data-metric-filter]").forEach((button) => {
@@ -17945,15 +18568,22 @@ document.querySelector("#electricity-input")?.addEventListener("input", (event) 
   setText("#electricity-value", `$${Number(event.target.value).toFixed(3)}/kWh`);
 });
 
+const sectionIntersections = new Map();
 const sectionObserver = new IntersectionObserver((entries) => {
-  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  // Observer callbacks contain only changed targets. Retain other sections that
+  // still intersect, so a shorter section exiting cannot leave its link active.
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) sectionIntersections.set(entry.target, entry);
+    else sectionIntersections.delete(entry.target);
+  });
+  const visible = [...sectionIntersections.values()].sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
   if (!visible) return;
   document.querySelectorAll("[data-section-link]").forEach((link) => {
     link.classList.toggle("active", link.dataset.sectionLink === visible.target.id);
   });
 }, { rootMargin: "-28% 0px -62%", threshold: [0, 0.1, 0.35] });
 
-document.querySelectorAll("#overview, #onchain-carousel, #valuation, #network, #charts, #reference").forEach((section) => sectionObserver.observe(section));
+document.querySelectorAll("#overview, #address-balance-flow, #market-heatmap, #onchain-carousel, #cycle-pulse, #valuation, #network, #charts, #reference").forEach((section) => sectionObserver.observe(section));
 
 const watermarkStages = document.querySelectorAll(".cost-basis-stage");
 if ("IntersectionObserver" in window) {

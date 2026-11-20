@@ -1,7 +1,7 @@
 import { CurrencyAmount, Native, Percent, Token, TradeType, ChainId } from "@pancakeswap/sdk";
 import { SMART_ROUTER_ADDRESSES, SmartRouter, SwapRouter } from "@pancakeswap/smart-router";
 import { NextRequest, NextResponse } from "next/server";
-import { hexToBigInt, parseUnits } from "viem";
+import { getAddress, hexToBigInt, parseUnits } from "viem";
 import { z } from "zod";
 import { isSameOrigin, noStoreHeaders } from "@/lib/bstock-agentic-wallet-auth";
 import {
@@ -194,8 +194,8 @@ export async function POST(request: NextRequest) {
       side: input.side,
       symbol: input.symbol,
       ticker: asset.ticker,
-      fromToken: fromTokenAddress,
-      toToken: toTokenAddress,
+      fromToken: getAddress(fromTokenAddress),
+      toToken: getAddress(toTokenAddress),
       fromSymbol,
       toSymbol,
       amount: input.amount,

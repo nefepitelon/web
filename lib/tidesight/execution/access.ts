@@ -1,4 +1,5 @@
 import "server-only";
+import { redactSecretText } from "@/lib/secret-redaction";
 import { ZodError } from "zod";
 import type { Viewer } from "@/lib/membership";
 import { getViewer } from "@/lib/membership";
@@ -40,8 +41,8 @@ export function tideSightExecutionErrorResponse(caught: unknown) {
   return Response.json(
     {
       ok: false,
-      error: message,
-      message,
+      error: redactSecretText(message),
+      message: redactSecretText(message),
       ...(typeof details?.code === "number" ? { exchangeCode: details.code } : {}),
       ...(typeof details?.actionRequired === "string" ? { actionRequired: details.actionRequired, retriable: false, state: "FAILED" } : {}),
       ...(details?.statusUnknown === true ? { executionStatusUnknown: true, retriable: false, state: "UNKNOWN" } : {})

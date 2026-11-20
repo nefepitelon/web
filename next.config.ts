@@ -30,7 +30,19 @@ const nextConfig: NextConfig = {
     ]
   },
   outputFileTracingIncludes: {
-    "/api/alpha-execution/automation": ["./api/surf-research.js", "./grid-ops/src/ai/provider.js", "./grid-ops/src/proxy.js", "./grid-ops/src/exchange/manifest.js"],
+    "/hedge-ops/console/**": [
+      "./hedge-ops/engines/lighter/src/parallax_hedge/web/index.html",
+      "./hedge-ops/paired_hedge/web/**/*",
+      "./hedge-ops/binance_lighter/web/index.html",
+      "./hedge-ops/binance_lighter/web/app.js",
+      "./hedge-ops/binance_lighter/web/styles.css",
+      "./hedge-ops/engines/lighter/src/parallax_hedge/web/app.js",
+      "./hedge-ops/engines/lighter/src/parallax_hedge/web/styles.css",
+      "./hedge-ops/engines/entropy/src/parallax_hedge/web/index.html",
+      "./hedge-ops/engines/entropy/src/parallax_hedge/web/app.js",
+      "./hedge-ops/engines/entropy/src/parallax_hedge/web/styles.css",
+    ],
+    "/api/alpha-execution/automation": ["./lib/legacy-handlers/surf-research.js", "./grid-ops/src/ai/provider.js", "./grid-ops/src/proxy.js", "./grid-ops/src/exchange/manifest.js"],
     "/quant-suite/*": ["./quant-runtime/recipes/**/*", "./third-party/quant-source/**/*"],
     "/legacy/*": [
       "./*.html",
@@ -43,6 +55,9 @@ const nextConfig: NextConfig = {
     "/api/classic-grid/*": ["./classic-grid/**/*"],
     "/grid-ops-hosted-console": ["./grid-ops/public/index.html"],
     "/api/grid-ops-hosted/*": ["./grid-ops/**/*"]
+  },
+  outputFileTracingExcludes: {
+    "/api/hedge-ops/**": ["./.runtime/**/*"],
   },
   async rewrites() {
     // Vercel cleanUrls serves each public index.html at its directory URL.

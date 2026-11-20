@@ -9,9 +9,9 @@ const js = fs.readFileSync(path.join(root, "product-dashboard.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 const legacyRoute = fs.readFileSync(path.join(root, "lib", "legacy-route.ts"), "utf8");
 
-test("homepage product dashboard exposes all 34 on-chain trend snapshots", () => {
+test("homepage product dashboard exposes all 35 on-chain trend snapshots", () => {
   const options = html.match(/data-model-option="[^"]+"/g) || [];
-  assert.equal(options.length, 34);
+  assert.equal(options.length, 35);
   for (const indicator of [
     "cost-basis", "sth-ratio", "lth-loss", "rpl", "median-rp", "lth-sth", "lth-rp", "supply-pl", "median-mvrv",
     "mvrv-bands", "vdd", "lth-nupl", "mvrv-price-bands", "stock-to-flow", "cycle-timing", "rhodl", "lth-rpl", "slrv",
@@ -20,7 +20,7 @@ test("homepage product dashboard exposes all 34 on-chain trend snapshots", () =>
     assert.match(html, new RegExp(`data-model-option="${indicator}"`));
     assert.match(js, new RegExp(`"?${indicator}"?:?\\s*\\{`));
   }
-  assert.match(html, /class="power-copy-orbit"><strong>34<\/strong>/);
+  assert.match(html, /class="power-copy-orbit"><strong>35<\/strong>/);
   assert.match(html, /product-dashboard\.js/);
   assert.match(legacyRoute, /"product-dashboard\.js"/);
 });

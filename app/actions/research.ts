@@ -6,6 +6,7 @@ import { z } from "zod";
 import { writeAudit } from "@/lib/audit";
 import { requireAdmin, requireViewer } from "@/lib/membership";
 import { prisma } from "@/lib/prisma";
+import { canManageResearch, canReadResearch } from "@/lib/research-access";
 import { fallbackResearchSlug, normalizeResearchSlug, researchArticlePath } from "@/lib/research-routing";
 
 const articleSchema = z.object({
@@ -162,7 +163,7 @@ export async function unpublishResearchArticleAction(articleIdValue: string) {
   const admin = await requireAdmin("/research");
   const previous = await prisma.researchArticle.findUnique({
     where: { id: articleId },
-    select: { id: true, slug: true, status: true }
+    select: { id: true, slug: true, status: true, access: true }
   });
 
   if (!previous) redirect("/research?error=article-not-found#research-archive");
@@ -209,14 +210,14 @@ export async function deleteResearchDraftAction(articleIdValue: string) {
 
 export async function toggleResearchBookmarkAction(articleIdValue: string) {
   const articleId = articleIdSchema.parse(articleIdValue);
+  const viewer = await requireViewer("/research");
   const article = await prisma.researchArticle.findUnique({
     where: { id: articleId },
-    select: { id: true, slug: true, status: true }
+    select: { id: true, slug: true, status: true, access: true }
   });
   if (!article) return;
   const articlePath = researchArticlePath(article.slug);
-  const viewer = await requireViewer(articlePath);
-  if (article.status !== "PUBLISHED" && viewer.role !== "admin") return;
+  if ((article.status !== "PUBLISHED" && !canManageResearch(viewer)) || !canReadResearch(article.access, viewer)) return;
 
   const existing = await prisma.researchBookmark.findUnique({
     where: { articleId_userId: { articleId, userId: viewer.id } },
@@ -234,14 +235,14 @@ export async function toggleResearchBookmarkAction(articleIdValue: string) {
 export async function createResearchCommentAction(articleIdValue: string, formData: FormData) {
   const articleId = articleIdSchema.parse(articleIdValue);
   const body = commentSchema.parse(formData.get("comment"));
+  const viewer = await requireViewer("/research");
   const article = await prisma.researchArticle.findUnique({
     where: { id: articleId },
-    select: { id: true, slug: true, status: true }
+    select: { id: true, slug: true, status: true, access: true }
   });
   if (!article) return;
   const articlePath = researchArticlePath(article.slug);
-  const viewer = await requireViewer(`${articlePath}#comments`);
-  if (article.status !== "PUBLISHED" && viewer.role !== "admin") return;
+  if ((article.status !== "PUBLISHED" && !canManageResearch(viewer)) || !canReadResearch(article.access, viewer)) return;
 
   await prisma.researchComment.create({
     data: { articleId, userId: viewer.id, body }

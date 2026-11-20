@@ -1,4 +1,5 @@
 import { BSTOCK_REGISTRY_BASELINE_ASSETS } from "@/lib/bstock-eligible-snapshot";
+import localization from "@/data/bstock-localization.json";
 
 const FMP_LOGO_BASE_URL = "https://financialmodelingprep.com/image-stock";
 const GOOGLE_FAVICON_BASE_URL = "https://www.google.com/s2/favicons";
@@ -75,19 +76,54 @@ export const BSTOCK_OFFICIAL_BRAND_DOMAINS: Readonly<Record<string, string>> = O
   TSLAB: "tesla.com",
   TSMB: "tsmc.com",
   USARB: "usarareearth.com",
-  WDCB: "westerndigital.com"
+  WDCB: "westerndigital.com",
+  ADBEB: "adobe.com",
+  AGPUB: "axecompute.com",
+  AMCB: "amctheatres.com",
+  BBB: "blackberry.com",
+  BNCB: "bnbstandard.com",
+  BOTB: "robostrategy.co",
+  BRKBB: "berkshirehathaway.com",
+  CRMB: "salesforce.com",
+  CRWDB: "crowdstrike.com",
+  CYPHB: "cypherpunk.com",
+  DJTB: "tmtgcorp.com",
+  FWDIB: "forwardindustries.com",
+  GPROB: "gopro.com",
+  HIMSB: "hims.com",
+  HPEB: "hpe.com",
+  JPMB: "jpmorganchase.com",
+  KSTRB: "kraneshares.com",
+  LLYB: "lilly.com",
+  MDBB: "mongodb.com",
+  MRNAB: "modernatx.com",
+  PDDB: "pddholdings.com",
+  PENGB: "penguinsolutions.com",
+  RDDTB: "redditinc.com",
+  SECZB: "securitize.io",
+  SHAZB: "sharonai.com",
+  SQQQB: "proshares.com",
+  STXB: "seagate.com",
+  TMFB: "direxion.com",
+  USDEB: "stablecoinx.com",
+  UVXYB: "proshares.com",
+  VSTB: "vistracorp.com",
+  WENB: "wendys.com",
+  ZMB: "zoom.com"
 });
 
 const OFFICIAL_DOMAIN_FIRST = new Set([
-  "AAOIB", "ARMB", "BABAB", "BEB", "CBRSB", "COINB", "PLTRB", "QNTB", "SKHYB", "SPCXB"
+  "AAOIB", "ARMB", "BABAB", "BEB", "CBRSB", "COINB", "PLTRB", "QNTB", "SKHYB", "SPCXB",
+  "AGPUB", "BNCB", "BOTB", "CYPHB", "FWDIB", "SECZB", "SHAZB", "USDEB", "BRKBB"
 ]);
 
 const tickerByBstock: ReadonlyMap<string, string> = new Map<string, string>(
-  BSTOCK_REGISTRY_BASELINE_ASSETS.map(([ticker, symbol]) => [symbol, ticker] as const)
+  [...BSTOCK_REGISTRY_BASELINE_ASSETS.map(([ticker, symbol]) => [symbol, ticker] as const),
+    ...Object.entries(localization.instruments).map(([symbol, instrument]) => [symbol, instrument.ticker] as const)]
 );
 
 export function bstockBrandIconPath(symbol: string) {
-  return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(symbol.toUpperCase())}`;
+  return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(symbol.toUpperCase())}&v=20261024`;
 }
 
 export function bstockBrandIconSources(symbol: string) {

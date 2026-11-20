@@ -270,7 +270,10 @@ export function createAlphaAutomationMarketLoader(deps: Dependencies = {}) {
     if(results[2].status==="fulfilled") {
       const {payload,at:snapshotAt}=results[2].value;
       const snapshotFresh=payload?.stale!==true&&!payload?.fallback&&ageValid(snapshotAt,now,age);
-      const records:RecordValue[]=Array.isArray(payload?.latest)?payload.latest:Array.isArray(payload?.signals)?payload.signals:[];
+      const incomingRecords:RecordValue[]=Array.isArray(payload?.latest)?payload.latest:Array.isArray(payload?.signals)?payload.signals:[];
+      // A previous source or an injected channel can never join the current
+      // signal pool, even when a remote response labels its snapshot as fresh.
+      const records:RecordValue[]=incomingRecords.filter((row:RecordValue)=>collector.matchesSignalChannel(row));
       const realRecord=(row:RecordValue)=>row&&typeof row==="object"&&["webhook","public_preview","public_preview_markdown"].includes(row.source_mode)
         &&typeof row.dedupe_hash==="string"&&row.dedupe_hash.length>0;
       const labelCountsKnown=records.every(realRecord);

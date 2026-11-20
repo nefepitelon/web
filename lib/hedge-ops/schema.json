@@ -1,0 +1,313 @@
+{
+  "defaults": {
+    "lighter": {
+      "ARCUS_ADDRESS": "",
+      "ARCUS_ACCOUNT_INDEX": "0",
+      "ARCUS_API_PRIVATE_KEY": "",
+      "ARCUS_API_KEY": "",
+      "LIGHTER_ACCOUNT_INDEX": "",
+      "LIGHTER_API_KEY_INDEX": "",
+      "LIGHTER_API_PRIVATE_KEY": "",
+      "ARCUS_PROXY": "",
+      "LIGHTER_PROXY": "",
+      "GLOBAL_PROXY": "",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "180",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "LIQUIDATION_WARN_DISTANCE_PCT": "5",
+      "ARCUS_MAKER": "false",
+      "MAKER_WAIT_SECONDS": "120",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "MIN_CORRIDOR_PCT": "3",
+      "CLOSE_CORRIDOR_PCT": "1.5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "ORDER_SLIPPAGE_BPS": "10"
+    },
+    "entropy": {
+      "ARCUS_ADDRESS": "",
+      "ARCUS_ACCOUNT_INDEX": "0",
+      "ARCUS_API_PRIVATE_KEY": "",
+      "ARCUS_API_KEY": "",
+      "HYPERLIQUID_ACCOUNT_ADDRESS": "",
+      "HYPERLIQUID_PRIVATE_KEY": "",
+      "ARCUS_PROXY": "",
+      "ENTROPY_PROXY": "",
+      "GLOBAL_PROXY": "",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "180",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "LIQUIDATION_WARN_DISTANCE_PCT": "5",
+      "ARCUS_MAKER": "false",
+      "MAKER_WAIT_SECONDS": "120",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "MIN_CORRIDOR_PCT": "3",
+      "CLOSE_CORRIDOR_PCT": "1.5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "ORDER_SLIPPAGE_BPS": "10"
+    },
+    "binance": {
+      "BINANCE_API_KEY": "",
+      "BINANCE_API_SECRET": "",
+      "LIGHTER_ACCOUNT_INDEX": "",
+      "LIGHTER_API_KEY_INDEX": "",
+      "LIGHTER_API_PRIVATE_KEY": "",
+      "BINANCE_PROXY": "",
+      "LIGHTER_PROXY": "",
+      "GLOBAL_PROXY": "",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "120",
+      "ORDER_SLIPPAGE_BPS": "10",
+      "MAX_OPEN_BASIS_BPS": "50",
+      "MIN_NET_FUNDING_BPS_H": "0.05",
+      "MAX_TASK_NOTIONAL": "1000",
+      "MARGIN_BUFFER": "1.25",
+      "CLOSE_CORRIDOR_PCT": "5",
+      "REOPEN_COOLDOWN_SECONDS": "60"
+    },
+    "binance_okx": {
+      "GLOBAL_PROXY": "",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "120",
+      "ORDER_SLIPPAGE_BPS": "10",
+      "MAX_OPEN_BASIS_BPS": "50",
+      "MIN_NET_FUNDING_BPS_H": "0.05",
+      "MAX_TASK_NOTIONAL": "1000",
+      "MARGIN_BUFFER": "1.25",
+      "CLOSE_CORRIDOR_PCT": "5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "BINANCE_API_KEY": "",
+      "BINANCE_API_SECRET": "",
+      "BINANCE_PROXY": "",
+      "OKX_API_KEY": "",
+      "OKX_API_SECRET": "",
+      "OKX_API_PASSPHRASE": "",
+      "OKX_PROXY": "",
+      "OKX_REGION": "global"
+    },
+    "binance_hyperliquid": {
+      "GLOBAL_PROXY": "",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "120",
+      "ORDER_SLIPPAGE_BPS": "10",
+      "MAX_OPEN_BASIS_BPS": "50",
+      "MIN_NET_FUNDING_BPS_H": "0.05",
+      "MAX_TASK_NOTIONAL": "1000",
+      "MARGIN_BUFFER": "1.25",
+      "CLOSE_CORRIDOR_PCT": "5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "BINANCE_API_KEY": "",
+      "BINANCE_API_SECRET": "",
+      "BINANCE_PROXY": "",
+      "HYPERLIQUID_ACCOUNT_ADDRESS": "",
+      "HYPERLIQUID_PRIVATE_KEY": "",
+      "HYPERLIQUID_PROXY": "",
+      "HYPERLIQUID_VAULT_ADDRESS": ""
+    },
+    "hyperliquid_lighter": {
+      "GLOBAL_PROXY": "",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "120",
+      "ORDER_SLIPPAGE_BPS": "10",
+      "MAX_OPEN_BASIS_BPS": "50",
+      "MIN_NET_FUNDING_BPS_H": "0.05",
+      "MAX_TASK_NOTIONAL": "1000",
+      "MARGIN_BUFFER": "1.25",
+      "CLOSE_CORRIDOR_PCT": "5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "HYPERLIQUID_ACCOUNT_ADDRESS": "",
+      "HYPERLIQUID_PRIVATE_KEY": "",
+      "HYPERLIQUID_PROXY": "",
+      "LIGHTER_ACCOUNT_INDEX": "",
+      "LIGHTER_API_KEY_INDEX": "",
+      "LIGHTER_API_PRIVATE_KEY": "",
+      "LIGHTER_PROXY": "",
+      "HYPERLIQUID_VAULT_ADDRESS": ""
+    },
+    "ondoperps_entropy": {
+      "GLOBAL_PROXY": "",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "120",
+      "ORDER_SLIPPAGE_BPS": "10",
+      "MAX_OPEN_BASIS_BPS": "50",
+      "MIN_NET_FUNDING_BPS_H": "0.05",
+      "MAX_TASK_NOTIONAL": "1000",
+      "MARGIN_BUFFER": "1.25",
+      "CLOSE_CORRIDOR_PCT": "5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "ONDOPERPS_API_KEY_ID": "",
+      "ONDOPERPS_API_SECRET": "",
+      "ONDOPERPS_PROXY": "",
+      "HYPERLIQUID_ACCOUNT_ADDRESS": "",
+      "HYPERLIQUID_PRIVATE_KEY": "",
+      "HYPERLIQUID_VAULT_ADDRESS": "",
+      "ENTROPY_PROXY": ""
+    },
+    "ondoperps_ondoperps": {
+      "GLOBAL_PROXY": "",
+      "DRY_RUN": "true",
+      "ENGINE_CYCLE_SECONDS": "20",
+      "FUNDING_REFRESH_SECONDS": "30",
+      "FUNDING_TIMEOUT_SECONDS": "30",
+      "FUNDING_STALE_MAX_SECONDS": "120",
+      "ORDER_SLIPPAGE_BPS": "10",
+      "MAX_OPEN_BASIS_BPS": "50",
+      "MIN_NET_FUNDING_BPS_H": "0",
+      "MAX_TASK_NOTIONAL": "1000",
+      "MARGIN_BUFFER": "1.25",
+      "CLOSE_CORRIDOR_PCT": "5",
+      "REOPEN_COOLDOWN_SECONDS": "60",
+      "ONDOPERPS_A_API_KEY_ID": "",
+      "ONDOPERPS_A_API_SECRET": "",
+      "ONDOPERPS_A_PROXY": "",
+      "ONDOPERPS_B_API_KEY_ID": "",
+      "ONDOPERPS_B_API_SECRET": "",
+      "ONDOPERPS_B_PROXY": ""
+    }
+  },
+  "labels": {
+    "DRY_RUN": "演练模式（不发送真实订单）",
+    "ARCUS_ADDRESS": "Arcus 主钱包公开地址",
+    "ARCUS_ACCOUNT_INDEX": "Arcus 子账户编号",
+    "ARCUS_API_PRIVATE_KEY": "Arcus API 私钥",
+    "ARCUS_API_KEY": "Arcus API 公钥",
+    "LIGHTER_ACCOUNT_INDEX": "Lighter 账户编号",
+    "LIGHTER_API_KEY_INDEX": "Lighter API Key 编号",
+    "LIGHTER_API_PRIVATE_KEY": "Lighter API 私钥",
+    "HYPERLIQUID_ACCOUNT_ADDRESS": "Entropy 主钱包公开地址",
+    "HYPERLIQUID_PRIVATE_KEY": "Entropy API 钱包私钥",
+    "ARCUS_MAKER": "默认 Arcus 限价挂单",
+    "FUNDING_REFRESH_SECONDS": "资金费率刷新间隔（秒）",
+    "FUNDING_STALE_MAX_SECONDS": "费率最大过期时间（秒）",
+    "FUNDING_TIMEOUT_SECONDS": "费率请求超时（秒）",
+    "ENGINE_CYCLE_SECONDS": "引擎循环间隔（秒）",
+    "MAKER_WAIT_SECONDS": "挂单最长等待（秒）",
+    "REOPEN_COOLDOWN_SECONDS": "平仓后冷却（秒）",
+    "LIQUIDATION_WARN_DISTANCE_PCT": "强平预警距离（%）",
+    "MIN_CORRIDOR_PCT": "开仓走廊门槛（%）",
+    "CLOSE_CORRIDOR_PCT": "平仓走廊线（%）",
+    "ORDER_SLIPPAGE_BPS": "下单滑点（bps）",
+    "ARCUS_PROXY": "Arcus 代理",
+    "LIGHTER_PROXY": "Lighter 代理",
+    "ENTROPY_PROXY": "Entropy 代理",
+    "GLOBAL_PROXY": "共用代理",
+    "BINANCE_API_KEY": "Binance USD-M API Key",
+    "BINANCE_API_SECRET": "Binance USD-M API Secret",
+    "BINANCE_PROXY": "Binance 代理",
+    "MAX_OPEN_BASIS_BPS": "开仓最大基差（bps）",
+    "MIN_NET_FUNDING_BPS_H": "最低资金费差（bps / 小时）",
+    "MAX_TASK_NOTIONAL": "单任务名义额上限（USD）",
+    "MARGIN_BUFFER": "保证金缓冲倍数",
+    "OKX_API_KEY": "OKX API Key（交易权限）",
+    "OKX_API_SECRET": "OKX API Secret",
+    "OKX_API_PASSPHRASE": "OKX API Passphrase",
+    "OKX_REGION": "OKX 注册地区（global / us / eea）",
+    "OKX_PROXY": "OKX 代理",
+    "HYPERLIQUID_PROXY": "Hyperliquid 代理",
+    "HYPERLIQUID_VAULT_ADDRESS": "Hyperliquid 子账户地址（主账户留空）",
+    "ONDOPERPS_API_KEY_ID": "Ondoperps API Key ID",
+    "ONDOPERPS_API_SECRET": "Ondoperps API Secret",
+    "ONDOPERPS_PROXY": "Ondoperps 代理",
+    "ONDOPERPS_A_API_KEY_ID": "Ondoperps A API Key ID",
+    "ONDOPERPS_A_API_SECRET": "Ondoperps A API Secret",
+    "ONDOPERPS_A_PROXY": "Ondoperps A 代理",
+    "ONDOPERPS_B_API_KEY_ID": "Ondoperps B API Key ID",
+    "ONDOPERPS_B_API_SECRET": "Ondoperps B API Secret",
+    "ONDOPERPS_B_PROXY": "Ondoperps B 代理"
+  },
+  "booleans": [
+    "DRY_RUN",
+    "ARCUS_MAKER"
+  ],
+  "limits": {
+    "FUNDING_REFRESH_SECONDS": [
+      5,
+      3600
+    ],
+    "FUNDING_STALE_MAX_SECONDS": [
+      5,
+      86400
+    ],
+    "FUNDING_TIMEOUT_SECONDS": [
+      1,
+      120
+    ],
+    "ENGINE_CYCLE_SECONDS": [
+      5,
+      3600
+    ],
+    "MAKER_WAIT_SECONDS": [
+      1,
+      3600
+    ],
+    "REOPEN_COOLDOWN_SECONDS": [
+      0,
+      86400
+    ],
+    "LIQUIDATION_WARN_DISTANCE_PCT": [
+      0.01,
+      100
+    ],
+    "MIN_CORRIDOR_PCT": [
+      0.01,
+      100
+    ],
+    "CLOSE_CORRIDOR_PCT": [
+      0.01,
+      100
+    ],
+    "ORDER_SLIPPAGE_BPS": [
+      0,
+      1000
+    ],
+    "ARCUS_ACCOUNT_INDEX": [
+      0,
+      9
+    ],
+    "LIGHTER_ACCOUNT_INDEX": [
+      0,
+      9007199254740991
+    ],
+    "LIGHTER_API_KEY_INDEX": [
+      0,
+      255
+    ],
+    "MAX_OPEN_BASIS_BPS": [
+      1,
+      300
+    ],
+    "MIN_NET_FUNDING_BPS_H": [
+      0,
+      100
+    ],
+    "MAX_TASK_NOTIONAL": [
+      5,
+      1000000
+    ],
+    "MARGIN_BUFFER": [
+      1,
+      10
+    ]
+  },
+  "integers": [
+    "ARCUS_ACCOUNT_INDEX",
+    "LIGHTER_ACCOUNT_INDEX",
+    "LIGHTER_API_KEY_INDEX"
+  ]
+}

@@ -9,7 +9,8 @@ import { collectIncomeSummary, emptyIncomeSummary, type LiveIncomeSummary } from
 const DAY = 86_400_000;
 const MAX_HISTORY = 89 * DAY; // Always within Binance's last-three-month retention.
 const CACHE_MS = 5 * 60_000;
-const summaries = new Map<string, { expires: number; result: Promise<LiveIncomeSummary> }>();
+const RETRY_CACHE_MS = 30_000;
+const summaries = new Map<string, { expires: number; startedAt: number; pending: boolean; result: Promise<LiveIncomeSummary> }>();
 
 async function liveCredential(userId: string, market: BinanceMarket) {
   return prisma.alphaTradingCredential.findUnique({ where: {
@@ -43,7 +44,7 @@ export async function fetchLiveIncomeForPeriod(userId: string, market: BinanceMa
 }
 
 /** Dashboard summary; cache is scoped to owner and encrypted credential version. */
-export async function getLivePnlSummary(userId: string, market: BinanceMarket) {
+export async function getLivePnlSummary(userId: string, market: BinanceMarket, options: { refresh?: boolean } = {}) {
   const credential = await liveCredential(userId, market);
   const now = Date.now();
   const version = createHash("sha256").update(JSON.stringify([
@@ -52,10 +53,16 @@ export async function getLivePnlSummary(userId: string, market: BinanceMarket) {
   ])).digest("hex");
   const key = `${userId}:${market}:${version}`;
   const cached = summaries.get(key);
-  if (cached && cached.expires > now) return cached.result;
+  if (cached && (cached.pending || (cached.expires > now && (!options.refresh || now - cached.startedAt < RETRY_CACHE_MS)))) return cached.result;
   for (const [entryKey, entry] of summaries) if (entry.expires <= now) summaries.delete(entryKey);
   if (summaries.size >= 64) summaries.delete(summaries.keys().next().value!);
-  const result = readCredentialIncome(credential, market, now - MAX_HISTORY, now);
-  summaries.set(key, { expires: now + CACHE_MS, result });
-  return result;
+  const entry = { expires: now + CACHE_MS, startedAt: now, pending: true, result: null! as Promise<LiveIncomeSummary> };
+  entry.result = readCredentialIncome(credential, market, now - MAX_HISTORY, now).then(result => {
+    result.accountVersion = version;
+    entry.pending = false;
+    entry.expires = Date.now() + (result.status === "ready" ? CACHE_MS : RETRY_CACHE_MS);
+    return result;
+  }, error => { summaries.delete(key); throw error; });
+  summaries.set(key, entry);
+  return entry.result;
 }

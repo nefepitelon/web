@@ -1,0 +1,6 @@
+.perpdex-standalone { height: 100dvh; }
+.perpdex-standalone-header { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; padding: 10px 28px; border-bottom: 1px solid #263345; background: #101923; font-size: 12px; }
+.perpdex-standalone-header a, .perpdex-standalone-header span { display: inline-flex; align-items: center; gap: 8px; color: #a9c8cb; text-decoration: none; }
+.perpdex-standalone-header a:hover { color: #c2ed8d; }
+@media (max-width: 600px) { .perpdex-standalone-header { padding: 10px 16px; } .perpdex-standalone-header span { display: none; } }
+@media (max-width: 420px) { .perpdex-standalone-header { gap: 8px; padding: 9px 12px; font-size: 10px; } .perpdex-standalone-header > a { gap: 4px; } .perpdex-standalone-header .hedge-ops-market-links { gap: 2px; } .perpdex-standalone-header .hedge-ops-market-links a { padding: 5px 7px; font-size: 10px; } }

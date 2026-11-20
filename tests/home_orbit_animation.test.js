@@ -161,7 +161,7 @@ test("home and shared dashboard expose auto motion while unbound charts keep the
     vm.runInNewContext(updateSource, {
       state: { view }, hasTrendExperience, orbitAuto, orbitControls: {}, orbitHint: null, orbitReset: null,
       viewButtons: [], section: { classList: { toggle() {} } }, canvas: { setAttribute() {} },
-      orbitAnimator: null, updateOrbitAutoUi() {}, copy: (zh) => zh
+      orbitAnimator: null, isHomePage: true, dashboardBrandSeal: null, updateOrbitAutoUi() {}, syncBrandSeal() {}, copy: (zh) => zh
     });
     assert.equal(orbitAuto.hidden, expectedHidden, `shared experience=${hasTrendExperience}, view=${view}`);
   }
@@ -267,7 +267,7 @@ test("the real resize handler refits the homepage and never overwrites a manuall
       camera, cameraFitManaged, fittedSize: "1265:720", createHomeCamera,
       canvas: { getBoundingClientRect: () => ({ width: 375, height: 560 }) },
       ResizeObserver: class { constructor(callback) { callback(); } },
-      orbitAnimator: { reframe: () => { reframes += 1; } }, draw() {}
+      orbitAnimator: { reframe: () => { reframes += 1; } }, dashboardBrandSeal: null, draw() {}
     });
     assert.deepEqual(camera, cameraFitManaged ? { ...createHomeCamera(375, 560) } : before);
     assert.equal(reframes, cameraFitManaged ? 1 : 0);
@@ -306,7 +306,7 @@ test("first manual zoom-out from compact fitted views reduces magnification inst
       canvas: { addEventListener: (name, listener) => { handler = listener; } },
       state: { view: "3d" }, camera, minCameraZoom: 0.20, cameraFitManaged: true,
       clamp: (value, min, max) => Math.min(max, Math.max(min, value)),
-      orbitAnimator: null, draw() {}
+      orbitAnimator: null, isHomePage: true, hasTrendExperience: true, draw() {}
     });
     handler({ deltaY: 120, preventDefault() {} });
     assert.ok(camera.zoom < before, `${width} first wheel zoom-out ${before} -> ${camera.zoom}`);
@@ -427,6 +427,7 @@ test("the actual 3D renderer disables moving effects with reduced motion or paus
     const rows = [{ date: new Date('2024-01-01'), value: 2 }, { date: new Date('2025-01-01'), value: 8 }];
     vm.runInNewContext(`${source.slice(start, end)}\ndraw3d(context,1920,720,rows,{lines:[{key:'value',color:'#75f39a'}]},{min:0,max:10},{min:0,max:10});`, {
       document: { body: { dataset: { theme: 'dark' } } }, camera, context, rows, state: { glow: false, range: 'all' },
+      isHomePage: true, hasTrendExperience: true, dashboardBrandSeal: null,
       orbitAnimator: { isEnabled: () => enabled, elapsed: () => 4300 },
       drawWorldLine() {}, project3d: (point, width, height) => projectOrbitPoint(point, width, height, camera),
       drawOrbitFloorRipples(ctx, width, height, view, elapsed) { assert.equal(elapsed, 4300); ripples += 1; },

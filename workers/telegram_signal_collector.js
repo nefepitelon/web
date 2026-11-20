@@ -1,10 +1,11 @@
 const { createHash } = require("node:crypto");
 
-const DEFAULT_CHANNEL_USERNAME = "BWE_OI_Price_monitor";
+const DEFAULT_CHANNEL_USERNAME = "EQN_OI_Price_monitor";
 const SIGNAL_COLLECTION = "telegram_signals";
 const SIGNAL_FEED_COLLECTION = "telegram_signal_feed";
 const RECENT_SIGNAL_LIMIT = 20;
 const PUBLIC_PREVIEW_SOURCE_MODE = "public_preview";
+const STORAGE_TIMEOUT_MS = 3_000;
 
 function asNumber(value) {
   if (value == null || value === "") return null;
@@ -25,13 +26,38 @@ function normalizeChannelUsername(value) {
   return String(value || "").trim().replace(/^@/, "").toLowerCase();
 }
 
+function targetChannelUsername(env = process.env) {
+  const configured = String(env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME).trim().replace(/^@/, "");
+  return /^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(configured) ? configured : DEFAULT_CHANNEL_USERNAME;
+}
+
+function matchesSignalChannel(signal, channelUsername = targetChannelUsername()) {
+  return normalizeChannelUsername(signal?.channel_username) === normalizeChannelUsername(channelUsername);
+}
+
+function isPublicMarketSignal(signal, channelUsername = targetChannelUsername()) {
+  return matchesSignalChannel(signal, channelUsername) && ["webhook", PUBLIC_PREVIEW_SOURCE_MODE, "public_preview_markdown"].includes(signal.source_mode)
+    && Boolean(signal.symbol) && ["parsed", "partial"].includes(signal.parse_status)
+    && (signal.oi_change_pct != null || signal.price_change_pct != null);
+}
+
+function publicSignalsForChannel(signals, env = process.env, limit = RECENT_SIGNAL_LIMIT) {
+  const channel = normalizeChannelUsername(targetChannelUsername(env));
+  return (Array.isArray(signals) ? signals : []).filter((signal) => {
+    if (!isPublicMarketSignal(signal, channel)) return false;
+    if (!signal.source_message_url) return true;
+    return new RegExp(`^https://t\\.me/${channel}/[0-9]+$`, "i").test(signal.source_message_url);
+  }).sort(compareRecentSignals).slice(0, limit);
+}
+
 function cleanSymbol(value) {
-  const compact = String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const compact = String(value || "").toUpperCase().replace(/[^\p{L}\p{N}]/gu, "");
   return compact.endsWith("USDT") ? compact.slice(0, -4) : compact;
 }
 
 function extractSymbol(text) {
   const patterns = [
+    /(?:^|[^\p{L}\p{N}])([\p{L}\p{N}]{1,20})[\/_-]?USDT(?=$|[^\p{L}\p{N}])/iu,
     /\[\s*([A-Z0-9]{2,20})(?:[\/_-]?USDT)?\s*\]/i,
     /(?:symbol|pair|币种|交易对)\s*[:：]?\s*[#$]?([A-Z0-9]{2,20})(?:[\/_-]?USDT)?\b/i,
     /\b([A-Z0-9]{2,20})[\/_-]USDT\b/i,
@@ -133,6 +159,14 @@ function extractSignalTime(text, suppliedTime) {
       : new Date(suppliedTime);
     if (!Number.isNaN(supplied.getTime())) return supplied.toISOString();
   }
+  // EQN's Markdown reader can retain its explicit UTC+8 clock even when it
+  // removes Telegram's datetime attribute. Never parse a zone-less wall clock
+  // as if it were UTC or as the worker host's local time.
+  const zonedClock = text.match(/(20\d{2}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s*\(UTC([+-])(\d{1,2})(?::(\d{2}))?\)/i);
+  if (zonedClock) {
+    const parsed = new Date(`${zonedClock[1]}T${zonedClock[2]}${zonedClock[3]}${zonedClock[4].padStart(2, "0")}:${zonedClock[5] || "00"}`);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+  }
   const match = text.match(/(?:time|timestamp|时间)\s*[:：]\s*([^\n,，]+)/i)
     || text.match(/\b(20\d{2}-\d{1,2}-\d{1,2}[T\s]\d{1,2}:\d{2}(?::\d{2})?(?:Z|\s*[+-]\d{2}:?\d{2})?)\b/);
   if (match) {
@@ -209,7 +243,7 @@ function telegramHtmlToText(value) {
 }
 
 function publicPreviewMessagesFromHtml(html, env = process.env) {
-  const channelUsername = env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME;
+  const channelUsername = targetChannelUsername(env);
   const expectedUsername = normalizeChannelUsername(channelUsername);
   const source = String(html || "");
   const markers = [...source.matchAll(/<div class="tgme_widget_message_wrap\b/g)];
@@ -221,7 +255,8 @@ function publicPreviewMessagesFromHtml(html, env = process.env) {
     const messageText = block.match(/<div class="tgme_widget_message_text\b[^>]*>([\s\S]*?)<\/div>/i);
     const timestamp = block.match(/<time\s+datetime="([^"]+)"/i);
     const rawText = telegramHtmlToText(messageText?.[1]);
-    if (!rawText) return null;
+    // Channel notices, counters and media captions are not trading signals.
+    if (!rawText || !isPublicMarketSignal(parseTelegramSignal(rawText, { channelUsername, sourceMode: PUBLIC_PREVIEW_SOURCE_MODE }), channelUsername)) return null;
 
     return {
       rawText,
@@ -236,7 +271,7 @@ function publicPreviewMessagesFromHtml(html, env = process.env) {
 }
 
 function publicPreviewMessagesFromMarkdown(markdown, env = process.env) {
-  const channelUsername = env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME;
+  const channelUsername = targetChannelUsername(env);
   const escapedChannel = channelUsername.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const source = String(markdown || "");
   const markers = [...source.matchAll(new RegExp(`^\\[\\]\\(https:\\/\\/t\\.me\\/${escapedChannel}\\/(\\d+)\\)\\s*$`, "gmi"))];
@@ -245,12 +280,13 @@ function publicPreviewMessagesFromMarkdown(markdown, env = process.env) {
     const block = source.slice(marker.index + marker[0].length, markers[index + 1]?.index ?? source.length);
     const signalLines = block.split(/\r?\n/).map((line) => line
       .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
       .replace(/[_*`]/g, "")
       .replace(/\\([_\[\]])/g, "$1")
       .trim())
-      .filter((line) => /\[[A-Z0-9]+USDT\]/i.test(line));
-    const rawText = signalLines.slice(0, 2).join("\n").trim();
-    if (!rawText) return null;
+      .filter((line) => line && !/^(?:\d+(?:\.\d+)?[KM]?\s*(?:views|edited)?|Forwarded from.*)$/i.test(line));
+    const rawText = signalLines.join("\n").trim();
+    if (!rawText || !isPublicMarketSignal(parseTelegramSignal(rawText, { channelUsername, sourceMode: PUBLIC_PREVIEW_SOURCE_MODE }), channelUsername)) return null;
     return {
       rawText,
       options: {
@@ -321,8 +357,9 @@ function parseTelegramSignal(rawText, options = {}) {
 }
 
 class MemorySignalStore {
-  constructor(initialSignals = []) {
+  constructor(initialSignals = [], channelUsername = process.env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME) {
     this.name = "memory";
+    this.channelUsername = normalizeChannelUsername(channelUsername);
     this.records = new Map(initialSignals.map((signal) => [signal.dedupe_hash, signal]));
   }
 
@@ -337,29 +374,32 @@ class MemorySignalStore {
     return { inserted, duplicates };
   }
 
-  async listRecent(limit = RECENT_SIGNAL_LIMIT) {
+  async listRecent(limit = RECENT_SIGNAL_LIMIT, channelUsername = this.channelUsername) {
     return [...this.records.values()]
+      .filter((signal) => normalizeChannelUsername(signal.channel_username) === normalizeChannelUsername(channelUsername))
       .sort(compareRecentSignals)
       .slice(0, limit);
   }
 }
 
 class BlobSignalStore {
-  constructor(blobClient) {
+  constructor(blobClient, channelUsername = process.env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME) {
     this.name = "vercel-blob";
     this.blobClient = blobClient;
+    this.channelUsername = normalizeChannelUsername(channelUsername);
   }
 
-  async readFeedSnapshot(limit = RECENT_SIGNAL_LIMIT) {
+  async readFeedSnapshot(limit = RECENT_SIGNAL_LIMIT, channelUsername = this.channelUsername) {
     try {
-      const pathname = `${SIGNAL_FEED_COLLECTION}/latest.json`;
-      const listing = await this.blobClient.list({ prefix: pathname, limit: 1 });
+      const pathname = `${SIGNAL_FEED_COLLECTION}/${normalizeChannelUsername(channelUsername)}/latest.json`;
+      const listing = await this.blobClient.list({ prefix: pathname, limit: 1, abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS) });
       const blob = listing.blobs.find((item) => item.pathname === pathname);
       if (!blob) return [];
-      const response = await fetch(blob.url, { cache: "no-store" });
+      const response = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS) });
       if (!response.ok) return [];
       const payload = await response.json();
       return (Array.isArray(payload) ? payload : [])
+        .filter((signal) => normalizeChannelUsername(signal?.channel_username) === normalizeChannelUsername(channelUsername))
         .sort(compareRecentSignals)
         .slice(0, limit);
     } catch {
@@ -368,22 +408,25 @@ class BlobSignalStore {
   }
 
   async upsertMany(signals) {
+    signals = signals.filter((signal) => normalizeChannelUsername(signal.channel_username) === this.channelUsername);
+    if (!signals.length) return { inserted: 0, duplicates: 0 };
     const [listing, currentFeed] = await Promise.all([
-      this.blobClient.list({ prefix: `${SIGNAL_COLLECTION}/`, limit: 1000 }),
+      this.blobClient.list({ prefix: `${SIGNAL_COLLECTION}/${this.channelUsername}/`, limit: 1000, abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS) }),
       this.readFeedSnapshot(RECENT_SIGNAL_LIMIT)
     ]);
     const existing = new Set(listing.blobs.map((blob) => blob.pathname));
     let inserted = 0;
     let duplicates = 0;
     await Promise.all(signals.map(async (signal) => {
-      const pathname = `${SIGNAL_COLLECTION}/${signal.dedupe_hash}.json`;
+      const pathname = `${SIGNAL_COLLECTION}/${this.channelUsername}/${signal.dedupe_hash}.json`;
       if (existing.has(pathname)) duplicates += 1;
       else inserted += 1;
       await this.blobClient.put(pathname, JSON.stringify(signal), {
         access: "public",
         addRandomSuffix: false,
         allowOverwrite: true,
-        contentType: "application/json"
+        contentType: "application/json",
+        abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS)
       });
     }));
 
@@ -392,37 +435,39 @@ class BlobSignalStore {
     const latestFeed = [...merged.values()]
       .sort(compareRecentSignals)
       .slice(0, RECENT_SIGNAL_LIMIT);
-    await this.blobClient.put(`${SIGNAL_FEED_COLLECTION}/latest.json`, JSON.stringify(latestFeed), {
+    await this.blobClient.put(`${SIGNAL_FEED_COLLECTION}/${this.channelUsername}/latest.json`, JSON.stringify(latestFeed), {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
-      contentType: "application/json"
+      contentType: "application/json",
+      abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS)
     });
     return { inserted, duplicates };
   }
 
-  async listRecent(limit = RECENT_SIGNAL_LIMIT) {
-    const feedSnapshot = await this.readFeedSnapshot(limit);
+  async listRecent(limit = RECENT_SIGNAL_LIMIT, channelUsername = this.channelUsername) {
+    const feedSnapshot = await this.readFeedSnapshot(limit, channelUsername);
     if (feedSnapshot.length) return feedSnapshot;
 
-    const listing = await this.blobClient.list({ prefix: `${SIGNAL_COLLECTION}/`, limit: 1000 });
+    const listing = await this.blobClient.list({ prefix: `${SIGNAL_COLLECTION}/${normalizeChannelUsername(channelUsername)}/`, limit: 1000, abortSignal: AbortSignal.timeout(STORAGE_TIMEOUT_MS) });
     const records = await Promise.all(listing.blobs.map(async (blob) => {
       try {
-        const response = await fetch(blob.url, { cache: "no-store" });
+        const response = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS) });
         return response.ok ? response.json() : null;
       } catch {
         return null;
       }
     }));
-    return records.filter(Boolean)
+    return records.filter((signal) => signal && normalizeChannelUsername(signal.channel_username) === normalizeChannelUsername(channelUsername))
       .sort(compareRecentSignals)
       .slice(0, limit);
   }
 }
 
 class SupabaseSignalStore {
-  constructor({ url, serviceRoleKey }) {
+  constructor({ url, serviceRoleKey, channelUsername = process.env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME }) {
     this.name = "supabase";
+    this.channelUsername = normalizeChannelUsername(channelUsername);
     this.baseUrl = url.replace(/\/$/, "");
     this.headers = {
       apikey: serviceRoleKey,
@@ -439,38 +484,42 @@ class SupabaseSignalStore {
     const response = await fetch(`${this.baseUrl}/rest/v1/telegram_signals?on_conflict=dedupe_hash`, {
       method: "POST",
       headers: { ...this.headers, prefer: "resolution=merge-duplicates,return=minimal" },
+      signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS),
       body: JSON.stringify(timedSignals)
     });
     if (!response.ok) throw new Error(`telegram_signals upsert failed (${response.status}): ${await response.text()}`);
     return { inserted: timedSignals.length, duplicates: 0 };
   }
 
-  async listRecent(limit = RECENT_SIGNAL_LIMIT) {
+  async listRecent(limit = RECENT_SIGNAL_LIMIT, channelUsername = this.channelUsername) {
     const query = new URLSearchParams({
       select: "*",
+      channel_username: `eq.${normalizeChannelUsername(channelUsername)}`,
       order: "signal_time.desc",
       limit: String(limit)
     });
-    const response = await fetch(`${this.baseUrl}/rest/v1/telegram_signals?${query}`, { headers: this.headers });
+    const response = await fetch(`${this.baseUrl}/rest/v1/telegram_signals?${query}`, { headers: this.headers, signal: AbortSignal.timeout(STORAGE_TIMEOUT_MS) });
     if (!response.ok) throw new Error(`telegram_signals query failed (${response.status}): ${await response.text()}`);
-    return response.json();
+    const records = await response.json();
+    return (Array.isArray(records) ? records : []).filter((signal) => normalizeChannelUsername(signal?.channel_username) === normalizeChannelUsername(channelUsername));
   }
 }
 
 function createStoreFromEnv(env = process.env) {
   const supabaseUrl = env.TELEGRAM_SIGNALS_SUPABASE_URL || env.SUPABASE_URL;
   const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (supabaseUrl && supabaseKey) return new SupabaseSignalStore({ url: supabaseUrl, serviceRoleKey: supabaseKey });
-  if (env.BLOB_READ_WRITE_TOKEN) return new BlobSignalStore(require("@vercel/blob"));
-  return new MemorySignalStore();
+  const channelUsername = targetChannelUsername(env);
+  if (supabaseUrl && supabaseKey) return new SupabaseSignalStore({ url: supabaseUrl, serviceRoleKey: supabaseKey, channelUsername });
+  if (env.BLOB_READ_WRITE_TOKEN) return new BlobSignalStore(require("@vercel/blob"), channelUsername);
+  return new MemorySignalStore([], channelUsername);
 }
 
 function matchesTargetChannel(message, env = process.env) {
   const chat = message?.chat || {};
-  const expectedUsername = normalizeChannelUsername(env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME);
+  const expectedUsername = normalizeChannelUsername(targetChannelUsername(env));
   const expectedChatId = String(env.TELEGRAM_TARGET_CHAT_ID || "");
   const usernameMatches = normalizeChannelUsername(chat.username) === expectedUsername;
-  const idMatches = expectedChatId && String(chat.id) === expectedChatId;
+  const idMatches = !chat.username && expectedChatId && String(chat.id) === expectedChatId;
   return Boolean(usernameMatches || idMatches);
 }
 
@@ -518,7 +567,7 @@ async function collectTelegramSignals({ mode, payload, store = createStoreFromEn
     : mockMessagesFromBody(payload, env);
   const signals = inputs.map((input) => parseTelegramSignal(input.rawText, input.options));
   const writeResult = await store.upsertMany(signals);
-  const recent = await store.listRecent(RECENT_SIGNAL_LIMIT);
+  const recent = await store.listRecent(RECENT_SIGNAL_LIMIT, targetChannelUsername(env));
   return {
     mode,
     target_channel: normalizeChannelUsername(env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME),
@@ -538,15 +587,15 @@ async function collectPublicPreviewSignals({
   env = process.env,
   fetchImpl = fetch
 } = {}) {
-  const channelUsername = env.TELEGRAM_TARGET_CHANNEL || DEFAULT_CHANNEL_USERNAME;
+  const channelUsername = targetChannelUsername(env);
   const sourceUrl = `https://t.me/s/${encodeURIComponent(channelUsername)}`;
   const previewSources = [
-    { name: "telegram_public_preview", url: sourceUrl, format: "html", timeout: 10_000 },
+    { name: "telegram_public_preview", url: sourceUrl, format: "html", timeout: 8_000 },
     {
       name: "jina_fresh_reader",
       url: `https://r.jina.ai/${sourceUrl}`,
       format: "markdown",
-      timeout: 25_000,
+      timeout: 12_000,
       headers: {
         accept: "text/plain",
         "x-cache-tolerance": "0",
@@ -558,7 +607,7 @@ async function collectPublicPreviewSignals({
       name: "telegram_alternate_preview",
       url: `https://telegram.me/s/${encodeURIComponent(channelUsername)}`,
       format: "html",
-      timeout: 8_000
+      timeout: 6_000
     }
   ];
   let inputs = [];
@@ -612,9 +661,9 @@ async function collectPublicPreviewSignals({
     .slice(0, RECENT_SIGNAL_LIMIT);
   try {
     writeResult = await store.upsertMany(signals);
-    const storedRecent = await store.listRecent(RECENT_SIGNAL_LIMIT);
+    const storedRecent = publicSignalsForChannel(await store.listRecent(RECENT_SIGNAL_LIMIT, channelUsername), env);
     if (storedRecent.length) {
-      const merged = new Map(storedRecent.filter((signal) => signal.source_mode !== "mock").map((signal) => [signal.dedupe_hash, signal]));
+      const merged = new Map(storedRecent.map((signal) => [signal.dedupe_hash, signal]));
       signals.forEach((signal) => merged.set(signal.dedupe_hash, signal));
       recent = [...merged.values()].sort(compareRecentSignals).slice(0, RECENT_SIGNAL_LIMIT);
     }
@@ -656,12 +705,16 @@ module.exports = {
   createStoreFromEnv,
   compareRecentSignals,
   makeDedupeHash,
+  isPublicMarketSignal,
+  matchesSignalChannel,
   matchesTargetChannel,
   mockMessagesFromBody,
   normalizeText,
   parseTelegramSignal,
   publicPreviewMessagesFromHtml,
   publicPreviewMessagesFromMarkdown,
+  publicSignalsForChannel,
+  targetChannelUsername,
   telegramHtmlToText,
   telegramMessagesFromUpdate,
   verifiedSignalTime

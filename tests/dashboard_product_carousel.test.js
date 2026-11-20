@@ -11,14 +11,16 @@ const dashboardCss = fs.readFileSync(path.join(root, "dashboard.css"), "utf8");
 const carouselJs = fs.readFileSync(path.join(root, "dashboard-product-carousel.js"), "utf8");
 const homepageHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
 
-test("dashboard mounts the homepage 2D/3D loop directly below market overview KPIs", () => {
+test("dashboard mounts the homepage 2D/3D loop below the address cohort panel", () => {
   assert.match(dashboardHtml, /data-section-link="onchain-carousel"[^>]*data-i18n="section\.carousel"/);
   assert.match(dashboardHtml, /<section class="dashboard-carousel-mount" id="onchain-carousel"/);
 
   const kpiIndex = dashboardHtml.indexOf('<section class="kpi-grid"');
+  const addressFlowIndex = dashboardHtml.indexOf('<section class="address-flow-panel"');
   const carouselIndex = dashboardHtml.indexOf('<section class="dashboard-carousel-mount"');
   const workspaceIndex = dashboardHtml.indexOf('<div class="dashboard-workspace"');
-  assert.ok(kpiIndex > -1 && kpiIndex < carouselIndex);
+  assert.ok(kpiIndex > -1 && kpiIndex < addressFlowIndex);
+  assert.ok(addressFlowIndex < carouselIndex);
   assert.ok(carouselIndex < workspaceIndex);
 });
 
@@ -32,7 +34,7 @@ test("dashboard carousel reuses the complete homepage component and controller",
   assert.match(dashboardHtml, /href="styles\.css/);
 
   const options = homepageHtml.match(/data-model-option="[^"]+"/g) || [];
-  assert.equal(options.length, 34);
+  assert.equal(options.length, 35);
   assert.match(homepageHtml, /data-view="2d"/);
   assert.match(homepageHtml, /data-view="3d"/);
 });
@@ -56,7 +58,7 @@ test("legacy publishing exposes the dashboard carousel loader", () => {
 test("dashboard language and section navigation include the carousel", () => {
   assert.match(dashboardJs, /"section\.carousel": "2\/3D指标轮询集"/);
   assert.match(dashboardJs, /"section\.carousel": "2D\/3D Indicator Loop"/);
-  assert.match(dashboardJs, /#overview, #onchain-carousel, #valuation/);
+  assert.match(dashboardJs, /#overview, #address-balance-flow, #market-heatmap, #onchain-carousel, #cycle-pulse, #valuation/);
   assert.match(dashboardJs, /window\.updateDashboardLanguage = applyLanguage/);
   assert.match(dashboardJs, /window\.updateProductDashboardLanguage\?\.\(\)/);
 });
@@ -120,21 +122,21 @@ test("dashboard mounts the shared 3D experience before sequential cycle/controll
   for (const base of ["", "/legacy"]) {
     const run = mountHarness({ scriptPath: `${base}/dashboard-product-carousel.js` });
     await flushMount();
-    assert.equal(run.requested[0].url, `${base}/index.html?v=20260917-mvrv-zscore-watermark-v2`);
+    assert.equal(run.requested[0].url, `${base}/index.html?v=20261109-trend-motion-v1`);
     assert.equal(run.requested[0].options.cache, "no-cache");
     assert.equal(run.mount.children[0], run.section);
     assert.equal(run.section.dataset.onchainExperience, "shared-3d");
     assert.equal(run.copy.removed, true);
     assert.deepEqual(run.brand.children[0].children, [run.subtitle, run.actions]);
     assert.equal(run.appended.length, 1, "controller must wait for cycle dependency");
-    assert.equal(run.appended[0].src, `${base}/trend-indicator-cycle.js?v=20260917-mvrv-zscore-watermark-v2`);
+    assert.equal(run.appended[0].src, `${base}/trend-indicator-cycle.js?v=20261109-trend-motion-v1`);
     assert.deepEqual(run.events, []);
 
     run.window.WelinkTrendIndicatorCycle = { create() {} };
     run.appended[0].listeners.load();
     await flushMount();
     assert.equal(run.appended.length, 2);
-    assert.equal(run.appended[1].src, `${base}/product-dashboard.js?v=20260917-mvrv-zscore-watermark-v2`);
+    assert.equal(run.appended[1].src, `${base}/product-dashboard.js?v=20261109-trend-motion-v1`);
     run.window.updateProductDashboardLanguage = () => run.languages.push("shared");
     run.appended[1].listeners.load();
     await flushMount();

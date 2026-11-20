@@ -16,12 +16,14 @@ export async function FeatureAccessBoundary({
   entitlement,
   title,
   description,
+  returnTo,
   children
 }: {
   viewer: Viewer | null;
   entitlement: EntitlementKey;
   title: string;
   description: string;
+  returnTo?: string;
   children: React.ReactNode;
 }) {
   const access = await configuredAccess(viewer, entitlement);
@@ -41,7 +43,7 @@ export async function FeatureAccessBoundary({
           ))}
         </div>
         <div className="feature-access-actions">
-          <Link className="button" href={viewer ? "/account/subscription" : `/login?next=${encodeURIComponent(entitlement === "grid.ops" ? "/grid-ops" : "/classic-grid")}`}>
+          <Link className="button" href={viewer ? "/account/subscription" : `/login?next=${encodeURIComponent(returnTo ?? (entitlement === "grid.ops" ? "/grid-ops" : "/classic-grid"))}`}>
             {viewer ? "升级 Max" : "登录 / 注册"}
           </Link>
           <Link className="button button--outline" href="/account/subscription">查看权限与价格</Link>

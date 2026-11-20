@@ -1,4 +1,5 @@
 import { createLthNuplProxySeries } from "./_public-model-fallback.js";
+import { fetchCompleteHistory, mergeHistoryRows, completeHistoryCoverage } from "../lib/onchain-history.js";
 
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const FALLBACK_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -31,7 +32,7 @@ export default async function handler(request, response) {
   }
 
   const now = Date.now();
-  const cache = globalThis.__welinkLthNuplCacheV1;
+  const cache = globalThis.__welinkLthNuplCacheV2;
   const cacheTtl = cache?.payload?.estimated ? FALLBACK_CACHE_TTL_MS : CACHE_TTL_MS;
   if (cache?.payload && now - cache.savedAt < cacheTtl) {
     sendPayload(response, cache.payload, "HIT");
@@ -40,7 +41,7 @@ export default async function handler(request, response) {
 
   try {
     const payload = await buildLthNuplPayload();
-    globalThis.__welinkLthNuplCacheV1 = { savedAt: now, payload };
+    globalThis.__welinkLthNuplCacheV2 = { savedAt: now, payload };
     sendPayload(response, payload, "MISS");
   } catch (error) {
     if (cache?.payload && !cache.payload.estimated && now - cache.savedAt < MAX_STALE_MS) {
@@ -54,7 +55,7 @@ export default async function handler(request, response) {
     }
 
     const payload = buildLthNuplFallbackPayload(error);
-    globalThis.__welinkLthNuplCacheV1 = { savedAt: now, payload };
+    globalThis.__welinkLthNuplCacheV2 = { savedAt: now, payload };
     sendPayload(response, payload, "MODEL");
   }
 }
@@ -100,11 +101,16 @@ function buildLthNuplFallbackPayload(error) {
 }
 
 async function buildLthNuplPayload() {
-  const [nuplRows, priceRows] = await Promise.all([
-    fetchBgeometricsLthNuplHistory(),
-    fetchCoinMetricsPriceHistory().catch(() => fetchBgeometricsPriceHistory())
+  const [nuplHistory, priceHistory, lthHistory] = await Promise.all([
+    fetchCompleteHistory("nupl"),
+    fetchCompleteHistory("price"),
+    fetchCompleteHistory("lth")
   ]);
-  const series = mergeLthNuplAndPrice(nuplRows, priceRows);
+  const calculated = calculateHistoricalLthNupl(lthHistory.rows, priceHistory.rows);
+  const nuplRows = mergeHistoryRows(calculated, nuplHistory.rows);
+  const observedDates = new Set(nuplHistory.rows.map(row => row.date));
+  const series = mergeLthNuplAndPrice(nuplRows, priceHistory.rows)
+    .map(row => ({ ...row, calculated: !observedDates.has(row.date) }));
   if (series.length < 365) throw new Error("Public LTH-NUPL history returned too few observations");
 
   const livePrice = await fetchLiveBtcPrice().catch(() => null);
@@ -112,7 +118,8 @@ async function buildLthNuplPayload() {
 
   return {
     ok: true,
-    stale: false,
+    stale: Date.now() - Date.parse(series.at(-1).date) > 3 * 86400000,
+    historyCoverage: { ...completeHistoryCoverage(series), calculatedObservations: series.filter(row => row.calculated).length },
     generatedAt: new Date().toISOString(),
     cacheSeconds: CACHE_TTL_MS / 1000,
     cadence: "daily",
@@ -128,14 +135,23 @@ async function buildLthNuplPayload() {
     },
     series,
     sources: {
-      price: livePrice?.source || "Coin Metrics Community PriceUSD",
-      history: "BGeometrics public daily LTH-NUPL",
+      price: livePrice?.source || "BGeometrics public daily BTC price",
+      history: "BGeometrics public LTH-NUPL + calculated public cost-basis history",
       primary: BGEOMETRICS_LTH_NUPL_URL,
       priceHistory: COIN_METRICS_PRICE_URL,
-      methodology: "Public UTXO-age LTH-NUPL proxy; not Glassnode entity-cluster-adjusted history",
+      methodology: "Public UTXO-age LTH-NUPL; missing observations are calculated as (BTC price - LTH realized price) / BTC price. Not entity-cluster-adjusted history; no interpolation.",
       entityAdjustedReference: "Glassnode nupl_more_155_account_based"
     }
   };
+}
+
+function calculateHistoricalLthNupl(lthRows, priceRows) {
+  const prices = new Map(priceRows.map(row => [row.date, row.value]));
+  return lthRows.flatMap(row => {
+    const price = prices.get(row.date);
+    return row.value > 0 && price > 0
+      ? [{ date: row.date, value: 1 - row.value / price }] : [];
+  });
 }
 
 async function fetchBgeometricsLthNuplHistory() {

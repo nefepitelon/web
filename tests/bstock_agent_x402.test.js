@@ -3,6 +3,18 @@ const assert = require("node:assert/strict");
 const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 
+test("patched x402 schemas reject oversized merchant challenges before any wallet signing", () => {
+  const { parsePaymentRequired } = require("@x402/core/schemas");
+  const requirement = { scheme: "exact", network: "eip155:56", amount: "10000",
+    asset: "0x55d398326f99059fF775485246999027B3197955", payTo: "0x1111111111111111111111111111111111111111", maxTimeoutSeconds: 60 };
+  const challenge = { x402Version: 2, resource: { url: "https://merchant.example.test/report" }, accepts: [requirement] };
+  assert.equal(parsePaymentRequired(challenge).success, true);
+  const oversized = parsePaymentRequired({ ...challenge, accepts: Array(1025).fill(requirement) });
+  assert.equal(oversized.success, false);
+  assert.ok(oversized.error.issues.some(issue => issue.code === "too_big"));
+  assert.equal(parsePaymentRequired({ ...challenge, accepts: [{ ...requirement, network: "invalid network" }] }).success, false);
+});
+
 test("Agent x402 separates nullable approval-chain metadata from reviewed payment requirements", () => {
   const source = `
     import assert from 'node:assert/strict';
@@ -17,7 +29,10 @@ test("Agent x402 separates nullable approval-chain metadata from reviewed paymen
       maxTimeoutSeconds: 60, extra: { name: 'Tether USD', version: '1', assetTransferMethod: 'eip3009' }
     };
     const reviewed = { index: 1, binanceChainId: '56', requirement };
-    const payment = { x402Version: 2, resource: { url }, accepted: requirement, payload: { signature: '0x' + '11'.repeat(65), authorization: {} } };
+    const payment = { x402Version: 2, resource: { url }, accepted: requirement, payload: { signature: '0x' + '11'.repeat(65), authorization: {
+      from: '0x2222222222222222222222222222222222222222', to: requirement.payTo, value: requirement.amount,
+      validAfter: '1699999990', validBefore: '1700000600', nonce: '0x' + 'ab'.repeat(32)
+    } } };
     const signature = { paymentHeaderName: 'PAYMENT-SIGNATURE', paymentHeaderValue: encodePaymentSignatureHeader(payment), approveTxHash: null, binanceChainId: null, signatureExpiresAt: now / 1000 + 60 };
     const run = (s = signature, r = reviewed) => validateAgentX402Signature(s, r, url, now);
     assert.equal(run().network, 'eip155:56'); // Official sign response with no approval.

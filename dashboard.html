@@ -14,8 +14,12 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-  <link rel="stylesheet" href="styles.css?v=20260917-mvrv-zscore-watermark-v2" />
-  <link rel="stylesheet" href="dashboard.css?v=20260917-mvrv-zscore-watermark-v2" />
+  <link rel="stylesheet" href="styles.css?v=20261108-address-flow-v1" />
+    <link rel="stylesheet" href="dashboard.css?v=20261110-cycle-seasons-v1" />
+    <link rel="stylesheet" href="cycle-seasons.css?v=20261110-cycle-markers-v2" />
+    <link rel="stylesheet" href="address-trend.css?v=20261115-address-glow-v2" />
+    <link rel="stylesheet" href="market-heatmap.css?v=20261116-market-daily-report-v1" />
+    <link rel="stylesheet" href="asset-daily-report.css?v=20261117-daily-right-rail-v1" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
   </head>
@@ -114,7 +118,10 @@
 
       <nav class="dashboard-subnav" aria-label="Dashboard sections">
         <a href="#overview" class="active" data-section-link="overview" data-i18n="section.overview">市场概览</a>
+        <a href="#address-balance-flow" data-section-link="address-balance-flow" data-i18n="section.addressFlow">地址层级</a>
+        <a href="#market-heatmap" data-section-link="market-heatmap" data-i18n="section.marketHeatmap">市场热力图</a>
         <a href="#onchain-carousel" data-section-link="onchain-carousel" data-i18n="section.carousel">2/3D指标轮询集</a>
+        <a href="#cycle-pulse" data-section-link="cycle-pulse" data-i18n="section.cyclePulse">周期钟摆</a>
         <a href="#valuation" data-section-link="valuation" data-i18n="section.valuation">周期估值</a>
         <a href="#network" data-section-link="network" data-i18n="section.network">矿工与网络</a>
         <a href="#charts" data-section-link="charts" data-i18n="section.charts">趋势图表</a>
@@ -166,6 +173,141 @@
           <em id="halving-reward">3.125 → 1.5625 BTC</em>
           <p id="halving-block" data-i18n="halving.loading">正在同步区块高度…</p>
         </article>
+      </section>
+
+      <section class="address-flow-panel" id="address-balance-flow" aria-labelledby="address-flow-title">
+        <header class="address-flow-header">
+          <div class="address-flow-heading">
+            <p class="address-flow-eyebrow">ADDRESS COHORT CAPITAL PULSE · DAILY</p>
+            <h2 id="address-flow-title" data-i18n="addressFlow.title">BTC持仓地址层级资金脉冲</h2>
+            <p data-i18n="addressFlow.subtitle">追踪不同余额区间的地址数量脉冲，识别持仓层级的扩张、收缩与结构迁移。</p>
+          </div>
+          <div class="address-flow-toolbar" aria-label="BTC 地址层级图表控制" data-i18n-aria="addressFlow.controls">
+            <div class="address-flow-view-switch" role="group" aria-label="展示方式">
+              <button type="button" class="active" data-address-flow-view="pulse" aria-pressed="true">资金脉冲</button>
+              <button type="button" data-address-flow-view="trend" aria-pressed="false">地址趋势</button>
+            </div>
+            <div class="address-flow-range" id="address-flow-pulse-range" role="group" aria-label="图表周期" data-i18n-aria="addressFlow.rangeLabel">
+              <button type="button" data-address-flow-range="7">7D</button>
+              <button type="button" data-address-flow-range="14">14D</button>
+              <button type="button" class="active" data-address-flow-range="18">18D</button>
+              <button type="button" data-address-flow-range="30">30D</button>
+            </div>
+            <span class="address-flow-live" id="address-flow-status"><i aria-hidden="true"></i><span data-i18n="addressFlow.syncing">PUBLIC DAILY · 同步中</span></span>
+          </div>
+        </header>
+
+        <div class="address-flow-summary" id="address-flow-summary" aria-label="最新地址层级变化" data-i18n-aria="addressFlow.latestLabel">
+          <article data-address-flow-bucket="under_1">
+            <span data-i18n="addressFlow.under1">0.001–1 BTC</span>
+            <strong>--</strong>
+            <small data-i18n="addressFlow.addresses">地址</small>
+          </article>
+          <article data-address-flow-bucket="one_to_10">
+            <span>1–10 BTC</span>
+            <strong>--</strong>
+            <small data-i18n="addressFlow.addresses">地址</small>
+          </article>
+          <article data-address-flow-bucket="ten_to_100">
+            <span>10–100 BTC</span>
+            <strong>--</strong>
+            <small data-i18n="addressFlow.addresses">地址</small>
+          </article>
+          <article data-address-flow-bucket="over_100">
+            <span>100+ BTC</span>
+            <strong>--</strong>
+            <small data-i18n="addressFlow.addresses">地址</small>
+          </article>
+        </div>
+
+        <div class="address-flow-chart-shell">
+          <div class="address-flow-brand-seal" aria-hidden="true">
+            <span class="address-flow-brand-halo"></span>
+            <span class="address-flow-brand-orbit address-flow-brand-orbit-outer"></span>
+            <span class="address-flow-brand-orbit address-flow-brand-orbit-inner"></span>
+            <span class="address-flow-brand-disc">
+              <img src="/welinkbtc-orbit-brand.webp" alt="" decoding="async" />
+            </span>
+            <svg class="address-flow-brand-copy" viewBox="0 0 240 240" focusable="false">
+              <defs>
+                <path id="address-flow-brand-copy-top" d="M 34 120 A 86 86 0 0 1 206 120"></path>
+                <path id="address-flow-brand-copy-bottom" d="M 34 120 A 86 86 0 0 0 206 120"></path>
+              </defs>
+              <text><textPath href="#address-flow-brand-copy-top" startOffset="50%" text-anchor="middle">ai.WELINKBTC.xyz</textPath></text>
+              <text><textPath href="#address-flow-brand-copy-bottom" startOffset="50%" text-anchor="middle">ai.WELINKBTC.xyz</textPath></text>
+            </svg>
+          </div>
+          <canvas
+            id="address-flow-chart"
+            height="480"
+            role="img"
+            tabindex="0"
+            aria-label="BTC address balance cohort daily changes"
+          ></canvas>
+          <div class="address-flow-loading" id="address-flow-loading" role="status">
+            <span class="address-flow-loader" aria-hidden="true"></span>
+            <strong data-i18n="addressFlow.loading">正在同步公开地址余额数据...</strong>
+          </div>
+          <div class="address-flow-tooltip" id="address-flow-tooltip" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <div id="address-trend-mount" hidden></div>
+        <div class="address-flow-legend" id="address-flow-legend" aria-label="图表所示日期" data-i18n-aria="addressFlow.legendLabel"></div>
+        <footer class="address-flow-footer">
+          <p>
+            <span data-i18n="addressFlow.source">数据源</span>
+            <a href="https://bitview.space/api/" target="_blank" rel="noopener noreferrer">Bitview · Bitcoin Research Kit</a>
+            <span id="address-flow-asof">· --</span>
+          </p>
+          <p data-i18n="addressFlow.disclosure">地址数不等于独立投资者或资金净流入；地址拆分、合并、找零地址、托管钱包整理及跨阈值移动都会改变计数。</p>
+        </footer>
+
+        <div class="address-flow-sr-only">
+          <p id="address-flow-accessible-summary" aria-live="polite"></p>
+          <table>
+            <caption data-i18n="addressFlow.tableCaption">BTC 地址余额区间逐日变化</caption>
+            <thead>
+              <tr><th data-i18n="addressFlow.date">日期</th><th data-i18n="addressFlow.under1">0.001–1 BTC</th><th>1–10 BTC</th><th>10–100 BTC</th><th>100+ BTC</th></tr>
+            </thead>
+            <tbody id="address-flow-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="market-heatmap" id="market-heatmap" aria-labelledby="market-heatmap-title" data-motion="paused">
+        <header class="market-heatmap-head">
+          <div>
+            <p class="market-heatmap-eyebrow">GLOBAL MARKET PULSE · PUBLIC DATA</p>
+            <h2 id="market-heatmap-title" data-heatmap-copy="title">全球市场热力图</h2>
+            <p class="market-heatmap-intro" data-heatmap-copy="intro">穿透市场温度，观察不同资产的涨跌与资金活跃度。</p>
+          </div>
+          <div class="market-heatmap-controls">
+            <div class="market-heatmap-scale" aria-hidden="true"><span>−5%</span><i></i><span>+5%</span></div>
+            <div class="market-heatmap-modes" role="group" aria-label="面积指标">
+              <button type="button" data-heatmap-mode="volume" aria-pressed="true" class="active" data-heatmap-copy="volume">成交额</button>
+              <button type="button" data-heatmap-mode="oi" aria-pressed="false" data-heatmap-copy="oi">持仓量</button>
+            </div>
+          </div>
+        </header>
+        <div class="market-heatmap-toolbar">
+          <div class="market-heatmap-filters" role="group" aria-label="市场分类">
+            <button type="button" data-heatmap-filter="all" aria-pressed="true" class="active" data-heatmap-copy="all">全部市场</button>
+            <button type="button" data-heatmap-filter="crypto" aria-pressed="false" data-heatmap-copy="crypto">加密资产</button>
+            <button type="button" data-heatmap-filter="stocks" aria-pressed="false" data-heatmap-copy="stocks">股票</button>
+            <button type="button" data-heatmap-filter="indices" aria-pressed="false" data-heatmap-copy="indices">指数 / ETF</button>
+            <button type="button" data-heatmap-filter="commodities" aria-pressed="false" data-heatmap-copy="commodities">商品</button>
+          </div>
+          <span class="market-heatmap-status" id="market-heatmap-status" role="status">正在连接公开行情…</span>
+        </div>
+        <div class="market-heatmap-grid" id="market-heatmap-grid" data-filter="all" aria-busy="true">
+          <p class="market-heatmap-loading" data-heatmap-copy="loading">正在载入多资产市场快照…</p>
+        </div>
+        <div class="market-heatmap-detail" id="market-heatmap-detail" aria-live="polite"><span data-heatmap-copy="inspect">悬停、点击或聚焦色块，查看资产详情。</span></div>
+        <footer class="market-heatmap-footer">
+          <div><a href="https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals" target="_blank" rel="noopener noreferrer">Hyperliquid · HIP-3 · Public API</a><span id="market-heatmap-asof"></span></div>
+          <button type="button" id="market-heatmap-refresh"><span aria-hidden="true">↻</span> <span data-heatmap-copy="refresh">刷新快照</span></button>
+          <p data-heatmap-copy="method">各分类内面积代表24小时成交额或持仓名义金额，颜色代表24小时涨跌。公开永续合约行情，非股票现货报价；每4小时自动刷新。</p>
+        </footer>
       </section>
 
       <section class="dashboard-carousel-mount" id="onchain-carousel" aria-label="2/3D指标轮询集">
@@ -265,37 +407,31 @@
                 <span class="signal-number">V01</span><span class="card-kicker">Balanced Price</span>
                 <strong id="balanced-price">--</strong>
                 <p class="signal-explanation" data-i18n="metric.balancedNote">已实现价格减去转移价格，需要链上成本基础数据。</p>
-                <em class="signal-frequency" id="balanced-source" data-i18n="metric.balancedState">周期底部参考</em>
               </article>
               <article class="signal-card" data-metric-group="value">
                 <span class="signal-number">V02</span><span class="card-kicker">MVRV Z-Score</span>
                 <strong id="mvrv-z-value">--</strong>
                 <p class="signal-explanation" data-i18n="metric.mvrvzNote">&lt;0 深度价值 · &gt;7 历史泡沫区。</p>
-                <em class="signal-frequency" id="mvrv-z-source" data-i18n="metric.mvrvzState">估值偏差</em>
               </article>
               <article class="signal-card" data-metric-group="holder">
                 <span class="signal-number">H01</span><span class="card-kicker">NUPL</span>
                 <strong id="nupl-value">--</strong>
                 <p class="signal-explanation" data-i18n="metric.nuplNote">持币者净未实现利润与亏损。</p>
-                <em class="signal-frequency" id="nupl-source" data-i18n="signal.api">数据同步中</em>
               </article>
               <article class="signal-card" data-metric-group="holder">
                 <span class="signal-number">H02</span><span class="card-kicker">SOPR</span>
                 <strong id="sopr-value">--</strong>
                 <p class="signal-explanation" data-i18n="metric.soprNote">&lt;1 平均亏损卖出 · &gt;1 平均盈利卖出。</p>
-                <em class="signal-frequency" id="sopr-source" data-i18n="signal.api">数据同步中</em>
               </article>
               <article class="signal-card" data-metric-group="miner">
                 <span class="signal-number">M01</span><span class="card-kicker">Puell Multiple</span>
                 <strong id="puell-value">--</strong>
                 <p class="signal-explanation" data-i18n="metric.puellNote">&lt;0.5 矿工深度压力 · &gt;4 收入过热。</p>
-                <em class="signal-frequency" id="puell-source" data-i18n="signal.api">数据同步中</em>
               </article>
               <article class="signal-card" data-metric-group="holder">
                 <span class="signal-number">H03</span><span class="card-kicker">Supply in Profit</span>
                 <strong id="profit-supply-value">--</strong>
                 <p class="signal-explanation" data-i18n="metric.psipNote">识别持币者群体是否接近历史投降区。</p>
-                <em class="signal-frequency" id="profit-supply-source" data-i18n="metric.psipState">获利筹码占比</em>
               </article>
             </div>
           </section>
@@ -330,18 +466,18 @@
               <span class="api-badge">COINGLASS API</span>
             </div>
             <div class="mini-grid">
-              <article><span>Funding Rate</span><strong id="funding-value">--</strong><em id="funding-source" data-i18n="signal.api">正在同步</em></article>
-              <article><span>Open Interest</span><strong id="oi-value">--</strong><em id="oi-source" data-i18n="signal.api">正在同步</em></article>
-              <article><span>Options OI</span><strong id="options-oi-value">--</strong><em id="options-oi-source" data-i18n="signal.api">正在同步</em></article>
-              <article><span>ETF Flow</span><strong id="etf-flow-value">--</strong><em id="etf-flow-source" data-i18n="signal.api">正在同步</em></article>
-              <article><span>Liquidation 24H</span><strong id="liquidation-value">--</strong><em id="liquidation-source" data-i18n="signal.api">正在同步</em></article>
+              <article><span>Funding Rate</span><strong id="funding-value">--</strong></article>
+              <article><span>Open Interest</span><strong id="oi-value">--</strong></article>
+              <article><span>Options OI</span><strong id="options-oi-value">--</strong></article>
+              <article><span>ETF Flow</span><strong id="etf-flow-value">--</strong></article>
+              <article><span>Liquidation 24H</span><strong id="liquidation-value">--</strong></article>
             </div>
           </section>
 
           <section class="terminal-section chart-section" id="charts">
             <aside class="trend-index" id="trend-index" aria-label="趋势指标导航">
               <div class="trend-index-head">
-              <span class="trend-index-kicker">INDEX / 34</span>
+              <span class="trend-index-kicker">INDEX / 35</span>
                 <strong data-i18n="trendNav.title">趋势指标导航</strong>
                 <p data-i18n="trendNav.text">点击名称快速定位</p>
               </div>
@@ -2999,6 +3135,63 @@
               </details>
             </article>
 
+            <article class="chart-panel cost-basis-panel rplrm-panel" id="rplrm-panel">
+              <div class="cost-basis-header">
+                <div class="cost-basis-heading">
+                  <p class="eyebrow">BTC: REALIZED PROFIT / LOSS RATIO MOMENTUM · 35</p>
+                  <h2 data-i18n="rplrm.title">BTC：已实现盈亏比动量指标</h2>
+                  <p data-rplrm-copy="subtitle">全周期观察盈利与亏损的相对动量，区分修复候选与持续趋势确认。</p>
+                </div>
+                <div class="cost-basis-toolbar">
+                  <div class="chart-actions" role="group" aria-label="RPLR-M chart tools">
+                    <button class="surf-model-switch" type="button" data-surf-model="rplrm" title="Surf 模型解读" aria-label="打开 Surf 模型解读" aria-pressed="false"><span aria-hidden="true">⇄</span></button>
+                    <button id="rplrm-refresh" type="button" title="刷新公开日线与实时现价" aria-label="刷新数据">↻</button>
+                    <button id="rplrm-snapshot" type="button" title="保存图表快照" aria-label="保存图表快照">◉</button>
+                    <button id="rplrm-download" type="button" title="导出完整历史 CSV" aria-label="导出完整历史 CSV">⇩</button>
+                    <button id="rplrm-fullscreen" type="button" title="全屏查看" aria-label="全屏查看">⛶</button>
+                  </div>
+                  <div class="range-tabs cost-basis-tabs" data-chart-tabs="rplrm" role="group" aria-label="RPLR-M time range">
+                    <button type="button" data-range="7">7D</button><button type="button" data-range="30">30D</button><button type="button" data-range="90">90D</button><button type="button" data-range="365">1Y</button><button type="button" data-range="all" class="active" aria-pressed="true">ALL</button>
+                  </div>
+                </div>
+              </div>
+              <div class="cost-basis-snapshot" aria-live="polite">
+                <div><span data-rplrm-copy="price">BTC 实时价格</span><strong id="rplrm-price">--</strong><em id="rplrm-price-date">--</em></div>
+                <div><span>RPLR-M · 7D / 365D</span><strong id="rplrm-momentum">--</strong><em id="rplrm-direction">--</em></div>
+                <div><span data-rplrm-copy="curves">盈利 / 亏损相对动量</span><strong id="rplrm-curves">-- / --</strong><em data-rplrm-copy="axes">独立纵轴 · 非美元金额</em></div>
+                <div><span data-rplrm-copy="phase">已确认的宏观阶段</span><strong id="rplrm-phase">--</strong><em id="rplrm-phase-date">--</em></div>
+              </div>
+              <div class="rplrm-chart-meta"><span id="rplrm-status" role="status">PUBLIC UTXO RECONSTRUCTION</span><button id="rplrm-projection" type="button" aria-pressed="true" data-rplrm-copy="scenarioOn">365D 情景 · 开</button></div>
+              <div class="chart-stage cost-basis-stage rplrm-stage">
+                <canvas id="rplrm-chart" height="620" tabindex="0" role="img" aria-label="RPLR-M: BTC log price, independent profit/loss momentum axes, macro phases and composite state. Arrow keys inspect observations."></canvas>
+                <div class="cost-basis-tooltip" id="rplrm-tooltip" hidden></div>
+                <button class="chart-loading rplrm-loading" id="rplrm-loading" type="button" data-rplrm-copy="loading">正在同步完整公开历史，计算 365 日基准与后续情景…</button>
+              </div>
+              <div class="chart-legend cost-basis-legend rplrm-legend">
+                <span><i class="rplrm-price-key"></i>BTC Price · LOG</span><span><i class="rplrm-profit-key"></i>Profit Relative Momentum</span><span><i class="rplrm-loss-key"></i>Loss Relative Momentum</span><span><i class="rplrm-state-key"></i>Composite State</span><span><i class="rplrm-scenario-key"></i>Conditional Scenario</span><em id="rplrm-source">PUBLIC · UTXO · DAILY</em>
+              </div>
+              <details class="cost-basis-analysis-disclosure">
+                <summary><span data-i18n="costBasis.analysisToggle">指标分析</span></summary>
+                <div class="cost-basis-analysis">
+                  <div class="cost-basis-signal" id="rplrm-signal">
+                    <span data-rplrm-copy="signalLabel">盈亏动量与周期确认</span><strong id="rplrm-signal-title">--</strong><p id="rplrm-signal-copy">--</p>
+                    <dl><div><dt data-rplrm-copy="state">综合状态 S</dt><dd id="rplrm-state">--</dd></div><div><dt data-rplrm-copy="positive">近 30 日正动量</dt><dd id="rplrm-positive">--</dd></div><div><dt data-rplrm-copy="easing">亏损压力边际变化</dt><dd id="rplrm-easing">--</dd></div><div><dt data-rplrm-copy="chainDate">链上观测日期</dt><dd id="rplrm-chain-date">--</dd></div></dl>
+                    <p id="rplrm-sample-summary">--</p>
+                    <div class="cost-basis-history rplrm-history" id="rplrm-history"></div>
+                  </div>
+                  <div class="cost-basis-explainer">
+                    <p class="eyebrow">Why It Matters · Public Reconstruction</p>
+                    <h3 data-rplrm-copy="explainTitle">观察亏损衰减、动量翻正与价格结构能否共同确认。</h3>
+                    <p data-rplrm-copy="formula">公开重建公式：M = RPLR 的 7 日均值 ÷ 365 日均值；绿线 = max(M−1, 0)，红线 = min(1−1/M, 0)；底部 S = (M−1)/(M+1)。两条彩线是同一相对比率的非对称变换，采用独立刻度，不能用高度比较实际盈利、亏损金额。</p>
+                    <p data-rplrm-copy="phaseRule">A／B 背景按 log(M) 的 90 日均值方向、连续 30 次观测确认，切换以确认日为准，不回填历史起点。短暂翻红不自动构成新熊市，翻绿也不是永久价格底部保证。</p>
+                    <p data-rplrm-copy="interpretation">红色谷值收窄只说明相对亏损压力减弱，也可能来自链上活跃度下降。绿色峰值回落既可能是正常降温，也可能是背离，需要结合实际金额、现货成交、资金流及价格结构核验。</p>
+                    <p data-rplrm-copy="projectionCopy">虚线从最新观测延伸 365 天，结合全历史已完成同阶段样本与近 30 日动量衰减。阴影是情景敏感区间，不是置信区间；推演不生成未来 BTC 价格，也不承诺周期结束日期。新增日线后自动重算。</p>
+                    <p class="cost-basis-disclaimer" data-rplrm-copy="disclosure">数据优先使用 BGeometrics 公开全历史与独立镜像，保留带日期的本地归档；现价来自 Binance。公开 UTXO 数据未进行 Glassnode 专有地址聚类，因此本模型不等同于原图实体调整序列，不能复刻其未公开公式或强行复现历史分区。</p>
+                  </div>
+                </div>
+              </details>
+            </article>
+
             <article class="chart-panel halving-section">
               <div class="section-heading compact">
                 <div><p class="eyebrow">BTC Halving Countdown</p><h2 id="halving-title" data-i18n="halving.title">第五次减半进度</h2></div>
@@ -3068,6 +3261,21 @@
             <span data-i18n="radar.noteTitle">当前观察</span>
             <p id="radar-observation" data-i18n="radar.note">数据同步后生成周期观察，不构成投资建议。</p>
           </div>
+          <section class="cycle-seasons" id="cycle-seasons" aria-labelledby="cycle-seasons-title" data-motion="paused">
+            <header class="cycle-seasons-head">
+              <div><span class="cycle-seasons-eyebrow">BTC / FOUR-YEAR RHYTHM</span><h3 id="cycle-seasons-title" data-seasons-copy="title">四年周期对照</h3></div>
+              <span class="cycle-seasons-cadence">1W</span>
+            </header>
+            <div class="cycle-seasons-quote"><div><span data-seasons-copy="price">BTC / USD</span><strong id="cycle-seasons-price">—</strong></div><span class="cycle-seasons-state" id="cycle-seasons-state" role="status">同步中</span></div>
+            <div class="cycle-seasons-stage">
+              <svg id="cycle-seasons-chart" viewBox="0 0 440 440" role="img" aria-labelledby="cycle-seasons-title cycle-seasons-description"></svg>
+              <p class="cycle-seasons-loading" id="cycle-seasons-loading" role="status">正在连接公开周线行情…</p>
+            </div>
+            <div class="cycle-seasons-readout" id="cycle-seasons-readout" aria-live="polite"></div>
+            <div class="cycle-seasons-meta"><span id="cycle-seasons-source">PUBLIC OHLC</span><button id="cycle-seasons-refresh" type="button" aria-label="刷新周期行情" title="刷新周期行情">↻</button></div>
+            <p id="cycle-seasons-description" class="cycle-seasons-description" data-seasons-copy="description">按日历年对齐，每轮独立对数刻度；未来年份留空，阶段名称仅作历史节奏参考。</p>
+            <details class="cycle-seasons-credits"><summary data-seasons-copy="credits">数据与授权</summary><p><span data-seasons-copy="earlyData">2014 年早期数据：</span><a href="https://www.kaggle.com/datasets/mczielinski/bitcoin-historical-data" target="_blank" rel="noopener noreferrer">Zielak</a> / <a href="https://github.com/alessiostomeo/btc-cycle-data/blob/main/bitstamp/1day/BTCUSD_bitstamp_daily_2012-2026.csv" target="_blank" rel="noopener noreferrer">alessiostomeo · ff137</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a><span data-seasons-copy="aggregation">；已汇总为周线。</span></p></details>
+          </section>
         </aside>
       </div>
     </main>
@@ -3109,8 +3317,13 @@
       </div>
     </aside>
 
-  <script src="dashboard.js?v=20260917-mvrv-zscore-watermark-v2"></script>
-  <script src="dashboard-product-carousel.js?v=20260917-mvrv-zscore-watermark-v2"></script>
+  <script src="rplrm-dashboard.js?v=20261108-address-flow-v1-rplrm-v2-motion-20261109"></script>
+    <script src="dashboard.js?v=20261116-dashboard-interactions-scrollspy-v3"></script>
+    <script src="cycle-seasons-dashboard.js?v=20261110-cycle-markers-v2"></script>
+    <script src="address-trend.js?v=20261115-address-glow-v2"></script>
+    <script src="asset-daily-report.js?v=20261117-daily-right-rail-v1"></script>
+    <script src="market-heatmap.js?v=20261116-market-daily-report-v1"></script>
+  <script src="dashboard-product-carousel.js?v=20261109-trend-motion-v1"></script>
     <script src="surf-assistant.js"></script>
   </body>
 </html>

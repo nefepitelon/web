@@ -25,6 +25,8 @@
   const isHomePage = document.body.classList.contains("home-page");
   const hasTrendExperience = isHomePage || section.dataset.onchainExperience === "shared-3d";
   const cycleToggle = section.querySelector("#power-cycle-toggle");
+  const indicatorCycleMs = isHomePage ? 15_000 : 25_000;
+  const indicatorCycleSeconds = indicatorCycleMs / 1000;
 
   function createHomeOrbitAnimator({ camera, draw, canAnimate, enabled = true, minZoom = 0.55, onState = () => {}, now = () => performance.now(), schedule = setTimeout, cancel = clearTimeout }) {
     const FRAME_MS = 1000 / 30;
@@ -235,7 +237,54 @@
     });
   }
 
-  function drawOrbitFloorRipples(context, width, height, view, elapsed, intense = false, dark = true) {
+  const lakeRippleCircle = Array.from({ length: 41 }, (_, step) => {
+    const angle = step / 40 * Math.PI * 2;
+    return { x: Math.cos(angle), z: Math.sin(angle) };
+  });
+
+  function createOrbitLakeRain(elapsed) {
+    const time = Math.max(0, Number.isFinite(elapsed) ? elapsed : 0);
+    const newest = Math.floor(time / 900);
+    const ripples = [], drops = [], impacts = [];
+    // Each drop owns its impact point for its entire lifetime. Sparse seeded
+    // positions look like rain on a lake without random jitter between frames.
+    const fraction = value => value - Math.floor(value);
+    for (let index = Math.max(0, newest - 3); index <= newest; index += 1) {
+      const x = (fraction((index + 1) * 0.61803398875) - 0.5) * 8.2;
+      const z = (fraction((index + 1) * 0.75487766625) - 0.5) * 2.2;
+      const age = time - index * 900;
+      if (age < 450) {
+        const progress = age / 450;
+        drops.push({ x, z, y: 0.04 + 1.65 * (1 - progress * progress), opacity: 0.2 + progress * 0.55 });
+        continue;
+      }
+      const impactAge = age - 450;
+      if (impactAge < 240) impacts.push({ x, z, progress: impactAge / 240, opacity: 1 - impactAge / 240 });
+      for (let ring = 0; ring < 3; ring += 1) {
+        const progress = (impactAge - ring * 150) / 2350;
+        if (progress < 0 || progress >= 1) continue;
+        const radius = 0.035 + progress * 1.7;
+        ripples.push({ x, z, radius, opacity: (1 - progress) ** 2 * (1 - ring * 0.2),
+          points: lakeRippleCircle.map(point => ({ x: x + point.x * radius, y: 0, z: z + point.z * radius })) });
+      }
+    }
+    return { ripples, drops, impacts };
+  }
+
+  function drawOrbitFloorRipples(context, width, height, view, elapsed, intense = false, dark = true, rain = false) {
+    const weather = rain ? createOrbitLakeRain(elapsed) : null;
+    if (weather) {
+      context.save();
+      context.strokeStyle = dark ? "#a9e8e5" : "#2b8d97";
+      context.lineWidth = intense ? 1.7 : 1.1;
+      for (const drop of weather.drops) {
+        const head = projectOrbitPoint(drop, width, height, view);
+        const tail = projectOrbitPoint({ ...drop, y: drop.y + 0.18 }, width, height, view);
+        context.globalAlpha = drop.opacity * 0.65;
+        context.beginPath(); context.moveTo(tail.x, tail.y); context.lineTo(head.x, head.y); context.stroke();
+      }
+      context.restore();
+    }
     const floor = [{ x: -5, y: 0, z: -1.7 }, { x: 5, y: 0, z: -1.7 },
       { x: 5, y: 0, z: 1.7 }, { x: -5, y: 0, z: 1.7 }]
       .map(point => projectOrbitPoint(point, width, height, view));
@@ -253,10 +302,10 @@
     light.addColorStop(1, dark ? "#75f39a" : "#277c45");
     context.strokeStyle = light;
     context.shadowColor = dark ? "#75f3bd" : "#3da27b";
-    context.shadowBlur = intense ? 18 : 10;
-    context.lineWidth = intense ? 2.4 : 1.6;
-    for (const ripple of createOrbitFloorRipples(elapsed)) {
-      context.globalAlpha = ripple.opacity * (intense ? 0.72 : 0.46);
+    context.shadowBlur = rain ? (intense ? 5 : 0) : (intense ? 18 : 10);
+    context.lineWidth = rain ? (intense ? 1.7 : 1.1) : (intense ? 2.4 : 1.6);
+    for (const ripple of weather?.ripples || createOrbitFloorRipples(elapsed)) {
+      context.globalAlpha = ripple.opacity * (intense ? 0.72 : rain ? 0.56 : 0.46);
       context.beginPath();
       ripple.points.forEach((point, index) => {
         const projected = projectOrbitPoint(point, width, height, view);
@@ -266,13 +315,75 @@
       context.closePath();
       context.stroke();
     }
+    for (const impact of weather?.impacts || []) {
+      const point = projectOrbitPoint({ ...impact, y: 0 }, width, height, view);
+      context.globalAlpha = impact.opacity * 0.7;
+      context.fillStyle = dark ? "#d5fff4" : "#208b7a";
+      context.beginPath(); context.arc(point.x, point.y, 1 + impact.progress * 1.5, 0, Math.PI * 2); context.fill();
+    }
     context.restore();
+  }
+
+  function createDashboardBrandSeal() {
+    if (isHomePage || !hasTrendExperience) return null;
+    const source = document.querySelector(".address-flow-brand-seal");
+    const stage = section.querySelector(".power-law-stage");
+    if (!source || !stage) return null;
+    const seal = source.cloneNode(true);
+    seal.classList.add("trend-brand-seal");
+    seal.style.cssText = "inset:0;width:100%;min-width:0;max-width:100%;height:100%;padding:0;z-index:1;opacity:.8;pointer-events:none;--address-flow-seal-size:clamp(116px,12vw,210px);--address-flow-disc-size:clamp(76px,8vw,146px)";
+    seal.setAttribute("aria-hidden", "true");
+    // A second seal must not resolve its SVG text paths against the first one.
+    for (const path of seal.querySelectorAll("path[id]")) path.id = `trend-${path.id}`;
+    for (const textPath of seal.querySelectorAll("textPath")) {
+      textPath.setAttribute("href", `#trend-${textPath.getAttribute("href").slice(1)}`);
+    }
+    const lettering = seal.querySelectorAll("textPath");
+    if (lettering.length > 1) lettering[1].textContent = "welinkBTC";
+    stage.appendChild(seal);
+    let playing = null;
+    return {
+      fit() {
+        // Mobile metrics join the stage flow below the canvas; center the seal
+        // on the actual plot rather than on the combined chart/card height.
+        seal.style.height = `${canvas.clientHeight}px`;
+        seal.style.top = `${canvas.offsetTop}px`;
+        const position = () => {
+          let centerY = state.view === "3d"
+            ? projectOrbitPoint({ x: 0, y: 2.4, z: -0.2 }, canvas.clientWidth, canvas.clientHeight, camera).y
+            : canvas.clientHeight / 2;
+          if (state.view === "2d" && metricsPanel) {
+            const arc = seal.querySelector(".address-flow-brand-copy")?.getBoundingClientRect();
+            const metrics = metricsPanel.getBoundingClientRect();
+            if (arc && metrics.width > 0 && metrics.height > 0 && arc.right > metrics.left && arc.left < metrics.right) {
+              const plotTop = canvas.getBoundingClientRect().top;
+              centerY = Math.min(centerY, metrics.top - plotTop - arc.height / 2 - 12);
+            }
+          }
+          seal.style.transform = `translateY(${centerY - canvas.clientHeight / 2}px)`;
+        };
+        position();
+        // Metric rows render later in the same UI update. Measure their final
+        // height before paint so the entire lower brand arc stays visible.
+        if (state.view === "2d") queueMicrotask(position);
+      },
+      sync(active) {
+        if (playing === active) return;
+        playing = active;
+        // The browser compositor rotates this small overlay; 2D chart paths
+        // remain a single static draw, regardless of animation frame rate.
+        for (const animation of seal.getAnimations({ subtree: true })) {
+          if (active) animation.play(); else animation.pause();
+        }
+        seal.dataset.motion = active ? "running" : "paused";
+      }
+    };
   }
 
   const DAY_MS = 86_400_000;
   const state = {
     indicator: "cost-basis",
-    view: hasTrendExperience ? "3d" : "2d",
+    view: !isHomePage && hasTrendExperience ? "3d" : "2d",
     range: "all",
     glow: false,
     loading: false,
@@ -292,6 +403,10 @@
   let indicatorCycle = null;
   let chartInViewport = false;
   let pageActive = true;
+  const dashboardBrandSeal = createDashboardBrandSeal();
+  dashboardBrandSeal?.fit();
+  dashboardBrandSeal?.sync(false);
+  let syncBrandSeal = () => {};
 
   const palette = {
     price: "#9aa39f",
@@ -1330,6 +1445,26 @@
         ];
       }
     },
+    rplrm: {
+      name: ["已实现盈亏比动量", "Realized Profit/Loss Ratio Momentum"],
+      short: "RPLR-M · PUBLIC UTXO", dot: "model-rplrm", endpoint: "/api/rplr-m", scale: "linear",
+      thresholds: [{ value: 1, label: "1.0 ANNUAL PACE", color: palette.cyan }],
+      lines: [
+        { key: "price", label: "BTC Price", color: palette.price, axis: "price" },
+        { key: "momentum", label: "RPLR-M · M", color: palette.green }
+      ],
+      normalize(payload) {
+        return { rows: payload.series.map(row => ({ date: parseDate(row.date), price: number(row.price), momentum: number(row.momentum) })),
+          snapshot: payload.snapshot, source: "BGeometrics · PUBLIC UTXO RECONSTRUCTION · DAILY" };
+      },
+      metrics(data) {
+        const value = data.snapshot || {};
+        return [[copy("当前动量 M", "Momentum M"), ratio(value.momentum, 2) + "×"],
+          [copy("综合状态 S", "Composite S"), ratio(value.state, 2)],
+          [copy("确认阶段", "Confirmed Phase"), `${value.phase || "--"} · ${ratio(value.phaseMonths, 1)}M`],
+          [copy("链上日期", "On-chain Date"), value.onchainAsOf || "--"]];
+      }
+    },
     "mvrv-zscore": {
       name: ["MVRV Z分数", "MVRV Z-Score"],
       short: "MVRV Z-SCORE · 7D",
@@ -1551,7 +1686,7 @@
     context.lineJoin = "round";
 
     if (orbitAnimator?.isEnabled()) {
-      drawOrbitFloorRipples(context, width, height, camera, orbitAnimator.elapsed(), state.glow, dark);
+      drawOrbitFloorRipples(context, width, height, camera, orbitAnimator.elapsed(), state.glow, dark, !isHomePage && hasTrendExperience);
     }
     for (let index = 0; index <= 10; index += 1) {
       const x = xMin + (index / 10) * (xMax - xMin);
@@ -1667,7 +1802,7 @@
     context.textAlign = "center";
     context.textBaseline = "middle";
     const watermarkPoint = project3d({ x: 0, y: 2.4, z: -0.2 }, width, height);
-    context.fillText("welinkBTC", watermarkPoint.x, watermarkPoint.y);
+    if (!dashboardBrandSeal) context.fillText("welinkBTC", watermarkPoint.x, watermarkPoint.y);
     context.restore();
     context.restore();
   };
@@ -1783,7 +1918,7 @@
     context.font = `900 ${Math.max(30, Math.min(width * 0.075, 82))}px Inter, sans-serif`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText("welinkBTC", plot.left + (plot.right - plot.left) / 2, plot.top + (plot.bottom - plot.top) / 2);
+    if (!dashboardBrandSeal) context.fillText("welinkBTC", plot.left + (plot.right - plot.left) / 2, plot.top + (plot.bottom - plot.top) / 2);
     context.restore();
   };
 
@@ -1793,10 +1928,10 @@
     cycleToggle.disabled = !cycleState;
     if (!cycleState) return;
     section.dataset.indicatorCycle = cycleState.enabled ? cycleState.paused ? "waiting" : "running" : "paused";
-    cycleToggle.textContent = cycleState.enabled ? copy("25秒轮播 · 暂停", "25s loop · Pause") : copy("25秒轮播 · 继续", "25s loop · Resume");
+    cycleToggle.textContent = cycleState.enabled ? copy(`${indicatorCycleSeconds}秒轮播 · 暂停`, `${indicatorCycleSeconds}s loop · Pause`) : copy(`${indicatorCycleSeconds}秒轮播 · 继续`, `${indicatorCycleSeconds}s loop · Resume`);
     cycleToggle.setAttribute("aria-pressed", String(cycleState.enabled));
-    cycleToggle.setAttribute("aria-label", cycleState.enabled ? copy("暂停每25秒切换指标", "Pause indicator changes every 25 seconds") : copy("继续每25秒切换指标", "Resume indicator changes every 25 seconds"));
-    cycleToggle.title = copy("2D、3D均每25秒轮换指标；离开图表或操作菜单时暂停", "Changes indicators every 25 seconds in 2D and 3D; pauses offscreen or while using the menu");
+    cycleToggle.setAttribute("aria-label", cycleState.enabled ? copy(`暂停每${indicatorCycleSeconds}秒切换指标`, `Pause indicator changes every ${indicatorCycleSeconds} seconds`) : copy(`继续每${indicatorCycleSeconds}秒切换指标`, `Resume indicator changes every ${indicatorCycleSeconds} seconds`));
+    cycleToggle.title = copy(`2D、3D均每${indicatorCycleSeconds}秒轮换指标；离开图表或操作菜单时暂停`, `Changes indicators every ${indicatorCycleSeconds} seconds in 2D and 3D; pauses offscreen or while using the menu`);
   }
 
   const updateOrbitAutoUi = () => {
@@ -1813,6 +1948,9 @@
 
   if (hasTrendExperience) {
     const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    syncBrandSeal = () => dashboardBrandSeal?.sync(!motionPreference.matches && chartInViewport
+      && pageActive && !document.hidden && Boolean(state.data) && !state.loading
+      && (state.view === "2d" || Boolean(orbitAnimator?.isEnabled())));
     orbitAnimator = createHomeOrbitAnimator({
       camera,
       draw,
@@ -1820,20 +1958,22 @@
       enabled: !motionPreference.matches,
       canAnimate: () => state.view === "3d" && Boolean(state.data) && !state.loading && chartInViewport
         && pageActive && !document.hidden && activePointers.size === 0,
-      onState: updateOrbitAutoUi
+      onState: () => { updateOrbitAutoUi(); syncBrandSeal(); }
     });
     orbitAuto?.addEventListener("click", () => orbitAnimator.setEnabled(!orbitAnimator.isEnabled()));
     motionPreference.addEventListener("change", () => {
       if (motionPreference.matches) orbitAnimator.setEnabled(false);
+      syncBrandSeal();
     });
-    document.addEventListener("visibilitychange", () => { orbitAnimator.sync(); indicatorCycle?.sync(); });
-    window.addEventListener("pagehide", () => { pageActive = false; orbitAnimator.sync(); indicatorCycle?.sync(); });
-    window.addEventListener("pageshow", () => { pageActive = true; orbitAnimator.sync(); indicatorCycle?.sync(); });
+    document.addEventListener("visibilitychange", () => { orbitAnimator.sync(); indicatorCycle?.sync(); syncBrandSeal(); });
+    window.addEventListener("pagehide", () => { pageActive = false; orbitAnimator.sync(); indicatorCycle?.sync(); syncBrandSeal(); });
+    window.addEventListener("pageshow", () => { pageActive = true; orbitAnimator.sync(); indicatorCycle?.sync(); syncBrandSeal(); });
     if ("IntersectionObserver" in window) {
       new IntersectionObserver((entries) => {
         chartInViewport = entries.some((entry) => entry.isIntersecting);
         orbitAnimator.sync();
         indicatorCycle?.sync();
+        syncBrandSeal();
       }).observe(canvas);
     } else {
       const updateViewport = () => {
@@ -1841,6 +1981,7 @@
         chartInViewport = bounds.bottom > 0 && bounds.top < window.innerHeight;
         orbitAnimator.sync();
         indicatorCycle?.sync();
+        syncBrandSeal();
       };
       window.addEventListener("scroll", updateViewport, { passive: true });
       window.addEventListener("resize", updateViewport, { passive: true });
@@ -1878,8 +2019,8 @@
     if (orbitControls) orbitControls.hidden = !is3d;
     if (orbitAuto) orbitAuto.hidden = !hasTrendExperience || !is3d;
     if (orbitHint) orbitHint.textContent = copy(
-      "拖拽旋转 · 滚轮缩放 · Shift / 右键拖拽平移",
-      "Drag to orbit · Wheel to zoom · Shift / right-drag to pan"
+      !isHomePage && hasTrendExperience ? "拖拽旋转 · Ctrl/⌘ + 滚轮缩放 · Shift / 右键平移" : "拖拽旋转 · 滚轮缩放 · Shift / 右键拖拽平移",
+      !isHomePage && hasTrendExperience ? "Drag to orbit · Ctrl/⌘ + wheel to zoom · Shift / right-drag to pan" : "Drag to orbit · Wheel to zoom · Shift / right-drag to pan"
     );
     if (orbitReset) orbitReset.textContent = copy("复位视角", "Reset view");
     canvas.tabIndex = is3d ? 0 : -1;
@@ -1888,6 +2029,8 @@
       : copy("比特币链上趋势二维快照", "Bitcoin on-chain trend 2D snapshot"));
     orbitAnimator?.sync();
     updateOrbitAutoUi();
+    dashboardBrandSeal?.fit();
+    syncBrandSeal();
   };
 
   const updateUi = () => {
@@ -1912,6 +2055,7 @@
     state.error = null;
     orbitAnimator?.sync();
     indicatorCycle?.sync();
+    syncBrandSeal();
     status.hidden = false;
     status.classList.remove("is-error");
     status.textContent = copy("正在同步链上趋势快照...", "Syncing on-chain trend snapshot...");
@@ -1940,6 +2084,7 @@
       if (state.indicator === requestedIndicator) {
         orbitAnimator?.sync();
         indicatorCycle?.sync();
+        syncBrandSeal();
       }
     }
   };
@@ -2119,6 +2264,9 @@
   });
   canvas.addEventListener("wheel", (event) => {
     if (state.view !== "3d") return;
+    // On the dashboard, ordinary wheel/trackpad input scrolls the long page.
+    // A deliberate modifier keeps chart zoom available without trapping it.
+    if (!isHomePage && hasTrendExperience && !event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
     cameraFitManaged = false;
     camera.zoom = clamp(camera.zoom * Math.exp(-event.deltaY * 0.0012), minCameraZoom, 2.25);
@@ -2178,7 +2326,7 @@
       .filter((key) => indicatorConfig[key]);
     indicatorCycle = window.WelinkTrendIndicatorCycle.create({
       section: canvas,
-      intervalMs: 25_000,
+      intervalMs: indicatorCycleMs,
       canAdvance: () => indicatorOrder.length > 1 && !state.loading && Boolean(state.data || state.error)
         && chartInViewport && pageActive && !document.hidden && activePointers.size === 0
         && !modelMenu?.classList.contains("is-open") && !modelMenu?.contains(document.activeElement),
@@ -2208,12 +2356,13 @@
       Object.assign(camera, createHomeCamera(rect.width, rect.height));
       orbitAnimator?.reframe();
     }
+    dashboardBrandSeal?.fit();
     draw();
   });
   resizeObserver.observe(canvas);
   window.drawProductDashboard = draw;
   window.updateProductDashboardLanguage = updateUi;
-  if (hasTrendExperience && initialCanvasSize.width >= 720 && metricsPanel && metricsToggle) {
+  if (!isHomePage && hasTrendExperience && initialCanvasSize.width >= 720 && metricsPanel && metricsToggle) {
     metricsPanel.classList.add("is-collapsed");
     metricsToggle.setAttribute("aria-expanded", "false");
     metricsToggle.setAttribute("aria-label", copy("展开指标窗口", "Expand metric panel"));

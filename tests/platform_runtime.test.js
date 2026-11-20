@@ -37,7 +37,7 @@ test("bStock and Alpha Radar expose the cross-platform readability and language 
   const translations = read("ui-translations.js");
   const radarCss = read("alpha-scanner.css");
 
-  assert.match(html, /ui-translations\.js\?v=20260904-bstock-ui-v2/);
+  assert.match(html, /ui-translations\.js\?v=20261024-bstock-catalog-v3/);
   assert.match(bstock, /profile: "bstock"/);
   assert.match(bstock, /uiTranslator\?\.setLanguage/);
   assert.match(translations, /bstock:\s*\[/);

@@ -105,7 +105,7 @@ async function configuredCompletion(input:{system:string;prompt:string;schema:Re
   if(!process.env.OPENAI_API_KEY)return providerFailure("provider_not_configured");
   // Reuse the main site's configured model and text extraction, without its web-search
   // tools or research answer rewriting (the latter would corrupt structured JSON).
-  const helper=await import("../../api/surf-research.js");
+  const helper=await import("../legacy-handlers/surf-research.js");
   const existing=helper.default??helper;
   const mainRequest=existing.buildOpenAIRequest({query:"",platformId:"",platformName:"",effort:"low",language:"en",openaiPreviousResponseId:""});
   const model=process.env.OPENAI_TEXT_MODEL||mainRequest.model;

@@ -51,6 +51,7 @@ test("homepage navigation, view, period, and glow controls have no border glow",
     ".site-header a, .site-header button, .site-header summary",
     ".mobile-menu a, .mobile-menu button, .mobile-menu summary",
     "#power-law [data-view]", "#power-law [data-range]", "#power-law .glow-toggle",
+    "#power-cycle-toggle", "#power-law [data-model-option]",
   ];
   for (const family of excludedFamilies) {
     const elements = $(family).toArray();

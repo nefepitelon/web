@@ -27,6 +27,7 @@ import {
   parseAgentStudioJobPayload
 } from "@/lib/bstock-agent-studio-status";
 import { prisma } from "@/lib/prisma";
+import { fetchPublicResearchReport } from "@/lib/public-research-report";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
     const upstream = await fetch(`https://stock-agent.bnbchain.org/x402/jobs/${encodeURIComponent(record.jobId)}`, {
       headers: { "Accept": "application/json", "X-Job-Token": jobToken },
       cache: "no-store",
+      redirect: "error",
       signal: AbortSignal.timeout(15_000)
     });
     const rawPayload = await upstream.json().catch(() => null);
@@ -176,6 +178,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: { "Accept": "application/json", "X-Job-Token": jobToken },
         cache: "no-store",
+        redirect: "error",
         signal: AbortSignal.timeout(15_000)
       });
       const resumeRaw = await resumeResponse.json().catch(() => ({}));
@@ -241,13 +244,7 @@ export async function POST(request: NextRequest) {
 
     const resolvedDownloadUrl = payload.downloadUrl;
     if (jobStatus === "succeeded" && resolvedDownloadUrl) {
-      const downloadUrl = new URL(resolvedDownloadUrl);
-      if (downloadUrl.protocol !== "https:") throw new Error("Agent Studio returned an unsafe download URL.");
-      const reportResponse = await fetch(downloadUrl, {
-        headers: { "Accept": "text/markdown, text/plain;q=0.9" },
-        cache: "no-store",
-        signal: AbortSignal.timeout(15_000)
-      });
+      const reportResponse = await fetchPublicResearchReport(resolvedDownloadUrl);
       if (!reportResponse.ok) {
         await prisma.bstockResearchJob.update({
           where: { id: record.id },

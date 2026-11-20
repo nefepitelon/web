@@ -31,8 +31,8 @@ export default async function SecurityPage({
       <section className="panel">
         <div className="panel-header"><div><h2>会话与登录保护</h2><p>账户会话不存入 localStorage，关键权限在每个服务端请求重新检查。</p></div></div>
         <div className="panel-body">
-          <div className="status-line"><div className="status-copy"><strong>会话 Cookie</strong><span>HttpOnly · Secure · SameSite=Lax</span></div><span className="status-pill">已启用</span></div>
-          <div className="status-line"><div className="status-copy"><strong>邮箱请求限速</strong><span>按邮箱与 IP 组合限制，避免验证码轰炸。</span></div><span className="status-pill">已启用</span></div>
+          <div className="status-line"><div className="status-copy"><strong>会话 Cookie</strong><span>认证服务签名校验 · HTTPS · SameSite；备份验证凭据另设 HttpOnly 并绑定当前登录会话。</span></div><span className="status-pill">已启用</span></div>
+          <div className="status-line"><div className="status-copy"><strong>邮箱请求限速</strong><span>分别限制来源 IP、邮箱、注册与发信频次，防止轮换邮箱绕过。</span></div><span className="status-pill">已启用</span></div>
           <div className="status-line"><div className="status-copy"><strong>OAuth state / CSRF</strong><span>Google 由认证服务校验；社交绑定使用签名 state 与同站 Cookie。</span></div><span className="status-pill">已启用</span></div>
         </div>
       </section>

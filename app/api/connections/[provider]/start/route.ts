@@ -4,6 +4,7 @@ import { AUTH_NEXT_COOKIE, authCallbackUrl } from "@/lib/auth-redirect";
 import { requireViewer } from "@/lib/membership";
 import { createOAuthState } from "@/lib/security";
 import { applyAuthResponseHeaders } from "@/lib/supabase/response";
+import { supabaseCookieOptions } from "@/lib/supabase/cookie-options";
 
 type PendingCookie = {
   name: string;
@@ -27,6 +28,7 @@ async function startSupabaseXLink(request: NextRequest) {
   const pendingCookies: PendingCookie[] = [];
   const pendingHeaders: Record<string, string> = {};
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookieOptions: supabaseCookieOptions,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(cookiesToSet, headers) {

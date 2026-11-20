@@ -2,12 +2,14 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { getRun, start } from "workflow/api";
 import { prisma } from "@/lib/prisma";
+import { redactSecretText } from "@/lib/secret-redaction";
 import {
   defaultHostedGridOpsEnvironment,
   encryptHostedGridOpsEnvironment,
   hostedGridOpsSummary,
 } from "@/lib/grid-ops-hosted/config";
 import { hostedGridOpsWorkflow } from "@/lib/grid-ops-hosted/workflow";
+import { assertHostedGridOpsNotQuarantined, hostedGridOpsNotQuarantinedWhere } from "@/lib/grid-ops-hosted/security";
 
 const ACTIVE_RUN_HEARTBEAT_GRACE_MS = 60_000;
 
@@ -36,7 +38,7 @@ export function publicHostedGridOpsBot(bot: HostedGridOpsBotRecord) {
     id: bot.id,
     status: bot.status,
     summary: bot.configSummary,
-    lastError: bot.lastError,
+    lastError: bot.lastError ? redactSecretText(bot.lastError) : null,
     heartbeatAt: bot.heartbeatAt?.toISOString() ?? null,
     startedAt: bot.startedAt?.toISOString() ?? null,
     stoppedAt: bot.stoppedAt?.toISOString() ?? null,
@@ -57,6 +59,12 @@ async function activeRun(runId: string | null) {
 }
 
 export async function ensureHostedGridOpsRun(bot: HostedGridOpsBotRecord) {
+  assertHostedGridOpsNotQuarantined(bot);
+  const current = await prisma.hostedGridOpsBot.findUnique({
+    where: { id: bot.id }, select: { id: true, lastError: true, status: true, runId: true },
+  });
+  assertHostedGridOpsNotQuarantined(current);
+  bot = { ...bot, ...current! };
   const existing = await activeRun(bot.runId);
   if (existing) {
     await existing.wakeUp().catch(() => {});
@@ -76,7 +84,7 @@ export async function ensureHostedGridOpsRun(bot: HostedGridOpsBotRecord) {
   }
   const run = await start(hostedGridOpsWorkflow, [bot.id]);
   return prisma.hostedGridOpsBot.update({
-    where: { id: bot.id },
+    where: hostedGridOpsNotQuarantinedWhere(bot.id),
     data: { runId: run.runId, status: bot.status === "STOPPED" ? "STARTING" : bot.status, startedAt: bot.startedAt || new Date(), stoppedAt: null },
     select: hostedGridOpsBotSelect,
   });
@@ -89,6 +97,7 @@ export async function ensureHostedGridOpsBot(userId: string, options: { readOnly
     where: { userId }, select: { ...hostedGridOpsBotSelect, snapshot: !options.readOnly },
   });
   let bot = selected ? { ...selected, snapshot: selected.snapshot ?? null } : null;
+  if (bot) assertHostedGridOpsNotQuarantined(bot);
   let created = false;
   if (!bot) {
     const environment = defaultHostedGridOpsEnvironment();
@@ -135,6 +144,12 @@ export async function enqueueHostedGridOpsCommand(input: {
   payload?: unknown;
   waitMs?: number;
 }) {
+  assertHostedGridOpsNotQuarantined(input.bot);
+  const current = await prisma.hostedGridOpsBot.findUnique({
+    where: { id: input.bot.id }, select: { id: true, userId: true, lastError: true },
+  });
+  assertHostedGridOpsNotQuarantined(current);
+  if (current!.userId !== input.userId) throw new Error("托管命令账户不匹配");
   const command = await prisma.hostedGridOpsCommand.create({
     data: {
       botId: input.bot.id,

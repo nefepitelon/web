@@ -1,4 +1,5 @@
 import "server-only";
+import { redactSecretData, redactSecretText } from "@/lib/secret-redaction";
 import { AlphaExecutionMode, AlphaExecutionState, AlphaMarketType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { maskProxy } from "@/lib/tidesight/execution/credentials";
@@ -30,11 +31,11 @@ export async function tideSightCredentialSummary(userId: string) {
     orderBy: [{ environment: "asc" }, { market: "asc" }]
   });
 
-  return credentials.map((credential) => ({
+  return redactSecretData(credentials.map((credential) => ({
     ...credential,
     proxyConfigured: Boolean(credential.proxyEncrypted),
     proxyEncrypted: undefined
-  }));
+  })));
 }
 
 export async function writeTideSightAudit(input: {
@@ -52,11 +53,11 @@ export async function writeTideSightAudit(input: {
       userId: input.userId,
       state: input.state,
       status: input.status,
-      message: input.message,
+      message: redactSecretText(input.message),
       intentId: input.intentId ?? null,
       planId: input.planId ?? null,
       orderId: input.orderId ?? null,
-      metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined
+      metadata: (redactSecretData(input.metadata) ?? undefined) as Prisma.InputJsonValue | undefined
     }
   });
 }
@@ -180,7 +181,7 @@ export async function executionSnapshot(userId: string) {
     plans,
     orders,
     positions,
-    audits,
+    audits: audits.map((row) => ({ ...row, message: row.message ? redactSecretText(row.message) : row.message, metadata: redactSecretData(row.metadata) })),
     portfolioStats
   };
 }

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parallax-hedge-arcus-entropy"
+version = "1.6.0"
+description = "对冲刷量控制台 —— Arcus x Entropy (Hyperliquid io)"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.29",
+  # socks 附加包：Arcus 常配独立 SOCKS5 代理，没有它 httpx 会直接拒绝 socks5:// 地址
+  "httpx[socks]>=0.27",
+  "pydantic>=2.6",
+  "python-dotenv>=1.0",
+  # Arcus 订单推送（挂单成交门铃）
+  "websockets>=14",
+  # Arcus 下单用 Ed25519 签名
+  "cryptography>=42",
+  # Entropy（Hyperliquid io 子 dex）下单。必须 >= 0.24：
+  # 0.20 构造 Exchange 时会因现货 token 下标对不上直接 list index out of range；
+  # 在 io 子 dex 实盘验证过的是 0.24.0。
+  "hyperliquid-python-sdk>=0.24,<1",
+  "eth-account>=0.13,<1",
+  # Hyperliquid SDK 用 requests 发请求；socks 附加包让 ENTROPY_PROXY 能填 socks5://
+  "requests[socks]>=2.31",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+parallax_hedge = ["web/*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

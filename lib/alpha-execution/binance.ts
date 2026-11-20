@@ -1,4 +1,6 @@
 import "server-only";
+import { redactSecretText } from "@/lib/secret-redaction";
+import { publicProxyLookup, normalizePublicTradingProxy } from "@/lib/trading-proxy-security";
 import { createHmac } from "node:crypto";
 import { Agent, ProxyAgent, type Dispatcher } from "undici";
 
@@ -130,7 +132,7 @@ export class BinanceRequestError extends Error {
   actionRequired: string | null;
 
   constructor(message: string, status: number, code: number | null, statusUnknown = false, actionRequired: string | null = null) {
-    super(message);
+    super(redactSecretText(message));
     this.name = "BinanceRequestError";
     this.status = status;
     this.code = code;
@@ -172,10 +174,11 @@ export class AlphaBinanceClient {
     this.baseUrl = BASE_URLS[options.environment][options.market];
     this.apiKey = options.apiKey;
     this.apiSecret = options.apiSecret;
-    this.dispatcher = options.proxy === "direct"
+    const proxy = normalizePublicTradingProxy(options.proxy);
+    this.dispatcher = proxy === "direct"
       ? new Agent()
       : options.proxy
-        ? new ProxyAgent(options.proxy)
+        ? new ProxyAgent({ uri: proxy, proxyTls: { lookup: publicProxyLookup } })
         : null;
   }
 
@@ -205,7 +208,7 @@ export class AlphaBinanceClient {
         ...(this.dispatcher ? { dispatcher: this.dispatcher } : {})
       } as RequestInit & { dispatcher?: Dispatcher });
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : "network request failed";
+      const message = redactSecretText(caught instanceof Error ? caught.message : "network request failed", [this.apiKey, this.apiSecret]);
       throw new BinanceRequestError(`Binance 网络请求失败：${message}`, 503, null, method === "POST");
     }
 
@@ -218,7 +221,7 @@ export class AlphaBinanceClient {
       }
       const rejection = describeBinanceRejection(code, raw.msg, response.status);
       throw new BinanceRequestError(
-        rejection.message,
+        redactSecretText(rejection.message, [this.apiKey, this.apiSecret]),
         response.status,
         code,
         method === "POST" && (response.status >= 500 || code === -1007),
@@ -243,8 +246,10 @@ export class AlphaBinanceClient {
       throw new Error("Invalid Binance income history interval or page");
     }
     // Read all income types to expose transfers separately from trading PnL.
-    // Official USER_DATA endpoint: last 3 months, page-based, at most 1,000 rows.
-    const raw = await this.rawRequest("GET", "/fapi/v1/income", { startTime, endTime, page, limit }, { signed: true, losslessIncome: true });
+    // Current USER_DATA schema has inclusive time bounds and a 1,000-row limit,
+    // but no page parameter. The collector splits full intervals by time.
+    if (page !== 1) throw new Error("Income history must be paginated using time windows");
+    const raw = await this.rawRequest("GET", "/fapi/v1/income", { startTime, endTime, limit }, { signed: true, losslessIncome: true });
     if (!Array.isArray(raw)) throw new Error("Binance income history returned an invalid response");
     return raw as Array<Record<string, unknown>>;
   }

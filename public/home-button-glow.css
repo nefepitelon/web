@@ -27,7 +27,7 @@ body.home-page[data-theme="light"] {
 /* Only establish a containing block on normally in-flow controls. The metrics
    toggle is already absolutely positioned and must keep its original anchor. */
 .home-page :is(main, .site-footer) :is(
-  button:not(.power-metrics-toggle):not(.surf-bot-toggle, [data-view], [data-range]),
+  button:not(.power-metrics-toggle):not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]),
   a.primary-button, a.text-link, a.research-button, a.research-article-pill,
   a.contact-card, a.social-button, .product-demo-caption > a,
   .site-footer > a
@@ -38,7 +38,7 @@ body.home-page[data-theme="light"] {
 /* Mask out the entire interior instead of painting over the original fill.
    Two short opposing glints travel around the existing rounded outline. */
 .home-page :is(main, .site-footer) :is(
-  button:not(.surf-bot-toggle, [data-view], [data-range]), a.primary-button, a.text-link, a.research-button,
+  button:not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]), a.primary-button, a.text-link, a.research-button,
   a.research-article-pill, a.contact-card, a.social-button,
   .product-demo-caption > a, .site-footer > a
 )::before {
@@ -68,15 +68,15 @@ body.home-page[data-theme="light"] {
   transition: opacity 180ms ease;
 }
 
-.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a):is(:hover, :focus-visible)::before {
+.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]), a):is(:hover, :focus-visible)::before {
   opacity: .95;
 }
 
 /* Stagger neighboring controls so the page reads as a gentle flow, not a flash. */
-.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a):nth-child(2n)::before {
+.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]), a):nth-child(2n)::before {
   animation-delay: -1.8s;
 }
-.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a):nth-child(3n)::before {
+.home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]), a):nth-child(3n)::before {
   animation-delay: -3.6s;
 }
 
@@ -97,7 +97,7 @@ html.is-page-hidden .home-page :is(main, .site-footer) *::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a)::before {
+  .home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]), a)::before {
     animation: none !important;
     transition: none;
     opacity: .28;
@@ -107,5 +107,5 @@ html.is-page-hidden .home-page :is(main, .site-footer) *::before {
 /* A browser without composite masks keeps the existing plain borders instead
    of accidentally covering the button's label with a gradient. */
 @supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
-  .home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, [data-view], [data-range]), a)::before { content: none; }
+  .home-page :is(main, .site-footer) :is(button:not(.surf-bot-toggle, .power-cycle-toggle, [data-model-option], [data-view], [data-range]), a)::before { content: none; }
 }

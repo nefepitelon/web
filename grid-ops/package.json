@@ -21,11 +21,17 @@
     "@solana-program/compute-budget": "^0.10.0",
     "@solana/kit": "^4.0.0",
     "bignumber.js": "^11.1.1",
-    "undici": "^6.19.8",
+    "undici": "^6.29.1",
     "viem": "^2.52.0",
     "zod": "^3.25.62"
   },
   "optionalDependencies": {
     "risex-client": "^0.1.0"
+  },
+  "overrides": {
+    "axios": "1.21.1",
+    "follow-redirects": "1.16.3",
+    "ws": "8.21.3",
+    "stream-json@^3.0.0": "3.9.0"
   }
 }

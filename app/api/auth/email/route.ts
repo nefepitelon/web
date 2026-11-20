@@ -3,37 +3,27 @@ import { NextResponse } from "next/server";
 import { PENDING_ACCESS_CODE_COOKIE, validateAccessCode } from "@/lib/access-codes";
 import { AUTH_NEXT_COOKIE, authCallbackUrl, safeAuthNext } from "@/lib/auth-redirect";
 import { isDatabaseConfigured } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { assertSameOrigin, requestContext } from "@/lib/request-security";
+import { assertSameOrigin } from "@/lib/request-security";
+import { AuthProtectionError, protectAuthRequest, readAuthJson, requireCaptchaToken } from "@/lib/auth-protection";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { applyAuthResponseHeaders } from "@/lib/supabase/response";
 
 const schema = z.object({
   email: z.email().max(254),
   next: z.string().max(300).optional(),
-  accessCode: z.string().max(64).optional()
+  accessCode: z.string().max(64).optional(),
+  captchaToken: z.string().min(1).max(4096).optional()
 });
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    const input = schema.parse(await request.json());
+    const input = schema.parse(await readAuthJson(request));
     const supabase = await createServerSupabaseClient();
     if (!supabase) return Response.json({ error: "认证服务尚未配置" }, { status: 503 });
 
-    if (isDatabaseConfigured()) {
-      const { ipAddress } = await requestContext(request);
-      const rate = await checkRateLimit(
-        `auth:email:${input.email.toLowerCase()}:${ipAddress ?? "unknown"}`,
-        5,
-        10 * 60 * 1000
-      );
-      if (!rate.allowed) {
-        return Response.json(
-          { error: `请求过于频繁，请在 ${rate.retryAfterSeconds} 秒后重试` },
-          { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } }
-        );
-      }
-    }
+    await protectAuthRequest(request, "magic", input.email);
+    requireCaptchaToken(input.captchaToken);
 
     const pendingAccessCode = input.accessCode?.trim();
     const accessCodeValidation = pendingAccessCode && isDatabaseConfigured()
@@ -50,11 +40,11 @@ export async function POST(request: Request) {
     const emailRedirectTo = authCallbackUrl(request.url).toString();
     const { error } = await supabase.auth.signInWithOtp({
       email: input.email.toLowerCase(),
-      options: { emailRedirectTo, shouldCreateUser: true }
+      options: { emailRedirectTo, shouldCreateUser: false, captchaToken: input.captchaToken }
     });
     if (error) throw error;
 
-    const response = NextResponse.json({ ok: true });
+    const response = applyAuthResponseHeaders(NextResponse.json({ ok: true }));
     response.cookies.set(AUTH_NEXT_COOKIE, safeNext, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -75,6 +65,12 @@ export async function POST(request: Request) {
     }
     return response;
   } catch (caught) {
+    if (caught instanceof AuthProtectionError) {
+      return applyAuthResponseHeaders(Response.json({ error: caught.message }, {
+        status: caught.status,
+        headers: caught.retryAfterSeconds ? { "Retry-After": String(caught.retryAfterSeconds) } : undefined
+      }));
+    }
     if (caught instanceof z.ZodError) {
       return Response.json({ error: "请输入有效的邮箱地址" }, { status: 400 });
     }

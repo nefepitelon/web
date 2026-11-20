@@ -1,0 +1,151 @@
+{
+  "fetchedAt": "2026-11-18",
+  "provider": "CoinGecko public coin metadata and logo CDN",
+  "metadataSource": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,dogecoin,zcash,bittensor,ethena,ondo-finance,uniswap,ripple,sui,hyperliquid&per_page=50&page=1",
+  "note": "Locally packaged token brand images for identification; all images are same-origin at runtime.",
+  "assets": [
+    {
+      "symbol": "BTC",
+      "id": "bitcoin",
+      "name": "Bitcoin",
+      "file": "/token-icons/btc.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400",
+      "width": 96,
+      "height": 96,
+      "bytes": 3904,
+      "sha256": "59e2e90dd32a3e4fb3469b38979333febaa915d14db3e46de767b1948ed3b2bc"
+    },
+    {
+      "symbol": "ETH",
+      "id": "ethereum",
+      "name": "Ethereum",
+      "file": "/token-icons/eth.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501628",
+      "width": 96,
+      "height": 96,
+      "bytes": 2472,
+      "sha256": "c169858fe1f1d5b4f66408942bb95d38ddbdbd5685e8ab464eea4d5e2f66e229"
+    },
+    {
+      "symbol": "BNB",
+      "id": "binancecoin",
+      "name": "BNB",
+      "file": "/token-icons/bnb.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1696501970",
+      "width": 96,
+      "height": 96,
+      "bytes": 4110,
+      "sha256": "9dcd5fa2724859190597f36de1c7ceee829ea1ec0dcc7dbf329939c85f9f7bb2"
+    },
+    {
+      "symbol": "SOL",
+      "id": "solana",
+      "name": "Solana",
+      "file": "/token-icons/sol.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/4128/large/solana.png?1718769756",
+      "width": 96,
+      "height": 96,
+      "bytes": 2312,
+      "sha256": "7005f9dcef5210ce2187d1c605e185d76330338565dbba154b8f98a36829c58f"
+    },
+    {
+      "symbol": "DOGE",
+      "id": "dogecoin",
+      "name": "Dogecoin",
+      "file": "/token-icons/doge.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/5/large/dogecoin.png?1696501409",
+      "width": 96,
+      "height": 96,
+      "bytes": 4802,
+      "sha256": "48d83e54ed1f100380db8cbd26414fec3a64d93fd6a0ccdcf6d4b33273ba1ee5"
+    },
+    {
+      "symbol": "ZEC",
+      "id": "zcash",
+      "name": "Zcash",
+      "file": "/token-icons/zec.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/486/large/Brandmark-Yellow_%281%29.png?1785810558",
+      "width": 96,
+      "height": 96,
+      "bytes": 4160,
+      "sha256": "4cc83ea7b8df4272134bef493fa903d29698cbfc07c4c6f2d54195a69ca2cd5d"
+    },
+    {
+      "symbol": "TAO",
+      "id": "bittensor",
+      "name": "Bittensor",
+      "file": "/token-icons/tao.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/28452/large/ARUsPeNQ_400x400.jpeg?1696527447",
+      "width": 96,
+      "height": 96,
+      "bytes": 348,
+      "sha256": "a445128214df6ebb5673a79bb84cf0e98e30d22f76d82bf129cd06977de9601c"
+    },
+    {
+      "symbol": "ENA",
+      "id": "ethena",
+      "name": "Ethena",
+      "file": "/token-icons/ena.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/36530/large/ethena.png?1711701436",
+      "width": 96,
+      "height": 96,
+      "bytes": 3252,
+      "sha256": "a0af1c65f7d0c83580b40a1b213ce8b3eec216e8acb4ac9987c0818724ce0926"
+    },
+    {
+      "symbol": "ONDO",
+      "id": "ondo-finance",
+      "name": "Ondo",
+      "file": "/token-icons/ondo.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/26580/large/ONDO.png?1696525656",
+      "width": 96,
+      "height": 96,
+      "bytes": 3616,
+      "sha256": "3484754f3e3cd1c118f373604055ae41e3aadd72c1b3fce51ed8fa29f5320f07"
+    },
+    {
+      "symbol": "UNI",
+      "id": "uniswap",
+      "name": "Uniswap",
+      "file": "/token-icons/uni.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/12504/large/uniswap-logo.png?1720676669",
+      "width": 96,
+      "height": 96,
+      "bytes": 4070,
+      "sha256": "5f1889fb70b1ff5214e5a46bcefd6b8d8907f65e2830f960e0b45d7b5b38b2f0"
+    },
+    {
+      "symbol": "XRP",
+      "id": "ripple",
+      "name": "XRP",
+      "file": "/token-icons/xrp.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png?1696501442",
+      "width": 96,
+      "height": 96,
+      "bytes": 1008,
+      "sha256": "39fa69e4c74c8498aeff117f7cd162e6baeeb9d342175f5eeba7ea81d6caa8dd"
+    },
+    {
+      "symbol": "SUI",
+      "id": "sui",
+      "name": "Sui",
+      "file": "/token-icons/sui.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/26375/large/sui-ocean-square.png?1727791290",
+      "width": 96,
+      "height": 96,
+      "bytes": 3592,
+      "sha256": "d5032c2421d03ebd538008674ee40bffa22f971dd53ef9a90f7215dbda429561"
+    },
+    {
+      "symbol": "HYPE",
+      "id": "hyperliquid",
+      "name": "Hyperliquid",
+      "file": "/token-icons/hype.webp",
+      "source": "https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg?1729431300",
+      "width": 96,
+      "height": 96,
+      "bytes": 1708,
+      "sha256": "28828fab36b14b8a9921bba940890a15609f393f5f7d904879f8150a9e14bce6"
+    }
+  ]
+}

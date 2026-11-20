@@ -138,3 +138,22 @@ export function createHalvingService({ fetchImpl = (...args) => fetch(...args), 
 
 const service = createHalvingService();
 export const getHalvingPayload = () => service.getPayload();
+
+// Vercel also deploys root api/*.js as standalone functions. This entry point
+// must work independently of the Next route that imports the same service.
+export default async function handler(request, response) {
+  response.setHeader("Cache-Control", "no-store, max-age=0");
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    response.setHeader("Allow", "GET, HEAD");
+    return response.status(405).json({ error: "Method not allowed" });
+  }
+  const payload = await getHalvingPayload();
+  if (!payload) response.setHeader("Retry-After", "15");
+  response.status(payload ? 200 : 503);
+  if (request.method === "HEAD") return response.end();
+  return response.json(payload ?? {
+    schema: 1,
+    error: "HALVING_UNAVAILABLE",
+    message: "Bitcoin chain-tip providers are temporarily unavailable. Please retry."
+  });
+}

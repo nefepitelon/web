@@ -18,7 +18,7 @@ test("dashboard exposes the complete MVRV Z-Score workspace", () => {
   assert.match(html, /id="mvrv-zscore-snapshot"/);
   assert.match(html, /id="mvrv-zscore-download"/);
   assert.match(html, /id="mvrv-zscore-fullscreen"/);
-  assert.match(html, /INDEX \/ 34/);
+  assert.match(html, /INDEX \/ 35/);
 
   assert.match(js, /\/api\/mvrv-zscore-cycle\?schema=1/);
   assert.match(js, /const drawMvrvZscoreChart/);
@@ -28,7 +28,7 @@ test("dashboard exposes the complete MVRV Z-Score workspace", () => {
   assert.match(js, /"mvrv-zscore": \{/);
   assert.match(js, /threshold: 0\.7539/);
   assert.match(css, /\.mvrv-zscore-panel::before/);
-  assert.match(css, /grid-row: 1 \/ span 34/);
+  assert.match(css, /grid-row: 1 \/ span 35/);
 });
 
 test("MVRV Z-Score is available in the homepage product dashboard and legacy route", () => {
@@ -38,10 +38,10 @@ test("MVRV Z-Score is available in the homepage product dashboard and legacy rou
   const route = read("app/api/[legacy]/route.ts");
 
   assert.match(homepage, /data-model-option="mvrv-zscore"/);
-  assert.match(homepage, /class="power-copy-orbit"><strong>34<\/strong>/);
+  assert.match(homepage, /class="power-copy-orbit"><strong>35<\/strong>/);
   assert.match(product, /"mvrv-zscore": \{/);
   assert.match(product, /\/api\/mvrv-zscore-cycle\?schema=1/);
   assert.match(styles, /\.model-mvrv-zscore/);
   assert.match(route, /"mvrv-zscore-cycle"/);
-  assert.match(homepage, /20260917-mvrv-zscore-watermark-v2/);
+  assert.match(homepage, /20261108-address-flow-v1/);
 });

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { applyAuthResponseHeaders } from "@/lib/supabase/response";
+import { supabaseCookieOptions } from "@/lib/supabase/cookie-options";
 
 function redirectToCanonicalHost(request: NextRequest) {
   if (process.env.NODE_ENV !== "production" || !process.env.NEXT_PUBLIC_APP_URL) return null;
@@ -30,6 +31,8 @@ export function isInternalWorkflowPath(pathname: string) {
 }
 
 const PUBLIC_MARKET_DATA_PATHS = new Set([
+  "/api/hedge-ops/perpdex-box",
+  "/api/hedge-ops/cex-hub",
   "/api/alpha-scan",
   "/api/binance-alpha-lists",
   "/api/box-breakout/chart",
@@ -103,6 +106,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      cookieOptions: supabaseCookieOptions,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet, headers) {

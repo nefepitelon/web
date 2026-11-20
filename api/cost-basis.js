@@ -1,3 +1,5 @@
+import { fetchCompleteHistory, mergeHistoryRows, completeHistoryCoverage } from "../lib/onchain-history.js";
+
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 20_000;
@@ -26,19 +28,19 @@ export default async function handler(request, response) {
   }
 
   const now = Date.now();
-  const cache = globalThis.__welinkCostBasisCache;
+  const cache = globalThis.__welinkCostBasisCacheV2;
   if (cache?.payload && now - cache.savedAt < CACHE_TTL_MS) {
     const payload = cache.payload.ratioSnapshot
       ? cache.payload
       : { ...cache.payload, ratioSnapshot: calculateRatioSnapshot(cache.payload.series || []) };
-    globalThis.__welinkCostBasisCache = { ...cache, payload };
+    globalThis.__welinkCostBasisCacheV2 = { ...cache, payload };
     sendPayload(response, payload, "HIT");
     return;
   }
 
   try {
     const payload = await buildCostBasisPayload(cache?.payload);
-    globalThis.__welinkCostBasisCache = { savedAt: now, payload };
+    globalThis.__welinkCostBasisCacheV2 = { savedAt: now, payload };
     sendPayload(response, payload, "MISS");
   } catch (error) {
     if (cache?.payload && now - cache.savedAt < MAX_STALE_MS) {
@@ -66,33 +68,26 @@ function sendPayload(response, payload, cacheState) {
 }
 
 async function buildCostBasisPayload(previousPayload) {
-  const [tmmpResult, coinglassResult, tickerResult] = await Promise.allSettled([
-    fetchBgeometricsCsv("true-market-mean", ["trueMarketMean", "true_market_mean", "tmmp"]),
+  const [tmmpResult, sthResult, priceResult, coinglassResult, tickerResult] = await Promise.allSettled([
+    fetchCompleteHistory("tmmp"),
+    fetchCompleteHistory("sth"),
+    fetchCompleteHistory("price"),
     fetchCoinglassSthHistory(),
     fetchLiveBtcPrice()
   ]);
 
-  const tmmpRows = fulfilledValue(tmmpResult);
-  let sthBundle = fulfilledValue(coinglassResult);
-  let sourceMode = "CoinGlass + BGeometrics";
-
-  if (!sthBundle) {
-    const [sthResult, priceResult] = await Promise.allSettled([
-      fetchBgeometricsCsv("realized-price-sth", ["realizedPriceSth", "realized_price_sth", "sth_realized_price"]),
-      fetchBgeometricsCsv("btc-price", ["btcPrice", "price", "btc_price", "close"])
-    ]);
-    const sthRows = fulfilledValue(sthResult);
-    const priceRows = fulfilledValue(priceResult);
-    if (sthRows?.length && priceRows?.length) {
-      sthBundle = { sthRows, priceRows, source: "BGeometrics" };
-      sourceMode = "BGeometrics";
-    }
-  }
-
-  const fallbackSeries = previousPayload?.series || [];
-  const series = tmmpRows?.length && sthBundle?.sthRows?.length
-    ? mergeCostBasisSeries(sthBundle, tmmpRows)
-    : fallbackSeries;
+  const tmmpHistory = fulfilledValue(tmmpResult);
+  const sthHistory = fulfilledValue(sthResult);
+  const priceHistory = fulfilledValue(priceResult);
+  const coinglass = fulfilledValue(coinglassResult);
+  const prior = previousPayload?.series || [];
+  const tmmpRows = mergeHistoryRows(prior.map(row => ({ date: row.date, value: row.tmmp })), tmmpHistory?.rows);
+  const sthBundle = {
+    sthRows: mergeHistoryRows(prior.map(row => ({ date: row.date, value: row.sth })), sthHistory?.rows, coinglass?.sthRows),
+    priceRows: mergeHistoryRows(prior.map(row => ({ date: row.date, value: row.price })), priceHistory?.rows, coinglass?.priceRows),
+    source: coinglass ? "CoinGlass + BGeometrics public archive" : "BGeometrics public archive"
+  };
+  const series = mergeCostBasisSeries(sthBundle, tmmpRows);
 
   if (series.length < 7) {
     throw new Error("Cost-basis sources did not return enough aligned daily observations");
@@ -101,7 +96,7 @@ async function buildCostBasisPayload(previousPayload) {
   const livePrice = fulfilledValue(tickerResult);
   const snapshot = calculateSnapshot(series, livePrice);
   const ratioSnapshot = calculateRatioSnapshot(series);
-  const stale = !(tmmpRows?.length && sthBundle?.sthRows?.length);
+  const stale = Date.now() - Date.parse(series.at(-1).date) > 3 * 86400000;
 
   return {
     ok: true,
@@ -109,6 +104,9 @@ async function buildCostBasisPayload(previousPayload) {
     generatedAt: new Date().toISOString(),
     cacheSeconds: CACHE_TTL_MS / 1000,
     cadence: "daily",
+    schema: 2,
+    historyCoverage: { ...completeHistoryCoverage(series), earlyCadence: "Weekly STH observations before 2015-06-01; daily thereafter; no interpolation." },
+    archiveFallback: [tmmpHistory, sthHistory, priceHistory].some(history => !history || history.fallback),
     snapshot,
     ratioSnapshot,
     series,
@@ -118,8 +116,8 @@ async function buildCostBasisPayload(previousPayload) {
       { cycle: "2022", bottomDate: "2022-11-21", days: 160 }
     ],
     sources: {
-      price: livePrice?.source || `${sthBundle?.source || sourceMode} daily close`,
-      sth: sthBundle?.source || sourceMode,
+      price: livePrice?.source || `${sthBundle.source} daily close`,
+      sth: `${sthBundle.source}; Bitbo public weekly archive before 2015-06-01`,
       tmmp: "BGeometrics",
       methodology: "Glassnode Cointime Economics definitions"
     }

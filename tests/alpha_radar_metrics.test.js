@@ -10,6 +10,7 @@ const metricSource = client.slice(client.indexOf("function renderLiveSummaryMetr
 function metricsContext(overrides = {}) {
   const nodes = new Map();
   const context = {
+    URLSearchParams,
     document: { querySelector: (selector) => {
       if (!nodes.has(selector)) nodes.set(selector, {});
       return nodes.get(selector);
@@ -19,6 +20,7 @@ function metricsContext(overrides = {}) {
     alphaExecutionConfig: { activeMode: "paper", defaultMarket: "futures" },
     livePnlSnapshot: null,
     livePnlMarket: "futures",
+    livePnlLoading: false,
     liveAuditExporting: false,
     portfolioRealizedPnl: null,
     portfolioRealizedCount: null,
@@ -106,6 +108,58 @@ test("verified zero LIVE settlements stay distinguishable from missing account d
     livePnlSnapshot: { status: "ready", asset: "USDT", amount: 0, coverageComplete: true, recordCount: 0 },
   });
   assert.equal(nodes.get("#live-realized-metric").textContent, "+0.00");
+});
+
+test("failed background refresh preserves only the previous verified PnL and labels it as last verified", () => {
+  const verified = { status: "ready", asset: "USDT", amount: 12.5, coverageComplete: true, accountVersion:"same-account", refreshedAt: "2026-10-24T10:00:00Z", recordCount: 12 };
+  const { context, nodes } = metricsContext({alphaExecutionAuthorized:true, livePnlSnapshot:verified});
+  context.acceptLivePnlSnapshot({status:"partial", amount:999, accountVersion:"same-account", message:"连接中断，稍后重试"}, "futures");
+  context.renderLiveSummaryMetrics();
+  assert.equal(nodes.get("#live-realized-metric").textContent, "+12.50");
+  assert.match(nodes.get("#live-realized-detail").textContent, /上次核验.*连接中断/);
+  context.acceptLivePnlSnapshot({...verified, amount:15}, "futures");
+  context.renderLiveSummaryMetrics();
+  assert.equal(nodes.get("#live-realized-metric").textContent, "+15.00");
+  assert.doesNotMatch(nodes.get("#live-realized-detail").textContent, /上次核验|连接中断/);
+  context.acceptLivePnlSnapshot({...verified, amount:800}, "spot");
+  assert.equal(context.livePnlSnapshot.amount,15);
+  context.acceptLivePnlSnapshot({status:"unavailable",amount:null,accountVersion:"different-account"}, "futures");
+  context.renderLiveSummaryMetrics();
+  assert.equal(nodes.get("#live-realized-metric").textContent, "—", "never retain a different exchange account's amount");
+});
+
+test("incomplete PnL retries after one minute while complete income retains the idle polling interval", () => {
+  let scheduled;
+  const base = {alphaExecutionAuthorized:true, livePnlRefreshMs:900_000, livePnlRetryMs:60_000, livePnlLastAttempt:Date.now(), livePnlTimer:null,
+    window:{clearTimeout(){}, setTimeout(callback, delay){scheduled=delay;return 1;}}};
+  const {context} = metricsContext({...base, livePnlSnapshot:{status:"partial"}});
+  context.ensureLivePnlSchedule();
+  assert.ok(scheduled > 58_000 && scheduled <= 60_000);
+  context.livePnlSnapshot={status:"ready"};
+  context.ensureLivePnlSchedule();
+  assert.ok(scheduled > 898_000 && scheduled <= 900_000);
+  context.document.hidden=true;
+  scheduled=null;
+  context.ensureLivePnlSchedule();
+  assert.equal(scheduled,null);
+});
+
+test("manual PnL refresh forces a server reread and a lost session clears previously verified profit", async () => {
+  const verified = {status:"ready",asset:"USDT",amount:12,coverageComplete:true};
+  const requests=[];
+  const {context,nodes} = metricsContext({alphaExecutionAuthorized:true,livePnlSnapshot:verified,livePnlLastAttempt:0,AbortSignal,
+    executionRequest:async(path, options)=>{requests.push({path,options});return {...verified,amount:16};},
+    livePnlRefreshMs:900_000,livePnlRetryMs:60_000,livePnlTimer:null,
+    window:{clearTimeout(){},setTimeout(){return 1;}}});
+  await context.hydrateLivePnl({refresh:true});
+  assert.match(requests[0].path,/market=futures&refresh=1/);
+  assert.ok(requests[0].options.signal);
+  assert.equal(nodes.get("#live-realized-metric").textContent,"+16.00");
+  context.executionRequest=async()=>{throw Object.assign(new Error("请登录"),{status:401});};
+  await context.hydrateLivePnl();
+  assert.equal(nodes.get("#live-realized-metric").textContent,"—");
+  assert.equal(context.livePnlSnapshot,null);
+  assert.equal(context.alphaExecutionAuthorized,false);
 });
 
 test("a lost session cannot replace LIVE portfolio settlement with local Paper profit", () => {

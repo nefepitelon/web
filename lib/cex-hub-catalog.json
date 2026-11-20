@@ -1,0 +1,1750 @@
+[
+  {
+    "id": "coinbase",
+    "name": "Coinbase Exchange",
+    "centralized": true,
+    "spotId": "gdax",
+    "url": "https://www.coinbase.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "coinbase",
+    "productNotes": {
+      "derivatives": "本行仅展示 Coinbase Exchange 现货；原 International Exchange 衍生品业务已整合至 Deribit，相关指标请查看 Deribit 行。"
+    }
+  },
+  {
+    "id": "kraken",
+    "name": "Kraken",
+    "centralized": true,
+    "spotId": "kraken",
+    "derivativesIds": [
+      "kraken_futures"
+    ],
+    "url": "https://www.kraken.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "kraken"
+  },
+  {
+    "id": "okx",
+    "name": "OKX",
+    "centralized": true,
+    "spotId": "okex",
+    "derivativesIds": [
+      "okex_swap"
+    ],
+    "url": "https://www.okx.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "okx"
+  },
+  {
+    "id": "binance",
+    "name": "Binance",
+    "centralized": true,
+    "spotId": "binance",
+    "derivativesIds": [
+      "binance_futures"
+    ],
+    "url": "https://www.binance.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "binance"
+  },
+  {
+    "id": "bitget",
+    "name": "Bitget",
+    "centralized": true,
+    "spotId": "bitget",
+    "derivativesIds": [
+      "bitget_futures"
+    ],
+    "url": "https://www.bitget.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitget"
+  },
+  {
+    "id": "gate",
+    "name": "Gate",
+    "centralized": true,
+    "spotId": "gate",
+    "derivativesIds": [
+      "gate_futures"
+    ],
+    "url": "https://www.gate.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "gateio"
+  },
+  {
+    "id": "bitstamp",
+    "name": "Bitstamp by Robinhood",
+    "centralized": true,
+    "spotId": "bitstamp",
+    "derivativesIds": [
+      "bitstamp-futures"
+    ],
+    "url": "https://www.bitstamp.net/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitstamp"
+  },
+  {
+    "id": "mexc",
+    "name": "MEXC",
+    "centralized": true,
+    "spotId": "mxc",
+    "derivativesIds": [
+      "mxc_futures"
+    ],
+    "url": "https://www.mexc.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "mexc"
+  },
+  {
+    "id": "crypto-com",
+    "name": "Crypto.com Exchange",
+    "centralized": true,
+    "spotId": "crypto_com",
+    "derivativesIds": [
+      "crypto_com_futures"
+    ],
+    "url": "https://crypto.com/exchange",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "cryptocom-exchange"
+  },
+  {
+    "id": "bingx",
+    "name": "BingX",
+    "centralized": true,
+    "spotId": "bingx",
+    "derivativesIds": [
+      "bingx_futures"
+    ],
+    "url": "https://bingx.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitunix",
+    "name": "Bitunix",
+    "centralized": true,
+    "spotId": "bitunix",
+    "derivativesIds": [
+      "bitunix_futures"
+    ],
+    "url": "https://www.bitunix.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "lbank",
+    "name": "LBank",
+    "centralized": true,
+    "spotId": "lbank",
+    "derivativesIds": [
+      "lbank-futures"
+    ],
+    "url": "https://www.lbank.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "lbank"
+  },
+  {
+    "id": "hashkey",
+    "name": "HashKey Exchange",
+    "centralized": true,
+    "spotId": "hashkey",
+    "url": "https://exchange.hashkey.com/en-US/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitvavo",
+    "name": "Bitvavo",
+    "centralized": true,
+    "spotId": "bitvavo",
+    "url": "https://bitvavo.com/en",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitvavo"
+  },
+  {
+    "id": "toobit",
+    "name": "Toobit",
+    "centralized": true,
+    "spotId": "toobit",
+    "derivativesIds": [
+      "toobit_derivatives"
+    ],
+    "url": "https://www.toobit.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "toobit"
+  },
+  {
+    "id": "bitkan",
+    "name": "BitKan",
+    "centralized": true,
+    "spotId": "bitkan",
+    "derivativesIds": [
+      "bitkan-futures"
+    ],
+    "url": "https://bitkan.com/futures/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "centralized": true,
+    "spotId": "gemini",
+    "derivativesIds": [
+      "gemini_derivatives"
+    ],
+    "url": "https://www.gemini.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "gemini"
+  },
+  {
+    "id": "bitkub",
+    "name": "Bitkub",
+    "centralized": true,
+    "spotId": "bitkub",
+    "url": "https://www.bitkub.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitkub"
+  },
+  {
+    "id": "osl-exchange",
+    "name": "OSL Exchange",
+    "centralized": true,
+    "spotId": "osl-exchange",
+    "url": "https://www.osl.com/exchanges",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "weex",
+    "name": "WEEX",
+    "centralized": true,
+    "spotId": "weex",
+    "derivativesIds": [
+      "weex-futures"
+    ],
+    "url": "https://www.weex.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "weex"
+  },
+  {
+    "id": "kucoin",
+    "name": "KuCoin",
+    "centralized": true,
+    "spotId": "kucoin",
+    "derivativesIds": [
+      "kumex"
+    ],
+    "url": "https://www.kucoin.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "kucoin"
+  },
+  {
+    "id": "luno",
+    "name": "Luno",
+    "centralized": true,
+    "spotId": "luno",
+    "url": "https://www.luno.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "luno"
+  },
+  {
+    "id": "bit2me",
+    "name": "Bit2Me",
+    "centralized": true,
+    "spotId": "bit2me",
+    "url": "https://bit2me.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bullish_com",
+    "name": "Bullish",
+    "centralized": true,
+    "spotId": "bullish_com",
+    "derivativesIds": [
+      "bullish-futures"
+    ],
+    "url": "https://bullish.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bullish"
+  },
+  {
+    "id": "coinw",
+    "name": "CoinW",
+    "centralized": true,
+    "spotId": "coinw",
+    "derivativesIds": [
+      "coinw_futures"
+    ],
+    "url": "https://www.coinw.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "coinw"
+  },
+  {
+    "id": "niza-global",
+    "name": "Niza.io",
+    "centralized": true,
+    "spotId": "niza-global",
+    "url": "https://niza.io/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "upbit",
+    "name": "Upbit",
+    "centralized": true,
+    "spotId": "upbit",
+    "url": "https://upbit.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "upbit"
+  },
+  {
+    "id": "bitbank",
+    "name": "Bitbank",
+    "centralized": true,
+    "spotId": "bitbank",
+    "url": "https://bitbank.cc/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitbank"
+  },
+  {
+    "id": "whitebit",
+    "name": "WhiteBIT",
+    "centralized": true,
+    "spotId": "whitebit",
+    "derivativesIds": [
+      "whitebit_futures"
+    ],
+    "url": "https://whitebit.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "whitebit"
+  },
+  {
+    "id": "bitazza",
+    "name": "Bitazza",
+    "centralized": true,
+    "spotId": "bitazza",
+    "url": "https://trade.bitazza.com/gl/exchange/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitso",
+    "name": "Bitso",
+    "centralized": true,
+    "spotId": "bitso",
+    "url": "https://bitso.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitso"
+  },
+  {
+    "id": "byte-exchange",
+    "name": "Byte Exchange",
+    "centralized": true,
+    "spotId": "byte-exchange",
+    "url": "https://bexc.io/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "binance_us",
+    "name": "Binance US",
+    "centralized": true,
+    "spotId": "binance_us",
+    "url": "https://www.binance.us/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "binance-us"
+  },
+  {
+    "id": "coinstore",
+    "name": "Coinstore",
+    "centralized": true,
+    "spotId": "coinstore",
+    "url": "https://www.coinstore.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "coinstore"
+  },
+  {
+    "id": "bybit",
+    "name": "Bybit",
+    "centralized": true,
+    "spotId": "bybit_spot",
+    "derivativesIds": [
+      "bybit"
+    ],
+    "url": "https://www.bybit.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bybit-spot"
+  },
+  {
+    "id": "btse",
+    "name": "BTSE",
+    "centralized": true,
+    "spotId": "btse",
+    "derivativesIds": [
+      "btse_futures"
+    ],
+    "url": "https://www.btse.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "btse"
+  },
+  {
+    "id": "bitrue",
+    "name": "Bitrue",
+    "centralized": true,
+    "spotId": "bitrue",
+    "derivativesIds": [
+      "bitrue_futures"
+    ],
+    "url": "https://www.bitrue.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitrue"
+  },
+  {
+    "id": "valr",
+    "name": "VALR",
+    "centralized": true,
+    "spotId": "valr",
+    "derivativesIds": [
+      "valr-futures"
+    ],
+    "url": "https://www.valr.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "valr"
+  },
+  {
+    "id": "p2pb2b",
+    "name": "P2B",
+    "centralized": true,
+    "spotId": "p2pb2b",
+    "url": "https://p2pb2b.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "p2b"
+  },
+  {
+    "id": "ourbit",
+    "name": "Ourbit",
+    "centralized": true,
+    "spotId": "ourbit",
+    "derivativesIds": [
+      "ourbit-futures"
+    ],
+    "url": "https://www.ourbit.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "ourbit"
+  },
+  {
+    "id": "gmo_japan",
+    "name": "GMO Coin Japan",
+    "centralized": true,
+    "spotId": "gmo_japan",
+    "url": "https://coin.z.com/jp/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "paribu",
+    "name": "Paribu",
+    "centralized": true,
+    "spotId": "paribu",
+    "url": "https://www.paribu.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "coinspro",
+    "name": "Coins.ph",
+    "centralized": true,
+    "spotId": "coinspro",
+    "url": "https://coins.ph/about",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bithumb",
+    "name": "Bithumb",
+    "centralized": true,
+    "spotId": "bithumb",
+    "url": "https://www.bithumb.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bithumb"
+  },
+  {
+    "id": "pionex",
+    "name": "Pionex",
+    "centralized": true,
+    "spotId": "pionex",
+    "url": "https://www.pionex.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "pionex"
+  },
+  {
+    "id": "levex",
+    "name": "LeveX",
+    "centralized": true,
+    "spotId": "levex",
+    "derivativesIds": [
+      "levex-futures"
+    ],
+    "url": "https://levex.com/en",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "deepcoin",
+    "name": "Deepcoin",
+    "centralized": true,
+    "spotId": "deepcoin",
+    "derivativesIds": [
+      "deepcoin_derivatives"
+    ],
+    "url": "https://www.deepcoin.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "cointr",
+    "name": "CoinTR",
+    "centralized": true,
+    "spotId": "cointr",
+    "url": "https://www.cointr.com/tr",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "huobi_japan",
+    "name": "BitTrade",
+    "centralized": true,
+    "spotId": "huobi_japan",
+    "url": "https://www.bittrade.co.jp/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "htx",
+    "name": "HTX",
+    "centralized": true,
+    "spotId": "huobi",
+    "derivativesIds": [
+      "huobi_dm"
+    ],
+    "url": "https://www.htx.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "htx"
+  },
+  {
+    "id": "hotcoin_global",
+    "name": "Hotcoin",
+    "centralized": true,
+    "spotId": "hotcoin_global",
+    "derivativesIds": [
+      "hotcoin-futures"
+    ],
+    "url": "https://www.hotcoin.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "biconomy",
+    "name": "Biconomy.com",
+    "centralized": true,
+    "spotId": "biconomy",
+    "derivativesIds": [
+      "biconomy-futures"
+    ],
+    "url": "https://www.biconomy.com/en",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "biconomy"
+  },
+  {
+    "id": "hibt",
+    "name": "Hibt",
+    "centralized": true,
+    "spotId": "hibt",
+    "url": "https://hibt.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitfinex",
+    "name": "Bitfinex",
+    "centralized": true,
+    "spotId": "bitfinex",
+    "derivativesIds": [
+      "bitfinex_futures"
+    ],
+    "url": "https://www.bitfinex.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitfinex"
+  },
+  {
+    "id": "xt",
+    "name": "XT.COM",
+    "centralized": true,
+    "spotId": "xt",
+    "derivativesIds": [
+      "xt_derivatives"
+    ],
+    "url": "https://www.xt.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "xt"
+  },
+  {
+    "id": "bitopro",
+    "name": "BitoPro",
+    "centralized": true,
+    "spotId": "bitopro",
+    "url": "https://www.bitopro.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitopro"
+  },
+  {
+    "id": "backpack",
+    "name": "Backpack Exchange",
+    "centralized": true,
+    "spotId": "backpack_exchange",
+    "derivativesIds": [
+      "backpack-futures"
+    ],
+    "url": "https://backpack.exchange/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bybit-eu",
+    "name": "Bybit EU",
+    "centralized": true,
+    "spotId": "bybit-eu",
+    "url": "https://www.bybit.eu/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "webot",
+    "name": "Webot",
+    "centralized": true,
+    "spotId": "webot",
+    "url": "https://www.webot.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "xbo_com",
+    "name": "XBO.com",
+    "centralized": true,
+    "spotId": "xbo_com",
+    "url": "https://www.xbo.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "deribit",
+    "name": "Deribit",
+    "centralized": true,
+    "spotId": "deribit_spot",
+    "derivativesIds": [
+      "deribit"
+    ],
+    "url": "https://www.deribit.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "phemex",
+    "name": "Phemex",
+    "centralized": true,
+    "spotId": "phemex",
+    "derivativesIds": [
+      "phemex_futures"
+    ],
+    "url": "https://phemex.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "phemex"
+  },
+  {
+    "id": "bittime",
+    "name": "Bittime",
+    "centralized": true,
+    "spotId": "bittime",
+    "url": "https://www.bittime.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "btcturk",
+    "name": "BtcTurk | Kripto",
+    "centralized": true,
+    "spotId": "btcturk",
+    "url": "https://kripto.btcturk.com/en",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "btcturk"
+  },
+  {
+    "id": "zoomex",
+    "name": "Zoomex",
+    "centralized": true,
+    "spotId": "zoomex",
+    "derivativesIds": [
+      "zoomex-futures"
+    ],
+    "url": "https://www.zoomex.com/en-US/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "cex",
+    "name": "CEX.IO",
+    "centralized": true,
+    "spotId": "cex",
+    "url": "https://trade.cex.io/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "cexio"
+  },
+  {
+    "id": "bvox",
+    "name": "BVOX",
+    "centralized": true,
+    "spotId": "bitvenus_spot",
+    "derivativesIds": [
+      "bitvenus"
+    ],
+    "url": "https://www.bvox.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitlo",
+    "name": "Bitlo",
+    "centralized": true,
+    "spotId": "bitlo",
+    "url": "https://www.bitlo.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "kcex",
+    "name": "KCEX",
+    "centralized": true,
+    "spotId": "kcex",
+    "derivativesIds": [
+      "kcex-futures"
+    ],
+    "url": "https://kcex.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "kcex"
+  },
+  {
+    "id": "korbit",
+    "name": "Digital X",
+    "centralized": true,
+    "spotId": "korbit",
+    "url": "https://digitalx.miraeasset.com/trade",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "coinzoom",
+    "name": "Coinzoom",
+    "centralized": true,
+    "spotId": "coinzoom",
+    "url": "https://www.coinzoom.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bydfi",
+    "name": "BYDFi",
+    "centralized": true,
+    "spotId": "bydfi",
+    "derivativesIds": [
+      "bydfi-futures"
+    ],
+    "url": "https://www.bydfi.com/en",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bydfi-spot"
+  },
+  {
+    "id": "aivora-exchange",
+    "name": "Aivora Exchange",
+    "centralized": true,
+    "spotId": "aivora-exchange",
+    "url": "https://www.aivora.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "gate_us",
+    "name": "Gate US",
+    "centralized": true,
+    "spotId": "gate_us",
+    "url": "https://www.gate.com/en-us",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "pointpay",
+    "name": "PointPay",
+    "centralized": true,
+    "spotId": "pointpay",
+    "url": "https://exchange.pointpay.io/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "tdax",
+    "name": "Orbix",
+    "centralized": true,
+    "spotId": "tdax",
+    "url": "https://www.orbixtrade.com/en",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "blofin",
+    "name": "BloFin",
+    "centralized": true,
+    "spotId": "blofin_spot",
+    "derivativesIds": [
+      "blofin"
+    ],
+    "url": "https://blofin.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "tokpie",
+    "name": "Tokpie",
+    "centralized": true,
+    "spotId": "tokpie",
+    "url": "https://tokpie.io/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "tokpie"
+  },
+  {
+    "id": "bitdelta",
+    "name": "BitDelta",
+    "centralized": true,
+    "spotId": "bitdelta",
+    "url": "https://bitdelta.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "hata",
+    "name": "Hata",
+    "centralized": true,
+    "spotId": "hata",
+    "url": "https://hata.io/home",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitpanda",
+    "name": "One Trading",
+    "centralized": true,
+    "spotId": "bitpanda",
+    "url": "https://exchange.onetrading.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "poloniex",
+    "name": "Poloniex",
+    "centralized": true,
+    "spotId": "poloniex",
+    "url": "https://poloniex.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "poloniex"
+  },
+  {
+    "id": "websea",
+    "name": "Websea",
+    "centralized": true,
+    "spotId": "websea",
+    "url": "https://www.websea.com/en",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "tapbit",
+    "name": "Tapbit",
+    "centralized": true,
+    "spotId": "tapbit",
+    "derivativesIds": [
+      "tapbit-futures"
+    ],
+    "url": "https://www.tapbit.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "coinjar",
+    "name": "CoinJar Exchange",
+    "centralized": true,
+    "spotId": "coinjar",
+    "url": "https://www.coinjar.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "max_maicoin",
+    "name": "Max Maicoin",
+    "centralized": true,
+    "spotId": "max_maicoin",
+    "url": "https://max.maicoin.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "maicoin-asset-exchange"
+  },
+  {
+    "id": "coincheck",
+    "name": "Coincheck",
+    "centralized": true,
+    "spotId": "coincheck",
+    "url": "https://coincheck.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "coincheck"
+  },
+  {
+    "id": "toko_crypto",
+    "name": "TokoCrypto",
+    "centralized": true,
+    "spotId": "toko_crypto",
+    "url": "https://tokocrypto.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "paymium",
+    "name": "Paymium",
+    "centralized": true,
+    "spotId": "paymium",
+    "url": "https://www.paymium.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "paymium"
+  },
+  {
+    "id": "blockchain_com",
+    "name": "Blockchain.com",
+    "centralized": true,
+    "spotId": "blockchain_com",
+    "url": "https://www.blockchain.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitflyer",
+    "name": "bitFlyer",
+    "centralized": true,
+    "spotId": "bitflyer",
+    "url": "https://bitflyer.com/en-eu/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitflyer"
+  },
+  {
+    "id": "wazirx",
+    "name": "WazirX",
+    "centralized": true,
+    "spotId": "wazirx",
+    "url": "https://wazirx.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "wazirx"
+  },
+  {
+    "id": "azbit",
+    "name": "Azbit",
+    "centralized": true,
+    "spotId": "azbit",
+    "url": "https://azbit.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "azbit"
+  },
+  {
+    "id": "indodax",
+    "name": "Indodax",
+    "centralized": true,
+    "spotId": "indodax",
+    "url": "https://indodax.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "indodax"
+  },
+  {
+    "id": "bigone",
+    "name": "BigONE",
+    "centralized": true,
+    "spotId": "bigone",
+    "derivativesIds": [
+      "bigone_futures"
+    ],
+    "url": "https://bigone.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bigone"
+  },
+  {
+    "id": "cryptology",
+    "name": "Tothemoon",
+    "centralized": true,
+    "spotId": "cryptology",
+    "url": "https://tothemoon.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "zaif",
+    "name": "Zaif",
+    "centralized": true,
+    "spotId": "zaif",
+    "url": "https://zaif.jp/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "earnbit",
+    "name": "EarnBIT",
+    "centralized": true,
+    "spotId": "earnbit",
+    "url": "https://earnbit.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "changelly",
+    "name": "Changelly PRO",
+    "centralized": true,
+    "spotId": "changelly",
+    "url": "https://pro.changelly.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "changelly-pro"
+  },
+  {
+    "id": "bitcoin_com",
+    "name": "FMFW.io",
+    "centralized": true,
+    "spotId": "bitcoin_com",
+    "url": "https://fmfw.io/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "fmfwio"
+  },
+  {
+    "id": "coinone",
+    "name": "Coinone",
+    "centralized": true,
+    "spotId": "coinone",
+    "url": "https://coinone.co.kr/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "coinone"
+  },
+  {
+    "id": "btcmarkets",
+    "name": "BTC Markets",
+    "centralized": true,
+    "spotId": "btcmarkets",
+    "url": "https://www.btcmarkets.net/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "btc-markets"
+  },
+  {
+    "id": "dextrade",
+    "name": "Dex-Trade",
+    "centralized": true,
+    "spotId": "dextrade",
+    "url": "https://dex-trade.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "dex-trade"
+  },
+  {
+    "id": "kanga",
+    "name": "Kanga Global",
+    "centralized": true,
+    "spotId": "kanga",
+    "url": "https://kanga.global/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "kanga-exchange"
+  },
+  {
+    "id": "young-platform",
+    "name": "Young Platform",
+    "centralized": true,
+    "spotId": "young-platform",
+    "url": "https://youngplatform.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitexlive",
+    "name": "Bitexlive",
+    "centralized": true,
+    "spotId": "bitexlive",
+    "url": "https://bitexlive.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bitexlive"
+  },
+  {
+    "id": "bitexen",
+    "name": "Bitexen",
+    "centralized": true,
+    "spotId": "bitexen",
+    "url": "https://www.bitexen.com/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "kinesis_money",
+    "name": "Kinesis Money",
+    "centralized": true,
+    "spotId": "kinesis_money",
+    "url": "https://kinesis.money/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "delta-exchange",
+    "name": "Delta Exchange",
+    "centralized": true,
+    "spotId": "delta_spot",
+    "derivativesIds": [
+      "delta_futures"
+    ],
+    "url": "https://www.delta.exchange/app/spot/trade/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitbaby-exchange",
+    "name": "Bitbaby",
+    "centralized": true,
+    "spotId": "bitbaby-exchange",
+    "url": "https://www.bitbaby.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "grovex",
+    "name": "GroveX",
+    "centralized": true,
+    "spotId": "grovex",
+    "url": "https://grovex.io/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "coindcx",
+    "name": "CoinDCX",
+    "centralized": true,
+    "spotId": "coindcx",
+    "url": "https://www.coindcx.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bit2c",
+    "name": "Bit2c",
+    "centralized": true,
+    "spotId": "bit2c",
+    "url": "https://bit2c.co.il/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bit2c"
+  },
+  {
+    "id": "buda",
+    "name": "Buda",
+    "centralized": true,
+    "spotId": "buda",
+    "url": "https://www.buda.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "upbit_indonesia",
+    "name": "Upbit Indonesia",
+    "centralized": true,
+    "spotId": "upbit_indonesia",
+    "url": "https://id.upbit.com/home",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "icrypex",
+    "name": "Icrypex",
+    "centralized": true,
+    "spotId": "icrypex",
+    "url": "https://www.icrypex.com/en",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "icrypex"
+  },
+  {
+    "id": "chainex",
+    "name": "ChainEX",
+    "centralized": true,
+    "spotId": "chainex",
+    "url": "https://chainex.io/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "nonkyc_io",
+    "name": "Nonkyc.io",
+    "centralized": true,
+    "spotId": "nonkyc_io",
+    "url": "https://nonkyc.io/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "nonkycio"
+  },
+  {
+    "id": "bitcastle",
+    "name": "bitcastle",
+    "centralized": true,
+    "spotId": "bitcastle",
+    "url": "https://bitcastle.io/en",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "exmo",
+    "name": "EXMO",
+    "centralized": true,
+    "spotId": "exmo",
+    "url": "https://exmo.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "exmo"
+  },
+  {
+    "id": "inx_one",
+    "name": "INX One",
+    "centralized": true,
+    "spotId": "inx_one",
+    "url": "https://www.inx.co/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "orangex",
+    "name": "OrangeX",
+    "centralized": true,
+    "spotId": "orangex",
+    "derivativesIds": [
+      "orangex_futures"
+    ],
+    "url": "https://www.orangex.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "hitbtc",
+    "name": "HitBTC",
+    "centralized": true,
+    "spotId": "hitbtc",
+    "derivativesIds": [
+      "hitbtc_derivatives"
+    ],
+    "url": "https://hitbtc.com/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "hitbtc"
+  },
+  {
+    "id": "koinbazar",
+    "name": "KoinBX",
+    "centralized": true,
+    "spotId": "koinbazar",
+    "url": "https://koinbx.com/coin-list",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "koinbx"
+  },
+  {
+    "id": "btcc",
+    "name": "BTCC",
+    "centralized": true,
+    "spotId": "btcc",
+    "url": "https://www.btcc.com/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "imbx",
+    "name": "IMBX",
+    "centralized": true,
+    "spotId": "imbx",
+    "url": "https://www.imbx.io/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitci",
+    "name": "SAFEbit",
+    "centralized": true,
+    "spotId": "bitci",
+    "url": "https://www.safebit.com.tr/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "nbx",
+    "name": "NBX",
+    "centralized": true,
+    "spotId": "nbx",
+    "url": "https://nbx.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "woo-x",
+    "name": "WOO X",
+    "centralized": true,
+    "spotId": "wootrade",
+    "derivativesIds": [
+      "woo_network_futures"
+    ],
+    "url": "https://woox.io/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "mudrex",
+    "name": "Mudrex",
+    "centralized": true,
+    "spotId": "mudrex",
+    "url": "https://mudrex.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "mudrex"
+  },
+  {
+    "id": "zebpay",
+    "name": "ZebPay",
+    "centralized": true,
+    "spotId": "zebpay",
+    "url": "https://www.zebpay.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "btc_alpha",
+    "name": "ALP.COM",
+    "centralized": true,
+    "spotId": "btc_alpha",
+    "url": "https://alp.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "fameex",
+    "name": "FameEX",
+    "centralized": true,
+    "spotId": "fameex",
+    "url": "https://www.fameex.com/en-US",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "foxbit",
+    "name": "Foxbit",
+    "centralized": true,
+    "spotId": "foxbit",
+    "url": "https://foxbit.com.br/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "foxbit"
+  },
+  {
+    "id": "coinup",
+    "name": "CoinUp.io",
+    "centralized": true,
+    "spotId": "coinup",
+    "derivativesIds": [
+      "coinup-futures"
+    ],
+    "url": "https://www.coinup.io/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "cryptal",
+    "name": "Cryptal",
+    "centralized": true,
+    "spotId": "cryptal",
+    "url": "https://cryptal.com/en",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "catex",
+    "name": "Catex",
+    "centralized": true,
+    "spotId": "catex",
+    "url": "https://www.catex.io/",
+    "color": "#66acbd",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "catex"
+  },
+  {
+    "id": "bitbegin",
+    "name": "Bitbegin",
+    "centralized": true,
+    "spotId": "bitbegin",
+    "url": "https://bitbegin.io/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "vindax",
+    "name": "Vindax",
+    "centralized": true,
+    "spotId": "vindax",
+    "url": "https://vindax.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "vindax"
+  },
+  {
+    "id": "safe_trade",
+    "name": "SafeTrade",
+    "centralized": true,
+    "spotId": "safe_trade",
+    "url": "https://safetrade.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "safetrade"
+  },
+  {
+    "id": "bilaxy",
+    "name": "Bilaxy",
+    "centralized": true,
+    "spotId": "bilaxy",
+    "url": "https://bilaxy.com/",
+    "color": "#9fc86a",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "bilaxy"
+  },
+  {
+    "id": "secondbtc",
+    "name": "SecondBTC",
+    "centralized": true,
+    "spotId": "secondbtc",
+    "url": "https://secondbtc.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08",
+    "coinpaprikaId": "secondbtc"
+  },
+  {
+    "id": "globe_exchange",
+    "name": "Globe",
+    "centralized": true,
+    "spotId": "globe_exchange",
+    "derivativesIds": [
+      "globe_exchange_derivatives"
+    ],
+    "url": "https://globe.exchange/",
+    "color": "#6ab7a6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges?page=2",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "prime-xbt",
+    "name": "PrimeXBT",
+    "centralized": true,
+    "derivativesIds": [
+      "prime_xbt"
+    ],
+    "url": "https://primexbt.com/",
+    "color": "#c49d5e",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/prime_xbt",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "flipster",
+    "name": "Flipster",
+    "centralized": true,
+    "derivativesIds": [
+      "aqx_derivatives"
+    ],
+    "url": "https://flipster.io/",
+    "color": "#9476c8",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/aqx_derivatives",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitmex",
+    "name": "BitMEX",
+    "centralized": true,
+    "derivativesIds": [
+      "bitmex"
+    ],
+    "url": "https://www.bitmex.com/",
+    "color": "#cf7b8b",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/bitmex",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "bitmart",
+    "name": "BitMart",
+    "centralized": true,
+    "derivativesIds": [
+      "bitmart_futures"
+    ],
+    "url": "https://www.bitmart.com/",
+    "color": "#66acbd",
+    "excludedYearValues": [
+      1996
+    ],
+    "metadataEvidenceUrl": "https://www.bitmart.com/en-US/support/articles/7922665245339/39162120325403/50420037790619",
+    "metadataEvidenceAsOf": "2026-11-08",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/bitmart_futures",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "coinex",
+    "name": "CoinEx",
+    "centralized": true,
+    "derivativesIds": [
+      "coinex_futures"
+    ],
+    "url": "https://www.coinex.com/",
+    "color": "#8eaf67",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/coinex_futures",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "hashkey-global",
+    "name": "HashKey Global",
+    "centralized": true,
+    "derivativesIds": [
+      "hashkey-global-futures"
+    ],
+    "url": "https://global.hashkey.com/",
+    "color": "#b79469",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/hashkey-global-futures",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "kalshi",
+    "name": "Kalshi",
+    "centralized": true,
+    "derivativesIds": [
+      "kalshi"
+    ],
+    "url": "https://kalshi.com/",
+    "color": "#8493b6",
+    "classificationSourceUrl": "https://www.coingecko.com/en/exchanges/kalshi",
+    "metadataAsOf": "2026-11-08"
+  },
+  {
+    "id": "coincall",
+    "name": "Coincall",
+    "centralized": true,
+    "derivativesIds": [
+      "coincall"
+    ],
+    "url": "https://www.coincall.com/",
+    "color": "#659ed6",
+    "classificationSourceUrl": "https://support.coincall.com/hc/en-us/articles/16530592375705-About-Coincall",
+    "metadataAsOf": "2026-11-08"
+  }
+]

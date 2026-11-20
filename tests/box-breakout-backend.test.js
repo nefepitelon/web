@@ -4,6 +4,7 @@ const Module = require("node:module");
 require("tsx/cjs");
 const { Prisma } = require("@prisma/client");
 let rows, starts, analysisCalls, failingSymbols, viewer, active, startFails, universeError, quickError, quickEmpty, progressStates, prepareAttempt, radarCalls, radarError, snapshotReads;
+const rateKeys = [];
 const clone = value => value === undefined ? undefined : structuredClone(value);
 function reset() { rows = new Map(); starts = []; analysisCalls = 0; failingSymbols = new Set(); viewer = null; active = true; startFails = false; universeError = null; quickError = null; quickEmpty = false; progressStates = []; prepareAttempt = 1; radarCalls = []; radarError = null; snapshotReads = 0; }
 function match(row, where) {
@@ -51,7 +52,7 @@ const originalLoad = Module._load;
 Module._load = function (name, parent, main) {
   if (name === "server-only") return {};
   if (name === "@/lib/prisma") return { prisma, isDatabaseConfigured: () => true };
-  if (name === "@/lib/rate-limit") return { checkRateLimit: async () => ({ allowed: true }) };
+  if (name === "@/lib/rate-limit") return { checkRateLimit: async key => { rateKeys.push(key); return { allowed: true }; } };
   if (name === "@/lib/membership") return { getViewer: async () => viewer };
   if (name === "@/lib/alpha-execution/credentials") return { encryptTradingSecret: value => `encrypted:${value}`, decryptTradingSecret: value => value.replace("encrypted:", "") };
   if (name === "workflow/api") return { start: async (...args) => { if (startFails) throw new Error("fixture queue unavailable"); starts.push(args); return { runId: `run-${starts.length}` }; } };
@@ -83,6 +84,19 @@ workflowModule.filename = workflowPath; workflowModule.paths = module.paths;
 workflowModule._compile(ts.transpileModule(require("node:fs").readFileSync(workflowPath, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, workflowPath);
 const workflow = workflowModule.exports;
 const commandRequest = body => new Request("https://example.test/api/box-breakout", { method: "POST", headers: { Origin: "https://example.test", "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+test("box rate limiting ignores spoofed forwarding headers outside a trusted proxy", async () => {
+  const previous = { VERCEL: process.env.VERCEL, TRUST_PROXY_HEADERS: process.env.TRUST_PROXY_HEADERS };
+  const before = rateKeys.length;
+  try {
+    delete process.env.VERCEL; delete process.env.TRUST_PROXY_HEADERS;
+    for (const ip of ["192.0.2.1", "198.51.100.2"]) await service.limitRequests(new Request("https://example.test/api/box-breakout", { headers: { "x-forwarded-for": ip } }), "test-spoof", 10);
+    assert.equal(rateKeys[before], rateKeys[before + 1]);
+    assert.match(rateKeys[before], /^box:test-spoof:[a-f0-9]{32}$/);
+  } finally {
+    for (const [name, value] of Object.entries(previous)) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }
+  }
+});
 
 test("box defaults are guest-readable, schedule off, secrets never serialized", async () => {
   reset();

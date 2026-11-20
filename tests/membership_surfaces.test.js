@@ -248,7 +248,8 @@ test("shared navigation opens a standalone database-backed research newsroom", a
   assert.match(composer, /name="externalUrl"/);
   assert.match(card, /readingMinutes/);
   assert.match(card, /toggleResearchBookmarkAction/);
-  assert.match(articlePage, /function canRead/);
+  assert.match(articlePage, /import \{ canManageResearch, canReadResearch \} from "@\/lib\/research-access"/);
+  assert.match(articlePage, /canReadResearch\(article\.access, viewer\)/);
   assert.match(articlePage, /<ResearchBody body=\{article\.body\}/);
   assert.match(articlePage, /<ResearchExternalReader/);
   assert.match(articlePage, /createResearchCommentAction/);

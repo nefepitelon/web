@@ -2,11 +2,47 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "dashboard.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "dashboard.css"), "utf8");
 const js = fs.readFileSync(path.join(root, "dashboard.js"), "utf8");
+
+test("section navigation retains a tall intersecting section when a shorter section exits in a later observer batch", () => {
+  const start = js.indexOf("const sectionIntersections =");
+  const end = js.indexOf("const watermarkStages =", start);
+  assert.ok(start >= 0 && end > start);
+  const targets = ["overview", "address-balance-flow", "market-heatmap", "onchain-carousel"].map(id => ({ id }));
+  const links = targets.map(target => ({ dataset: { sectionLink: target.id }, active: false,
+    classList: { toggle(_name, selected) { this.owner.active = selected; } } }));
+  links.forEach(link => { link.classList.owner = link; });
+  let notify;
+  const observed = [];
+  vm.runInNewContext(js.slice(start, end), {
+    IntersectionObserver: class {
+      constructor(callback) { notify = callback; }
+      observe(target) { observed.push(target.id); }
+    },
+    document: { querySelectorAll(selector) { return selector === "[data-section-link]" ? links : targets; } }
+  });
+  assert.ok(observed.includes("market-heatmap"));
+  const entry = (id, intersectionRatio, isIntersecting = true) => ({ target: targets.find(target => target.id === id), intersectionRatio, isIntersecting });
+  const active = () => links.filter(link => link.active).map(link => link.dataset.sectionLink);
+
+  // The heatmap is taller, so its ratio remains below the next 0.1 threshold.
+  notify([entry("address-balance-flow", .13), entry("market-heatmap", .07)]);
+  assert.deepEqual(active(), ["address-balance-flow"]);
+  // Only the leaving section changed; the heatmap will not receive another entry.
+  notify([entry("address-balance-flow", 0, false)]);
+  assert.deepEqual(active(), ["market-heatmap"]);
+  notify([entry("onchain-carousel", .2)]);
+  assert.deepEqual(active(), ["onchain-carousel"]);
+  notify([entry("onchain-carousel", 0, false)]);
+  assert.deepEqual(active(), ["market-heatmap"]);
+  notify([entry("market-heatmap", 0, false), entry("address-balance-flow", .13)]);
+  assert.deepEqual(active(), ["address-balance-flow"]);
+});
 
 test("cycle pulse gauges sit above the valuation matrix and use live dashboard metrics", () => {
   assert.ok(html.indexOf('id="cycle-pulse"') < html.indexOf('id="valuation"'));
@@ -20,16 +56,19 @@ test("cycle pulse gauges sit above the valuation matrix and use live dashboard m
   assert.match(js, /metricSnapshot\.funding/);
 });
 
-test("valuation cards present explanations before daily source metadata", () => {
-  const firstCard = html.slice(html.indexOf('class="signal-card"'), html.indexOf('class="signal-card"', html.indexOf('class="signal-card"') + 1));
-  assert.ok(firstCard.indexOf('class="signal-explanation"') < firstCard.indexOf('class="signal-frequency"'));
+test("compact valuation and derivatives cards omit source footers and retain explanations and values", () => {
+  const valuation = html.slice(html.indexOf('id="valuation"'), html.indexOf('id="network"'));
+  const derivatives = html.slice(html.indexOf('class="terminal-section derivatives-section"'), html.indexOf('id="charts"'));
+  assert.equal((valuation.match(/class="signal-explanation"/g) || []).length, 6);
+  assert.doesNotMatch(valuation, /signal-frequency|id="(?:balanced|mvrv-z|nupl|sopr|puell|profit-supply)-source"/);
+  assert.doesNotMatch(derivatives, /<em|id="[^"]+-source"/);
+  assert.equal((derivatives.match(/<strong id=/g) || []).length, 5);
   assert.match(css, /\.signal-card > p\.signal-explanation/);
-  assert.match(css, /\.signal-card > em\.signal-frequency/);
 });
 
 test("trend index navigates all chart panels and adapts to narrow screens", () => {
   const panelIds = [...html.matchAll(/<article class="chart-panel[^>]+id="([^"]+-panel)"/g)].map((match) => match[1]);
-  assert.equal(panelIds.length, 34);
+  assert.equal(panelIds.length, 35);
   assert.match(html, /id="trend-index-list"/);
   assert.match(js, /const setupTrendNavigator = \(\) =>/);
   assert.match(js, /const getTrendScrollOffset = \(\) =>/);
@@ -80,6 +119,6 @@ test("wide dashboard containers use more desktop width and shorter chart stages"
 });
 
 test("dashboard assets use the latest matching cache key", () => {
-  assert.match(html, /dashboard\.css\?v=20260917-mvrv-zscore-watermark-v2/);
-  assert.match(html, /dashboard\.js\?v=20260917-mvrv-zscore-watermark-v2/);
+  assert.match(html, /dashboard\.css\?v=20261110-cycle-seasons-v1/);
+  assert.match(html, /dashboard\.js\?v=20261116-dashboard-interactions-scrollspy-v3/);
 });

@@ -1,5 +1,5 @@
 (() => {
-  const INTERVAL = 6_000;
+  const INTERVAL = 3_000;
   const isEnglish = () => document.documentElement.lang.toLowerCase().startsWith("en");
   const localized = (zh, en) => isEnglish() ? en : zh;
 

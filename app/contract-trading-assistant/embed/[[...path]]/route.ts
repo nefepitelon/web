@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { EXTERNAL_EMBED_CSP } from "@/lib/external-embed-security";
 
 const UPSTREAM_ORIGIN = "https://tcv2.qianyubtc.com";
 const EMBED_BASE = "/contract-trading-assistant/embed/";
@@ -24,7 +25,8 @@ function proxyHeaders(contentType: string | null) {
     "Cache-Control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
     "Access-Control-Allow-Origin": "*",
     "Cross-Origin-Resource-Policy": "cross-origin",
-    "X-Content-Type-Options": "nosniff"
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": EXTERNAL_EMBED_CSP
   };
 }
 
@@ -38,6 +40,8 @@ async function preloadPageFragments(html: string) {
     PAGE_FRAGMENTS.map(async ({ page }) => {
       const response = await fetch(new URL(`/pages/${page}.html`, UPSTREAM_ORIGIN), {
         cache: "no-store",
+        redirect: "error",
+        signal: AbortSignal.timeout(20_000),
         headers: { "User-Agent": "welinkBTC Contract Assistant Embed/1.0" }
       });
       if (!response.ok) throw new Error(`Unable to preload contract assistant page: ${page}`);
@@ -64,7 +68,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const upstream = await fetch(upstreamUrl, {
     cache: "no-store",
-    redirect: "follow",
+    redirect: "error",
+    signal: AbortSignal.timeout(20_000),
     headers: {
       Accept: request.headers.get("accept") || "*/*",
       "User-Agent": "welinkBTC Contract Assistant Embed/1.0"

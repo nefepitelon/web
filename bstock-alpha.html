@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="bstock-alpha.css?v=20260826-ledger-reports-v3" />
     <link rel="stylesheet" href="bstock-alpha-ui.css?v=20260904-ui-system-v1" />
-    <link rel="stylesheet" href="bstock-autotrade.css?v=20260909-manual-ignore-v1" />
+    <link rel="stylesheet" href="bstock-autotrade.css?v=20261024-hot-grid-v2" />
     <link rel="stylesheet" href="bstock-equity-panel.css?v=20260904-equity-panel-v2" />
   </head>
   <body data-theme="dark">
@@ -121,14 +121,13 @@
           <label class="token-search"><span aria-hidden="true"></span><input id="token-search" type="search" placeholder="搜索 bStock" /></label>
           <div class="universe-tabs" role="tablist">
             <button class="active" data-universe-filter="all" type="button">全部 <em>—</em></button>
-            <button data-universe-filter="weekly" type="button">周机会 <em>—</em></button>
+            <button data-universe-filter="weekly" type="button">热门 <em>—</em></button>
             <button data-universe-filter="stock" type="button">个股 <em>—</em></button>
             <button data-universe-filter="etf" type="button">ETF <em>—</em></button>
-            <button data-universe-filter="recommended" type="button">推荐 <em>0</em></button>
             <button data-universe-filter="watchlist" type="button">自选 <em>0</em></button>
           </div>
           <div class="token-list" id="token-list"><div class="universe-empty">正在载入持久化 bStock 注册表…</div></div>
-          <footer class="universe-foot"><span><i></i><b id="eligibility-week">固定清单与周机会核验中</b></span><span class="universe-foot-actions"><button id="restore-weekly-opportunities" type="button" hidden>恢复已移除</button><button id="show-eligibility" type="button">查看规则</button></span></footer>
+          <footer class="universe-foot"><span><i></i><b id="eligibility-week">固定清单与热门标的核验中</b></span><span class="universe-foot-actions"><button id="restore-weekly-opportunities" type="button" hidden>恢复已移除</button><button id="show-eligibility" type="button">查看规则</button></span></footer>
         </aside>
 
         <section class="panel research-panel">
@@ -211,19 +210,6 @@
         </aside>
       </section>
 
-      <section class="cycle-panel panel" aria-label="策略闭环">
-        <header><div><span class="panel-kicker">CONTROLLED EXECUTION LOOP</span><h2>从研究到落袋</h2></div><p>模型无下单权限 · Risk Engine 拥有一票否决</p></header>
-        <ol class="cycle-flow">
-          <li><span>01</span><i></i><div><strong>DISCOVER</strong><small>合格清单</small></div></li>
-          <li><span>02</span><i></i><div><strong>RESEARCH</strong><small>双 AI 证据</small></div></li>
-          <li><span>03</span><i></i><div><strong>DECIDE</strong><small>确定性评分</small></div></li>
-          <li><span>04</span><i></i><div><strong>RISK</strong><small>六项硬门槛</small></div></li>
-          <li><span>05</span><i></i><div><strong>EXECUTE</strong><small>Agentic Wallet</small></div></li>
-          <li><span>06</span><i></i><div><strong>RECONCILE</strong><small>链上确认</small></div></li>
-          <li><span>07</span><i></i><div><strong>REALIZE</strong><small>FIFO 归因</small></div></li>
-        </ol>
-      </section>
-
       <section class="autotrade-panel panel" id="bstock-autotrade" aria-labelledby="autotrade-title" translate="no">
         <header class="autotrade-head">
           <div class="autotrade-identity"><span class="autotrade-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 3 7-10M15 5h5v5M4 6v3M2.5 7.5h3" /></svg></span><div><span class="panel-kicker">AUTOMATED EXECUTION</span><h2 id="autotrade-title">自动交易</h2><p data-auto-text="subtitle">从 bStock 机会池筛选标的，按策略与预算持续执行。</p></div></div>
@@ -239,7 +225,8 @@
           <form class="autotrade-settings" id="autotrade-settings" hidden>
             <div class="autotrade-settings-heading"><div><h3 data-auto-text="settingsTitle">设置本次自动交易</h3><p data-auto-text="settingsNote">按实时价格使用 USDT 买入；预算仅用于本策略持仓，不自动卖出原有资产。</p></div><button class="autotrade-button autotrade-button--quiet" id="autotrade-hide-settings" type="button" data-auto-text="collapse">收起</button></div>
             <div class="autotrade-fields">
-              <label class="autotrade-field autotrade-field--strategy"><span data-auto-text="strategyLabel">当前策略</span><select name="strategy"><option value="adaptive" data-auto-text="adaptive">自适应策略</option><option value="trend" data-auto-text="trend">趋势跟随</option><option value="mean_reversion" data-auto-text="mean_reversion">均值回归</option></select></label>
+              <label class="autotrade-field autotrade-field--strategy"><span data-auto-text="strategyLabel">当前策略</span><select name="strategy"><option value="adaptive" data-auto-text="adaptive">自适应策略</option><option value="trend" data-auto-text="trend">趋势跟随</option><option value="mean_reversion" data-auto-text="mean_reversion">均值回归</option><option value="martingale_grid" data-auto-text="martingale_grid">有限马丁格尔网格</option></select></label>
+              <label class="autotrade-field"><span data-auto-text="selectionMode">标的选择</span><select name="selectionMode"><option value="auto" data-auto-text="autoSelection">自动筛选机会池</option><option value="manual_hot" data-auto-text="manualHot">手动选择热门标的</option></select></label>
               <label class="autotrade-field"><span data-auto-text="budgetUsd">最大投入（USD）</span><input name="budgetUsd" type="number" min="20" max="2000" step="1" value="100" required /></label>
               <label class="autotrade-field"><span data-auto-text="orderUsd">每笔买入（USD）</span><input name="orderUsd" type="number" min="5" max="500" step="1" value="20" required /></label>
               <label class="autotrade-field"><span data-auto-text="maxPositions">最多持仓数</span><input name="maxPositions" type="number" min="1" max="5" step="1" value="3" required /></label>
@@ -248,6 +235,14 @@
               <label class="autotrade-field"><span data-auto-text="maxDrawdownPct">回撤减仓暂停（%）</span><input name="maxDrawdownPct" type="number" min="2" max="25" step="0.1" value="10" required /></label>
               <label class="autotrade-field"><span data-auto-text="dailyLossPct">日亏减仓暂停（%）</span><input name="dailyLossPct" type="number" min="1" max="15" step="0.1" value="5" required /></label>
               <label class="autotrade-field"><span data-auto-text="intervalSeconds">扫描间隔（秒）</span><input name="intervalSeconds" type="number" min="60" max="900" step="1" value="60" required /></label>
+            </div>
+            <fieldset class="autotrade-hot-selection" id="autotrade-hot-selection" hidden><legend data-auto-text="hotTitle">选择本次允许买入的热门标的</legend><p data-auto-text="hotNote">仅买入勾选的标的；仍需有效研报、行情及风控通过。已有策略持仓的退出不受选择限制。</p><div id="autotrade-hot-assets" class="autotrade-hot-assets"></div></fieldset>
+            <div class="autotrade-grid-settings" id="autotrade-grid-settings" hidden>
+              <div class="autotrade-fields">
+                <label class="autotrade-field"><span data-auto-text="gridLayers">最大层数（含首笔）</span><input name="gridLayers" type="number" min="2" max="4" step="1" value="3" required /></label>
+                <label class="autotrade-field"><span data-auto-text="gridMultiplier">逐层金额倍率</span><input name="gridMultiplier" type="number" min="1.1" max="2" step="0.1" value="2" required /></label>
+                <label class="autotrade-field"><span data-auto-text="gridStepPct">下跌网格间距（%）</span><input name="gridStepPct" type="number" min="0.5" max="5" step="0.1" value="1" required /></label>
+              </div><p id="autotrade-grid-preview" aria-live="polite"></p>
             </div>
             <p class="autotrade-strategy-help" id="autotrade-strategy-help"></p>
             <div class="autotrade-consent"><label><input id="autotrade-acknowledged" type="checkbox" /><span data-auto-text="acknowledgement">我授权机器人在以上预算和风控范围内，通过当前 Agentic Wallet 会话自动提交真实买卖订单。</span></label><button class="autotrade-button autotrade-button--primary" id="autotrade-start" type="submit" disabled data-auto-text="start">确认并开启</button></div>
@@ -266,7 +261,7 @@
       <section class="portfolio-panel panel">
         <header class="portfolio-head">
           <div><span class="panel-kicker">PORTFOLIO &amp; ATTRIBUTION</span><h2>组合与 Realized PnL</h2></div>
-          <div class="portfolio-tabs" role="tablist"><button class="active" type="button" data-ledger-tab="positions">开放仓位</button><button type="button" data-ledger-tab="orders">订单记录</button><button type="button" data-ledger-tab="realized">已实现账本</button><button type="button" data-ledger-tab="reports">研报历史</button><button type="button" data-ledger-tab="leaderboard">PnL 排名</button><button type="button" data-ledger-tab="audit">执行审计</button></div>
+          <div class="portfolio-tabs" role="tablist"><button class="active" type="button" data-ledger-tab="positions">开放仓位</button><button type="button" data-ledger-tab="orders">订单记录</button><button type="button" data-ledger-tab="realized">已实现账本</button><button type="button" data-ledger-tab="reports">研报历史</button><button type="button" data-ledger-tab="audit">执行审计</button></div>
           <button class="export-button" id="export-ledger" type="button">导出 CSV ↓</button>
         </header>
 
@@ -297,18 +292,23 @@
           </tbody></table></div>
         </div>
 
-        <div class="ledger-panel" data-ledger-panel="leaderboard">
-          <div class="leaderboard-note"><span>RANKING METHOD</span><strong>按净 Realized PnL 排名</strong><p>未发现可验证的公开排行榜 API，因此不展示虚构名次；请以 Binance 官方活动页为准。</p></div>
-          <div class="table-wrap"><table class="leaderboard-table"><thead><tr><th>排名</th><th>Agent</th><th>Realized PnL</th><th>胜率</th><th>Profit Factor</th><th>已平仓</th><th>最大回撤</th><th>状态</th></tr></thead><tbody>
-            <tr><td colspan="8"><a href="https://web3.binance.com/zh-CN/dev-docs/products/agentic-wallet/use-cases/campaigns/bstock-pnl-contest" target="_blank" rel="noopener noreferrer">打开 Binance 官方活动规则与成绩入口 ↗</a></td></tr>
-          </tbody></table></div>
-        </div>
-
         <div class="ledger-panel" data-ledger-panel="audit">
           <div class="audit-grid" id="live-audit-grid"><article><span>—</span><i class="warning"></i><div><strong>等待真实事件</strong><p>仅记录本页实际发生的数据同步、付费研究与订单状态，不展示演示审计。</p></div><em>WAITING</em></article></div>
         </div>
       </section>
 
+      <section class="cycle-panel panel" aria-label="策略闭环">
+        <header><div><span class="panel-kicker">CONTROLLED EXECUTION LOOP</span><h2>从研究到落袋</h2></div><p>模型无下单权限 · Risk Engine 拥有一票否决</p></header>
+        <ol class="cycle-flow">
+          <li><span>01</span><i></i><div><strong>DISCOVER</strong><small>合格清单</small></div></li>
+          <li><span>02</span><i></i><div><strong>RESEARCH</strong><small>双 AI 证据</small></div></li>
+          <li><span>03</span><i></i><div><strong>DECIDE</strong><small>确定性评分</small></div></li>
+          <li><span>04</span><i></i><div><strong>RISK</strong><small>六项硬门槛</small></div></li>
+          <li><span>05</span><i></i><div><strong>EXECUTE</strong><small>Agentic Wallet</small></div></li>
+          <li><span>06</span><i></i><div><strong>RECONCILE</strong><small>链上确认</small></div></li>
+          <li><span>07</span><i></i><div><strong>REALIZE</strong><small>FIFO 归因</small></div></li>
+        </ol>
+      </section>
       <footer class="terminal-footer"><span><i></i>REAL DATA ONLY · 缺失数据留空 · 实盘成交必须由 Agentic Wallet 确认</span><span>Realized PnL = 实际卖出收入 − FIFO 实际买入成本（Gas 不计排名）</span><a href="https://web3.binance.com/zh-CN/dev-docs/products/agentic-wallet/use-cases/campaigns/bstock-pnl-contest" target="_blank" rel="noopener noreferrer">活动规则 ↗</a></footer>
     </main>
 
@@ -424,7 +424,7 @@
       </form>
     </dialog>
 
-    <dialog class="info-dialog" id="info-dialog"><form method="dialog"><header><div><span class="panel-kicker">ELIGIBILITY &amp; SAFETY</span><h2>执行资格规则</h2></div><button value="cancel" aria-label="关闭">×</button></header><ul><li><i></i><span>“全部”固定保留 Binance BSC type-3 bStock 注册表；“周机会”采用 Binance 官方合格清单快照并长期展示。</span></li><li><i></i><span>周机会中的 × 只会隐藏该标的；它仍保留在“全部”列表并可交易，可从列表底部恢复。</span></li><li><i></i><span>买入支付币只允许 BNB、USDT、USDC、U 与 USD1。</span></li><li><i></i><span>清单内杠杆 / 反向 ETF 仍会展示并标注高风险；其波动、路径依赖与损耗显著放大。</span></li><li><i></i><span>单标的仓位必须严格低于 50%，单日亏损 1.5% 触发熔断。</span></li><li><i></i><span>SUBMITTED 不入账；必须等待 FINISHED / CONFIRMED。</span></li><li><i></i><span>活动 Realized PnL 使用实际卖出收入减 FIFO 实际买入成本；Gas 单独支付、不计排名。</span></li></ul><button class="dialog-confirm" value="cancel">了解</button></form></dialog>
+    <dialog class="info-dialog" id="info-dialog"><form method="dialog"><header><div><span class="panel-kicker">ELIGIBILITY &amp; SAFETY</span><h2>执行资格规则</h2></div><button value="cancel" aria-label="关闭">×</button></header><ul><li><i></i><span>“全部”固定保留 Binance BSC type-3 bStock 注册表；“热门”采用 Binance 官方合格清单快照并长期展示。</span></li><li><i></i><span>热门中的 × 只会隐藏该标的；它仍保留在“全部”列表并可交易，可从列表底部恢复。</span></li><li><i></i><span>买入支付币只允许 BNB、USDT、USDC、U 与 USD1。</span></li><li><i></i><span>清单内杠杆 / 反向 ETF 仍会展示并标注高风险；其波动、路径依赖与损耗显著放大。</span></li><li><i></i><span>单标的仓位必须严格低于 50%，单日亏损 1.5% 触发熔断。</span></li><li><i></i><span>SUBMITTED 不入账；必须等待 FINISHED / CONFIRMED。</span></li><li><i></i><span>活动 Realized PnL 使用实际卖出收入减 FIFO 实际买入成本；Gas 单独支付、不计排名。</span></li></ul><button class="dialog-confirm" value="cancel">了解</button></form></dialog>
 
     <dialog class="equity-panel" id="equity-panel" aria-labelledby="equity-panel-title">
       <header class="equity-panel-header">
@@ -449,10 +449,10 @@
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"><i></i><span></span></div>
-  <script src="ui-translations.js?v=20260904-bstock-ui-v2"></script>
+  <script src="ui-translations.js?v=20261024-bstock-catalog-v3"></script>
   <script src="bstock-alpha-storage.js?v=20260902-dual-wallet-v4"></script>
-  <script src="bstock-alpha.js?v=20260904-ui-system-v1"></script>
+  <script src="bstock-alpha.js?v=20261024-grid-research-v3"></script>
   <script src="bstock-equity-panel.js?v=20260904-equity-panel-v2"></script>
-  <script src="bstock-autotrade.js?v=20260909-manual-ignore-v1"></script>
+  <script src="bstock-autotrade.js?v=20261024-hot-grid-v2"></script>
   </body>
 </html>

@@ -13,6 +13,7 @@ function harness(options = {}) {
     disconnect() { disconnected = true; }
   }
   const controller = create({
+    intervalMs: options.intervalMs,
     document: doc, window: win, section, IntersectionObserver: Observer,
     canAdvance: () => ready, now: () => clock,
     schedule: (callback, delay) => { const id = ++serial; timers.set(id, { at: clock + delay, callback }); return id; },
@@ -45,6 +46,14 @@ test("cycles at 25 seconds with only one timer even when sync repeats", () => {
   h.tick(1); assert.deepEqual(h.calls, [25000]);
   h.tick(50000); assert.deepEqual(h.calls, [25000, 50000, 75000]);
   assert.equal(h.timers.size, 1);
+});
+
+test("the homepage can cycle at 15 seconds without changing the dashboard default", () => {
+  const h = harness({ intervalMs: 15000 });
+  h.tick(14999); assert.deepEqual(h.calls, []);
+  h.tick(1); assert.deepEqual(h.calls, [15000]);
+  h.tick(30000); assert.deepEqual(h.calls, [15000, 30000, 45000]);
+  h.controller.destroy();
 });
 
 test("loading, menu, focus, and dragging guards suspend and restart a full interval", () => {

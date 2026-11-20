@@ -63,6 +63,7 @@
   let configured = false;
   let surfPreviousResponseId = "";
   let openaiPreviousResponseId = "";
+  let conversationProof = "";
   let surfConfigured = false;
   let openaiConfigured = false;
   let sessionPlatform = "";
@@ -155,6 +156,7 @@
     if (sessionPlatform && sessionPlatform !== platform.id) {
       surfPreviousResponseId = "";
       openaiPreviousResponseId = "";
+      conversationProof = "";
     }
   }
 
@@ -333,6 +335,7 @@
     if (sessionPlatform && sessionPlatform !== platform.id) {
       surfPreviousResponseId = "";
       openaiPreviousResponseId = "";
+      conversationProof = "";
     }
     sessionPlatform = platform.id;
     addMessage("user", prompt);
@@ -352,6 +355,7 @@
           platformName: platform.name,
           surfPreviousResponseId,
           openaiPreviousResponseId,
+          conversationProof,
           language: localStorage.getItem("welinkbtc-language") || "zh"
         })
       });
@@ -366,6 +370,7 @@
       latestAnswer = displayAnswer;
       if (data.surfResponseId) surfPreviousResponseId = data.surfResponseId;
       if (data.openaiResponseId) openaiPreviousResponseId = data.openaiResponseId;
+      conversationProof = data.conversationProof || "";
       copy.disabled = false;
       const usage = data.creditsUsed != null ? ` · ${data.creditsUsed} credits` : "";
       const engine = data.provider === "openai" ? "OpenAI 接力" : "SURF";
@@ -385,6 +390,7 @@
     [...messages.children].forEach((item) => { if (item !== initialMessage) item.remove(); });
     surfPreviousResponseId = "";
     openaiPreviousResponseId = "";
+    conversationProof = "";
     sessionPlatform = "";
     latestAnswer = "";
     copy.disabled = true;
@@ -457,6 +463,7 @@
     if (sessionPlatform && sessionPlatform !== nextPlatform.id) {
       surfPreviousResponseId = "";
       openaiPreviousResponseId = "";
+      conversationProof = "";
       sessionPlatform = "";
     }
     updateQuickPrompts();

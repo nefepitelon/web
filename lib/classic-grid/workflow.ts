@@ -1,4 +1,5 @@
 import { sleep } from "workflow";
+import { redactSecretText } from "@/lib/secret-redaction";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -279,10 +280,5 @@ async function executeClassicGridTick(input: TickInput) {
 }
 
 function sanitizeClassicGridError(caught: unknown) {
-  const raw = caught instanceof Error ? caught.message : String(caught || "网格执行失败");
-  return raw
-    .replace(/0x[a-fA-F0-9]{32,}/g, "[已隐藏]")
-    .replace(/[1-9A-HJ-NP-Za-km-z]{80,}/g, "[已隐藏]")
-    .replace(/(api[_ -]?key|private[_ -]?key|secret|token)\s*[=:]\s*\S+/gi, "$1=[已隐藏]")
-    .slice(0, 2_000);
+  return redactSecretText(caught instanceof Error ? caught.message : "网格执行失败");
 }

@@ -6,16 +6,18 @@ import { writeAudit } from "@/lib/audit";
 import { AUTH_NEXT_COOKIE, authCallbackUrl, safeAuthNext } from "@/lib/auth-redirect";
 import { syncAuthenticatedUser } from "@/lib/membership";
 import { isDatabaseConfigured } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { assertSameOrigin, requestContext } from "@/lib/request-security";
+import { assertSameOrigin } from "@/lib/request-security";
+import { AuthProtectionError, protectAuthRequest, readAuthJson, requireCaptchaToken } from "@/lib/auth-protection";
 import { applyAuthResponseHeaders } from "@/lib/supabase/response";
+import { supabaseCookieOptions } from "@/lib/supabase/cookie-options";
 
 const schema = z.object({
   intent: z.enum(["signin", "signup"]),
   email: z.email().max(254),
   password: z.string().min(8).max(72).regex(/[A-Za-z]/).regex(/[0-9]/),
   next: z.string().max(300).optional(),
-  accessCode: z.string().max(64).optional()
+  accessCode: z.string().max(64).optional(),
+  captchaToken: z.string().min(1).max(4096).optional()
 });
 
 type PendingCookie = { name: string; value: string; options: CookieOptions };
@@ -23,17 +25,14 @@ type PendingCookie = { name: string; value: string; options: CookieOptions };
 export async function POST(request: NextRequest) {
   try {
     assertSameOrigin(request);
-    const input = schema.parse(await request.json());
+    const input = schema.parse(await readAuthJson(request));
     const email = input.email.trim().toLowerCase();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseKey) return Response.json({ error: "认证服务尚未配置" }, { status: 503 });
 
-    if (isDatabaseConfigured()) {
-      const { ipAddress } = await requestContext(request);
-      const rate = await checkRateLimit(`auth:password:${email}:${ipAddress ?? "unknown"}`, 10, 10 * 60 * 1000);
-      if (!rate.allowed) return Response.json({ error: `尝试过于频繁，请在 ${rate.retryAfterSeconds} 秒后重试` }, { status: 429 });
-    }
+    await protectAuthRequest(request, input.intent, email);
+    requireCaptchaToken(input.captchaToken);
 
     const pendingAccessCode = input.accessCode?.trim();
     const validation = pendingAccessCode && isDatabaseConfigured() ? await validateAccessCode(pendingAccessCode) : null;
@@ -44,6 +43,7 @@ export async function POST(request: NextRequest) {
     const pendingCookies: PendingCookie[] = [];
     const pendingHeaders: Record<string, string> = {};
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookieOptions: supabaseCookieOptions,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet, headers) {
@@ -58,9 +58,9 @@ export async function POST(request: NextRequest) {
       ? await supabase.auth.signUp({
           email,
           password: input.password,
-          options: { emailRedirectTo: authCallbackUrl(request.url).toString() }
+          options: { emailRedirectTo: authCallbackUrl(request.url).toString(), captchaToken: input.captchaToken }
         })
-      : await supabase.auth.signInWithPassword({ email, password: input.password });
+      : await supabase.auth.signInWithPassword({ email, password: input.password, options: { captchaToken: input.captchaToken } });
 
     if (result.error) {
       const status = result.error.code === "invalid_credentials" ? 401 : 400;
@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
     }));
     applyAuthResponseHeaders(response, pendingHeaders);
     for (const cookie of pendingCookies) response.cookies.set(cookie.name, cookie.value, cookie.options);
+    response.cookies.set("welinkbtc_2fa", "", { expires: new Date(0), httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/" });
 
     if (result.data.user && result.data.session) {
       await syncAuthenticatedUser(result.data.user);
@@ -113,6 +114,12 @@ export async function POST(request: NextRequest) {
     }
     return response;
   } catch (caught) {
+    if (caught instanceof AuthProtectionError) {
+      return applyAuthResponseHeaders(Response.json({ error: caught.message }, {
+        status: caught.status,
+        headers: caught.retryAfterSeconds ? { "Retry-After": String(caught.retryAfterSeconds) } : undefined
+      }));
+    }
     if (caught instanceof z.ZodError) {
       return Response.json({ error: "请输入有效邮箱；密码需为 8–72 位并同时包含字母和数字。" }, { status: 400 });
     }

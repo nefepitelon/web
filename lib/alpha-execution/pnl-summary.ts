@@ -10,6 +10,16 @@ export type IncomeAssetSummary = {
   netRealizedPnl: number;
   recordCount: number;
 };
+type IncomeReadFailure = { kind: "network" | "rate_limit" | "credentials" | "exchange" | "response" | "capacity"; httpStatus: number | null; exchangeCode: number | null };
+
+function incomeReadFailure(error: unknown): IncomeReadFailure {
+  const detail = error && typeof error === "object" ? error as { status?: unknown; code?: unknown } : {};
+  const status = typeof detail.status === "number" && Number.isSafeInteger(detail.status) ? detail.status : null;
+  const code = typeof detail.code === "number" && Number.isSafeInteger(detail.code) ? detail.code : null;
+  return { kind: status === 418 || status === 429 || code === -1003 ? "rate_limit"
+    : status === 401 || status === 403 || code === -2014 || code === -2015 || code === -1022 ? "credentials"
+    : status == null || status === 408 || status >= 500 ? "network" : "exchange", httpStatus: status, exchangeCode: code };
+}
 
 export function emptyIncomeSummary(startTime: number, endTime: number, status: PnlStatus, message: string) {
   return {
@@ -20,8 +30,9 @@ export function emptyIncomeSummary(startTime: number, endTime: number, status: P
     dataQuality: { signedTransactionIdRows: 0, losslessTransactionIdRows: 0, invalidRows: 0, outOfWindowRows: 0,
       invalidFields: { structure: 0, incomeType: 0, asset: 0, time: 0, tranId: 0, income: 0 } },
     hasNonTradingFlows: false, periodStart: new Date(startTime).toISOString(), periodEnd: new Date(endTime).toISOString(),
-    recordCount: 0, realizedIncomeCount: 0, pagesRead: 0, coverageComplete: false, allTime: false,
-    source: "binance_futures_income", scope: "LIVE_ACCOUNT", refreshedAt: new Date().toISOString(), message,
+    recordCount: 0, realizedIncomeCount: 0, pagesRead: 0, requestsMade: 0, retries: 0,
+    readFailure: null as IncomeReadFailure | null, coverageComplete: false, allTime: false,
+    source: "binance_futures_income", scope: "LIVE_ACCOUNT", accountVersion: null as string | null, refreshedAt: new Date().toISOString(), message,
   };
 }
 
@@ -44,7 +55,7 @@ export async function collectIncomeSummary(
   options: { maxPages?: number; pageSize?: number; deadlineMs?: number; now?: () => number } = {},
 ): Promise<LiveIncomeSummary> {
   const pageSize = options.pageSize ?? 1000;
-  const maxPages = options.maxPages ?? 20;
+  const maxPages = options.maxPages ?? 64;
   const now = options.now ?? Date.now;
   const deadline = now() + (options.deadlineMs ?? 42_000);
   const result = emptyIncomeSummary(startTime, endTime, "partial", "分页尚未完成；不提供完整期间净盈亏。");
@@ -52,15 +63,34 @@ export async function collectIncomeSummary(
   const totals = new Map<string, { realizedPnl: Prisma.Decimal; commission: Prisma.Decimal; fundingFee: Prisma.Decimal; recordCount: number }>();
   const flows = new Map<string, { amount: Prisma.Decimal; incomeTypes: Set<string> }>();
   let invalidRows = false;
-  let failure = false;
-  for (let page = 1; page <= maxPages; page += 1) {
-    if (now() >= deadline) break;
+  // The current income endpoint documents inclusive time bounds and a 1,000-row
+  // limit, but no page parameter. Split saturated windows instead of requesting
+  // page 2 of the same interval (which can repeat page 1 indefinitely).
+  const windows = [{ startTime, endTime }];
+  while (windows.length) {
+    if (now() >= deadline || result.requestsMade >= maxPages) break;
+    const window = windows.pop()!;
     let rows: Array<Record<string, unknown>>;
-    try { rows = await fetchPage({ startTime, endTime, page, limit: pageSize }); }
-    catch { failure = true; break; }
+    try {
+      result.requestsMade += 1;
+      rows = await fetchPage({ ...window, page: 1, limit: pageSize });
+    } catch (error) {
+      const failure = incomeReadFailure(error);
+      // Read-only transient failures may retry once. Never retry an IP ban,
+      // rate limit, or rejected credential, and leave time for the next request.
+      if (failure.kind !== "network" || result.requestsMade >= maxPages || now() + 12_000 >= deadline) {
+        result.readFailure = failure; break;
+      }
+      try {
+        result.requestsMade += 1; result.retries += 1;
+        rows = await fetchPage({ ...window, page: 1, limit: pageSize });
+      } catch (retryError) { result.readFailure = incomeReadFailure(retryError); break; }
+    }
     result.pagesRead += 1;
-    if (!Array.isArray(rows) || rows.length > pageSize) { failure = true; break; }
-    let added = 0;
+    if (!Array.isArray(rows) || rows.length > pageSize) {
+      result.readFailure = { kind: "response", httpStatus: null, exchangeCode: null }; break;
+    }
+    const saturated = rows.length === pageSize;
     for (const row of rows) {
       if (!row || typeof row !== "object" || Array.isArray(row)) {
         invalidRows = true; result.dataQuality.invalidRows += 1; result.dataQuality.invalidFields.structure += 1; continue;
@@ -72,7 +102,7 @@ export async function collectIncomeSummary(
       const amountText = typeof row.income === "string" ? row.income : String(row.income ?? "");
       if (id?.startsWith("-")) result.dataQuality.signedTransactionIdRows += 1;
       if (id != null && typeof row.tranId === "string" && !Number.isSafeInteger(Number(id))) result.dataQuality.losslessTransactionIdRows += 1;
-      const outsideWindow = Number.isSafeInteger(timestamp) && (timestamp < startTime || timestamp > endTime);
+      const outsideWindow = Number.isSafeInteger(timestamp) && (timestamp < window.startTime || timestamp > window.endTime);
       if (outsideWindow) result.dataQuality.outOfWindowRows += 1;
       const invalidFields = { incomeType: !/^[A-Z][A-Z0-9_]{0,63}$/.test(incomeType), asset: !/^[A-Z0-9]{1,24}$/.test(asset),
         time: !Number.isSafeInteger(timestamp), tranId: id == null, income: !/^-?\d+(?:\.\d+)?$/.test(amountText) };
@@ -82,9 +112,12 @@ export async function collectIncomeSummary(
       if (outsideWindow || Object.values(invalidFields).some(Boolean)) {
         invalidRows = true; result.dataQuality.invalidRows += 1; continue;
       }
+      // Only sum windows proven complete. Parent rows will be read again in
+      // the smaller windows, so they cannot affect totals or de-duplication.
+      if (saturated) continue;
       const identity = `${incomeType}:${String(id)}`;
       if (seen.has(identity)) continue;
-      seen.add(identity); added += 1;
+      seen.add(identity);
       const amount = new Prisma.Decimal(amountText);
       if (!amount.isFinite()) { invalidRows = true; result.dataQuality.invalidRows += 1; result.dataQuality.invalidFields.income += 1; continue; }
       if (["REALIZED_PNL", "COMMISSION", "FUNDING_FEE"].includes(incomeType)) {
@@ -101,9 +134,18 @@ export async function collectIncomeSummary(
         if (!amount.isZero()) result.hasNonTradingFlows = true;
       }
     }
-    if (rows.length < pageSize) { result.coverageComplete = !invalidRows; break; }
-    if (!added) { failure = true; break; } // A repeated full page cannot prove completeness.
+    if (invalidRows) break;
+    if (saturated) {
+      if (window.startTime === window.endTime) {
+        result.readFailure = { kind: "capacity", httpStatus: null, exchangeCode: null }; break;
+      }
+      const middle = window.startTime + Math.floor((window.endTime - window.startTime) / 2);
+      // Inclusive bounds: each millisecond belongs to exactly one child.
+      windows.push({ startTime: middle + 1, endTime: window.endTime }, { startTime: window.startTime, endTime: middle });
+    }
   }
+  result.coverageComplete = windows.length === 0 && !invalidRows && !result.readFailure
+    && result.pagesRead > 0 && now() < deadline;
   result.assets = [...totals.entries()].map(([asset, total]) => ({
     asset, realizedPnl: total.realizedPnl.toNumber(), commission: total.commission.toNumber(), fundingFee: total.fundingFee.toNumber(),
     netRealizedPnl: total.realizedPnl.add(total.commission).add(total.fundingFee).toNumber(), recordCount: total.recordCount,
@@ -124,8 +166,11 @@ export async function collectIncomeSummary(
       .filter(field => result.dataQuality.invalidFields[field] > 0)
       .map(field => `${labels[field]} ${result.dataQuality.invalidFields[field]} 条`);
     if (result.dataQuality.outOfWindowRows) issues.push(`超出查询时间范围 ${result.dataQuality.outOfWindowRows} 条`);
+    const failureMessages = { network: "交易所连接超时或暂时中断，将自动重试。", rate_limit: "交易所请求限流，稍后自动重试。",
+      credentials: "交易所拒绝读取流水，请检查 API 读取权限、有效期及 IP 白名单。", exchange: "交易所暂时无法返回结算流水，将自动重试。",
+      response: "交易所流水响应格式异常，将自动重试。", capacity: "同一时刻的流水超过单次读取上限，期间统计尚未完整。" };
     result.message = invalidRows ? `交易所流水校验未通过（${issues.join("，")}）；期间统计不完整，净盈亏暂不可用。`
-      : failure ? "交易所流水读取未完成；不使用部分数据冒充完整期间盈亏。"
+      : result.readFailure ? failureMessages[result.readFailure.kind]
       : "达到本次分页或时间上限；未覆盖完整期间，净盈亏暂不可用。";
   }
   result.refreshedAt = new Date().toISOString();

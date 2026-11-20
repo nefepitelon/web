@@ -1,4 +1,6 @@
 import "server-only";
+import { redactSecretText } from "@/lib/secret-redaction";
+import { publicProxyLookup, normalizePublicTradingProxy } from "@/lib/trading-proxy-security";
 import { createHmac } from "node:crypto";
 import { Agent, ProxyAgent, type Dispatcher } from "undici";
 import { accountNumber, accountRows, portfolioRiskSnapshot } from "./portfolio-risk";
@@ -111,7 +113,7 @@ export class BinanceRequestError extends Error {
   actionRequired: string | null;
 
   constructor(message: string, status: number, code: number | null, statusUnknown = false, actionRequired: string | null = null) {
-    super(message);
+    super(redactSecretText(message));
     this.name = "BinanceRequestError";
     this.status = status;
     this.code = code;
@@ -156,10 +158,11 @@ export class TideSightBinanceClient {
     this.apiSecret = options.apiSecret;
     this.accountMode = options.accountMode ?? "classic";
     if (this.accountMode === "portfolio" && (options.environment !== "live" || options.market !== "futures")) throw new Error("PAPI 仅支持生产统一账户 UM 合约");
-    this.dispatcher = options.proxy === "direct"
+    const proxy = normalizePublicTradingProxy(options.proxy);
+    this.dispatcher = proxy === "direct"
       ? new Agent()
       : options.proxy
-        ? new ProxyAgent(options.proxy)
+        ? new ProxyAgent({ uri: proxy, proxyTls: { lookup: publicProxyLookup } })
         : null;
   }
 
@@ -190,7 +193,7 @@ export class TideSightBinanceClient {
         ...(this.dispatcher ? { dispatcher: this.dispatcher } : {})
       } as RequestInit & { dispatcher?: Dispatcher });
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : "network request failed";
+      const message = redactSecretText(caught instanceof Error ? caught.message : "network request failed", [this.apiKey, this.apiSecret]);
       throw new BinanceRequestError(`Binance 网络请求失败：${message}`, 503, null, method === "POST");
     }
 
@@ -203,7 +206,7 @@ export class TideSightBinanceClient {
       }
       const rejection = describeBinanceRejection(code, raw.msg, response.status);
       throw new BinanceRequestError(
-        rejection.message,
+        redactSecretText(rejection.message, [this.apiKey, this.apiSecret]),
         response.status,
         code,
         method === "POST" && (response.status >= 500 || code === -1007),

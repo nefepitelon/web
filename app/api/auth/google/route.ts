@@ -8,9 +8,9 @@ import {
   safeAuthNext
 } from "@/lib/auth-redirect";
 import { isDatabaseConfigured } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { requestContext } from "@/lib/request-security";
+import { AuthProtectionError, protectAuthRequest } from "@/lib/auth-protection";
 import { applyAuthResponseHeaders } from "@/lib/supabase/response";
+import { supabaseCookieOptions } from "@/lib/supabase/cookie-options";
 
 type PendingCookie = {
   name: string;
@@ -26,14 +26,15 @@ export async function GET(request: NextRequest) {
   }
 
   const next = safeAuthNext(request.nextUrl.searchParams.get("next"));
-  const pendingAccessCode = request.nextUrl.searchParams.get("accessCode")?.trim();
-  if (pendingAccessCode && isDatabaseConfigured()) {
-    const { ipAddress } = await requestContext(request);
-    const rate = await checkRateLimit(`auth:access-code:${ipAddress ?? "unknown"}`, 20, 60 * 60 * 1000);
-    if (!rate.allowed) {
-      return NextResponse.redirect(authLoginErrorUrl(request.url, "invalid_access_code", next));
-    }
+  try {
+    await protectAuthRequest(request, "oauth");
+  } catch (error) {
+    if (!(error instanceof AuthProtectionError)) throw error;
+    const response = applyAuthResponseHeaders(NextResponse.redirect(authLoginErrorUrl(request.url, "rate_limited", next)));
+    if (error.retryAfterSeconds) response.headers.set("Retry-After", String(error.retryAfterSeconds));
+    return response;
   }
+  const pendingAccessCode = request.nextUrl.searchParams.get("accessCode")?.trim();
   const accessCodeValidation = pendingAccessCode && isDatabaseConfigured()
     ? await validateAccessCode(pendingAccessCode)
     : null;
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
   const pendingCookies: PendingCookie[] = [];
   const pendingHeaders: Record<string, string> = {};
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookieOptions: supabaseCookieOptions,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(cookiesToSet, headers) {

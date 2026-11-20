@@ -1,4 +1,17 @@
 /* Autonomous execution is visually scoped to its own section. */
+.autotrade-hot-selection, .autotrade-grid-settings { min-width: 0; margin: 22px 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-elevated); }
+.autotrade-hot-selection legend { padding: 0 8px; color: var(--text); font-weight: 700; font-size: 15px; }
+.autotrade-hot-selection > p, .autotrade-grid-settings > p { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.autotrade-grid-settings > p { margin: 18px 0 0; color: var(--green); }
+.autotrade-hot-assets { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px; max-height: 310px; overflow: auto; padding: 3px; }
+.autotrade-hot-option { display: flex; align-items: center; gap: 11px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; background: var(--bg); }
+.autotrade-hot-option:has(input:checked) { border-color: var(--green); background: var(--green-soft); }
+.autotrade-hot-option:focus-within { outline: 2px solid var(--green); outline-offset: 2px; }
+.autotrade-hot-option input { width: 17px; height: 17px; accent-color: var(--green); flex-shrink: 0; }
+.autotrade-hot-option span { min-width: 0; }
+.autotrade-hot-option strong, .autotrade-hot-option small { display: block; }
+.autotrade-hot-option strong { font: 700 13px/1.6 "JetBrains Mono", monospace; color: var(--text); }
+.autotrade-hot-option small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
 .autotrade-panel { margin: 0 0 14px; overflow: hidden; }
 .autotrade-panel [hidden] { display: none !important; }
 .autotrade-head { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 28px; border-bottom: 1px solid var(--line); background: linear-gradient(105deg, var(--green-soft), transparent 66%); }

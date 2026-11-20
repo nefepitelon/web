@@ -1,0 +1,46 @@
+{
+  "archivedOn": "2026-11-04",
+  "sources": {
+    "tmmp": {
+      "url": "https://charts.bgeometrics.com/files/true_market_mean.json",
+      "sha256": "5323c42cd9db8882ed2d4dc49ce10c08322ebd78261524f45e8864aec200cffc",
+      "from": "2011-06-01",
+      "to": "2026-11-03",
+      "count": 5635
+    },
+    "price": {
+      "url": "https://charts.bgeometrics.com/files/true_market_mean_btc_price.json",
+      "sha256": "1f2717c19d4b67ee73b54a7989d196e214e3e50996dc36386b52cdc8f388ce72",
+      "from": "2011-06-01",
+      "to": "2026-11-03",
+      "count": 5635
+    },
+    "lth": {
+      "url": "https://charts.bgeometrics.com/files/lth_realized_price.json",
+      "sha256": "7719a35befd979e95974e3d0f6256594a32d73f4dd973a1a612697e60d996d84",
+      "from": "2012-01-01",
+      "to": "2026-11-02",
+      "count": 5410
+    },
+    "sth": {
+      "url": "https://charts.bgeometrics.com/files/sth_realized_price_alfabitcoin.json",
+      "sha256": "23e2218f9ad14bc6fa3db1355586eb5b1090265c5d4a9da8ef3cf7b6c4c9cef9",
+      "from": "2015-06-01",
+      "to": "2026-11-03",
+      "count": 4174,
+      "earlyHistory": {
+        "file": "data/sth-200dma-public-seed.js",
+        "cadence": "weekly",
+        "from": "2011-07-19",
+        "to": "2015-05-26"
+      }
+    },
+    "nupl": {
+      "url": "https://charts.bgeometrics.com/files/lth_nupl.json",
+      "sha256": "e5bed9f98e6cd30ba2d7580c38851b2437698a2e69701e2c201453dc2402aa86",
+      "from": "2022-11-04",
+      "to": "2026-10-28",
+      "count": 1446
+    }
+  }
+}

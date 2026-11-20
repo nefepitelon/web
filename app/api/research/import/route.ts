@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const viewer = await getViewer();
-    if (!viewer || viewer.role !== "admin") return Response.json({ error: "只有管理员可以导入研究文章" }, { status: 403 });
+    if (!viewer || viewer.status !== "ACTIVE" || viewer.role !== "admin") return Response.json({ error: "只有管理员可以导入研究文章" }, { status: 403 });
     if (!viewer.twoFactorEnabled || !viewer.twoFactorPassed) {
       return Response.json({ error: "请先完成管理员双重验证" }, { status: 403 });
     }

@@ -32,6 +32,7 @@ export {
 export const BSC_CHAIN_ID = "56";
 export const BSTOCK_SYMBOL_PATTERN = /^[A-Z][A-Z0-9]{1,11}B$/;
 const BSTOCK_CHINESE_NAMES: Record<string, string> = bstockLocalization.names;
+const BSTOCK_LISTED_INSTRUMENTS: Record<string, { ticker: string; name: string }> = bstockLocalization.instruments;
 export const PAY_TOKEN_ADDRESSES = {
   BNB: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
   USDT: "0x55d398326f99059fF775485246999027B3197955",
@@ -354,12 +355,13 @@ async function fetchOfficialBstockMarketLive() {
 
   const assets = entries.map((item) => {
     const ticker = tickerMap.get(item.cs || `${item.symbol}USDT`);
-    const name = snapshotNames.get(item.symbol) || item.ticker;
+    const listed = BSTOCK_LISTED_INSTRUMENTS[item.symbol];
+    const name = snapshotNames.get(item.symbol) || (listed?.ticker === item.ticker ? listed.name : item.ticker);
     // The registry's numeric assetType currently mislabels at least NFLX.
     // The campaign page project name plus canonical ETF tickers is the
     // auditable classification used by the opportunity-pool filters.
     const assetType = /(?:\bETF\b|\bTRUST\b)/i.test(name) || /^(?:SPY|TQQQ)$/.test(item.ticker) ? "ETF" : "STOCK";
-    const leveragedOrInverse = /(?:\b[23]X\b|ULTRAPRO|BULL|BEAR|LONG|SHORT)/i.test(name);
+    const leveragedOrInverse = /(?:\b[23]X\b|ULTRAPRO|BULL|BEAR|LONG|SHORT)/i.test(name) || item.ticker === "UVXY";
     return {
       symbol: item.symbol,
       ticker: item.ticker,
@@ -400,6 +402,11 @@ export async function fetchOfficialBstockMarket() {
   const eligibility = await fetchEligibilityDocument();
   const assets = registry.assets.map((item) => ({
     ...item,
+    ...(BSTOCK_LISTED_INSTRUMENTS[item.symbol]?.ticker === item.ticker ? {
+      name: BSTOCK_LISTED_INSTRUMENTS[item.symbol].name,
+      assetType: /\bETF\b/i.test(BSTOCK_LISTED_INSTRUMENTS[item.symbol].name) ? "ETF" : "STOCK",
+      leveragedOrInverse: /(?:\b[23]X\b|ULTRAPRO|BULL|BEAR|LONG|SHORT)/i.test(BSTOCK_LISTED_INSTRUMENTS[item.symbol].name) || item.ticker === "UVXY"
+    } : {}),
     nameZh: BSTOCK_CHINESE_NAMES[item.symbol] || null,
     brandIconUrl: bstockBrandIconPath(item.symbol),
     campaignEligibility: eligibility.available

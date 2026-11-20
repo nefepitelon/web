@@ -225,6 +225,10 @@ export async function POST(request: NextRequest) {
         if ((balances.paymentBalances.BNB?.balance || 0) < 0.0002) throw new ControlError("BNB Gas 余额不足，请先补充后开启。");
         const generation = randomUUID();
         const settings = input.settings;
+        if (settings.selectionMode === "manual_hot" && settings.selectedSymbols.some(symbol =>
+          !market.assets.some(asset => asset.symbol === symbol && asset.campaignEligibility === "CONFIRMED" && !asset.leveragedOrInverse))) {
+          throw new ControlError("所选标的不再属于可交易的热门清单，请刷新后重新选择。", 409, "AUTO_SELECTION_CHANGED");
+        }
         const now = new Date();
         const expiresAt = new Date(Math.min(owner.state.sessionExpireAt, Date.now() + 86_400_000));
         const stateEncrypted = encodeAgentSession(owner.state);
@@ -272,7 +276,7 @@ export async function POST(request: NextRequest) {
             leaseToken: null, leaseUntil: null };
           await tx.bstockAutoConfig.upsert({ where: { ownerKey: key }, create: { ownerKey: key, ...config }, update: config });
           await tx.bstockAutoEvent.create({ data: { ownerKey: key, generation, kind: "STARTED", status: "STARTING",
-            reason: "用户明确授权后台自动交易：仅限已有有效研报的现货 bStock；不使用杠杆或马丁格尔，不承诺收益。",
+            reason: "用户明确授权后台自动交易：仅限已有有效研报的现货 bStock；按已审阅标的、策略、有限网格层数与预算执行，不使用杠杆，不承诺收益。",
             metadata: jsonValue({ settings, strategyVersion: AUTO_STRATEGY_VERSION, acknowledged: true, expiresAt, pnlExcludesGas: true }) } });
         });
         try {

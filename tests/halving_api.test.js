@@ -168,3 +168,28 @@ test("halving cold outage returns no sample data; route has 503 and no-store sem
   assert.match(route, /"Cache-Control": "no-store, max-age=0"/);
   assert.match(route, /"Retry-After": "15"/);
 });
+
+test("standalone Vercel halving entry point serves the same validated snapshot", async () => {
+  const module = await modulePromise;
+  const originalFetch = global.fetch;
+  global.fetch = async () => new Response("974500");
+  const headers = {};
+  let body;
+  const response = {
+    setHeader(name, value) { headers[name] = value; },
+    status(code) { this.statusCode = code; return this; },
+    json(value) { body = value; return this; },
+    end() {}
+  };
+  try {
+    assert.equal(typeof module.default, "function");
+    await module.default({ method: "GET" }, response);
+    assert.equal(response.statusCode, 200);
+    assert.equal(body.currentHeight, 974500);
+    assert.equal(body.targetHeight, 1050000);
+    assert.equal(body.daysRemaining, Math.ceil((1050000 - 974500) / 144));
+    assert.equal(headers["Cache-Control"], "no-store, max-age=0");
+    await module.default({ method: "POST" }, response);
+    assert.equal(response.statusCode, 405);
+  } finally { global.fetch = originalFetch; }
+});

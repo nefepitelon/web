@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { writeAudit } from "@/lib/audit";
-import { requireViewer } from "@/lib/membership";
+import { getViewer } from "@/lib/membership";
 import { isDatabaseConfigured, prisma } from "@/lib/prisma";
 import { assertSameOrigin } from "@/lib/request-security";
 import { getToolboxSnapshot, toolboxRole } from "@/lib/toolbox";
@@ -68,9 +68,10 @@ function jsonValue(value: unknown): Prisma.InputJsonValue | Prisma.NullableJsonN
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
-async function saveDynamicCells(itemId: string, values: Record<string, unknown>) {
+async function saveDynamicCells(itemId: string, values: Record<string, unknown>, role: "admin" | "operator") {
   const columns = await prisma.toolboxColumn.findMany({
-    where: { key: { in: Object.keys(values) }, isSystem: false },
+    where: { key: { in: Object.keys(values) }, isSystem: false,
+      ...(role === "admin" ? {} : { isVisible: true, isEditable: true, isSensitive: false }) },
     select: { id: true, key: true }
   });
   if (!columns.length) return;
@@ -114,17 +115,22 @@ async function swapOrder(model: "category" | "item", id: string, direction: "up"
 }
 
 export async function GET() {
-  const viewer = await import("@/lib/membership").then(({ getViewer }) => getViewer());
+  const viewer = await getViewer();
   return Response.json(await getToolboxSnapshot(viewer), { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {
-  assertSameOrigin(request);
+  try { assertSameOrigin(request); }
+  catch { return Response.json({ error: "请从本站提交百宝箱操作" }, { status: 403 }); }
+  const viewer = await getViewer();
+  if (!viewer) return Response.json({ error: "请先登录" }, { status: 401 });
+  if (viewer.status !== "ACTIVE" || viewer.needsSecondFactor) {
+    return Response.json({ error: "账户不可用或尚未完成双重验证" }, { status: 403 });
+  }
   if (!isDatabaseConfigured()) return Response.json({ error: "本地预览未连接数据库" }, { status: 503 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   const action = String(body?.action ?? "");
-  const viewer = await requireViewer("/toolbox");
   const role = toolboxRole(viewer);
   const settings = await toolboxSettings();
   const manager = role === "admin" || role === "operator";
@@ -132,6 +138,11 @@ export async function POST(request: Request) {
 
   if (action === "toggleFavorite") {
     const itemId = idSchema.parse(body?.itemId);
+    const item = await prisma.toolboxItem.findFirst({ where: {
+      id: itemId,
+      ...(manager ? {} : { isPublic: true, isPublished: true, category: { isPublic: true } })
+    }, select: { id: true } });
+    if (!item) return Response.json({ error: "工具不存在或不可访问" }, { status: 404 });
     const existing = await prisma.toolboxFavorite.findUnique({ where: { userId_itemId: { userId: viewer.id, itemId } } });
     if (existing) await prisma.toolboxFavorite.delete({ where: { id: existing.id } });
     else await prisma.toolboxFavorite.create({ data: { userId: viewer.id, itemId } });
@@ -152,7 +163,7 @@ export async function POST(request: Request) {
       name: input.name,
       description: input.description || null,
       officialUrl: input.officialUrl || null,
-      loginAccount: input.loginAccount || null,
+      loginAccount: admin ? input.loginAccount || null : null,
       isPublished: input.isPublished,
       rating: input.rating ?? null,
       financing: input.financing || null,
@@ -163,7 +174,7 @@ export async function POST(request: Request) {
       createdBy: viewer.id,
       updatedBy: viewer.id
     } });
-    await saveDynamicCells(item.id, input.values);
+    await saveDynamicCells(item.id, input.values, admin ? "admin" : "operator");
     targetId = item.id;
     metadata = { name: item.name, categoryId: item.categoryId };
   } else if (action === "updateItem") {
@@ -176,7 +187,7 @@ export async function POST(request: Request) {
       name: input.name,
       description: input.description || null,
       officialUrl: input.officialUrl || null,
-      loginAccount: input.loginAccount || null,
+      ...(admin ? { loginAccount: input.loginAccount || null } : {}),
       isPublished: input.isPublished,
       rating: input.rating ?? null,
       financing: input.financing || null,
@@ -186,7 +197,7 @@ export async function POST(request: Request) {
       sortOrder: categoryChanged ? await nextItemOrder(input.categoryId) : before.sortOrder,
       updatedBy: viewer.id
     } });
-    await saveDynamicCells(item.id, input.values);
+    await saveDynamicCells(item.id, input.values, admin ? "admin" : "operator");
     targetId = item.id;
     metadata = { name: item.name, before: { categoryId: before.categoryId, isPublic: before.isPublic, isPublished: before.isPublished }, after: { categoryId: item.categoryId, isPublic: item.isPublic, isPublished: item.isPublished } };
   } else if (action === "setItemPublic") {

@@ -4,11 +4,11 @@ type TimedSource = { deliveryMode?: string; fetchedAt?: string | null };
 type ExecutionGuardInput = {
   side: "buy" | "sell";
   market: TimedSource & { registrySourceAvailable: boolean };
-  asset: { contractAddress: string; multiplier: string; marketUpdatedAt: string | null };
+  asset: { contractAddress: string; multiplier: string; marketUpdatedAt: string | null; symbol?: string; campaignEligibility?: string };
   reviewedAsset: { contractAddress?: unknown; multiplier?: unknown };
   cmc: TimedSource | null;
   reportCompletedAt?: Date | string | null;
-  settings: { budgetUsd: number; orderUsd: number };
+  settings: { budgetUsd: number; orderUsd: number; selectionMode?: string; selectedSymbols?: string[] };
   notionalUsd: number;
   totalWalletValueUsd: number;
   postTradeExposureUsd: number;
@@ -36,6 +36,10 @@ export function validateBstockAutoExecution(input: ExecutionGuardInput) {
     reject("提交前标的合约或拆股倍率已变化，自动订单未广播。", "AUTOMATION_ASSET_CHANGED");
   }
   if (input.side === "sell") return;
+  if (input.settings.selectionMode === "manual_hot" && (!input.asset.symbol || input.asset.campaignEligibility !== "CONFIRMED"
+    || !input.settings.selectedSymbols?.includes(input.asset.symbol))) {
+    reject("提交前标的不属于已授权的热门选择，订单未广播。", "AUTOMATION_SELECTION_CHANGED");
+  }
   if (!input.cmc || input.cmc.deliveryMode === "CACHE_STALE" || !fresh(input.cmc.fetchedAt, 120_000)) {
     reject("提交前 CMC 实时信号已过期，自动订单未广播。", "AUTOMATION_CMC_STALE");
   }

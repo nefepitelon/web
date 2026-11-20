@@ -5,7 +5,7 @@
   const byId = (id) => document.getElementById(`autotrade-${id}`);
   const endpoint = "/api/bstock-alpha/automation";
   const form = byId("settings");
-  const defaults = { strategy: "adaptive", budgetUsd: 100, orderUsd: 20, maxPositions: 3, stopLossPct: 3, takeProfitPct: 6, maxDrawdownPct: 10, dailyLossPct: 5, intervalSeconds: 60 };
+  const defaults = { strategy: "adaptive", selectionMode: "auto", gridLayers: 3, gridMultiplier: 2, gridStepPct: 1, budgetUsd: 100, orderUsd: 20, maxPositions: 3, stopLossPct: 3, takeProfitPct: 6, maxDrawdownPct: 10, dailyLossPct: 5, intervalSeconds: 60 };
   const strings = {
     zh: {
       title: "自动交易", subtitle: "从 bStock 机会池筛选标的，按策略与预算持续执行。", strategyLabel: "当前策略", adaptive: "自适应策略", trend: "趋势跟随", mean_reversion: "均值回归",
@@ -42,6 +42,26 @@
       event_STARTED: "Strategy enabled", event_STOPPED: "Strategy stopped", event_SCAN: "Opportunity scan", event_DECISION: "Strategy decision", event_SKIPPED: "Trade skipped", event_ORDER: "Order submitted", event_CONFIRMED: "Fill confirmed", event_RECONCILED: "Order reconciled", event_ERROR: "Execution error", event_PAUSED: "Strategy paused", event_RISK: "Risk check", event_EXPIRED: "Authorization expired", event_QUOTE: "Order quote", event_SUBMITTED: "Order broadcast", event_FILLED: "Fill confirmed", event_WAIT: "Awaiting signal", event_UNKNOWN: "Awaiting reconciliation", event_ORDER_FAILED: "Order failed"
     }
   };
+  Object.assign(strings.zh, {
+    martingale_grid: "有限马丁格尔网格", selectionMode: "标的选择", autoSelection: "自动筛选机会池", manualHot: "手动选择热门标的",
+    hotTitle: "选择本次允许买入的热门标的", hotNote: "仅买入勾选的标的（最多 10 个）；仍需有效研报、行情及风控通过。已有策略持仓的退出不受选择限制。",
+    hotEmpty: "正在等待实时热门清单；数据就绪后可勾选。", hotRequired: "请选择 1–10 个当前热门标的。", hotUnavailable: "当前不可用，请重新选择",
+    gridLayers: "最大层数（含首笔）", gridMultiplier: "逐层金额倍率", gridStepPct: "下跌网格间距（%）", orderUsd: "单笔买入上限（USD）",
+    gridMinimum: "网格首笔不得低于 $5，请提高单笔上限或减少层数/倍率。",
+    martingale_gridHelp: "首笔仅在趋势/回归信号合格后买入，随后按下跌间距有限递增加仓。止盈按组合成本，止损不下移首笔锚点；回撤、日亏、仓位与预算检查优先。每次最多加一层，成交确认后才继续。不能保证回本。",
+    gridPlan: "每个标的的计划金额", gridTotal: "满层累计上限", gridRisk: "实际买入仍受可用总预算、25% 仓位、止损和研报限制；未满足条件可提前停止，不保证买满。"
+  });
+  Object.assign(strings.en, {
+    martingale_grid: "Bounded martingale grid", selectionMode: "Asset selection", autoSelection: "Automatic pool selection", manualHot: "Select hot assets manually",
+    hotTitle: "Assets authorized for new buys", hotNote: "Select up to 10 hot assets. Valid research, live data and risk checks remain mandatory. Exits for existing bot positions are not restricted by this list.",
+    hotEmpty: "Waiting for the live hot-asset list.", hotRequired: "Select 1–10 currently available hot assets.", hotUnavailable: "Unavailable; select again",
+    gridLayers: "Max layers (including entry)", gridMultiplier: "Size multiplier", gridStepPct: "Downward grid step (%)", orderUsd: "Maximum buy size (USD)",
+    gridMinimum: "The initial grid buy must be at least $5. Raise the buy cap or reduce layers/multiplier.",
+    martingale_gridHelp: "Initial entries require a qualified trend/range signal. Later buys increase at bounded downward levels. Basket-cost take profit, an initial-fill hard stop, drawdown, daily loss, exposure and budget checks take priority. One layer at a time, after confirmed settlement. Recovery is not guaranteed.",
+    gridPlan: "Planned buys per asset", gridTotal: "Maximum full-ladder cost", gridRisk: "Available total budget, 25% exposure, stops and research may stop a ladder before all layers fill."
+  });
+  let selectedSymbols = new Set();
+  let hotRenderKey = "";
   let language = document.documentElement.dataset.language === "en" ? "en" : "zh";
   let snapshot = null;
   let loaded = false;
@@ -92,6 +112,7 @@
     walletContextKey = next;
     walletContextVersion += 1;
     snapshot = null;
+    selectedSymbols.clear(); hotRenderKey = "";
     loaded = false;
     connectionFailed = false;
     message = null;
@@ -153,6 +174,35 @@
   }
   function renderStrategyHelp() {
     byId("strategy-help").textContent = t(`${form.elements.strategy.value}Help`);
+    const grid = form.elements.strategy.value === "martingale_grid";
+    byId("grid-settings").hidden = !grid;
+    byId("hot-selection").hidden = form.elements.selectionMode.value !== "manual_hot";
+    if (grid) {
+      const layers = Number(form.elements.gridLayers.value), multiplier = Number(form.elements.gridMultiplier.value), cap = Number(form.elements.orderUsd.value);
+      const plan = Number.isInteger(layers) && layers >= 2 && layers <= 4 && multiplier >= 1.1 && multiplier <= 2
+        ? Array.from({ length: layers }, (_, i) => Math.floor(cap / multiplier ** (layers - 1 - i) * 1e6) / 1e6) : [];
+      byId("grid-preview").textContent = plan.length ? `${t("gridPlan")}: ${plan.map(money).join(" → ")} · ${t("gridTotal")}: ${money(plan.reduce((a, b) => a + b, 0))}. ${t("gridRisk")}` : t("gridMinimum");
+    }
+    renderHotAssets();
+  }
+  function renderHotAssets() {
+    const items = window.BstockAutoWalletContext?.getHotAssets?.() || [];
+    const key = JSON.stringify({ items, selected: [...selectedSymbols], language });
+    if (key === hotRenderKey) return;
+    hotRenderKey = key;
+    const container = byId("hot-assets");
+    container.replaceChildren();
+    if (!items.length) container.append(node("p", "autotrade-empty", t("hotEmpty")));
+    const available = new Set(items.map(a => a.symbol));
+    const display = [...items, ...[...selectedSymbols].filter(s => !available.has(s)).map(symbol => ({ symbol, unavailable: true }))];
+    for (const asset of display) {
+      const label = node("label", "autotrade-hot-option");
+      const input = node("input"); input.type = "checkbox"; input.name = "selectedSymbols"; input.value = asset.symbol;
+      input.checked = selectedSymbols.has(asset.symbol); input.disabled = enabled() || Boolean(busy);
+      const text = node("span"); text.append(node("strong", "", asset.symbol), node("small", "", asset.unavailable ? t("hotUnavailable") : language === "zh" ? asset.nameZh || asset.name : asset.name));
+      input.addEventListener("change", () => { if (input.checked) selectedSymbols.add(asset.symbol); else selectedSymbols.delete(asset.symbol); hotRenderKey = ""; });
+      label.append(input, text); container.append(label);
+    }
   }
   function mountManualReconciliation() {
     const button = node("button", "autotrade-button");
@@ -396,6 +446,7 @@
   function openSettings() {
     const config = snapshot?.config || defaults;
     for (const key of Object.keys(defaults)) { if (form.elements[key]) form.elements[key].value = config[key] ?? defaults[key]; }
+    selectedSymbols = new Set(config.selectedSymbols || []); hotRenderKey = "";
     byId("acknowledged").checked = false;
     form.hidden = false;
     byId("configure").setAttribute("aria-expanded", "true");
@@ -487,16 +538,26 @@
   byId("scan").addEventListener("click", () => void perform("scan"));
   byId("acknowledged").addEventListener("change", renderControls);
   form.elements.strategy.addEventListener("change", renderStrategyHelp);
-  form.addEventListener("input", () => {
+  form.elements.selectionMode.addEventListener("change", renderStrategyHelp);
+  form.addEventListener("input", (event) => {
+    if (event.target === byId("acknowledged")) return;
+    byId("acknowledged").checked = false;
     form.elements.orderUsd.setCustomValidity("");
     form.elements.takeProfitPct.setCustomValidity("");
+    form.elements.selectionMode.setCustomValidity("");
+    if (event.target.name !== "selectedSymbols") renderStrategyHelp();
+    renderControls();
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (busy || ignoreConfirmation || enabled() || snapshot?.capability !== "agentic" || !byId("acknowledged").checked) return;
     const settings = {};
-    for (const key of Object.keys(defaults)) settings[key] = key === "strategy" ? form.elements[key].value : Number(form.elements[key].value);
+    for (const key of Object.keys(defaults)) settings[key] = ["strategy", "selectionMode"].includes(key) ? form.elements[key].value : Number(form.elements[key].value);
+    settings.selectedSymbols = settings.selectionMode === "manual_hot" ? [...selectedSymbols] : [];
     form.elements.orderUsd.setCustomValidity(settings.orderUsd > settings.budgetUsd / 4 ? t("orderLimit") : "");
+    if (settings.strategy === "martingale_grid" && settings.orderUsd / settings.gridMultiplier ** (settings.gridLayers - 1) < 5) form.elements.orderUsd.setCustomValidity(t("gridMinimum"));
+    const hot = new Set((window.BstockAutoWalletContext?.getHotAssets?.() || []).map(a => a.symbol));
+    form.elements.selectionMode.setCustomValidity(settings.selectionMode === "manual_hot" && (!settings.selectedSymbols.length || settings.selectedSymbols.length > 10 || settings.selectedSymbols.some(s => !hot.has(s))) ? t("hotRequired") : "");
     form.elements.takeProfitPct.setCustomValidity(settings.takeProfitPct < settings.stopLossPct * 1.5 ? t("profitLimit") : "");
     if (!form.reportValidity()) return;
     void perform("start", settings);

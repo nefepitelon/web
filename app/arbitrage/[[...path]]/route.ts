@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { EXTERNAL_EMBED_CSP } from "@/lib/external-embed-security";
 
 const UPSTREAM_ORIGIN = "https://perpdexlist.com";
 const LOCAL_BASE = "/arbitrage";
@@ -37,7 +38,8 @@ function responseHeaders(contentType: string | null, cacheable: boolean) {
     "Access-Control-Allow-Origin": "*",
     "Cross-Origin-Resource-Policy": "cross-origin",
     "Referrer-Policy": "no-referrer",
-    "X-Content-Type-Options": "nosniff"
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": EXTERNAL_EMBED_CSP
   };
 }
 

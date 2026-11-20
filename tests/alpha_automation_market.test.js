@@ -13,6 +13,7 @@ function candles(count=30) {
 }
 function source(symbol="BTC",patch={}) {return {symbol,score:86,bias:"long",signalType:"多头共振",dimensions:[95,94,70,70,70,70,70],dimensionAvailability:[true,true,true,true,true,true,true],...patch};}
 function signal(symbol="BTC",patch={}) {return {symbol,pair:`${symbol}USDT`,dedupe_hash:`${symbol}:original:1`,direction:"long",price_change_pct:1.2,oi_change_pct:3,
+  channel_username:"eqn_oi_price_monitor",
   confidence:1,parse_status:"parsed",source_mode:"public_preview",signal_time:new Date(now-1000).toISOString(),signal_time_source:"source_timestamp",...patch};}
 function metadata(symbol) {return {symbol:`${symbol}USDT`,status:"TRADING",contractType:"PERPETUAL",quoteAsset:"USDT",filters:[
   {filterType:"PRICE_FILTER",tickSize:"0.01"},{filterType:"LOT_SIZE",stepSize:"0.001",minQty:"0.001",maxQty:"10000"},
@@ -301,7 +302,7 @@ test("pool snapshot freshness rejects expired, unknown, future and cached source
 
 test("real public HTML collector records snapshot response age separately from original message publication time",async()=>{
   const eventAt=now-73*60_000;
-  const publicPreviewHtml=`<div class="tgme_widget_message_wrap js-widget_message_wrap"><div data-post="BWE_OI_Price_monitor/12345">
+  const publicPreviewHtml=`<div class="tgme_widget_message_wrap js-widget_message_wrap"><div data-post="EQN_OI_Price_monitor/12345">
     <div class="tgme_widget_message_text js-message_text">[BTCUSDT] Binance openinterest +6.0%, Price +4.0%</div>
     <time datetime="${new Date(eventAt).toISOString()}">08:47</time></div></div>`;
   const result=await harness({publicPreviewHtml,previewHeaders:{age:"5"}}).loader({selectedStrategies:["p1_three_source"]});
@@ -315,7 +316,7 @@ test("real public HTML collector records snapshot response age separately from o
 });
 
 test("unknown publication time qualifies only current pool membership with a unique verified message identity",async()=>{
-  const unknown=signal("BTC",{signal_time:null,signal_time_source:"unknown",telegram_message_id:"12345",channel_username:"BWE_OI_Price_monitor"});
+  const unknown=signal("BTC",{signal_time:null,signal_time_source:"unknown",telegram_message_id:"12345",channel_username:"EQN_OI_Price_monitor"});
   for(const strategy of ["p1_three_source","p2_two_source"]) {
     const h=harness({scanLoader:async()=>({scannedAt:new Date(now-1000).toISOString(),items:strategy==="p1_three_source"?[source("BTC")]:[]}),
       signalLoader:async()=>({latest:[unknown]})});
@@ -338,13 +339,16 @@ test("unknown publication time qualifies only current pool membership with a uni
   ]) {
     const result=await harness({signalLoader:async()=>({latest})}).loader({selectedStrategies:["p1_three_source"]});
     assert.equal(result.markets.length,0,JSON.stringify(latest));
-    assert.equal(result.observations.find(row=>row.source==="risk_pool").dataComplete,false);
-    assert.ok(result.observations.some(row=>row.source==="signal"),"unknown or invalid events remain available for per-symbol diagnostics");
+    const hasChannel=latest.some(row=>Boolean(row.channel_username));
+    const invalidPool=result.observations.find(row=>row.source==="risk_pool");
+    if(hasChannel)assert.equal(invalidPool.dataComplete,false);
+    else assert.equal(invalidPool.poolMembers.some(row=>row.source==="signal"),false);
+    assert.equal(result.observations.some(row=>row.source==="signal"),hasChannel,"only verified source channel events remain available for diagnostics");
   }
 });
 
 test("real Markdown collector's unknown event time can prove only verified current pool membership",async()=>{
-  const publicPreviewHtml="[](https://t.me/BWE_OI_Price_monitor/12345)\n[BTCUSDT] Binance openinterest +6.0%, Price +4.0%\n";
+  const publicPreviewHtml="[](https://t.me/EQN_OI_Price_monitor/12345)\n[BTCUSDT] Binance openinterest +6.0%, Price +4.0%\n";
   const h=harness({publicPreviewHtml});
   const result=await h.loader({selectedStrategies:["p1_three_source"]});
   assert.equal(result.markets.length,1,JSON.stringify(result.sourceStatus));
@@ -371,6 +375,16 @@ test("same-coin labels count distinct latest twenty across directions and ages b
   const clipped=await harness({signalLoader:async()=>({latest:latest20})}).loader({selectedStrategies:["strong_signal"]});
   assert.equal(clipped.observations.find(row=>row.source==="signal"&&row.symbol==="BTCUSDT").sameCoinCount,1);
   assert.equal(clipped.observations.filter(row=>row.source==="signal").length,20);
+});
+
+test("a previous or unidentified channel cannot count toward same-coin or three-source execution",async()=>{
+  const old=signal("BTC",{channel_username:"bwe_oi_price_monitor",dedupe_hash:"old-channel"});
+  const missing=signal("BTC",{channel_username:null,dedupe_hash:"unattributed"});
+  const mixed=await harness({signalLoader:async()=>({latest:[old,missing,signal("BTC")]})}).loader({selectedStrategies:["same_coin_x2"]});
+  const events=mixed.observations.filter(row=>row.source==="signal");
+  assert.equal(events.length,1);assert.equal(events[0].sameCoinCount,1);assert.equal(mixed.markets.length,0);
+  const prior=await harness({signalLoader:async()=>({latest:[old,missing]})}).loader({selectedStrategies:["p1_three_source"]});
+  assert.equal(prior.observations.some(row=>row.source==="signal"),false);assert.equal(prior.markets.length,0);
 });
 
 test("unknown message identity, stale payload and future contributor cannot create fresh strong or pool evidence",async()=>{

@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "hedge:setup": "node scripts/hedge-ops.mjs setup",
+    "hedge:package": "node scripts/package-hedge-ops.mjs",
+    "hedge:local": "hedge-ops/.venv/Scripts/python.exe hedge-ops/local.py",
+    "hedge:start": "node scripts/hedge-ops.mjs start",
+    "hedge:test": "node scripts/hedge-ops.mjs test",
     "dev": "node scripts/run-with-grid.mjs dev",
-    "build": "npm run grid:package && npm run quant:native && npm run quant:package && prisma generate && node scripts/migrate-on-vercel.mjs && next build",
+    "build": "npm run hedge:package && npm run grid:package && npm run quant:native && npm run quant:package && prisma generate && node scripts/migrate-on-vercel.mjs && next build",
     "start": "node scripts/run-with-grid.mjs start",
     "postinstall": "npm install --prefix grid-ops --omit=dev && npm install --prefix classic-grid --omit=dev",
     "grid:install": "npm install --prefix grid-ops --omit=dev",
@@ -30,23 +35,25 @@
     "@supabase/ssr": "0.10.0",
     "@supabase/supabase-js": "2.100.1",
     "@vercel/blob": "latest",
-    "@x402/core": "^2.24.0",
-    "@x402/evm": "^2.24.0",
+    "@vercel/functions": "3.9.3",
+    "@x402/core": "2.29.0",
+    "@x402/evm": "2.29.0",
+    "bigint-buffer": "file:classic-grid/vendor/bigint-buffer-1.1.6.tgz",
     "cheerio": "^1.1.2",
     "exceljs": "4.4.0",
     "graphql-request": "^5.0.0",
     "jose": "6.1.0",
     "lucide-react": "0.468.0",
-    "next": "16.3.0",
+    "next": "16.4.6",
     "qrcode": "1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "server-only": "0.0.1",
     "stripe": "20.4.1",
-    "undici": "^6.28.0",
+    "undici": "^6.29.1",
     "viem": "2.55.11",
     "workflow": "^4.8.3",
-    "zod": "4.1.12"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@types/node": "24.10.1",
@@ -59,6 +66,7 @@
     "typescript": "5.9.3"
   },
   "overrides": {
+    "bigint-buffer": "$bigint-buffer",
     "uuid": "11.1.1",
     "postcss": {
       "nanoid": "3.3.18"
@@ -67,10 +75,23 @@
       "nanoid": "5.1.16"
     },
     "@workflow/world-local": {
-      "undici": "7.29.0"
+      "undici": "7.30.1"
     },
     "@workflow/world-vercel": {
-      "undici": "7.29.0"
-    }
+      "undici": "7.30.1"
+    },
+    "zod@^4.0.0": "4.6.6",
+    "undici@^7.0.0": "7.30.1",
+    "piscina@^4.0.0": "4.9.4",
+    "proxy-addr": "2.0.8",
+    "bn.js@^5.0.0": "5.2.3",
+    "ws@^8.0.0": "8.21.2",
+    "brace-expansion@^1.0.0": "1.1.21",
+    "brace-expansion@^2.0.0": "2.1.7",
+    "brace-expansion@^5.0.0": "5.0.12",
+    "source-map-js": "1.2.2",
+    "devalue@^5.0.0": "5.9.3",
+    "sharp": "0.35.5",
+    "body-parser@^2.0.0": "2.4.0"
   }
 }

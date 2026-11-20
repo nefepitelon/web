@@ -9,9 +9,9 @@ export async function writeAudit(input: {
   targetId?: string | null;
   metadata?: Record<string, unknown>;
   request?: Request;
-}) {
+}, database: Pick<Prisma.TransactionClient, "auditLog"> = prisma) {
   const context = await requestContext(input.request);
-  return prisma.auditLog.create({
+  return database.auditLog.create({
     data: {
       actorUserId: input.actorUserId ?? null,
       action: input.action,

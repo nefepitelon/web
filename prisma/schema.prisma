@@ -8,6 +8,20 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model StmHuntRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String
+  key       String
+  payload   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, kind, key])
+  @@index([userId, kind, createdAt])
+  @@map("stm_hunt_records")
+}
+
 enum UserStatus {
   ACTIVE
   SUSPENDED
@@ -231,6 +245,29 @@ model ClassicGridBot {
 
   @@index([status, heartbeatAt])
   @@map("classic_grid_bots")
+}
+
+model HedgeOpsRuntime {
+  id                String   @id @default(cuid())
+  userId            String   @db.Uuid
+  engine            String   @db.VarChar(16)
+  configEncrypted   String   @db.Text
+  snapshotEncrypted String?  @db.Text
+  views             Json?
+  status            String   @default("STOPPED") @db.VarChar(24)
+  generation        String?
+  runId             String?
+  operationId       String?
+  operationStartedAt DateTime?
+  workerStartedAt    DateTime?
+  heartbeatAt       DateTime?
+  lastError         String?  @db.VarChar(2000)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, engine])
+  @@index([status, heartbeatAt])
+  @@map("hedge_ops_runtimes")
 }
 
 model HostedGridOpsBot {

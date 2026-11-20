@@ -36,20 +36,50 @@ export function safeEqualText(left: string, right: string) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function createTwoFactorPass(userId: string) {
-  return new SignJWT({ purpose: "welinkbtc-2fa" })
+export type TwoFactorSessionBinding = {
+  sessionId: string;
+  factorId: string;
+  enabledAt: string;
+};
+
+export function twoFactorBindingFromClaims(
+  claims: { sub?: unknown; session_id?: unknown } | null | undefined,
+  userId: string,
+  factorId: string | null | undefined,
+  enabledAt: Date | string | null | undefined
+): TwoFactorSessionBinding | null {
+  if (claims?.sub !== userId || typeof claims.session_id !== "string" || !claims.session_id || !factorId || !enabledAt) return null;
+  const date = new Date(enabledAt);
+  if (!Number.isFinite(date.getTime())) return null;
+  return { sessionId: claims.session_id, factorId, enabledAt: date.toISOString() };
+}
+
+function bindingDigest(binding: TwoFactorSessionBinding) {
+  return createHmac("sha256", securityKey("TWO_FACTOR_SIGNING_KEY"))
+    .update(JSON.stringify([binding.sessionId, binding.factorId, binding.enabledAt]))
+    .digest("hex");
+}
+
+export async function createTwoFactorPass(userId: string, binding: TwoFactorSessionBinding) {
+  if (!binding?.sessionId || !binding.factorId || !binding.enabledAt) throw new Error("A verified MFA session binding is required");
+  return new SignJWT({ purpose: "welinkbtc-2fa", binding: bindingDigest(binding) })
     .setProtectedHeader({ alg: "HS256" })
+    .setIssuer("welinkbtc")
+    .setAudience("two-factor-session")
     .setSubject(userId)
     .setIssuedAt()
     .setExpirationTime("12h")
     .sign(securityKey("TWO_FACTOR_SIGNING_KEY"));
 }
 
-export async function verifyTwoFactorPass(token: string | undefined, userId: string) {
-  if (!token) return false;
+export async function verifyTwoFactorPass(token: string | undefined, userId: string, binding: TwoFactorSessionBinding | null = null) {
+  if (!token || !binding?.sessionId || !binding.factorId || !binding.enabledAt) return false;
   try {
-    const { payload } = await jwtVerify(token, securityKey("TWO_FACTOR_SIGNING_KEY"));
-    return payload.sub === userId && payload.purpose === "welinkbtc-2fa";
+    const { payload } = await jwtVerify(token, securityKey("TWO_FACTOR_SIGNING_KEY"), {
+      algorithms: ["HS256"], issuer: "welinkbtc", audience: "two-factor-session", maxTokenAge: "12h"
+    });
+    return payload.sub === userId && payload.purpose === "welinkbtc-2fa"
+      && typeof payload.binding === "string" && safeEqualText(payload.binding, bindingDigest(binding));
   } catch {
     return false;
   }
@@ -68,7 +98,7 @@ export async function createOAuthState(
 }
 
 export async function verifyOAuthState(token: string, userId: string) {
-  const { payload } = await jwtVerify(token, securityKey("OAUTH_STATE_SIGNING_KEY"));
+  const { payload } = await jwtVerify(token, securityKey("OAUTH_STATE_SIGNING_KEY"), { algorithms: ["HS256"], maxTokenAge: "10m" });
   if (payload.sub !== userId || payload.purpose !== "social-link") {
     throw new Error("Invalid OAuth state");
   }

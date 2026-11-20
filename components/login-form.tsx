@@ -1,19 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { WELINK_ACCESS_CODE } from "@/lib/max-trial";
 import { isBrowserSupabaseConfigured } from "@/lib/supabase/browser";
+import { AuthCaptcha } from "@/components/auth-captcha";
 
 type EmailMode = "signin" | "signup" | "magic";
 
 export function LoginForm({ next, initialError = null }: { next: string; initialError?: string | null }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [accessCode, setAccessCode] = useState("");
+  const [accessCode, setAccessCode] = useState(WELINK_ACCESS_CODE);
   const [mode, setMode] = useState<EmailMode>("signin");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(initialError);
   const [pending, setPending] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaRefresh, setCaptchaRefresh] = useState(0);
   const configured = isBrowserSupabaseConfigured();
+  const captchaRequired = Boolean(process.env.NEXT_PUBLIC_AUTH_CAPTCHA_SITE_KEY);
 
   async function submitEmail(event: React.FormEvent) {
     event.preventDefault();
@@ -25,7 +30,7 @@ export function LoginForm({ next, initialError = null }: { next: string; initial
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, intent: mode, next, accessCode: accessCode.trim() || undefined })
+        body: JSON.stringify({ email, password, intent: mode, next, accessCode: accessCode.trim() || undefined, captchaToken: captchaToken ?? undefined })
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "暂时无法完成登录");
@@ -40,6 +45,7 @@ export function LoginForm({ next, initialError = null }: { next: string; initial
       setError(caught instanceof Error ? caught.message : "暂时无法完成登录");
     } finally {
       setPending(false);
+      setCaptchaRefresh((value) => value + 1);
     }
   }
 
@@ -55,9 +61,9 @@ export function LoginForm({ next, initialError = null }: { next: string; initial
     <>
       {!configured ? <div className="form-message">认证服务尚未配置。</div> : null}
       <div className="access-code-capsule">
-        <span className="access-code-capsule__badge" aria-hidden="true">30D</span>
-        <div className="access-code-capsule__copy"><label htmlFor="login-access-code">Access Code <small>可选，可跳过</small></label><span>有效体验码可开启一个月 Max 全功能。</span></div>
-        <input id="login-access-code" type="text" autoCapitalize="characters" autoComplete="off" maxLength={64} placeholder="输入体验码" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} disabled={!configured || pending} />
+        <span className="access-code-capsule__badge" aria-hidden="true">3M</span>
+        <div className="access-code-capsule__copy"><label htmlFor="login-access-code">Access Code <small>已为你填写</small></label><span>WELINK 长期有效；每个账户限用一次，赠送 3 个月 MAX 全功能。</span></div>
+        <input id="login-access-code" type="text" autoCapitalize="characters" autoComplete="off" maxLength={64} placeholder="WELINK" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} disabled={!configured || pending} />
       </div>
       <button className="button button--outline oauth-button" type="button" onClick={signInWithGoogle} disabled={!configured || pending}><span aria-hidden="true">G</span>使用 Google 继续</button>
       <div className="auth-divider">或使用邮箱</div>
@@ -69,7 +75,9 @@ export function LoginForm({ next, initialError = null }: { next: string; initial
       <form onSubmit={submitEmail}>
         <div className="field"><label htmlFor="email">邮箱地址</label><input className="input auth-input" id="email" type="email" autoComplete="email" placeholder="you@qq.com / you@example.com" required value={email} onChange={(event) => setEmail(event.target.value)} disabled={!configured || pending} /><span className="field-hint">支持 QQ 邮箱及其他标准邮箱地址。</span></div>
         {mode !== "magic" ? <div className="field"><label htmlFor="password">密码</label><input className="input auth-input" id="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} maxLength={72} required value={password} onChange={(event) => setPassword(event.target.value)} disabled={!configured || pending} /><span className="field-hint">8–72 位，并同时包含字母和数字。</span></div> : null}
-        <button className="button button--block" type="submit" disabled={!configured || pending}>{pending ? "正在处理…" : mode === "signin" ? "邮箱密码登录" : mode === "signup" ? "创建 Free 账户" : "发送登录链接"}</button>
+        {mode === "magic" ? <p className="field-hint">魔法链接用于已有账户登录；新用户请先选择“注册账户”。</p> : null}
+        <AuthCaptcha onToken={setCaptchaToken} refreshKey={captchaRefresh} />
+        <button className="button button--block" type="submit" disabled={!configured || pending || (captchaRequired && !captchaToken)}>{pending ? "正在处理…" : mode === "signin" ? "邮箱密码登录" : mode === "signup" ? "创建账户并领取 3 个月 MAX" : "发送登录链接"}</button>
       </form>
       {error ? <div className="form-message" role="alert">{error}</div> : null}
       {message ? <div className="form-message form-message--success" role="status">{message}</div> : null}

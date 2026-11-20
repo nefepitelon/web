@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>套利对冲Ops — Binance &lt;&gt; Hyperliquid</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080b10'/%3E%3Crect x='7' y='6' width='8' height='20' fill='%23b6f36b'/%3E%3Crect x='18' y='10' width='8' height='20' fill='%23b6f36b' opacity='.45'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/static/styles.css?v=1.4.0" />
+</head>
+<body>
+<div class="noise"></div>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <span class="brand-mark"><i></i><i></i></span>
+      <span><b>套利对冲Ops</b><small>BINANCE × HYPERLIQUID</small></span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <button class="nav-item active" data-page="funding">
+        <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/></svg>
+        <span>资金费总览</span><em id="nav-count">0</em>
+      </button>
+      <button class="nav-item" data-page="tasks">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+        <span>轮换任务</span><em id="nav-tasks">0</em>
+      </button>
+      <button class="nav-item" data-page="system">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        <span>系统</span>
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="gauge-card" id="gauge-card">
+        <div class="gauge-head"><span>日交易量预估</span><em id="gauge-pct">—</em></div>
+        <svg class="gauge" viewBox="0 0 220 130" role="img" aria-labelledby="gauge-title">
+          <title id="gauge-title">当前任务预估日交易量与理论上限</title>
+          <path class="gauge-track" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" />
+          <path class="gauge-fill" id="gauge-fill" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" stroke-dasharray="0 100" />
+          <g id="gauge-ticks"></g>
+          <line class="gauge-actual" id="gauge-actual" x1="110" y1="14" x2="110" y2="28" style="display:none" />
+          <g id="gauge-needle" transform="rotate(-90 110 110)">
+            <line class="gauge-needle" x1="110" y1="110" x2="110" y2="30" />
+          </g>
+          <circle class="gauge-hub" cx="110" cy="110" r="5" />
+        </svg>
+        <div class="gauge-value"><b id="gauge-current">—</b><small>当前任务 / 天</small></div>
+        <div class="gauge-rows">
+          <div><span><i class="dot max"></i>理论上限</span><b id="gauge-max">—</b></div>
+          <div><span><i class="dot actual"></i>近 24h 实际</span><b id="gauge-actual-text">—</b></div>
+        </div>
+      </div>
+      <div class="connection-card" id="conn-card">
+        <span class="pulse-dot"></span>
+        <div><b id="conn-title">连接中</b><small id="conn-sub">正在拉取费率</small></div>
+      </div>
+      <div class="mini-meta"><span>版本</span><b id="meta-version">—</b></div>
+      <div class="mini-meta"><span>端口</span><b id="meta-port">8005</b></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-button menu-button" id="menu-button" aria-label="展开导航" aria-expanded="false">☰</button>
+      <div class="page-heading">
+        <span class="eyebrow">FUNDING RATE MONITOR</span>
+        <h1 id="page-title">资金费总览</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="mode-pill" id="mode-pill"><span></span><b>连接中</b></div>
+        <span class="clock" id="clock">—</span>
+        <button class="icon-button" id="refresh-button" aria-label="刷新">
+          <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page active" id="page-funding" style="padding:24px 30px 40px">
+      <p id="error" class="assumption-note" role="alert" hidden></p>
+      <section class="ledger-panel" id="ledger-panel">
+        <header class="ledger-head">
+          <div><span class="kicker">ACCOUNT &amp; VOLUME</span><h2>账户与交易统计</h2></div>
+          <span class="clock" id="ledger-meta">加载中…</span>
+        </header>
+        <div class="ledger-grid" id="ledger-grid"></div>
+        <p class="ledger-note" id="ledger-note" style="display:none"></p>
+        <div class="ledger-table-wrap">
+          <table class="funding-table ledger-table">
+            <thead><tr>
+              <th>任务</th>
+              <th>开仓次数</th>
+              <th>Binance 交易量</th>
+              <th>Hyperliquid 交易量</th>
+              <th>合计交易量</th>
+              <th>手续费</th>
+              <th>价差损益</th>
+              <th>净损益</th>
+              <th>每万美元磨损</th>
+            </tr></thead>
+            <tbody id="ledger-body"><tr><td colspan="9" class="dim" style="text-align:center;padding:26px">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="assumption-note"><b>资金费统一为 bps / 小时；行情展示与账户读取独立。</b> Binance 按官方实际结算周期换算；Hyperliquid 原生资金费为每小时值。开仓另行检查基差、盘口深度、滑点、保证金与仓位归属。「回本小时」使用往返成本 <input class="cost-input" id="cost-input" type="number" min="0" max="1000" step="0.1" value="10" aria-label="假设往返成本 bps"> bps 估算，非收益承诺。</p>
+
+      <div id="period-warnings" style="display:none"></div>
+      <div id="unmanaged-warn-top" style="display:none"></div>
+
+      <div class="venue-grid" id="venue-grid"></div>
+
+      <div class="stats-grid" id="stats-grid" style="margin-bottom:20px"></div>
+
+      <div class="panel" style="padding:20px 22px;margin-bottom:20px">
+        <header class="panel-header compact">
+          <div><span class="kicker">LIQUIDATION MONITOR</span><h2>持仓与强平距离</h2></div>
+          <span class="clock" id="pos-meta">—</span>
+        </header>
+        <p class="acct-note" id="acct-note" style="margin-top:14px"></p>
+        <div class="pos-grid" id="pos-grid"></div>
+      </div>
+
+      <div class="panel table-panel">
+        <header class="panel-header compact">
+          <div><span class="kicker">FUNDING DIFFERENTIAL</span><h2>共有币种费率排名</h2></div>
+          <span class="clock" id="table-meta">—</span>
+        </header>
+        <div class="table-scroll">
+          <table class="funding-table">
+            <thead><tr>
+              <th>币种</th>
+              <th>Binance bps/h</th>
+              <th>Hyperliquid bps/h</th>
+              <th>净 bps/h</th>
+              <th>建议方向</th>
+              <th>年化</th>
+              <th>净 bps/天</th>
+              <th>回本小时</th>
+              <th>最大杠杆</th>
+            </tr></thead>
+            <tbody id="funding-body"><tr><td colspan="9" class="dim" style="text-align:center;padding:40px">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-tasks" style="padding:24px 30px 40px">
+      <div id="unmanaged-warn" style="display:none"></div>
+      <p class="dry-banner" id="dry-banner"></p>
+
+      <form class="task-form" id="task-form">
+        <div class="field asset-field"><label for="f-asset">共同永续币种 · 两所合计价差从窄到宽</label><select id="f-asset" name="asset" required></select></div>
+        <div class="field leverage-field"><label for="f-leverage">双所杠杆（倍）</label><input id="f-leverage" name="leverage" type="number" min="1" max="150" step="1" value="2" placeholder="留空沿用交易所"></div>
+        <div class="field"><label for="f-notional">单腿金额 最小（USD）</label><input id="f-notional" name="notional" type="number" min="5" step="0.01" value="30" required></div>
+        <div class="field"><label for="f-notional-max">最大（留空=固定）</label><input id="f-notional-max" name="notional_max" type="number" min="5" step="0.01" placeholder="固定金额"></div>
+        <div class="field"><label for="f-rotation">轮换最短（小时）</label><input id="f-rotation" name="hold_hours" type="number" min="0.01" max="168" step="0.01" value="8" required></div>
+        <div class="field"><label for="f-rotation-max">最长（留空=固定）</label><input id="f-rotation-max" name="hold_hours_max" type="number" min="0.01" max="168" step="0.01" placeholder="固定时间"></div>
+        <div class="field order-type-field"><label for="f-order-type">下单方式</label><select id="f-order-type" name="order_type"><option value="ioc">市价吃单 · 双腿 IOC 滑点保护</option><option value="binance_maker">限价挂单 · Binance Maker / Hyperliquid IOC</option></select></div>
+        <div class="field" id="maker-wait-field" hidden><label for="f-maker-wait">挂单最多等待（秒）</label><input id="f-maker-wait" type="number" min="5" max="60" step="1" value="20"></div>
+        <button class="primary-button" id="f-save" type="submit"><span>＋</span> 保存任务</button>
+        <button class="mini-btn" id="cancel-edit" type="button" hidden>取消编辑</button>
+        <div class="task-form-meta"><small id="spread-meta">价差待扫描</small><small id="leverage-hint">开仓前核实两所上限</small></div>
+        <p class="task-help">金额为单腿名义额，不是保证金。每轮在区间内选择金额和时长；最多 4 个任务，每轮处理一个。杠杆仅在双腿空仓时设置并核实，留空沿用交易所。挂单一旦出现成交就撤余单，按终态实成交量对冲；超时撤单，风控平仓始终使用 IOC 只减仓。</p>
+      </form>
+
+      <div class="panel" style="padding:18px 20px;margin-bottom:18px">
+        <header class="panel-header compact"><div><span class="kicker">ROTATION TASKS</span><h2>任务列表</h2></div>
+          <button class="mini-btn" id="run-preflight" style="margin-right:6px">实盘预检</button>
+          <button class="mini-btn" id="run-cycle">立即跑一轮</button></header>
+        <p class="acct-note" id="task-safety-note"></p><div id="task-list" style="margin-top:12px"></div>
+      </div>
+
+      <div id="preflight-box" style="display:none;margin-bottom:18px"></div>
+
+      <div class="panel" style="padding:18px 20px">
+        <header class="panel-header compact"><div><span class="kicker">CYCLE LOG</span><h2>执行记录</h2></div></header>
+        <div id="cycle-log" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-system" style="padding:24px 30px 40px">
+      <div class="panel" style="padding:20px 22px">
+        <header class="panel-header compact"><div><span class="kicker">SYSTEM</span><h2>运行状态</h2></div></header>
+        <pre id="system-dump" style="margin:14px 0 0;color:var(--muted);font:11px var(--mono);white-space:pre-wrap"></pre>
+      </div>
+      <div class="panel table-panel orders-panel"><header class="panel-header compact"><div><span class="kicker">ORDER RECONCILIATION</span><h2>订单与成交对账</h2></div><button id="export-orders" class="mini-btn">导出当前订单 CSV</button></header><p class="acct-note" id="stats-note"></p><div class="table-scroll"><table class="funding-table"><thead><tr><th>时间</th><th>交易所 / 币种</th><th>方向</th><th>客户订单号</th><th>状态</th><th>实际成交</th><th>成交金额</th><th>手续费</th></tr></thead><tbody id="orders"></tbody></table></div></div>
+      <div class="panel diagnostic-panel"><header class="panel-header compact"><div><span class="kicker">CONNECTION DIAGNOSTICS</span><h2>连接与权限说明</h2></div></header><div id="diagnostics"></div></div>
+    </div>
+  </main>
+</div>
+<script src="/static/app.js?v=1.4.0"></script>
+</body>
+</html>

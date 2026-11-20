@@ -12,6 +12,8 @@
 | BStock Alpha | `/bstock-alpha` | `app/bstock-alpha/`、`bstock-*`、`lib/bstock-*` |
 | AI 网格交易 Ops | `/grid-ops` | `app/grid-ops/`、`grid-ops/` |
 | AIClassic 网格 | `/classic-grid` | `app/classic-grid/`、`classic-grid/`、`lib/classic-grid/` |
+| 套利对冲Ops | `/hedge-ops` | `app/hedge-ops/`、`hedge-ops/`、`lib/hedge-ops-hosted/` |
+| STM hunt | `/stm-hunt` | `app/stm-hunt/`、`components/stm-hunt-surface.tsx`、`lib/stm-hunt/`；运行说明见 `docs/STM-HUNT.md` |
 | TideSight 量化与 MACD | `/tidesight-quant`、`/tidesight-quant/macd` | `app/tidesight-quant/`、`lib/tidesight/` |
 | 量化交易集（六引擎） | `/quant-suite`、`/quant-suite/[engine]` | `components/quant-suite-surface.tsx`、`lib/quant-suite/`、`quant-runtime/` |
 | 研究档案 | `/research` | `app/research/`、`lib/research-*` |

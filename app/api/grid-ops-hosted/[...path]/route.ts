@@ -18,6 +18,7 @@ import {
 } from "@/lib/grid-ops-hosted/service";
 import { prisma } from "@/lib/prisma";
 import { readHostedGridOpsView } from "@/lib/grid-ops-hosted/read-model";
+import { hostedGridOpsNotQuarantinedWhere } from "@/lib/grid-ops-hosted/security";
 import { assertSameOrigin } from "@/lib/request-security";
 import { exchangeOnboardingTemplate, publicExchangeManifest } from "../../../../grid-ops/src/exchange/manifest.js";
 import {
@@ -185,7 +186,7 @@ export async function POST(request: Request, context: Context) {
         if (lighter) throw new Error("RHC Lighter 的官方签名器依赖本机 Python；线上托管支持其 PAPER 模式，RHC 实盘请切换本地引擎。除 Entropy（仅 PAPER）外，其他十所可线上实盘。");
       }
       const updated = await prisma.hostedGridOpsBot.update({
-        where: { id: bot.id },
+        where: { ...hostedGridOpsNotQuarantinedWhere(bot.id), userId: viewer.id },
         data: {
           configEncrypted: encryptHostedGridOpsEnvironment(merged),
           configSummary: hostedGridOpsSummary(merged) as Prisma.InputJsonValue,
@@ -209,7 +210,7 @@ export async function POST(request: Request, context: Context) {
       } else if (["AI_PROVIDER", "AI_API_KEY", "AI_BASE_URL", "AI_MODEL", "AI_MODEL_SMALL", "AI_SENTINEL_MINUTES", "AI_MARKET_MINUTES", "AI_REPORT_HOUR"].includes(key)) {
         environment[key] = String(body.value || "").trim();
       } else throw new Error(`不允许修改该字段：${key}`);
-      await prisma.hostedGridOpsBot.update({ where: { id: bot.id }, data: { configEncrypted: encryptHostedGridOpsEnvironment(environment), configSummary: hostedGridOpsSummary(environment) as Prisma.InputJsonValue } });
+      await prisma.hostedGridOpsBot.update({ where: { ...hostedGridOpsNotQuarantinedWhere(bot.id), userId: viewer.id }, data: { configEncrypted: encryptHostedGridOpsEnvironment(environment), configSummary: hostedGridOpsSummary(environment) as Prisma.InputJsonValue } });
       return json({ ok: true, hosted: true, message: "线上加密配置已保存。" });
     }
 
@@ -222,7 +223,7 @@ export async function POST(request: Request, context: Context) {
       environment[next.modeEnv] = "paper";
       environment[next.networkEnv] = next.defaultNetwork || "mainnet";
       const updated = await prisma.hostedGridOpsBot.update({
-        where: { id: bot.id },
+        where: { ...hostedGridOpsNotQuarantinedWhere(bot.id), userId: viewer.id },
         data: {
           configEncrypted: encryptHostedGridOpsEnvironment(environment),
           configSummary: hostedGridOpsSummary(environment) as Prisma.InputJsonValue,
@@ -246,7 +247,7 @@ export async function POST(request: Request, context: Context) {
       for (const key of instanceOwnedEnvKeys(removal.target)) delete environment[key];
       environment.EXCHANGE_INSTANCES = enabledInstanceValue(removal.definitions);
       const updated = await prisma.hostedGridOpsBot.update({
-        where: { id: bot.id },
+        where: { ...hostedGridOpsNotQuarantinedWhere(bot.id), userId: viewer.id },
         data: {
           configEncrypted: encryptHostedGridOpsEnvironment(environment),
           configSummary: hostedGridOpsSummary(environment) as Prisma.InputJsonValue,

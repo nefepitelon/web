@@ -10,6 +10,10 @@ const rootFiles = new Set([
   "ai-ops.html",
   "styles.css",
   "dashboard.css",
+  "cycle-seasons.css",
+  "address-trend.css",
+  "market-heatmap.css",
+  "asset-daily-report.css",
   "alpha-scanner.css",
   "alpha-auto-trading.css",
   "bstock-alpha.css",
@@ -25,6 +29,11 @@ const rootFiles = new Set([
   "product-dashboard.js",
   "trend-indicator-cycle.js",
   "dashboard.js",
+  "cycle-seasons-dashboard.js",
+  "address-trend.js",
+  "market-heatmap.js",
+  "asset-daily-report.js",
+  "rplrm-dashboard.js",
   "dashboard-product-carousel.js",
   "alpha-scanner.js",
   "alpha-auto-trading.js",
@@ -46,6 +55,22 @@ const cleanPageAliases = new Map([
   ["bstock-alpha", "bstock-alpha.html"],
   ["dashboard", "dashboard.html"],
   ["ai-ops", "ai-ops.html"]
+]);
+
+// Data imports are server implementation files unless explicitly published.
+// In particular, toolbox seeds contain private loginAccount columns and must
+// never bypass the filtered toolbox DTO through a static download.
+const publicDataFiles = new Set([
+  "bitcoin-address-balance-history.js",
+  "bitcoin-cycle-weekly.js",
+  "bstock-localization.json",
+  "onchain-history-archive.js",
+  "onchain-history-provenance.json",
+  "percent-supply-profit-seed.js",
+  "rplrm-provenance.json",
+  "rplrm-public-seed.js",
+  "sth-200dma-public-seed.js",
+  "telegram-signals-snapshot.js"
 ]);
 
 const contentTypes: Record<string, string> = {
@@ -198,9 +223,10 @@ function markEmbeddedDocument(html: string) {
 
 function isAllowed(parts: string[]) {
   if (!parts.length) return true;
-  if (parts.some((part) => part === ".." || part.includes("\\") || part.includes("\0"))) return false;
+  if (parts.some((part) => !part || part === "." || part === ".." || part.startsWith(".") || part.includes("\\") || part.includes("\0"))) return false;
   if (parts.length === 1) return rootFiles.has(parts[0]);
-  if (!["assets", "data"].includes(parts[0])) return false;
+  if (parts[0] === "data") return parts.length === 2 && publicDataFiles.has(parts[1]);
+  if (parts[0] !== "assets") return false;
   return Boolean(contentTypes[path.extname(parts.at(-1) ?? "").toLowerCase()]);
 }
 

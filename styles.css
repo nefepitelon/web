@@ -1348,6 +1348,7 @@ pre {
   box-shadow: 0 0 22px rgba(85, 187, 124, 0.56);
 }
 
+.model-rplrm { background: #31c68c; }
 .model-mvrv-zscore {
   background: linear-gradient(135deg, #e59b32, #24b8e8 55%, #ef665b);
   box-shadow: 0 0 22px rgba(229, 155, 50, 0.58);
@@ -4718,7 +4719,7 @@ html[lang^="en"] .home-page .power-law-copy h2 {
 
 .product-demo {
   --demo-accent: #9ccfac;
-  --demo-duration: 6s;
+  --demo-duration: 3s;
   min-width: 0;
   overflow: hidden;
   border: 1px solid #365241;
@@ -6055,6 +6056,14 @@ body[data-theme="light"] .alphaops-section :is(.alpha-x-feed-list, .alpha-feed) 
 .home-page .power-model-options button { min-height: 52px; gap: 10px; padding: 9px 10px; }
 .home-page .power-model-options button strong { font-size: 13px; }
 .home-page .power-model-options button small { font-size: 10px; }
+/* Expanded metrics stay below the chart on phones so they cannot cover the
+   plotted series or its legend as the carousel changes indicators. */
+@media (max-width: 700px) {
+  .home-page .power-law-stage { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .home-page #power-law-canvas { grid-row: 1; }
+  .home-page .power-chart-legend { position: relative; inset: auto; grid-row: 2; margin: 12px 14px 0; }
+  .home-page .power-metrics { position: relative; inset: auto; grid-row: 3; width: calc(100% - 28px); margin: 14px; }
+}
 .home-market-updated { margin: 14px 0 0; color: var(--muted); font: 10px/1.65 "JetBrains Mono", monospace; }
 .home-page .terminal-row { font-variant-numeric: tabular-nums; }
 .home-page .terminal-row em { font-size: 11px; }

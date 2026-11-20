@@ -1,6 +1,6 @@
-import { decodePaymentSignatureHeader } from "@x402/core/http";
+import { decodePaymentSignatureHeader, encodePaymentSignatureHeader } from "@x402/core/http";
 import { z } from "zod";
-import { sameX402Requirement } from "./bstock-x402";
+import { canonicalizeReviewedX402Payment, sameX402Requirement } from "./bstock-x402";
 
 export const agentX402RequirementSchema = z.object({
   scheme: z.string().min(1),
@@ -59,5 +59,11 @@ export function validateAgentX402Signature(signature: {
   if (!Number.isFinite(signature.signatureExpiresAt) || signature.signatureExpiresAt * 1000 <= now + 2_000) {
     throw new AgentX402ValidationError("X402_SIGNATURE_EXPIRED", "付款签名已接近过期，未向研究服务重放。请重新预览。");
   }
-  return { paymentHeaderName: "PAYMENT-SIGNATURE", network: reviewed.requirement.network };
+  // The wallet may checksum/lowercase accepted.asset/payTo. Our review compares
+  // EVM addresses semantically, but Studio/B402 exact-compares the merchant's
+  // complete accepted object. Restore the reviewed original, never a fresh quote.
+  // Re-encoding also restores canonical padded Base64 required by Studio's strict
+  // decoder. None of the signed authorization, nonce or signature is changed.
+  const paymentHeaderValue = encodePaymentSignatureHeader(canonicalizeReviewedX402Payment(payment, reviewed.requirement, resourceUrl));
+  return { paymentHeaderName: "PAYMENT-SIGNATURE", paymentHeaderValue, network: reviewed.requirement.network };
 }

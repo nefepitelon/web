@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AUTO_STRATEGY_VERSION = "bstock-auto-20260908-v1";
+export const AUTO_STRATEGY_VERSION = "bstock-auto-20261024-grid-v2";
 export const AUTO_STRATEGY_SOURCES = [
   {
     strategy: "trend",
@@ -22,7 +22,12 @@ export const AUTO_MIN_ROUND_TRIP_BUFFER_PCT = 1.5;
 
 const boundedNumber = (min: number, max: number) => z.number().finite().min(min).max(max);
 export const autoSettingsSchema = z.object({
-  strategy: z.enum(["adaptive", "trend", "mean_reversion"]).default("adaptive"),
+  strategy: z.enum(["adaptive", "trend", "mean_reversion", "martingale_grid"]).default("adaptive"),
+  selectionMode: z.enum(["auto", "manual_hot"]).default("auto"),
+  selectedSymbols: z.array(z.string().regex(/^[A-Z0-9.]{1,24}B$/)).max(10).default([]),
+  gridLayers: boundedNumber(2, 4).int().default(3),
+  gridMultiplier: boundedNumber(1.1, 2).default(2),
+  gridStepPct: boundedNumber(0.5, 5).default(1),
   budgetUsd: boundedNumber(20, 2000).default(100),
   orderUsd: boundedNumber(5, 500).default(20),
   maxPositions: boundedNumber(1, 5).int().default(3),
@@ -32,6 +37,13 @@ export const autoSettingsSchema = z.object({
   dailyLossPct: boundedNumber(1, 15).default(5),
   intervalSeconds: boundedNumber(60, 900).int().default(60)
 }).strict().superRefine((settings, context) => {
+  if (new Set(settings.selectedSymbols).size !== settings.selectedSymbols.length ||
+    (settings.selectionMode === "manual_hot" && settings.selectedSymbols.length === 0)) {
+    context.addIssue({ code: "custom", path: ["selectedSymbols"], message: "请至少选择一个热门标的，且不能重复。" });
+  }
+  if (settings.strategy === "martingale_grid" && gridOrderUsd(settings, 0) < 5) {
+    context.addIssue({ code: "custom", path: ["orderUsd"], message: "网格首笔金额不得低于 $5；请提高单笔上限或减少层数/倍率。" });
+  }
   if (settings.orderUsd > settings.budgetUsd * 0.25) {
     context.addIssue({ code: "custom", path: ["orderUsd"], message: "单笔金额不得超过自动交易预算的 25%。" });
   }
@@ -44,7 +56,30 @@ export const autoSettingsSchema = z.object({
 });
 
 export type AutoSettings = z.infer<typeof autoSettingsSchema>;
-export type AutoStrategy = "trend" | "mean_reversion";
+export type AutoStrategy = "trend" | "mean_reversion" | "martingale_grid";
+/** orderUsd remains the MAXIMUM single buy; a geometric ladder never raises it. */
+export function gridOrderUsd(settings: { orderUsd: number; gridLayers: number; gridMultiplier: number }, layer: number) {
+  if (!Number.isInteger(layer) || layer < 0 || layer >= settings.gridLayers) return 0;
+  return Math.floor(settings.orderUsd / settings.gridMultiplier ** (settings.gridLayers - 1 - layer) * 1e6) / 1e6;
+}
+export function selectGridAddition(input: {
+  settings: AutoSettings; price: number; anchorPrice: number; lastFillPrice: number; filledLayers: number;
+  entryPrice: number; highPrice: number;
+}) {
+  const { settings, price, anchorPrice, lastFillPrice, filledLayers, entryPrice, highPrice } = input;
+  const hold = (reason: string) => ({ buy: false, reason, layer: filledLayers, orderUsd: 0, triggerPrice: null as number | null });
+  if (settings.strategy !== "martingale_grid" || ![price, anchorPrice, lastFillPrice, entryPrice, highPrice].every(positive)
+    || !Number.isInteger(filledLayers) || filledLayers < 1) return hold("GRID_EVIDENCE_INVALID");
+  if (selectAutoExit({ price, entryPrice, highPrice, ...settings, strategy: "martingale_grid" }).exit) return hold("GRID_EXIT_PRIORITY");
+  if (price <= anchorPrice * (1 - settings.stopLossPct / 100)) return hold("GRID_ANCHOR_STOP_LOSS");
+  if (filledLayers >= settings.gridLayers) return hold("GRID_LAYER_LIMIT");
+  // Anchor every level to the initial confirmed fill, and buy at most one layer
+  // per cycle. A fill never resets the ladder or expands the authorization.
+  const triggerPrice = Math.min(anchorPrice * (1 - settings.gridStepPct / 100) ** filledLayers,
+    lastFillPrice * (1 - settings.gridStepPct / 100));
+  return price <= triggerPrice ? { buy: true, reason: "GRID_STEP_REACHED", layer: filledLayers,
+    orderUsd: gridOrderUsd(settings, filledLayers), triggerPrice } : hold("GRID_WAIT_LEVEL");
+}
 export type AutoCandle = {
   openTime?: string;
   closeTime: string;
@@ -113,7 +148,7 @@ export function selectAutoSignal(input: {
   const fallbackStrategy: AutoStrategy = input.strategy === "mean_reversion" ? "mean_reversion" : "trend";
   const hold = (reason: string): AutoSignal => ({ action: "hold", strategy: fallbackStrategy, score: 0, reason, barTime: null, indicators: emptyIndicators() });
   const now = input.now instanceof Date ? input.now.getTime() : typeof input.now === "number" ? input.now : isoTime(input.now);
-  if (!Number.isFinite(now) || !["adaptive", "trend", "mean_reversion"].includes(input.strategy) ||
+  if (!Number.isFinite(now) || !["adaptive", "trend", "mean_reversion", "martingale_grid"].includes(input.strategy) ||
       !positive(input.stopLossPct) || input.stopLossPct < 1 || input.stopLossPct > 10 || !positive(input.takeProfitPct) ||
       input.takeProfitPct < 2 || input.takeProfitPct > 30) return hold("INVALID_SETTINGS");
   if (!Array.isArray(input.points) || input.points.length > 1000) return hold("INVALID_CANDLES");
@@ -149,7 +184,7 @@ export function selectAutoSignal(input: {
   const currentBands = bands(closes.slice(-20));
   const previousBands = bands(closes.slice(-21, -1));
   const breakoutPrice = Math.max(...candles.slice(-21, -1).map((point) => point.high));
-  const strategy: AutoStrategy = input.strategy === "adaptive" ? (Math.abs(slopePct) <= 0.25 ? "mean_reversion" : "trend") : input.strategy;
+  const strategy: AutoStrategy = input.strategy === "adaptive" || input.strategy === "martingale_grid" ? (Math.abs(slopePct) <= 0.25 ? "mean_reversion" : "trend") : input.strategy;
   const expectedUpsidePct = strategy === "mean_reversion" ? Math.max(0, pct(currentBands.mean, latest.close)) : input.takeProfitPct;
   const indicators: AutoIndicators = {
     closedBars: candles.length, close: latest.close, emaFast: fast[index], emaSlow: slow[index], slopePct,
@@ -173,7 +208,8 @@ export function selectAutoSignal(input: {
     reason = qualified ? "RANGE_CONFIRMED_LOWER_BAND_RECOVERY" : expectedUpsidePct <= AUTO_MIN_ROUND_TRIP_BUFFER_PCT ? "RANGE_TARGET_BELOW_COST_BUFFER" : "WAIT_RANGE_CONFIRMATION";
     if (qualified) score = Math.min(95, 65 + Math.min(20, expectedUpsidePct * 3) + (0.25 - Math.abs(slopePct)) * 40);
   }
-  return { action: qualified ? "buy" : "hold", strategy, score: Math.round(score * 100) / 100, reason, barTime: latest.closeTime, indicators };
+  return { action: qualified ? "buy" : "hold", strategy: input.strategy === "martingale_grid" ? "martingale_grid" : strategy,
+    score: Math.round(score * 100) / 100, reason, barTime: latest.closeTime, indicators };
 }
 
 /** Price-triggered exits do not increase a losing position. Quotes still determine actual realized return. */
@@ -188,7 +224,7 @@ export function selectAutoExit(input: {
 }): { exit: boolean; reason: string; returnPct: number | null } {
   if (![input.price, input.entryPrice, input.highPrice, input.stopLossPct, input.takeProfitPct].every(positive) ||
       input.stopLossPct < 1 || input.stopLossPct > 10 || input.takeProfitPct > 30 || input.takeProfitPct < 2 ||
-      !["trend", "mean_reversion"].includes(input.strategy)) return { exit: false, reason: "INVALID_EXIT_INPUT", returnPct: null };
+      !["trend", "mean_reversion", "martingale_grid"].includes(input.strategy)) return { exit: false, reason: "INVALID_EXIT_INPUT", returnPct: null };
   const returnPct = pct(input.price, input.entryPrice);
   if (!Number.isFinite(returnPct)) return { exit: false, reason: "INVALID_EXIT_INPUT", returnPct: null };
   if (returnPct <= -input.stopLossPct) return { exit: true, reason: "STOP_LOSS", returnPct };

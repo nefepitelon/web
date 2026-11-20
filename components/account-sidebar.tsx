@@ -24,7 +24,7 @@ export function AccountSidebar({ viewer }: { viewer: Viewer }) {
         {links.map(([href, label]) => <Link href={href} key={href} prefetch={false}>{label}</Link>)}
         {viewer.plan === "max" || viewer.role === "admin" ? <Link href="/account/api-keys" prefetch={false}>API 访问</Link> : null}
         {viewer.role === "admin" ? <Link href="/admin" prefetch={false}>管理后台</Link> : null}
-        <Link href="/logout" prefetch={false}>退出登录</Link>
+        <form action="/logout" method="post"><button className="button button--ghost" type="submit">退出登录</button></form>
       </nav>
     </aside>
   );

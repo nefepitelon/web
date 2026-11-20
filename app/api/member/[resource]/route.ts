@@ -35,6 +35,7 @@ export async function GET(
   if (!definition) return Response.json({ error: "Not found" }, { status: 404 });
   const viewer = await getViewer();
   if (!viewer) return Response.json({ error: "Authentication required" }, { status: 401 });
+  if (viewer.status !== "ACTIVE") return Response.json({ error: "Account unavailable" }, { status: 403 });
   if (viewer.needsSecondFactor) return Response.json({ error: "Two-factor verification required" }, { status: 401 });
   const access = await configuredAccess(viewer, definition.entitlement);
   if (!access.allowed) {

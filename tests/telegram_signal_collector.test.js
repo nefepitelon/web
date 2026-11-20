@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 const {
   MemorySignalStore,
+  BlobSignalStore,
   SupabaseSignalStore,
   collectPublicPreviewSignals,
   collectTelegramSignals,
@@ -10,16 +11,83 @@ const {
   parseTelegramSignal,
   publicPreviewMessagesFromHtml,
   publicPreviewMessagesFromMarkdown,
+  publicSignalsForChannel,
+  targetChannelUsername,
   telegramMessagesFromUpdate,
   verifiedSignalTime
 } = require("../workers/telegram_signal_collector");
+
+const eqnFixture = require("./fixtures/eqn-oi-public-preview.json");
+function capturedPreviewHtml() {
+  const escape=(text)=>text.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br/>");
+  return eqnFixture.messages.map(({rawText,options})=>`<div class="tgme_widget_message_wrap js-widget_message_wrap"><div data-post="${options.channelUsername}/${options.messageId}"><div class="tgme_widget_message_text js-message_text">${escape(rawText)}</div><time datetime="${options.signalTime}"></time></div></div>`).join("");
+}
+
+test("the configured source defaults to EQN and parses the captured bilingual signal formats and Unicode tickers",()=>{
+  assert.equal(targetChannelUsername({}),"EQN_OI_Price_monitor");
+  assert.equal(targetChannelUsername({TELEGRAM_TARGET_CHANNEL:"@EQN_OI_Price_monitor"}),"EQN_OI_Price_monitor");
+  const messages=publicPreviewMessagesFromHtml(capturedPreviewHtml());
+  assert.equal(messages.length,eqnFixture.messages.length);
+  const parsed=messages.map(message=>parseTelegramSignal(message.rawText,message.options));
+  assert.ok(parsed.every(row=>row.parse_status==="parsed"&&row.symbol&&row.signal_time_source==="source_timestamp"));
+  const current=parsed.find(row=>row.telegram_message_id==="20662");
+  assert.equal(current.symbol,"PIPPIN");assert.equal(current.price_change_pct,27.6);assert.equal(current.oi_change_pct,17.2);
+  assert.equal(current.signal_time,"2026-11-18T10:34:25.000Z");
+  const unwind=parsed.find(row=>row.telegram_message_id==="20652");
+  assert.equal(unwind.direction,"short");assert.equal(unwind.trigger_type,"oi_down_price_down");
+  assert.equal(parsed.find(row=>row.telegram_message_id==="20648").symbol,"龙虾");
+});
+
+test("non-market numeric notices never become UNKNOWN public signals and source publication time wins over message clocks",()=>{
+  const html=capturedPreviewHtml()+`<div class="tgme_widget_message_wrap"><div data-post="EQN_OI_Price_monitor/20663"><div class="tgme_widget_message_text">10</div><time datetime="2026-11-18T11:00:00Z"></time></div></div>`;
+  const messages=publicPreviewMessagesFromHtml(html);
+  assert.equal(messages.length,eqnFixture.messages.length);
+  const unicode=messages.find(message=>message.options.messageId==="20648");
+  const htmlSignal=parseTelegramSignal(unicode.rawText,unicode.options);
+  assert.equal(htmlSignal.signal_time,"2026-11-17T05:26:33.000Z");
+  const markdown=`[](https://t.me/EQN_OI_Price_monitor/20648)\n${unicode.rawText}`;
+  const [markdownMessage]=publicPreviewMessagesFromMarkdown(markdown);
+  const markdownSignal=parseTelegramSignal(markdownMessage.rawText,markdownMessage.options);
+  assert.equal(markdownSignal.symbol,"龙虾");
+  assert.equal(markdownSignal.signal_time,"2026-11-17T05:26:31.000Z");
+  assert.equal(markdownSignal.signal_time_source,"message_text");
+});
+
+test("channel migration excludes old rows before limiting or merging the latest market feed",async()=>{
+  const old=Array.from({length:25},(_,index)=>parseTelegramSignal("[BTCUSDT] OI +5%, Price +3%",{channelUsername:"BWE_OI_Price_monitor",messageId:99000+index,sourceMode:"public_preview",signalTime:"2026-11-18T11:00:00Z"}));
+  const store=new MemorySignalStore(old);
+  const result=await collectPublicPreviewSignals({store,fetchImpl:async()=>({ok:true,text:async()=>capturedPreviewHtml()})});
+  assert.equal(result.latest.length,eqnFixture.messages.length);
+  assert.ok(result.latest.every(row=>row.channel_username==="eqn_oi_price_monitor"));
+  assert.equal((await store.listRecent(1))[0].telegram_message_id,"20662");
+  assert.equal(publicSignalsForChannel([...old,...result.latest],{},1)[0].telegram_message_id,"20662");
+  assert.deepEqual(publicSignalsForChannel(old),[]);
+  assert.deepEqual(publicSignalsForChannel([{...result.latest[0],source_message_url:"https://t.me/BWE_OI_Price_monitor/20662"}]),[]);
+});
+
+test("Supabase and Blob reads scope the channel before their limit and retain bounded request signals",async()=>{
+  const originalFetch=global.fetch, requests=[];
+  global.fetch=async(url,options)=>{requests.push({url,options});return {ok:true,json:async()=>[]};};
+  try {
+    const store=new SupabaseSignalStore({url:"https://example.invalid",serviceRoleKey:"unit-test"});
+    await store.listRecent(1);
+    const query=new URL(requests[0].url).searchParams;
+    assert.equal(query.get("channel_username"),"eq.eqn_oi_price_monitor");
+    assert.equal(query.get("limit"),"1");assert.ok(requests[0].options.signal instanceof AbortSignal);
+    const prefixes=[];
+    const blob=new BlobSignalStore({list:async(options)=>{prefixes.push(options);return {blobs:[]};}});
+    await blob.listRecent(1);
+    assert.deepEqual(prefixes.map(row=>row.prefix),["telegram_signal_feed/eqn_oi_price_monitor/latest.json","telegram_signals/eqn_oi_price_monitor/"]);
+    assert.ok(prefixes.every(row=>row.abortSignal instanceof AbortSignal));
+  }finally{global.fetch=originalFetch;}
+});
 
 test("parses the target channel bilingual OI-up price-up format", () => {
   const raw = `🇨🇳 🟢 [1000RATSUSDT] 币安未平仓合约量 +5.7%，过去 3600 秒价格上涨 15.0%，未平仓合约量：2130 万美元，24 小时价格变动：+99.5%
 🇺🇸 🟢 [1000RATSUSDT] Binance openinterest +5.7%, Price +15.0% in the past 3600 seconds, OI: $21.3M`;
   const signal = parseTelegramSignal(raw, {
     channelId: -100123,
-    channelUsername: "BWE_OI_Price_monitor",
+    channelUsername: "EQN_OI_Price_monitor",
     messageId: 88,
     signalTime: 1785584000,
     sourceMode: "webhook"
@@ -110,10 +178,10 @@ test("dedupe hash is stable for the same Telegram message identity", () => {
 });
 
 test("dedupe hash matches between public preview and webhook modes", () => {
-  const preview = makeDedupeHash({ channelUsername: "BWE_OI_Price_monitor", messageId: 17131, rawText: "preview" });
+  const preview = makeDedupeHash({ channelUsername: "EQN_OI_Price_monitor", messageId: 17131, rawText: "preview" });
   const webhook = makeDedupeHash({
     channelId: -100123,
-    channelUsername: "@BWE_OI_Price_monitor",
+    channelUsername: "@EQN_OI_Price_monitor",
     messageId: 17131,
     rawText: "webhook"
   });
@@ -124,7 +192,7 @@ test("extracts the latest 20 messages from Telegram public preview HTML", () => 
   const html = Array.from({ length: 22 }, (_, index) => {
     const messageId = index + 1;
     return `<div class="tgme_widget_message_wrap js-widget_message_wrap">
-      <div class="tgme_widget_message" data-post="BWE_OI_Price_monitor/${messageId}">
+      <div class="tgme_widget_message" data-post="EQN_OI_Price_monitor/${messageId}">
         <div class="tgme_widget_message_text js-message_text" dir="auto"><i><b>🟢</b></i> [TOKEN${messageId}USDT] 币安未平仓合约量 +${messageId}.0%，过去 3600 秒价格上涨 ${messageId + 1}.0%<br/>Price +${messageId + 1}.0%</div>
         <time datetime="2026-08-01T00:${String(messageId).padStart(2, "0")}:00+00:00">time</time>
       </div>
@@ -142,7 +210,7 @@ test("extracts the latest 20 messages from Telegram public preview HTML", () => 
 
 test("public preview collection parses and stores real-shaped messages", async () => {
   const html = `<div class="tgme_widget_message_wrap js-widget_message_wrap">
-    <div data-post="BWE_OI_Price_monitor/17131">
+    <div data-post="EQN_OI_Price_monitor/17131">
       <div class="tgme_widget_message_text js-message_text" dir="auto">[1000SATSUSDT] 币安未平仓合约量 +5.4%，过去 3600 秒价格上涨 10.0%<br/>[1000SATSUSDT] Binance openinterest +5.4%, Price +10.0%</div>
       <time datetime="2026-08-01T07:38:21+00:00">07:38</time>
     </div>
@@ -157,15 +225,15 @@ test("public preview collection parses and stores real-shaped messages", async (
   assert.equal(result.parsed, 1);
   assert.equal(result.latest[0].symbol, "1000SATS");
   assert.equal(result.latest[0].source_mode, "public_preview");
-  assert.equal(result.latest[0].source_message_url, "https://t.me/BWE_OI_Price_monitor/17131");
+  assert.equal(result.latest[0].source_message_url, "https://t.me/EQN_OI_Price_monitor/17131");
 });
 
 test("extracts signal messages from the read-only Markdown fallback", () => {
-  const markdown = `[](https://t.me/BWE_OI_Price_monitor/20001)
+  const markdown = `[](https://t.me/EQN_OI_Price_monitor/20001)
 _**🟢**_ [SOLUSDT] 币安未平仓合约量 +7.0%，过去 3600 秒价格上涨 4.0%
 _**🟢**_ [SOLUSDT] Binance openinterest +7.0%, Price +4.0%
 
-[](https://t.me/BWE_OI_Price_monitor/20002)
+[](https://t.me/EQN_OI_Price_monitor/20002)
 _**🔻**_ [ETHUSDT] Binance openinterest +8.0%, Price -5.0%`;
   const messages = publicPreviewMessagesFromMarkdown(markdown);
   assert.equal(messages.length, 2);
@@ -195,9 +263,9 @@ test("legacy synthesized preview times are suppressed while genuine source times
 });
 
 test("fresh untimed messages keep Telegram message order and replace stale synthesized cache entries", async () => {
-  const markdown = `[](https://t.me/BWE_OI_Price_monitor/20001)
+  const markdown = `[](https://t.me/EQN_OI_Price_monitor/20001)
 [SOLUSDT] OI +7.0%, Price +4.0%
-[](https://t.me/BWE_OI_Price_monitor/20002)
+[](https://t.me/EQN_OI_Price_monitor/20002)
 [ETHUSDT] OI +8.0%, Price -5.0%`;
   const inputs = publicPreviewMessagesFromMarkdown(markdown);
   const previous = inputs.map((input) => parseTelegramSignal(input.rawText, { ...input.options, signalTime: new Date().toISOString() }));
@@ -233,7 +301,7 @@ test("the existing Supabase schema receives only timestamped records and no unsu
 });
 
 test("public preview collection falls back to the fresh read-only proxy", async () => {
-  const markdown = `[](https://t.me/BWE_OI_Price_monitor/20001)
+  const markdown = `[](https://t.me/EQN_OI_Price_monitor/20001)
 [SOLUSDT] OI +7.0%, Price +4.0%`;
   const requests = [];
   const result = await collectPublicPreviewSignals({
@@ -255,7 +323,7 @@ test("public preview collection falls back to the fresh read-only proxy", async 
 
 test("live public preview is returned when persistent storage is unavailable", async () => {
   const html = `<div class="tgme_widget_message_wrap js-widget_message_wrap">
-    <div data-post="BWE_OI_Price_monitor/20003">
+    <div data-post="EQN_OI_Price_monitor/20003">
       <div class="tgme_widget_message_text js-message_text">[ETHUSDT] Binance openinterest +6.0%, Price -4.0%</div>
       <time datetime="2026-08-02T02:00:00+00:00">02:00</time>
     </div>
@@ -305,7 +373,7 @@ test("webhook mode accepts only the configured target channel", async () => {
     channel_post: {
       message_id: 7,
       date: 1785584000,
-      chat: { id: -10088, username: "BWE_OI_Price_monitor" },
+      chat: { id: -10088, username: "EQN_OI_Price_monitor" },
       text: "[SOLUSDT] Binance openinterest +4.1%, Price +3.2%"
     }
   };
@@ -320,6 +388,8 @@ test("webhook mode accepts only the configured target channel", async () => {
 
   assert.equal(telegramMessagesFromUpdate(targetUpdate).length, 1);
   assert.equal(telegramMessagesFromUpdate(otherUpdate).length, 0);
+  const previousChannelUpdate={channel_post:{...targetUpdate.channel_post,chat:{id:-10088,username:"BWE_OI_Price_monitor"}}};
+  assert.equal(telegramMessagesFromUpdate(previousChannelUpdate,{TELEGRAM_TARGET_CHAT_ID:"-10088"}).length,0,"an old configured ID must not override a different public channel username");
 
   const result = await collectTelegramSignals({
     mode: "webhook",

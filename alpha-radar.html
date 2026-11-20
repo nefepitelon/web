@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="alpha-scanner.css?v=20260921-radar-v12" />
+    <link rel="stylesheet" href="alpha-scanner.css?v=20261118-eqn-icons-v2" />
     <link rel="stylesheet" href="alpha-auto-trading.css?v=20260911-auto-v5" />
     <link rel="stylesheet" href="platform-actions.css" />
     <link rel="stylesheet" href="surf-assistant.css" />
@@ -175,7 +175,7 @@
                 <p id="risk-rejected-detail">等待账户风控记录</p>
               </article>
               <article>
-                <div class="metric-label"><span>实盘实际盈亏</span><em>LIVE · USDT</em></div>
+                <div class="metric-label"><span>实盘实际盈亏</span><button id="refresh-live-pnl" type="button" title="重新读取交易所实盘结算流水" disabled>刷新盈亏</button><em>LIVE · USDT</em></div>
                 <strong id="live-realized-metric">—</strong>
                 <p id="live-realized-detail">等待近 89 天实盘结算记录</p>
               </article>
@@ -278,7 +278,7 @@
             <article class="panel pulse-panel">
               <div class="panel-head">
                 <div>
-                  <span class="panel-kicker">RECENT TRIGGERS</span>
+                  <a class="panel-kicker" href="https://t.me/EQN_OI_Price_monitor" target="_blank" rel="noopener noreferrer" aria-label="查看 EQN OI Price Monitor Telegram 信号来源">EQN OI · TELEGRAM ↗</a>
                   <h2>信号流水</h2>
                 </div>
                 <div class="trigger-head-actions">
@@ -287,7 +287,7 @@
                 </div>
               </div>
               <div class="signal-stream" id="signal-stream" aria-live="polite" aria-busy="true">
-                <div class="stream-state loading"><i></i><strong>正在同步 Telegram 最新 20 条消息</strong><span>@BWE_OI_Price_monitor</span></div>
+                <div class="stream-state loading"><i></i><strong>正在同步 Telegram 最新 20 条消息</strong><span>@EQN_OI_Price_monitor</span></div>
               </div>
             </article>
           </section>
@@ -630,7 +630,7 @@
                 <div data-source-health="spot"><i class="source-dot"></i><span>Binance Spot</span><em>等待</em></div>
                 <div data-source-health="futures"><i class="source-dot"></i><span>Binance Futures</span><em>等待</em></div>
                 <div data-source-health="momentum"><i class="source-dot"></i><span>Crypto Bubbles · 1D</span><em>等待</em></div>
-                <div data-source-health="signals"><i class="source-dot"></i><span>BWE OI Monitor</span><em>等待</em></div>
+                <div data-source-health="signals"><i class="source-dot"></i><span>EQN OI Monitor</span><em>等待</em></div>
                 <div data-source-health="alpha"><i class="source-dot"></i><span>Binance Skills Hub Alpha</span><em>等待</em></div>
               </div>
             </div>
@@ -710,8 +710,8 @@
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"><i>✓</i><span>交易意图已更新</span></div>
-    <script src="ui-translations.js?v=20260921-radar-v12"></script>
-    <script src="alpha-scanner.js?v=20260921-radar-v12"></script>
+    <script src="ui-translations.js?v=20261024-pnl-v1"></script>
+    <script src="alpha-scanner.js?v=20261118-eqn-icons-v1"></script>
     <script src="alpha-auto-trading.js?v=20260911-auto-v5"></script>
     <script src="surf-assistant.js"></script>
   </body>

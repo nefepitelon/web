@@ -1,8 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import ts from "typescript";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+
+test("WELINK grants three calendar months in Shanghai time, including month-end and leap years", async () => {
+  const code = ts.transpileModule(await read("lib/max-trial.ts"), {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 }
+  }).outputText;
+  const { welinkMaxTrialEndsAt } = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
+  for (const [start, end] of [
+    ["2026-10-25T03:00:00Z", "2027-01-25T03:00:00Z"],
+    ["2026-11-30T15:30:00Z", "2027-02-28T15:30:00Z"],
+    ["2026-11-30T16:30:00Z", "2027-02-28T16:30:00Z"],
+    ["2027-11-30T01:02:03Z", "2028-02-29T01:02:03Z"]
+  ]) {
+    assert.equal(welinkMaxTrialEndsAt(new Date(start)).toISOString(), new Date(end).toISOString());
+  }
+});
 
 test("login keeps a compact two-column identity surface and prominent optional access code", async () => {
   const [page, form, styles] = await Promise.all([
@@ -19,7 +35,9 @@ test("login keeps a compact two-column identity surface and prominent optional a
   assert.doesNotMatch(page, /钱包只作为经过签名验证的账户连接/);
   assert.match(page, /auth-grid auth-grid--login/);
   assert.match(form, /className="access-code-capsule"/);
-  assert.match(form, /可选，可跳过/);
+  assert.match(form, /useState\(WELINK_ACCESS_CODE\)/);
+  assert.match(form, />3M<\/span>/);
+  assert.match(form, /WELINK 长期有效；每个账户限用一次，赠送 3 个月 MAX 全功能/);
   assert.match(form, /accessCode: accessCode\.trim\(\) \|\| undefined/);
   assert.match(form, /请在你的邮箱收件箱中查看登录链接/);
   assert.match(form, /垃圾邮件或所有邮件/);
@@ -30,6 +48,36 @@ test("login keeps a compact two-column identity surface and prominent optional a
   assert.match(styles, /@media \(max-width: 1440px\)[\s\S]*\.auth-grid--login \{ grid-template-columns: minmax\(250px, \.82fr\) minmax\(340px, 1\.18fr\)/);
   assert.match(styles, /@media \(max-width: 620px\)[\s\S]*\.auth-grid--login \{ grid-template-columns: 1fr/);
   assert.match(styles, /@media \(max-width: 900px\)[\s\S]*body:has\(\.auth-page\) #surf-assistant/);
+});
+
+test("WELINK grants one 90-day Max trial per account and backfills existing users", async () => {
+  const [constants, service, migration, membership, shell, dialog, acknowledge] = await Promise.all([
+    read("lib/max-trial.ts"),
+    read("lib/access-codes.ts"),
+    read("prisma/migrations/20261025090000_welink_max_trial/migration.sql"),
+    read("lib/membership.ts"),
+    read("components/app-shell.tsx"),
+    read("components/max-trial-announcement.tsx"),
+    read("app/api/account/max-welcome/acknowledge/route.ts")
+  ]);
+
+  assert.match(constants, /WELINK_ACCESS_CODE = "WELINK"/);
+  assert.match(constants, /WELINK_MAX_TRIAL_DAYS = 90/);
+  assert.match(service, /MIN_ACCESS_CODE_LENGTH = 6/);
+  assert.match(migration, /f306c19613b79ae7a3fcc122c98c86995fc3ce140caf6dda75c2e683332d5f6e/);
+  assert.match(migration, /"durationDays",[\s\S]*90,/);
+  assert.match(migration, /"maxRedemptions" = NULL/);
+  assert.match(migration, /"expiresAt" = NULL/);
+  assert.match(migration, /FROM "users" AS user_record/);
+  assert.match(migration, /TIMESTAMP '2026-10-25 00:00:00'/);
+  assert.match(migration, /TIMESTAMP '2027-01-25 00:00:00'/);
+  assert.match(migration, /ON CONFLICT \("accessCodeId", "userId"\) DO UPDATE/);
+  assert.match(membership, /showMaxGiftAnnouncement/);
+  assert.match(shell, /<MaxTrialAnnouncement/);
+  assert.match(dialog, /三个月 MAX 权益已到账/);
+  assert.match(dialog, /不会产生自动扣费/);
+  assert.match(acknowledge, /userOnboardingTask\.upsert/);
+  assert.match(acknowledge, /WELINK_MAX_TRIAL_ANNOUNCEMENT_TASK/);
 });
 
 test("email and Google auth validate pending codes before the callback redeems them", async () => {

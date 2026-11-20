@@ -11,38 +11,32 @@ import { ReadingProgressBar, ResearchViewTracker } from "@/components/research-e
 import { ResearchExternalReader } from "@/components/research-external-reader";
 import { getViewer } from "@/lib/membership";
 import { prisma } from "@/lib/prisma";
+import { canManageResearch, canReadResearch } from "@/lib/research-access";
+import { getPublishedResearchArticle } from "@/lib/research-data";
 import { researchArticlePath, researchSlugCandidates } from "@/lib/research-routing";
 
 export const dynamic = "force-dynamic";
 
-const getResearchArticle = cache((slug: string) => prisma.researchArticle.findFirst({
-  where: { slug: { in: researchSlugCandidates(slug) } },
+const getResearchArticle = cache((slug: string, includeDrafts: boolean) => prisma.researchArticle.findFirst({
+  where: { slug: { in: researchSlugCandidates(slug) }, ...(includeDrafts ? {} : { status: "PUBLISHED", publishedAt: { lte: new Date() } }) },
   include: {
     _count: { select: { bookmarks: true, comments: { where: { status: "PUBLISHED" } } } },
     comments: {
       where: { status: "PUBLISHED" },
       orderBy: { createdAt: "desc" },
       take: 30,
-      include: { user: { select: { email: true, profile: { select: { displayName: true, handle: true } } } } }
+      include: { user: { select: { profile: { select: { displayName: true, handle: true } } } } }
     }
   }
 }));
 
-function canRead(access: "PUBLIC" | "FREE" | "PRO" | "MAX", viewer: Awaited<ReturnType<typeof getViewer>>) {
-  if (access === "PUBLIC" || viewer?.role === "admin") return true;
-  if (!viewer) return false;
-  if (access === "FREE") return true;
-  if (access === "PRO") return viewer.plan === "pro" || viewer.plan === "max";
-  return viewer.plan === "max";
-}
-
-function displayCommentAuthor(comment: { user: { email: string; profile: { displayName: string | null; handle: string | null } | null } }) {
-  return comment.user.profile?.displayName || (comment.user.profile?.handle ? `${comment.user.profile.handle}.welinkBTC` : comment.user.email.split("@")[0]);
+function displayCommentAuthor(comment: { user: { profile: { displayName: string | null; handle: string | null } | null } }) {
+  return comment.user.profile?.displayName || (comment.user.profile?.handle ? `${comment.user.profile.handle}.welinkBTC` : "研究读者");
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getResearchArticle(slug);
+  const article = await getPublishedResearchArticle(slug);
   if (!article) return { title: "研究文章" };
   return {
     title: article.title,
@@ -53,10 +47,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ResearchArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [viewer, article] = await Promise.all([getViewer(), getResearchArticle(slug)]);
-  if (!article || (article.status !== "PUBLISHED" && viewer?.role !== "admin")) notFound();
+  const viewer = await getViewer();
+  const article = await getResearchArticle(slug, canManageResearch(viewer));
+  if (!article || (article.status !== "PUBLISHED" && !canManageResearch(viewer))) notFound();
 
-  const allowed = canRead(article.access, viewer);
+  const allowed = canReadResearch(article.access, viewer);
   const accessLabel = { PUBLIC: "公开研究", FREE: "登录用户", PRO: "Pro 研究", MAX: "Max 研究" }[article.access];
   const bookmarked = viewer
     ? Boolean(await prisma.researchBookmark.findUnique({ where: { articleId_userId: { articleId: article.id, userId: viewer.id } }, select: { id: true } }))

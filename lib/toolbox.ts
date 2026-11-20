@@ -16,6 +16,9 @@ import {
 } from "@/lib/toolbox-types";
 
 export function toolboxRole(viewer: Viewer | null): ToolboxRole {
+  // A role label alone must never unlock operational data or write controls.
+  if (!viewer || viewer.status !== "ACTIVE" || viewer.needsSecondFactor
+    || !viewer.twoFactorEnabled || !viewer.twoFactorPassed) return "viewer";
   if (viewer?.role === "admin") return "admin";
   if (viewer?.role === "operator" || viewer?.roles.includes("operator")) return "operator";
   return "viewer";
@@ -23,6 +26,22 @@ export function toolboxRole(viewer: Viewer | null): ToolboxRole {
 
 export function canManageToolbox(viewer: Viewer | null) {
   return toolboxRole(viewer) !== "viewer";
+}
+
+function visibleItem(item: ToolboxItemDto, visibleKeys: ReadonlySet<string>): ToolboxItemDto {
+  // The DTO has convenient copies of core fields as well as dynamic values.
+  // Filter both representations, so a hidden column is not recoverable in JSON.
+  return {
+    ...item,
+    name: visibleKeys.has("name") ? item.name : "",
+    description: visibleKeys.has("description") ? item.description : "",
+    officialUrl: visibleKeys.has("officialUrl") ? item.officialUrl : "",
+    loginAccount: visibleKeys.has("loginAccount") ? item.loginAccount : "",
+    rating: visibleKeys.has("rating") ? item.rating : null,
+    financing: visibleKeys.has("financing") ? item.financing : "",
+    tutorial: visibleKeys.has("tutorial") ? item.tutorial : "",
+    values: Object.fromEntries(Object.entries(item.values).filter(([key]) => visibleKeys.has(key)))
+  };
 }
 
 function stringOptions(value: Prisma.JsonValue | null): string[] {
@@ -51,9 +70,11 @@ export async function getToolboxSnapshot(viewer: Viewer | null): Promise<Toolbox
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }]
     }),
     prisma.toolboxColumn.findMany({
-      where: manager
+      where: role === "admin"
         ? { isVisible: true }
-        : { isVisible: true, isPublic: true, isSensitive: false },
+        : manager
+          ? { isVisible: true, isSensitive: false, key: { not: "loginAccount" } }
+          : { isVisible: true, isPublic: true, isSensitive: false, key: { not: "loginAccount" } },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }]
     }),
     prisma.toolboxItem.findMany({
@@ -61,7 +82,14 @@ export async function getToolboxSnapshot(viewer: Viewer | null): Promise<Toolbox
         ? undefined
         : { isPublic: true, isPublished: true, category: { isPublic: true } },
       include: {
-        cells: { include: { column: { select: { key: true } } } },
+        cells: {
+          where: { column: role === "admin"
+            ? { isVisible: true }
+            : manager
+              ? { isVisible: true, isSensitive: false, key: { not: "loginAccount" } }
+              : { isVisible: true, isPublic: true, isSensitive: false, key: { not: "loginAccount" } } },
+          include: { column: { select: { key: true } } }
+        },
         favorites: viewer ? { where: { userId: viewer.id }, select: { id: true } } : false
       },
       orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }, { name: "asc" }]
@@ -79,6 +107,7 @@ export async function getToolboxSnapshot(viewer: Viewer | null): Promise<Toolbox
 
   const itemCounts = new Map<string, number>();
   for (const item of items) itemCounts.set(item.categoryId, (itemCounts.get(item.categoryId) ?? 0) + 1);
+  const visibleKeys = new Set(columns.map((column) => column.key));
 
   return {
     role,
@@ -124,7 +153,7 @@ export async function getToolboxSnapshot(viewer: Viewer | null): Promise<Toolbox
         isPublic: item.isPublic,
         ...dynamicValues
       };
-      return {
+      return visibleItem({
         id: item.id,
         categoryId: item.categoryId,
         name: item.name,
@@ -141,7 +170,7 @@ export async function getToolboxSnapshot(viewer: Viewer | null): Promise<Toolbox
         values,
         isFavorite: Boolean("favorites" in item && item.favorites.length),
         updatedAt: item.updatedAt.toISOString()
-      };
+      }, visibleKeys);
     }),
     settings: settingsFrom(settingsRecord?.value),
     auditLogs: auditLogs.map((log) => ({
@@ -226,6 +255,12 @@ const mockCategories: ToolboxCategoryDto[] = toolboxSheetData.categories.map((ca
 }));
 
 function mockToolboxSnapshot(role: ToolboxRole, viewerId: string | null): ToolboxSnapshot {
+  const manager = role !== "viewer";
+  const columns = mockColumns.filter((column) => column.isVisible
+    && (role === "admin" || !column.isSensitive && column.key !== "loginAccount" && (manager || column.isPublic)));
+  const visibleKeys = new Set(columns.map((column) => column.key));
+  const categories = mockCategories.filter((category) => manager || category.isPublic);
+  const categoryIds = new Set(categories.map((category) => category.id));
   const allItems: ToolboxItemDto[] = toolboxSheetData.items.map((item) => {
     const values = {
       category: item.categoryId,
@@ -264,9 +299,10 @@ function mockToolboxSnapshot(role: ToolboxRole, viewerId: string | null): Toolbo
   return {
     role,
     viewerId,
-    categories: mockCategories,
-    columns: role === "viewer" ? mockColumns.filter((column) => column.isPublic && !column.isSensitive) : mockColumns,
-    items: viewerId ? allItems : allItems.filter((item) => item.isPublic && item.isPublished).slice(0, 8),
+    categories,
+    columns,
+    items: allItems.filter((item) => categoryIds.has(item.categoryId) && (manager || item.isPublic && item.isPublished))
+      .slice(0, viewerId ? undefined : 8).map((item) => visibleItem(item, visibleKeys)),
     settings: defaultToolboxSettings,
     auditLogs: []
   };

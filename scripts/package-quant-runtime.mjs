@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isPrivatePackagePath } from './package-source-policy.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const outputDirectory = path.join(root, 'public', 'downloads');
@@ -17,6 +18,7 @@ async function collect(directory, prefix) {
   for (const entry of entries.sort((a,b)=>a.name.localeCompare(b.name))) {
     if (entry.isSymbolicLink() || entry.name.startsWith('.') || ['node_modules','__pycache__','settings','state','data','project','tenants'].includes(entry.name) || /\.(?:pyc|key|pem|env)$/.test(entry.name) || ['api-auth.json','deployment.json','device.json'].includes(entry.name)) continue;
     const name = `${prefix}/${entry.name}`;
+    if (isPrivatePackagePath(name)) continue;
     if (entry.isDirectory()) await collect(path.join(directory,entry.name),name);
     else sourceFiles.push({name, source:path.join(directory,entry.name)});
   }

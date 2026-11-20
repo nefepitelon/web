@@ -1,7 +1,9 @@
 import "server-only";
+import { redactSecretText } from "@/lib/secret-redaction";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { decryptHostedGridOpsEnvironment } from "@/lib/grid-ops-hosted/config";
+import { hostedGridOpsRunnableWhere, hostedGridOpsWorkerStopped } from "@/lib/grid-ops-hosted/security";
 import { getConfigFromEnvironment } from "../../grid-ops/src/config.js";
 import { createRegisteredExchanges } from "../../grid-ops/src/exchange/registry.js";
 import { GridBot } from "../../grid-ops/src/bot.js";
@@ -25,10 +27,7 @@ function jsonSafe<T>(value: T): T {
 }
 
 function errorMessage(caught: unknown) {
-  return (caught instanceof Error ? caught.message : String(caught || "托管交易引擎执行失败"))
-    .replace(/0x[a-fA-F0-9]{48,}/g, "[已隐藏]")
-    .replace(/(api[_ -]?key|private[_ -]?key|secret|token|passphrase)\s*[=:]\s*\S+/gi, "$1=[已隐藏]")
-    .slice(0, 2_000);
+  return redactSecretText(caught instanceof Error ? caught.message : "托管交易引擎执行失败");
 }
 
 function restoreExchangeRuntime(exchange: any, state: JsonRecord | undefined) {
@@ -239,8 +238,8 @@ async function executeCommand(command: { type: string; target: string | null; pa
 async function persistRuntime(botId: string, runtime: JsonRecord, status = "RUNNING") {
   const snapshot = await captureSnapshot(runtime);
   const { markets = {}, ...runtimeSnapshot } = snapshot;
-  await prisma.hostedGridOpsBot.update({
-    where: { id: botId },
+  const changed = await prisma.hostedGridOpsBot.updateMany({
+    where: hostedGridOpsRunnableWhere(botId),
     data: {
       snapshot: runtimeSnapshot as Prisma.InputJsonValue,
       marketCatalog: markets as Prisma.InputJsonValue,
@@ -248,8 +247,8 @@ async function persistRuntime(botId: string, runtime: JsonRecord, status = "RUNN
       heartbeatAt: new Date(),
       lastError: null,
     },
-    select: { id: true },
   });
+  if (!changed.count) throw new Error("托管执行已停止或被安全隔离");
   return runtimeSnapshot;
 }
 
@@ -257,50 +256,52 @@ export async function runHostedGridOpsSession(botId: string) {
   "use step";
 
   const [state, pending] = await Promise.all([
-    prisma.hostedGridOpsBot.findUnique({ where: { id: botId }, select: { status: true } }),
+    prisma.hostedGridOpsBot.findUnique({ where: { id: botId }, select: { id: true, status: true, lastError: true } }),
     prisma.hostedGridOpsCommand.count({ where: { botId, status: "PENDING" } }),
   ]);
-  if (!state || state.status === "STOPPED") return { stop: true, delayMs: 30_000 };
+  if (!state || hostedGridOpsWorkerStopped(state)) return { stop: true, delayMs: 30_000 };
   if (!pending && state.status === "READY") return { stop: true, delayMs: 0 };
 
   const record = await prisma.hostedGridOpsBot.findUnique({
     where: { id: botId },
-    select: { id: true, status: true, configEncrypted: true, snapshot: true },
+    select: { id: true, status: true, lastError: true, configEncrypted: true, snapshot: true },
   });
-  if (!record || record.status === "STOPPED") return { stop: true, delayMs: 30_000 };
+  if (!record || hostedGridOpsWorkerStopped(record)) return { stop: true, delayMs: 30_000 };
 
   let runtime: JsonRecord | null = null;
   try {
     runtime = await createRuntime(record);
-    await prisma.hostedGridOpsBot.update({
-      where: { id: botId },
+    const started = await prisma.hostedGridOpsBot.updateMany({
+      where: hostedGridOpsRunnableWhere(botId),
       data: { status: "RUNNING", heartbeatAt: new Date(), lastError: null },
-      select: { id: true },
     });
+    if (!started.count) return { stop: true, delayMs: 0 };
     const until = Date.now() + 25_000;
     let lastPersistedAt = Date.now();
     do {
+      const securityState = await prisma.hostedGridOpsBot.findUnique({
+        where: { id: botId }, select: { id: true, status: true, lastError: true },
+      });
+      if (hostedGridOpsWorkerStopped(securityState)) return { stop: true, delayMs: 0 };
       const next = await prisma.hostedGridOpsCommand.findFirst({ where: { botId, status: "PENDING" }, orderBy: { createdAt: "asc" } });
       if (next) {
         const claimed = await prisma.hostedGridOpsCommand.updateMany({
-          where: { id: next.id, status: "PENDING" },
+          where: { id: next.id, status: "PENDING", bot: { is: hostedGridOpsRunnableWhere(botId) } },
           data: { status: "RUNNING", startedAt: new Date() },
         });
         if (claimed.count) {
           try {
             const result = await executeCommand(next, runtime);
             await persistRuntime(botId, runtime);
-            await prisma.hostedGridOpsCommand.update({
-              where: { id: next.id },
+            await prisma.hostedGridOpsCommand.updateMany({
+              where: { id: next.id, status: "RUNNING", bot: { is: hostedGridOpsRunnableWhere(botId) } },
               data: { status: "SUCCEEDED", result: jsonSafe(result) as Prisma.InputJsonValue, completedAt: new Date() },
-              select: { id: true },
             });
           } catch (error) {
             await persistRuntime(botId, runtime, "ERROR").catch(() => {});
-            await prisma.hostedGridOpsCommand.update({
-              where: { id: next.id },
+            await prisma.hostedGridOpsCommand.updateMany({
+              where: { id: next.id, status: "RUNNING", bot: { is: hostedGridOpsRunnableWhere(botId) } },
               data: { status: "FAILED", error: errorMessage(error), completedAt: new Date() },
-              select: { id: true },
             });
           }
         }
@@ -314,18 +315,18 @@ export async function runHostedGridOpsSession(botId: string) {
     } while (Date.now() < until);
     const finalSnapshot = await persistRuntime(botId, runtime);
     const active = Object.values(finalSnapshot.bots || {}).some((item: any) => item?.running) || Boolean(finalSnapshot.hedge?.active);
-    await prisma.hostedGridOpsBot.update({
-      where: { id: botId },
+    const finished = await prisma.hostedGridOpsBot.updateMany({
+      where: hostedGridOpsRunnableWhere(botId),
       data: { status: active ? "RUNNING" : "READY" },
-      select: { id: true },
     });
+    if (!finished.count) return { stop: true, delayMs: 0 };
     return { stop: false, delayMs: active ? 1_000 : 10_000 };
   } catch (error) {
-    await prisma.hostedGridOpsBot.update({
-      where: { id: botId },
+    const changed = await prisma.hostedGridOpsBot.updateMany({
+      where: hostedGridOpsRunnableWhere(botId),
       data: { status: "ERROR", lastError: errorMessage(error), heartbeatAt: new Date() },
-      select: { id: true },
-    }).catch(() => {});
+    }).catch(() => null);
+    if (!changed?.count) return { stop: true, delayMs: 0 };
     return { stop: false, delayMs: 10_000 };
   } finally {
     if (runtime) await disposeRuntime(runtime);

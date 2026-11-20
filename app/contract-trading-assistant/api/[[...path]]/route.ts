@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { EXTERNAL_EMBED_CSP } from "@/lib/external-embed-security";
 
 const API_ORIGIN = "https://api2.qianyubtc.com";
 const TOOL_ORIGIN = "https://tcv2.qianyubtc.com";
@@ -21,6 +22,8 @@ function corsHeaders(contentType = "application/json; charset=utf-8") {
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Cross-Origin-Resource-Policy": "cross-origin",
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": EXTERNAL_EMBED_CSP,
     Vary: "Origin"
   };
 }
@@ -57,7 +60,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const upstream = await fetch(upstreamUrl, {
     cache: "no-store",
-    redirect: "follow",
+    // A third-party redirect must not turn this fixed-origin proxy into a
+    // server-side fetch of an internal address or another host.
+    redirect: "error",
+    signal: AbortSignal.timeout(20_000),
     headers: {
       Accept: request.headers.get("accept") || "application/json",
       Origin: TOOL_ORIGIN,

@@ -3,9 +3,11 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { WELINK_ACCESS_CODE, welinkMaxTrialEndsAt } from "@/lib/max-trial";
 
 export const PENDING_ACCESS_CODE_COOKIE = "welinkbtc_access_code";
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_ACCESS_CODE_LENGTH = 6;
 
 export type AccessCodeRedemptionResult =
   | { status: "activated"; label: string; endsAt: Date }
@@ -28,11 +30,15 @@ export function accessCodeHint(value: string) {
 
 function codeAvailability(code: {
   active: boolean;
+  durationDays: number;
   startsAt: Date | null;
   expiresAt: Date | null;
   maxRedemptions: number | null;
   redemptionCount: number;
 }, now: Date) {
+  // Defense in depth for historical/imported records: a malformed campaign
+  // cannot turn a trial code into an effectively permanent membership.
+  if (!Number.isInteger(code.durationDays) || code.durationDays < 1 || code.durationDays > 366) return "invalid" as const;
   if (!code.active) return "invalid" as const;
   if (code.startsAt && code.startsAt > now) return "not_started" as const;
   if (code.expiresAt && code.expiresAt <= now) return "expired" as const;
@@ -44,7 +50,7 @@ function codeAvailability(code: {
 
 export async function validateAccessCode(value: string) {
   const normalized = normalizeAccessCode(value);
-  if (normalized.length < 8 || normalized.length > 64) return { valid: false as const };
+  if (normalized.length < MIN_ACCESS_CODE_LENGTH || normalized.length > 64) return { valid: false as const };
 
   const code = await prisma.accessCode.findUnique({
     where: { codeHash: hashAccessCode(normalized) },
@@ -68,11 +74,16 @@ export async function redeemAccessCode(
   source: "login" | "account"
 ): Promise<AccessCodeRedemptionResult> {
   const normalized = normalizeAccessCode(value);
-  if (normalized.length < 8 || normalized.length > 64) return { status: "invalid" };
+  if (normalized.length < MIN_ACCESS_CODE_LENGTH || normalized.length > 64) return { status: "invalid" };
   const now = new Date();
 
   try {
     return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { status: true, emailVerifiedAt: true }
+      });
+      if (!user || user.status !== "ACTIVE" || !user.emailVerifiedAt) return { status: "invalid" } as const;
       const code = await tx.accessCode.findUnique({
         where: { codeHash: hashAccessCode(normalized) }
       });
@@ -104,7 +115,9 @@ export async function redeemAccessCode(
       });
       if (reserved.count !== 1) return { status: "exhausted" } as const;
 
-      const endsAt = new Date(now.getTime() + code.durationDays * DAY_MS);
+      const endsAt = normalized === WELINK_ACCESS_CODE
+        ? welinkMaxTrialEndsAt(now)
+        : new Date(now.getTime() + code.durationDays * DAY_MS);
       await tx.accessCodeRedemption.create({
         data: { accessCodeId: code.id, userId, source, startsAt: now, endsAt }
       });

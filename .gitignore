@@ -57,5 +57,8 @@ credentials*.json
 /chrome-extension.zip
 
 # Python integration caches
+hedge-ops/.venv/
+hedge-ops/**/data/
+**/.pytest_cache/
 **/__pycache__/
 *.pyc

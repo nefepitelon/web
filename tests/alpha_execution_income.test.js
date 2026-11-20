@@ -12,7 +12,11 @@ function load(file, imports = {}, globals = {}) {
   const module = { exports: {} };
   vm.runInNewContext(code, { module, exports: module.exports, require(name) {
     if (name === 'server-only') return {};
+    if (name === '@/lib/secret-redaction') return load('lib/secret-redaction.ts');
     if (name in imports) return imports[name];
+    if (name === '@/lib/trading-proxy-security') return load('lib/trading-proxy-security.ts');
+    if (name === '@/lib/alpha-execution/credentials') return load('lib/alpha-execution/credentials.ts');
+    if (name === 'node:dns' || name === 'node:net') return require(name);
     if (name === '@prisma/client' || name === 'node:crypto' || name === 'zod') return require(name);
     throw new Error(`Unmocked import ${name}`);
   }, Date, Buffer, URL, URLSearchParams, Response, Request, AbortSignal, TextEncoder, ReadableStream, ...globals });
@@ -22,14 +26,11 @@ function load(file, imports = {}, globals = {}) {
 const summary = load('lib/alpha-execution/pnl-summary.ts');
 const row = (tranId, incomeType, income, asset = 'USDT') => ({ tranId, incomeType, income, asset, time: 100 });
 
-test('exchange income pages preserve decimal totals, dedupe by income type and never combine currencies or transfers', async () => {
-  const pages = [
-    [row(1, 'REALIZED_PNL', '10.3'), row(1, 'COMMISSION', '-0.1'), row(3, 'FUNDING_FEE', '-0.2')],
-    [row(1, 'REALIZED_PNL', '10.3'), row(4, 'REALIZED_PNL', '0.01', 'BTC'), row(5, 'TRANSFER', '1000')],
-    [row(6, 'COMMISSION', '-0.001', 'BTC')],
-  ];
+test('complete income time windows preserve decimal totals, dedupe by income type and never combine currencies or transfers', async () => {
+  const rows = [row(1, 'REALIZED_PNL', '10.3'), row(1, 'COMMISSION', '-0.1'), row(3, 'FUNDING_FEE', '-0.2'),
+    row(1, 'REALIZED_PNL', '10.3'), row(4, 'REALIZED_PNL', '0.01', 'BTC'), row(5, 'TRANSFER', '1000'), row(6, 'COMMISSION', '-0.001', 'BTC')];
   const calls = [];
-  const result = await summary.collectIncomeSummary(async (input) => { calls.push(input); return pages[input.page - 1]; }, 0, 200, { pageSize: 3 });
+  const result = await summary.collectIncomeSummary(async (input) => { calls.push(input); return rows; }, 0, 200);
   assert.equal(result.amount, 10);
   assert.equal(result.status, 'ready');
   assert.equal(result.coverageComplete, true);
@@ -38,15 +39,15 @@ test('exchange income pages preserve decimal totals, dedupe by income type and n
   assert.equal(result.recordCount, 5);
   assert.equal(result.hasNonTradingFlows, true);
   assert.equal(result.nonTradingFlows[0].amount, 1000);
-  assert.deepEqual(calls.map(x => [x.startTime, x.endTime, x.page, x.limit]), [[0,200,1,3],[0,200,2,3],[0,200,3,3]]);
+  assert.deepEqual(calls.map(x => [x.startTime, x.endTime, x.page, x.limit]), [[0,200,1,1000]]);
   assert.equal(result.allTime, false);
   assert.equal(result.scope, 'LIVE_ACCOUNT');
 });
 
-test('income partial pages, transport failure, repeated pages and malformed records never expose a complete net value', async () => {
+test('income request budgets, transport failure, ignored time filters and malformed records never expose a complete net value', async () => {
   for (const fetchPage of [
     async () => [row(1, 'REALIZED_PNL', '2')],
-    async ({page}) => { if (page > 1) throw new Error('offline'); return [row(1, 'REALIZED_PNL', '2')]; },
+    async ({startTime,endTime}) => { if (endTime < 200) throw new Error('offline'); return [row(1, 'REALIZED_PNL', '2')]; },
   ]) {
     const result = await summary.collectIncomeSummary(fetchPage, 0, 200, { pageSize: 1, maxPages: 2 });
     assert.equal(result.coverageComplete, false);
@@ -62,6 +63,63 @@ test('income partial pages, transport failure, repeated pages and malformed reco
   assert.equal(unavailable.status, 'unavailable');
   assert.equal(unavailable.amount, null);
   assert.doesNotMatch(unavailable.message, /private error/);
+});
+
+test('more than 1000 records are all collected when the exchange ignores page, in either response order', async () => {
+  const dataset = Array.from({length: 5790}, (_, index) => ({...row(index + 1, index % 2 ? 'COMMISSION' : 'REALIZED_PNL', index % 2 ? '-0.1' : '0.2'), time: index}));
+  for (const descending of [false, true]) {
+    const calls = [];
+    const result = await summary.collectIncomeSummary(async input => {
+      calls.push(input);
+      const rows = dataset.filter(row => row.time >= input.startTime && row.time <= input.endTime);
+      return (descending ? rows.reverse() : rows).slice(0, input.limit);
+    }, 0, 6000);
+    assert.equal(result.status, 'ready');
+    assert.equal(result.coverageComplete, true);
+    assert.equal(result.recordCount, 5790);
+    assert.equal(result.realizedIncomeCount, 2895);
+    assert.equal(result.amount, 289.5);
+    assert.equal(result.realizedPnl, 579);
+    assert.equal(result.commission, -289.5);
+    assert.ok(calls.length > 1 && calls.length < 20);
+    assert.ok(calls.every(call => call.page === 1), 'never depend on unsupported page offsets');
+  }
+});
+
+test('inclusive time-window boundaries do not drop or double count same-millisecond records', async () => {
+  const dataset = [0, 100, 100, 101, 101, 200].map((time, index) => ({...row(index + 1, 'REALIZED_PNL', '0.1'), time}));
+  const result = await summary.collectIncomeSummary(async input => dataset.filter(row => row.time >= input.startTime && row.time <= input.endTime).slice(0, input.limit), 0, 200, {pageSize: 3});
+  assert.equal(result.coverageComplete, true);
+  assert.equal(result.amount, 0.6);
+  assert.equal(result.recordCount, 6);
+  const saturated = await summary.collectIncomeSummary(async () => dataset, 100, 100, {pageSize: 6});
+  assert.equal(saturated.coverageComplete, false);
+  assert.equal(saturated.amount, null);
+});
+
+test('saturated single-millisecond windows remain incomplete instead of silently truncating income', async () => {
+  const rows = [row(1, 'REALIZED_PNL', '1'), row(2, 'REALIZED_PNL', '2')];
+  const result = await summary.collectIncomeSummary(async () => rows, 100, 100, {pageSize: 2});
+  assert.equal(result.coverageComplete, false);
+  assert.equal(result.amount, null);
+  assert.equal(result.readFailure.kind, 'capacity');
+});
+
+test('transient read failures retry once; authentication and rate limits never retry or leak error details', async () => {
+  let reads = 0;
+  const recovered = await summary.collectIncomeSummary(async () => { if (++reads === 1) throw {status: 503, message: 'private signed URL'}; return [row(1, 'REALIZED_PNL', '5')]; }, 0, 200);
+  assert.equal(recovered.amount, 5);
+  assert.equal(recovered.retries, 1);
+  assert.equal(recovered.requestsMade, 2);
+  for (const error of [{status:429, code:-1003}, {status:418}, {status:401,code:-2015}, {status:400,code:-1022}]) {
+    reads = 0;
+    const failed = await summary.collectIncomeSummary(async () => {reads++; throw {...error, message: 'private signed URL'};}, 0, 200);
+    assert.equal(reads, 1);
+    assert.equal(failed.amount, null);
+    assert.equal(failed.coverageComplete, false);
+    assert.equal(failed.readFailure.exchangeCode, error.code ?? null);
+    assert.doesNotMatch(JSON.stringify(failed), /private signed URL/);
+  }
 });
 
 test('a fully paged empty income window is actual zero, while a deadline expiry remains unknown', async () => {
@@ -101,6 +159,35 @@ test('PnL cache is owner and credential-version scoped, spot and unverified cred
   assert.equal(reads.length,3);
   assert.ok(queries.every(q => q.environment === prismaTypes.AlphaExecutionMode.LIVE));
   await assert.rejects(mod.fetchLiveIncomeForPeriod('alice','futures',Date.now()-100*86400000,Date.now()),/89/);
+});
+
+test('failed income reads expire quickly, manual refresh bypasses a healthy cache after cooldown, and concurrent reads coalesce', async () => {
+  let clock = Date.now(), reads = 0, offline = true;
+  const verifiedAt = new Date(clock);
+  class Clock extends Date { static now() { return clock; } }
+  const mod = load('lib/alpha-execution/pnl.ts', {
+    '@/lib/prisma': {prisma:{alphaTradingCredential:{findUnique: async () => ({id:'owner-only',enabled:true,verifiedAt,apiKeyEncrypted:'private-key',apiSecretEncrypted:'private-secret'})}}},
+    '@/lib/alpha-execution/credentials': {decryptTradingSecret: value => value},
+    '@/lib/alpha-execution/pnl-summary': summary,
+    '@/lib/alpha-execution/binance': {AlphaBinanceClient: class {
+      async getIncomeHistoryPage() { reads++; if (offline) throw {status:503}; return []; }
+      async close() {}
+    }},
+  }, {Date:Clock});
+  const failures = await Promise.all([mod.getLivePnlSummary('alice','futures'), mod.getLivePnlSummary('alice','futures')]);
+  assert.equal(failures[0].status, 'unavailable');
+  assert.equal(reads, 2, 'two concurrent requests share one read plus its single retry');
+  offline = false;
+  assert.equal((await mod.getLivePnlSummary('alice','futures')).status,'unavailable');
+  assert.equal(reads, 2);
+  clock += 31_000;
+  assert.equal((await mod.getLivePnlSummary('alice','futures')).status,'ready');
+  assert.equal(reads, 3);
+  await mod.getLivePnlSummary('alice','futures', {refresh:true});
+  assert.equal(reads, 3, 'rapid manual clicks respect the 30-second upstream cooldown');
+  clock += 31_000;
+  await mod.getLivePnlSummary('alice','futures', {refresh:true});
+  assert.equal(reads, 4, 'explicit refresh does not wait five minutes for the healthy cache');
 });
 
 function binanceFixture(overrides = {}) {
@@ -151,15 +238,16 @@ test('automation account reader fails closed on hedge, multiasset, missing posit
   ]) await assert.rejects(binanceFixture(overrides).client.getAutomationAccountSnapshot());
 });
 
-test('income history reader signs bounded, inclusive, fixed-window paginated GET requests', async () => {
+test('income history reader signs inclusive time-window GET requests without unsupported page offsets', async () => {
   const {client,calls} = binanceFixture();
-  await client.getIncomeHistoryPage({startTime:1,endTime:100,page:2,limit:1000});
+  await client.getIncomeHistoryPage({startTime:1,endTime:100,page:1,limit:1000});
   assert.equal(calls[0].path,'/fapi/v1/income');
-  assert.equal(calls[0].search.get('page'),'2');
+  assert.equal(calls[0].search.has('page'),false);
   assert.equal(calls[0].search.get('startTime'),'1');
   assert.equal(calls[0].search.get('endTime'),'100');
   assert.equal(calls[0].search.has('incomeType'),false);
   await assert.rejects(client.getIncomeHistoryPage({startTime:1,endTime:100,page:0}));
+  await assert.rejects(client.getIncomeHistoryPage({startTime:1,endTime:100,page:2}));
   assert.equal(calls.length,1);
 });
 
@@ -229,18 +317,23 @@ test('income diagnostics identify only aggregate invalid field categories and ne
   assert.doesNotMatch(JSON.stringify({ dataQuality: result.dataQuality, message: result.message }), /private-/);
 });
 
-test('PnL route takes owner only from authenticated viewer and rejects invalid markets before reading income', async () => {
+test('PnL route takes owner only from authenticated viewer and validates refresh before reading income', async () => {
   const reads=[]; let authenticated=true;
+  const logs=[];
   const route=load('app/api/alpha-execution/pnl/route.ts',{
-    '@/lib/alpha-execution/access': {requireAlphaOperator:async()=>{if(!authenticated)throw new Error('unauthorized');return{id:'alice'};},alphaExecutionErrorResponse:()=>Response.json({ok:false},{status:403})},
-    '@/lib/alpha-execution/pnl': {getLivePnlSummary:async(user,market)=>{reads.push([user,market]);return summary.emptyIncomeSummary(0,1,'not_configured','missing');}},
-  });
+    '@/lib/alpha-execution/access': {requireAlphaReadOperator:async()=>{if(!authenticated)throw new Error('unauthorized');return{id:'alice'};},alphaExecutionErrorResponse:()=>Response.json({ok:false},{status:403})},
+    '@/lib/alpha-execution/pnl': {getLivePnlSummary:async(user,market,options)=>{reads.push([user,market,options.refresh]);return summary.emptyIncomeSummary(0,1,'not_configured','missing');}},
+  }, {console: {info: (...args) => logs.push(args)}});
   const response=await route.GET(new Request('https://example.test/api/alpha-execution/pnl?market=futures&userId=bob'));
-  assert.deepEqual(reads,[['alice','futures']]);
+  assert.deepEqual(reads,[['alice','futures',false]]);
   assert.equal(response.headers.get('cache-control'),'private, no-store');
   assert.equal((await response.json()).amount,null);
   assert.equal((await route.GET(new Request('https://example.test/api/alpha-execution/pnl?market=unknown'))).status,403);
+  assert.equal((await route.GET(new Request('https://example.test/api/alpha-execution/pnl?refresh=invalid'))).status,403);
+  assert.equal((await route.GET(new Request('https://example.test/api/alpha-execution/pnl?refresh=1'))).status,200);
+  assert.deepEqual(reads[1], ['alice','futures',true]);
+  assert.doesNotMatch(JSON.stringify(logs), /alice|private|amount|realizedPnl/);
   authenticated=false;
   assert.equal((await route.GET(new Request('https://example.test/api/alpha-execution/pnl?market=futures'))).status,403);
-  assert.equal(reads.length,1);
+  assert.equal(reads.length,2);
 });
