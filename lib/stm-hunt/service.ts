@@ -4,7 +4,7 @@ import { getCache } from "@vercel/functions";
 import { prisma } from "@/lib/prisma";
 import { captureStmSources, stmNumber, type StmSourceCapture } from "./sources";
 import { evaluateStmStrategies, STM_STRATEGIES } from "./engine";
-import { getRecord, listRecords, putRecord, retainSnapshots, stmJson, stmPersistenceConfigured } from "./store";
+import { getFreshPublicCapture, getRecord, listRecords, putRecord, retainSnapshots, stmJson, stmPersistenceConfigured } from "./store";
 import { readStmHistory } from "./history";
 import type { StmAlert, StmCandidate, StmChainEvent, StmDashboard, StmJournal, StmMutation, StmPaperPosition, StmReplay, StmState, StmStrategy, StmSignal } from "./types";
 import type { StmWalletProfile } from "./onchain";
@@ -42,7 +42,7 @@ export async function refreshStmCapture(): Promise<Capture> {
     // Only public source evidence is shared. Personal state and trading checks never enter this cache.
     const cached = await publicCaptureCache.get("latest").catch(() => null) as Capture | null;
     if (freshCapture(cached)) { memoryCapture = cached; return cached!; }
-    const prior = await safeRead(() => getRecord<Capture>("system", "capture", "latest"), memoryCapture);
+    const prior = await safeRead(() => getFreshPublicCapture<Capture>(Date.now(), MIN_REFRESH_MS), memoryCapture);
     if (freshCapture(prior)) { await cacheCapture(prior!); return prior!; }
     const lease=randomUUID();
     let locked=false;
@@ -54,7 +54,10 @@ export async function refreshStmCapture(): Promise<Capture> {
         locked=acquired.count>0;
       }
       if(!locked) {
-        if(prior)return prior;
+        // Only a competing collector needs stale fallback evidence. Normal expiry must
+        // not download the previous multi-megabyte capture before replacing it.
+        const fallback = prior ?? await safeRead(() => getRecord<Capture>("system", "capture", "latest"), memoryCapture);
+        if(fallback)return fallback;
         throw new Error("首次数据采集中，请稍后刷新");
       }
     }

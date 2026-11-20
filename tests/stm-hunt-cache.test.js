@@ -34,7 +34,7 @@ function capture(offsetMs = -60_000) {
     candidates: [], events: [], chainEvents: [], markets: [] };
 }
 function harness(options = {}) {
-  const counts = { cacheGets: 0, captureReads: 0, sourceCaptures: 0, historyReads: 0, personalReads: 0 };
+  const counts = { cacheGets: 0, captureReads: 0, freshCaptureReads: 0, sourceCaptures: 0, historyReads: 0, personalReads: 0 };
   const shared = options.shared ?? new Map();
   const cacheWrites = [], recordWrites = [], namespaces = [];
   const cache = {
@@ -58,6 +58,13 @@ function harness(options = {}) {
         return options.readCapture ? options.readCapture() : options.persisted ?? null;
       }
       return null;
+    },
+    async getFreshPublicCapture(at, maxAgeMs) {
+      counts.captureReads++;
+      counts.freshCaptureReads++;
+      const value = await (options.readCapture ? options.readCapture() : options.persisted ?? null);
+      const capturedAt = Date.parse(value?.asOf ?? '');
+      return capturedAt > at - maxAgeMs && capturedAt <= at ? value : null;
     },
     async listRecords(userId, kind) {
       if (userId !== 'system') {
@@ -258,4 +265,32 @@ test('record writes return only their key and individual reads project only payl
   assert.deepEqual(readQuery.where, writeQuery.where);
   stored = null;
   assert.equal(await store.getRecord('system', 'capture', 'missing'), null);
+});
+
+test('fresh public capture reads bind a strict freshness range in SQL and return no expired payload', async () => {
+  const queries = [];
+  let result = [{ payload: capture() }];
+  const store = load('lib/stm-hunt/store.ts', {
+    '@/lib/prisma': { isDatabaseConfigured: () => true, prisma: { async $queryRaw(parts, ...values) {
+      queries.push({ sql: parts.join('?'), values });
+      return result;
+    } } },
+  });
+  assert.deepEqual(plain(await store.getFreshPublicCapture(now, 5 * 60_000)), capture());
+  const query = queries[0];
+  assert.match(query.sql, /SELECT payload FROM stm_hunt_records/);
+  assert.match(query.sql, /"userId" = 'system' AND kind = 'capture' AND key = 'latest'/);
+  assert.match(query.sql, /payload->>'asOf' > \? AND payload->>'asOf' <= \?/);
+  assert.deepEqual(query.values, [new Date(now - 5 * 60_000).toISOString(), new Date(now).toISOString()]);
+  assert.match(query.sql, /LIMIT 1/);
+  result = [];
+  assert.equal(await store.getFreshPublicCapture(now, 5 * 60_000), null);
+});
+
+test('normal capture expiry uses the freshness-filtered database read without downloading stale fallback evidence', async () => {
+  const h = harness({ persisted: capture(-5 * 60_000), persistent: true });
+  await h.service.refreshStmCapture();
+  assert.equal(h.counts.freshCaptureReads, 1);
+  assert.equal(h.counts.captureReads, 1, 'uncontended collection must not fetch the expired full capture');
+  assert.equal(h.counts.sourceCaptures, 1);
 });

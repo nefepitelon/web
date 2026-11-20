@@ -14,6 +14,17 @@ export async function getRecord<T = unknown>(userId: string, kind: string, key: 
   const row = await prisma.stmHuntRecord.findUnique({ where: { userId_kind_key: { userId, kind, key } }, select: { payload: true } });
   return row ? row.payload as T : null;
 }
+/** Reject stale public evidence in Postgres so expired multi-megabyte captures never cross the pooler. */
+export async function getFreshPublicCapture<T = unknown>(nowMs: number, maxAgeMs: number): Promise<T | null> {
+  const oldestIso = new Date(nowMs - maxAgeMs).toISOString();
+  const nowIso = new Date(nowMs).toISOString();
+  const rows = await prisma.$queryRaw<{ payload: Prisma.JsonValue }[]>`
+    SELECT payload FROM stm_hunt_records
+    WHERE "userId" = 'system' AND kind = 'capture' AND key = 'latest'
+      AND payload->>'asOf' > ${oldestIso} AND payload->>'asOf' <= ${nowIso}
+    LIMIT 1`;
+  return rows[0] ? rows[0].payload as T : null;
+}
 export async function listRecords<T = unknown>(userId: string, kind: string, limit = 100) {
   const rows = await prisma.stmHuntRecord.findMany({ where: { userId, kind }, orderBy: { createdAt: "desc" }, take: Math.min(2000, Math.max(1, limit)) });
   return rows.map(row => ({ ...row, payload: row.payload as T }));
