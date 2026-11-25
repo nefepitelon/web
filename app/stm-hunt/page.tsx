@@ -4,6 +4,8 @@ import { FeatureAccessBoundary } from "@/components/feature-access-boundary";
 import { StmHuntSurface } from "@/components/stm-hunt-surface";
 import { getViewer } from "@/lib/membership";
 import "./stm-hunt.css";
+import "./stm-hunt-terminal.css";
+import "./stm-hunt-radar.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {

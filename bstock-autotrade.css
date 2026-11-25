@@ -13,6 +13,7 @@
 .autotrade-hot-option strong { font: 700 13px/1.6 "JetBrains Mono", monospace; color: var(--text); }
 .autotrade-hot-option small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
 .autotrade-panel { margin: 0 0 14px; overflow: hidden; }
+.autotrade-panel[hidden] { display: none !important; }
 .autotrade-panel [hidden] { display: none !important; }
 .autotrade-head { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 28px; border-bottom: 1px solid var(--line); background: linear-gradient(105deg, var(--green-soft), transparent 66%); }
 .autotrade-identity { display: flex; align-items: center; gap: 16px; min-width: 0; }

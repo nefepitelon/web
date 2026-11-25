@@ -23,6 +23,7 @@ import {
 import { fetchOfficialBstockMarket } from "@/lib/bstock-alpha-live";
 import { evmNetworkLabel, getEvmPublicClient, isEvmCaip2Network, parseEvmCaip2Network } from "@/lib/bstock-evm";
 import { canonicalizeReviewedX402Payment, sameX402Requirement } from "@/lib/bstock-x402";
+import { claimResearchOperation } from "@/lib/bstock-research-claim";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -250,6 +251,7 @@ export async function POST(request: NextRequest) {
     });
     let replay: Response;
     try {
+      await claimResearchOperation(identity.ownerKey, intent.requestId, "merchant_replay");
       paymentWasSubmitted = true;
       replay = await fetch(merchant.url, {
         method: "POST",

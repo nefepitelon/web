@@ -1,4 +1,4 @@
-import { getHomeMarketPayload } from "@/api/home-market.js";
+import { getHomeMarketPayload } from "@/lib/home-market.js";
 
 export const runtime = "nodejs";
 export const maxDuration = 20;

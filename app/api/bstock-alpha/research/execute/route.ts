@@ -32,6 +32,8 @@ import { prisma } from "@/lib/prisma";
 import { evmNetworkLabel, getEvmPublicClientByChainId } from "@/lib/bstock-evm";
 import { AgentX402ValidationError, validateAgentX402Signature } from "@/lib/bstock-agentic-wallet-x402";
 import { researchPaymentRejection } from "@/lib/bstock-research-payment-response";
+import { claimResearchOperation } from "@/lib/bstock-research-claim";
+import { decodeBoundExternalReview, executeExternalResearch } from "@/lib/bstock-agent-x402-external";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 90;
@@ -39,6 +41,8 @@ export const maxDuration = 90;
 const inputSchema = z.object({
   intent: z.string().min(20).max(40_000),
   selectedIndex: z.number().int().positive(),
+  externalReview: z.string().min(20).max(60_000).optional(),
+  externalConfirmation: z.enum(["确认有限额度授权", "确认外部付款签名", "查询已确认签名"]).optional(),
   confirmation: z.literal("确认付费研究"),
   acknowledged: z.literal(true)
 });
@@ -216,13 +220,27 @@ export async function POST(request: NextRequest) {
     }
 
     phase = "sign";
-    const signed = await agentWalletRequest<unknown>(
-      state,
-      "/bapi/defi/v1/public/wallet-direct/agent-wallet/x402-payment/sign",
-      { body: { paymentId: intent.paymentId, selectedIndex: input.selectedIndex }, timeoutMs: 15_000 }
-    );
-    state = signed.state;
-    const signature = signSchema.parse(signed.data);
+    let signature: z.infer<typeof signSchema>;
+    if (reviewedOption.signingMode === "external") {
+      if (!input.externalReview) return json({ error: "请先获取并独立确认外部授权或签名预览；当前未签名、未付款。" }, 409);
+      const review = decodeBoundExternalReview(input.externalReview, input.intent, intent, input.selectedIndex, state);
+      const expected = review.orderId ? "查询已确认签名" : review.kind === "APPROVAL" ? "确认有限额度授权" : "确认外部付款签名";
+      if (input.externalConfirmation !== expected) return json({ error: "未收到对应授权或签名步骤的独立明确确认，未执行。" }, 409);
+      const external = await executeExternalResearch(state, review, intent);
+      state = external.state;
+      if (external.body) return persistAgentSession(json(external.body, 202), state);
+      signature = signSchema.parse(external.signature);
+    } else {
+      if (input.externalReview) return json({ error: "外部签名预览不能替换原生付款选项。" }, 409);
+      await claimResearchOperation(intent.agentKey, intent.requestId, "signature");
+      const signed = await agentWalletRequest<unknown>(
+        state,
+        "/bapi/defi/v1/public/wallet-direct/agent-wallet/x402-payment/sign",
+        { body: { paymentId: intent.paymentId, selectedIndex: input.selectedIndex }, timeoutMs: 15_000 }
+      );
+      state = signed.state;
+      signature = signSchema.parse(signed.data);
+    }
     phase = "validate_signature";
     const merchant = merchantRequest(intent.provider, asset, intent.requestId);
     const { paymentHeaderName, paymentHeaderValue } = validateAgentX402Signature(signature, reviewedOption, intent.resourceUrl);
@@ -253,6 +271,7 @@ export async function POST(request: NextRequest) {
     }
 
     phase = "merchant_replay";
+    await claimResearchOperation(intent.agentKey, intent.requestId, "merchant_replay");
     const replay = await fetch(merchant.url, {
       method: "POST",
       headers: {

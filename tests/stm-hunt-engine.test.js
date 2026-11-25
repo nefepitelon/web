@@ -4,15 +4,15 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const ts=require('typescript');
 const path=require('node:path');
-function load(file,imports={}) {
+function load(file,imports={},globals={}) {
   const code=ts.transpileModule(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
   const module={exports:{}};
-  vm.runInNewContext(code,{module,exports:module.exports,require(name){if(name==='server-only')return{};if(name in imports)return imports[name];if(name==='node:crypto')return require(name);throw Error(`Unmocked ${name}`);},Date,Error,Map,Set,Number,Array,Math,JSON,Promise,AbortSignal,fetch,Response,URL,setTimeout,clearTimeout,process:{env:{}}});
+  vm.runInNewContext(code,{module,exports:module.exports,require(name){if(name==='server-only')return{};if(name in imports)return imports[name];if(name==='node:crypto')return require(name);throw Error(`Unmocked ${name}`);},Date,Error,Map,Set,Number,Array,Math,JSON,Promise,AbortSignal,fetch,Response,URL,setTimeout,clearTimeout,process:{env:{}},...globals});
   return module.exports;
 }
 const engine=load('lib/stm-hunt/engine.ts');
 const sources=load('lib/stm-hunt/sources.ts',{'../../api/alpha-scan.js':{}});
-const service=load('lib/stm-hunt/service.ts',{'@/lib/prisma':{},'@vercel/functions':{getCache:()=>({get:async()=>null,set:async()=>undefined})},'./sources':{},'./engine':engine,'./store':{},'./history':{}});
+const service=load('lib/stm-hunt/service.ts',{'@/lib/prisma':{},'@vercel/functions':{getCache:()=>({get:async()=>null,set:async()=>undefined})},'./sources':{},'./engine':engine,'./store':{},'./history':{},'./capture-cache':{}});
 const now=Date.parse('2026-11-19T10:00:00Z');
 const iso=(minutes=0)=>new Date(now+minutes*60000).toISOString();
 const candidate={id:'cex:BTC',symbol:'BTC',market:'cex',updatedAt:iso(-1),price:100,sources:['alpha']};
@@ -87,6 +87,48 @@ test('actual Alpha display rows parse USD prices and change while keeping volume
   assert.equal(sources.normalizeStmAlphaCandidate({...actual,price:'$0.0000000'},iso()).price,null);
   assert.equal(sources.normalizeStmAlphaCandidate({...actual,volumeUsd:12_000_000},iso()).volumeUsd,12_000_000);
   assert.equal(sources.normalizeStmAlphaCandidate({...actual,volume24h:26.13},iso()).volumeUsd,null);
+});
+
+test('WSM profiles retain real avatars, handles, reported assets and partial portfolio semantics',()=>{
+  const [fomo]=sources.normalizeStmRoster('fomo',{data:[{id:'frank',name:'Frank',handle:'frankdegods',avatar:'https://images.example.com/frank.webp',evm:'0x696d1265c8fc4f14797abebfae3c43ebfa9d8e28',sol:'498g1rVnFcnjBjpfw1xyqA1WvgQXUU8RWuELjxkjAayQ',total_usd:21942,official_rank:1,chains:[{chain:'solana',usd:17099}],top_tokens:[{symbol:'NIO',chain:'solana',usd:10629,logo:'https://images.example.com/nio.webp'}],holdings_updated_at:iso(-5)}]},null,iso(),iso());
+  assert.equal(fomo.avatarUrl,'https://images.example.com/frank.webp');assert.equal(fomo.handle,'frankdegods');assert.equal(fomo.socialLinks[0].url,'https://x.com/frankdegods');
+  assert.equal(fomo.totalValueUsd,21942);assert.equal(fomo.valueBasis,'wallet');assert.equal(fomo.chains[0].valueUsd,17099);assert.equal(fomo.chainsScope,'reported');assert.equal(fomo.wallets.length,2);
+  assert.equal(fomo.holdings[0].logoUrl,'https://images.example.com/nio.webp');assert.equal(fomo.holdings[0].quantity,null);assert.equal(fomo.visibility,'truncated');assert.equal(fomo.holdingsCount,null);
+  const [hidden]=sources.normalizeStmRoster('binance',{generatedAt:'2026-11-19 10:23:11',traders:[{id:'x',name:'Trader',avatar:'./avatars/x.webp',assetsUsd:1000,statusKey:'private',profileUrl:'javascript:alert(1)'}]},{holdings:{x:{shared:false,positions:[{symbol:'BTC',size:3,valueUsd:99}]}}},iso(),iso());
+  assert.equal(hidden.avatarUrl,'https://web3smartmoney.com/binance/avatars/x.webp');assert.equal(hidden.profileUrl,null);assert.equal(hidden.totalValueUsd,1000);assert.equal(hidden.valueBasis,'account-equity');
+  assert.equal(hidden.updatedAt,null);assert.equal(hidden.sourceUpdatedAt,iso());assert.equal(hidden.holdings.length,0);assert.equal(hidden.chains.length,0);
+  const [partial]=sources.normalizeStmRoster('pump',{traders:[{userId:'p',wallet:'498g1rVnFcnjBjpfw1xyqA1WvgQXUU8RWuELjxkjAayQ'}]},{p:{quality:20,valueUsd:123,positions:[{symbol:'NIO',chainId:1399811149,mint:'MintCaSe',held:3,valueUsd:4,priceUsd:1.333,pnlUsd:-2}]}},iso());
+  assert.equal(partial.totalValueUsd,null,'a source subtotal must not become total wallet assets');assert.equal(partial.holdingsCount,20);assert.equal(partial.visibility,'truncated');assert.equal(partial.chainsScope,'disclosed');assert.equal(partial.holdings[0].pnlUsd,-2);
+  for(const value of ['javascript:alert(1)','data:image/svg+xml,bad','https://user:pass@example.com/avatar'])assert.equal(sources.stmPublicUrl(value),null);
+});
+
+test('shared FOMO tokens preserve exact contracts, reported totals and holder IDs without guessing ticker identities',()=>{
+  const mint='6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx';
+  const raw={shared_tokens:[{symbol:'STONK',name:'STONK',chain:'solana',address:mint,logo:'https://example.com/stonk.webp',price:0.12,total_usd:12517008,
+    holders:[{id:'pointfarmcap',name:'point farm capital',usd:5103800},{id:'tiny',name:'Tiny',usd:12},{id:'pointfarmcap',name:'point farm capital',usd:5103800}],
+    info:{description:'Provider description',websites:[{label:'Website',url:'https://example.com/'}],twitter:'https://x.com/LaunchOnSF',telegram:'javascript:alert(1)'}},
+    {symbol:'STONK',chain:'solana',total_usd:10,holders:[{id:'unlinked',usd:10}]},
+    {symbol:'BAD',chain:'solana',address:`0x${'1'.repeat(40)}`,holders:[]}]};
+  const list=sources.normalizeStmSharedHoldings(raw,iso(-5));assert.equal(list.length,1);const row=list[0];
+  assert.equal(row.id,`solana:${mint}`);assert.equal(row.address,mint);assert.equal(row.totalValueUsd,12517008,'explicit source total is not replaced by a partial holder sum');
+  assert.equal(row.holdersCount,2);assert.deepEqual(Array.from(row.holderIds),['wsm:fomo:pointfarmcap','wsm:fomo:tiny']);assert.equal(row.holders[1].valueUsd,12,'no invented per-holder $500 threshold');
+  assert.equal(row.wallets.length,0);assert.equal(row.scope,'source-reported');assert.equal(row.reported,true);assert.equal(row.sourceUpdatedAt,iso(-5));assert.equal(row.socialLinks.length,2);assert.equal(row.quantity,undefined);assert.equal(row.actionable,undefined);
+});
+
+test('public source revalidation keeps six-day-old upstream data stale despite a successful new HTTP check',async()=>{
+  const checked=Date.parse('2026-11-25T08:00:00Z'),old='2026-11-19T02:23:11.000Z',requests=[];
+  class ProbeDate extends Date{constructor(...args){super(...(args.length?args:[checked]));}static now(){return checked;}}
+  const captured=load('lib/stm-hunt/sources.ts',{'../../api/alpha-scan.js':{buildAlphaScanSnapshot:async()=>({items:[],scannedAt:old})}},{Date:ProbeDate,fetch:async(url,options)=>{
+    requests.push({url,options});const p=new URL(url).pathname;
+    const data=p==='/version.json'?{builtAt:old,sources:Object.fromEntries(['fomo','hl','pump','binance','lighter','okx'].map(board=>[board,old]))}:p.endsWith('/traders.json')?{traders:[],data:[],fetchedAt:old}:{};
+    return new Response(JSON.stringify(data),{status:200});
+  }});
+  const result=await captured.captureStmSources();assert.equal(result.schemaVersion,2);
+  for(const source of result.sources.filter(row=>/^wsm-(fomo|hl|pump|binance|lighter|okx)$/.test(row.id))){
+    assert.equal(source.status,'stale');assert.equal(source.updatedAt,old);assert.equal(source.checkedAt,new Date(checked).toISOString());assert.ok(source.sourceAgeSeconds>5*86400);
+  }
+  const publicRequests=requests.filter(row=>new URL(row.url).hostname==='web3smartmoney.com');assert.equal(publicRequests.length,12);
+  assert.ok(publicRequests.every(row=>new URL(row.url).searchParams.get('stm_check')===String(Math.floor(checked/60000))&&row.options.cache==='no-store'&&row.options.headers['Cache-Control']==='no-cache'));
 });
 test('captured replay executes next available price with costs, never the signal snapshot, and reports insufficient data honestly',()=>{
   const captures=[0,5,70].map((minutes,index)=>({asOf:iso(minutes),candidates:[{...candidate,price:[100,110,121][index],updatedAt:iso(minutes-1)}],traders:[],sources:[],events:events.map(row=>({...row,occurredAt:iso(minutes-2)})),chainEvents:[],markets:[{...market,asOf:iso(minutes-1)}]}));

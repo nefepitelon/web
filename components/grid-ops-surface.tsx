@@ -2,15 +2,11 @@
 
 import {
   ArrowRightLeft,
-  Check,
-  Copy,
   Download,
-  FileWarning,
   HardDrive,
   RefreshCw,
   Server,
   ShieldCheck,
-  TerminalSquare,
   WifiOff
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -19,7 +15,6 @@ const ENGINE_URL = "http://127.0.0.1:8080";
 const ENGINE_VERSION = "2.3.3";
 const CONSOLE_API_VERSION = 8;
 const MIN_COMPATIBLE_ENGINE_VERSION = "1.2.3";
-const START_COMMAND = 'cd /d "%USERPROFILE%\\Documents\\welinkbtc-main" && npm run grid:start';
 const DOWNLOAD_URL = "/downloads/启动AI网格交易Ops.bat";
 const RUN_MODE_STORAGE_KEY = "welinkbtc-grid-ops-run-mode-v1";
 
@@ -158,7 +153,6 @@ export function GridOpsSurface({ storageScope }: { storageScope: string }) {
 
 function LocalGridOpsSurface({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [status, setStatus] = useState<EngineStatus>("checking");
-  const [copied, setCopied] = useState(false);
   const [frameVersion, setFrameVersion] = useState(0);
 
   const checkEngine = useCallback(async (showProgress = true) => {
@@ -194,16 +188,6 @@ function LocalGridOpsSurface({ onSwitchMode }: { onSwitchMode: () => void }) {
     const poller = window.setInterval(() => void checkEngine(false), 3000);
     return () => window.clearInterval(poller);
   }, [checkEngine]);
-
-  async function copyStartCommand() {
-    try {
-      await navigator.clipboard.writeText(START_COMMAND);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  }
 
   const online = status === "online";
   const checking = status === "checking";
@@ -261,12 +245,12 @@ function LocalGridOpsSurface({ onSwitchMode }: { onSwitchMode: () => void }) {
 
           <h1>{outdated ? "先更新本地交易引擎" : "先启动本地交易引擎"}</h1>
           <p className="grid-ops-connect-lead">
-            线上页面不能替你启动电脑上的交易程序。这样设计可以保证交易所密钥、签名私钥和运行状态始终留在你的电脑，不上传到云端。
+            下载并运行一键启动文件，保持引擎窗口开启。连接后自动进入控制台。
           </p>
           <p className="grid-ops-connect-detail">
             {outdated
               ? "请先关闭正在运行的旧版引擎命令窗口，再下载并双击最新版一键启动文件。"
-              : "下载并双击一键启动文件。页面每 3 秒自动检测一次；即使交易所网络尚未配置，控制台也会先载入，方便进入“IP 配置”修复网络。"}
+              : "每 3 秒自动检测连接。"}
           </p>
 
           <div className="grid-ops-steps">
@@ -286,25 +270,6 @@ function LocalGridOpsSurface({ onSwitchMode }: { onSwitchMode: () => void }) {
               <span>04</span>
               <p><strong>当前页面自动进入</strong>默认使用 10,000 USDC 模拟盘，不会动用真实资金。</p>
             </div>
-          </div>
-
-          <div className="grid-ops-command">
-            <TerminalSquare size={18} aria-hidden="true" />
-            <code>{START_COMMAND}</code>
-            <button type="button" onClick={copyStartCommand} aria-label="复制 CMD 启动命令">
-              {copied ? <Check size={16} /> : <Copy size={16} />}
-              <span>{copied ? "已复制" : "复制"}</span>
-            </button>
-          </div>
-
-          <div className="grid-ops-cmd-note">
-            <TerminalSquare size={17} aria-hidden="true" />
-            <span>打开 CMD（命令提示符）：<strong>按下键盘上的 Win + R 键，在弹出的“运行”窗口中输入 cmd，然后按回车键</strong>；然后复制上边的命令，粘贴后执行！</span>
-          </div>
-
-          <div className="grid-ops-error-note">
-            <FileWarning size={17} aria-hidden="true" />
-            <span>出现 ENOENT 是因为在 <code>C:\Windows\System32</code> 等错误目录运行了 npm；上面的完整命令会先进入项目目录再启动。</span>
           </div>
 
           <div className="grid-ops-connect-actions">

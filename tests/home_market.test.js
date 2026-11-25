@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const now = Date.parse("2026-09-05T12:00:00Z");
 
 test("home market preserves ticker percent units and the exchange observation time", async () => {
-  const { normalizeTicker } = await import("../api/home-market.js");
+  const { normalizeTicker } = await import("../lib/home-market.js");
   const metric = normalizeTicker({ symbol: "BTCUSDT", lastPrice: "79700", priceChangePercent: "-1.25", closeTime: now - 1000 }, now);
   assert.equal(metric.value, 79700);
   assert.equal(metric.change24h, -1.25);
@@ -15,7 +15,7 @@ test("home market preserves ticker percent units and the exchange observation ti
 });
 
 test("home spot spread uses the midpoint in basis points and rejects crossed or empty books", async () => {
-  const { normalizeBook } = await import("../api/home-market.js");
+  const { normalizeBook } = await import("../lib/home-market.js");
   const metric = normalizeBook({ symbol: "BTCUSDT", bidPrice: "99990", askPrice: "100010" }, now);
   assert.equal(metric.value, 2);
   assert.equal(metric.unit, "bps");
@@ -26,7 +26,7 @@ test("home spot spread uses the midpoint in basis points and rejects crossed or 
 });
 
 test("home network hashrate converts hashes per second to EH/s without mislabeling it as instantaneous", async () => {
-  const { normalizeHashrate } = await import("../api/home-market.js");
+  const { normalizeHashrate } = await import("../lib/home-market.js");
   const metric = normalizeHashrate({ currentHashrate: 932.5e18 }, now);
   assert.equal(metric.value, 932.5);
   assert.equal(metric.unit, "EH/s");
@@ -38,7 +38,7 @@ test("home network hashrate converts hashes per second to EH/s without mislabeli
 });
 
 test("home stale data expires by original observation, never by the most recent failed refresh", async () => {
-  const { resolveMetric, normalizeTicker, normalizeHashrate } = await import("../api/home-market.js");
+  const { resolveMetric, normalizeTicker, normalizeHashrate } = await import("../lib/home-market.js");
   const price = normalizeTicker({ symbol: "BTCUSDT", lastPrice: "79700", priceChangePercent: "0", closeTime: now }, now);
   assert.equal(resolveMetric("price", price, now + 30_000).status, "live");
   assert.equal(resolveMetric("price", price, now + 61_000).status, "stale");
@@ -64,7 +64,7 @@ test("home API isolates source failures, uses Binance fallback and limits hashra
     if (url.includes("binance.vision") || failPrice) throw new Error("Unavailable origin");
     return Response.json({ symbol: "BTCUSDT", lastPrice: "80000", priceChangePercent: "0.5", closeTime: clock });
   };
-  const { getHomeMarketPayload } = await import("../api/home-market.js?source-test");
+  const { getHomeMarketPayload } = await import("../lib/home-market.js?source-test");
   const first = await getHomeMarketPayload();
   assert.equal(first.partial, false);
   assert.equal(first.metrics.price.value, 80000);
@@ -95,7 +95,7 @@ test("home API reports missing data without returning sample market values", asy
   const originalFetch = global.fetch;
   t.after(() => { global.fetch = originalFetch; });
   global.fetch = async () => { throw new Error("Offline"); };
-  const { getHomeMarketPayload } = await import("../api/home-market.js?offline-test");
+  const { getHomeMarketPayload } = await import("../lib/home-market.js?offline-test");
   const result = await getHomeMarketPayload();
   assert.equal(result.ok, false);
   assert.equal(result.partial, true);

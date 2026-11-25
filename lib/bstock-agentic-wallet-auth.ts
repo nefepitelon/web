@@ -6,7 +6,8 @@ import { z } from "zod";
 import { decryptTradingSecret, encryptTradingSecret } from "@/lib/alpha-execution/credentials";
 
 export const AGENT_SESSION_COOKIE = "bstock_agentic_wallet_session";
-export const AGENTIC_WALLET_VERSION = "1.8.0";
+// Keep the wire capability version aligned with the official installed CLI.
+export const AGENTIC_WALLET_VERSION = "1.9.0";
 export const BINANCE_AGENT_BASE = "https://www.binance.com";
 export const BINANCE_LOGIN_ENDPOINT = "/bapi/defi/v1/public/wallet-direct/agent-wallet/login";
 export const BINANCE_CONFIRM_ENDPOINT = `${BINANCE_LOGIN_ENDPOINT}/confirm`;

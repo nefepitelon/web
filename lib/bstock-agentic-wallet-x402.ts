@@ -15,7 +15,8 @@ export const agentX402RequirementSchema = z.object({
 export const reviewedAgentX402OptionSchema = z.object({
   index: z.number().int().positive(),
   binanceChainId: z.string().regex(/^[1-9]\d*$/),
-  requirement: agentX402RequirementSchema
+  requirement: agentX402RequirementSchema,
+  signingMode: z.enum(["native", "external"]).default("native")
 }).refine((option) => option.requirement.network === `eip155:${option.binanceChainId}`);
 
 export class AgentX402ValidationError extends Error {

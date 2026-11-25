@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { createHash } from "node:crypto";
 import { assertSameOrigin } from "@/lib/request-security";
 import { alphaExecutionErrorResponse, requireAlphaReadOperator } from "@/lib/alpha-execution/access";
 import { getStmDashboard, mutateStm } from "@/lib/stm-hunt/service";
+import type { StmDashboard } from "@/lib/stm-hunt/types";
 export const dynamic="force-dynamic";
 export const runtime="nodejs";
 export const maxDuration=60;
@@ -17,10 +19,22 @@ const schema=z.discriminatedUnion("action",[
   z.object({action:z.literal("replay"),feeBps:bps.optional(),slippageBps:bps.optional()}).strict(),
   z.object({action:z.literal("alert-read"),id}).strict(),
 ]);
-export async function GET() {
+function dashboardTag(dashboard:StmDashboard,viewerId:string|null) {
+  // A weak validator describes equivalent research evidence, not identical clock text.
+  // Every request still re-evaluates expiry and private state before comparison.
+  const stable={...dashboard,sources:dashboard.sources.map(source=>({...source,sourceAgeSeconds:undefined,
+    ...(["verified-chain","bsc-scanner"].includes(source.id)?{fetchedAt:undefined}: {})})),
+    signals:dashboard.signals.map(signal=>({...signal,asOf:undefined,expiresAt:undefined}))};
+  return `W/"${createHash("sha256").update(JSON.stringify({viewerId,dashboard:stable})).digest("hex")}"`;
+}
+export async function GET(request:Request) {
   try {
     const viewer=await requireAlphaReadOperator().catch(()=>null);
-    return Response.json(await getStmDashboard(viewer?.id),{headers:{"Cache-Control":"private, no-store"}});
+    const dashboard=await getStmDashboard(viewer?.id),etag=dashboardTag(dashboard,viewer?.id??null);
+    const headers={"Cache-Control":"private, no-cache, must-revalidate",ETag:etag,Vary:"Cookie, Authorization","X-STM-Evaluated-At":new Date().toISOString()};
+    const supplied=request.headers.get("if-none-match")??"";
+    if(supplied.split(",").map(value=>value.trim().replace(/^W\//,"")).includes(etag.replace(/^W\//,"")))return new Response(null,{status:304,headers});
+    return Response.json(dashboard,{headers});
   } catch(error) {return alphaExecutionErrorResponse(error);}
 }
 export async function POST(request:Request) {

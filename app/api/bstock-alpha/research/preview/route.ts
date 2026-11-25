@@ -2,8 +2,9 @@ import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { decodePaymentRequiredHeader } from "@x402/core/http";
-import { agentX402RequirementSchema } from "@/lib/bstock-agentic-wallet-x402";
+import { agentX402RequirementSchema, reviewedAgentX402OptionSchema } from "@/lib/bstock-agentic-wallet-x402";
 import { sameX402Requirement } from "@/lib/bstock-x402";
+import { agentPaymentReasonText, externalPermit2Candidate, selectableNativeAgentOption } from "@/lib/bstock-agent-x402-options";
 import {
   AGENT_SESSION_COOKIE,
   clearAgentSessionCookieOptions,
@@ -70,13 +71,6 @@ const previewSchema = z.object({
     originalAccept: z.record(z.string(), z.unknown()).optional()
   })).max(20)
 });
-
-function isSelectable(option: z.infer<typeof previewSchema>["options"][number]) {
-  if (!option.binanceChainId || !/^\d+$/.test(option.binanceChainId)) return false;
-  if (option.status === "READY_TO_SIGN") return true;
-  if (option.status !== "ACTION_REQUIRED" || !option.needApproveFirst) return false;
-  return !option.reasons.some((reason) => /INSUFFICIENT|NOT_SUPPORTED|INVALID|BLOCKED/i.test(reason));
-}
 
 function json(payload: Record<string, unknown>, status = 200) {
   return NextResponse.json(payload, { status, headers: noStoreHeaders() });
@@ -188,21 +182,25 @@ export async function POST(request: NextRequest) {
     // CMC uses a tool resource identifier, not the HTTP replay URL.
     const resourceUrl = z.string().min(1).max(2_048).parse(merchantChallenge.resource?.url);
     // Binance sorts its preview options. Match originalAccept, never array position.
-    const allowedOptions = preview.options.filter(isSelectable).flatMap((option) => {
+    const allowedOptions = preview.options.flatMap<z.infer<typeof reviewedAgentX402OptionSchema>>((option) => {
       const original = merchantRequirements.find((requirement) => sameX402Requirement(requirement, option.originalAccept));
       const parsed = agentX402RequirementSchema.safeParse(original);
-      if (!parsed.success || parsed.data.network !== `eip155:${option.binanceChainId}`) return [];
-      return [{ index: option.index, binanceChainId: option.binanceChainId!, requirement: parsed.data }];
+      if (!parsed.success) return [];
+      if (selectableNativeAgentOption(option) && parsed.data.network === `eip155:${option.binanceChainId}`) {
+        return [{ index: option.index, binanceChainId: option.binanceChainId!, requirement: parsed.data, signingMode: "native" as const }];
+      }
+      if (externalPermit2Candidate(option, parsed.data)) {
+        return [{ index: option.index, binanceChainId: "56", requirement: parsed.data, signingMode: "external" as const }];
+      }
+      return [];
     });
     const allowedIndices = allowedOptions.map((option) => option.index);
-    if (!allowedIndices.length) {
-      return persistAgentSession(json({
-        error: "上游当前未提供 Agentic Wallet 可签名的 x402 付款方式。",
-        code: "X402_PAYMENT_UNAVAILABLE",
-        provider: input.provider
-      }, 409), state);
-    }
-    const intent = encodeResearchIntent({
+    // Keep unavailable options visible: a missing Base USDC balance is not an
+    // unsupported protocol, and users must see the exact network to fund.
+    trace.log("options_checked", { nativeCount: allowedOptions.filter(option => option.signingMode === "native").length,
+      externalCount: allowedOptions.filter(option => option.signingMode === "external").length,
+      reasons: Array.from(new Set(preview.options.flatMap(option => option.reasons))) });
+    const intent = allowedIndices.length ? encodeResearchIntent({
       version: 2,
       kind: "research",
       agentKey: agentSessionKey(state),
@@ -216,7 +214,7 @@ export async function POST(request: NextRequest) {
       allowedIndices,
       allowedOptions,
       createdAt: Date.now()
-    });
+    }) : null;
 
     const response = json({
       intent,
@@ -230,8 +228,14 @@ export async function POST(request: NextRequest) {
         ? `${merchant.purpose} · 上一任务已永久失败，本次将新建任务并再次付费`
         : merchant.purpose,
       previousStudioFailure,
+      canPay: allowedIndices.length > 0,
+      message: allowedIndices.length ? null : "已取得真实付款要求，但钱包余额或策略尚不满足。请查看各付款方式的具体原因；本次未签名、未授权、未付款。",
       expiresAt: Date.now() + 2 * 60_000,
-      options: preview.options.map((option) => ({
+      options: preview.options.map((option) => {
+        const reviewed = allowedOptions.find(entry => entry.index === option.index);
+        const requirement = reviewed?.requirement || merchantRequirements.find(entry => sameX402Requirement(entry, option.originalAccept));
+        const chain = option.binanceChainId || (requirement?.network.startsWith("eip155:") ? requirement.network.slice(7) : null);
+        return ({
         index: option.index,
         status: option.needApproveFirst && option.status === "READY_TO_SIGN" ? "ACTION_REQUIRED" : option.status,
         reasons: [
@@ -239,18 +243,20 @@ export async function POST(request: NextRequest) {
           ...(option.needApproveFirst ? ["PERMIT2_APPROVAL_REQUIRED"] : [])
         ],
         selectable: allowedIndices.includes(option.index),
-        tokenSymbol: option.tokenSymbol,
-        tokenAddress: option.tokenAddress,
+        signingMode: reviewed?.signingMode || "native",
+        reasonText: reviewed?.signingMode === "external" ? "使用官方 Developer Mode 单独预览授权与签名；尚未签名或付款" : agentPaymentReasonText(option.reasons),
+        tokenSymbol: option.tokenSymbol || (requirement?.asset.toLowerCase() === "0x55d398326f99059ff775485246999027b3197955" ? "USDT" : ["0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"].includes(requirement?.asset.toLowerCase() || "") ? "USDC" : null),
+        tokenAddress: option.tokenAddress || requirement?.asset,
         amount: option.amount,
         amountUsd: option.amountUsd,
-        network: option.binanceChainId,
-        networkLabel: option.binanceChainId ? evmNetworkLabel(`eip155:${option.binanceChainId}`) : "未知网络",
-        transferMethod: option.assetTransferMethod,
-        payTo: option.payTo,
+        network: chain,
+        networkLabel: chain ? evmNetworkLabel(`eip155:${chain}`) : "未知网络",
+        transferMethod: option.assetTransferMethod || requirement?.extra?.assetTransferMethod,
+        payTo: option.payTo || requirement?.payTo,
         currentBalance: option.currentBalance,
         currentBalanceUsd: option.currentBalanceUsd,
         needApproveFirst: Boolean(option.needApproveFirst)
-      }))
+      }); })
     });
     return persistAgentSession(response, state);
   } catch (error) {

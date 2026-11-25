@@ -78,7 +78,8 @@ export async function POST(request: NextRequest) {
       totalOrders: null,
       assets: market.assets,
       walletPositions: wallet.bstockBalances,
-      historyAvailable: false
+      historyAvailable: false,
+      historyError: "BROWSER_FULL_HISTORY_UNAVAILABLE"
     });
     tradingLedger.orders = mergeBstockOrderRecords([], databaseRecords);
 

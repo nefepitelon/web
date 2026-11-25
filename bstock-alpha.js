@@ -77,7 +77,7 @@
   const publicDataCacheKey = bstockStorage.publicDataCacheKey;
 
   function brandIconUrl(symbol) {
-    return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(String(symbol || "").toUpperCase())}&v=20261024`;
+    return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(String(symbol || "").toUpperCase())}&v=20261124`;
   }
   try {
     const stored = JSON.parse(localStorage.getItem("bstock-alpha-watchlist") || "[]");
@@ -148,7 +148,7 @@
 
   async function loadBstockLocalization() {
     if (localizationRequest) return localizationRequest;
-    localizationRequest = fetch("/legacy/data/bstock-localization.json?v=20261024", {
+    localizationRequest = fetch("/legacy/data/bstock-localization.json?v=20261124", {
       headers: { Accept: "application/json" },
       cache: "force-cache"
     })
@@ -446,14 +446,17 @@
   function updateQualification() {
     const cmcReady = Boolean(liveSnapshot?.cmc);
     const studioReady = Object.keys(studioReports).length > 0;
-    const pnlReady = Boolean(liveSnapshot?.tradingLedger?.historyAvailable && liveSnapshot?.tradingLedger?.historyComplete);
+    const pnlSummary = liveSnapshot?.tradingLedger?.summary;
+    const pnlReady = Boolean(liveSnapshot?.tradingLedger?.historyAvailable && liveSnapshot?.tradingLedger?.historyComplete
+      && typeof pnlSummary?.realizedPnlUsd === "number" && typeof pnlSummary?.unrealizedPnlUsd === "number");
     const walletReady = Boolean(walletOperational() && liveSnapshot?.wallet);
     byId("qualification-cmc").classList.toggle("done", cmcReady);
     byId("qualification-cmc").textContent = cmcReady ? "CMC LIVE ✓" : "CMC LIVE 等待";
     byId("qualification-studio").classList.toggle("done", studioReady);
     byId("qualification-studio").textContent = studioReady ? "STUDIO PAID ✓" : "STUDIO PAID 等待";
     byId("qualification-pnl").classList.toggle("done", pnlReady);
-    byId("qualification-pnl").textContent = pnlReady ? "PNL RECONCILED ✓" : "PNL 对账待接入";
+    byId("qualification-pnl").textContent = pnlReady ? "PNL RECONCILED ✓"
+      : liveSnapshot?.wallet ? "PNL 成本待核验" : "PNL 对账待接入";
     byId("qualification-wallet").classList.toggle("done", walletReady);
     byId("qualification-wallet").textContent = walletReady ? "WALLET LIVE ✓" : "WALLET";
     const count = Number(cmcReady) + Number(studioReady) + Number(pnlReady) + Number(walletReady);
@@ -730,7 +733,8 @@
       row.id = "positions-empty";
       const cell = document.createElement("td");
       cell.colSpan = 8;
-      cell.textContent = wallet ? "Agentic Wallet 当前未返回 bStock 持仓。" : "连接 Agentic Wallet 后显示真实链上 bStock 余额。";
+      cell.textContent = wallet ? "Agentic Wallet 当前未返回 bStock 持仓。"
+        : ledger?.historyError ? "持仓同步失败，请重试。" : "连接 Agentic Wallet 后显示真实链上 bStock 余额。";
       row.append(cell);
       tbody.append(row);
     } else {
@@ -894,7 +898,7 @@
 
   function setPerformanceMetric(id, value, available) {
     const element = byId(id);
-    element.textContent = available ? value : "—";
+    element.textContent = value;
     element.className = available
       ? `metric-value ${String(value).startsWith("-") ? "down" : "up"}`
       : "metric-value";
@@ -937,20 +941,27 @@
     const profitFactor = summary.profitFactor;
     const grossProfit = summary.grossProfitUsd;
     const grossLoss = summary.grossLossUsd;
+    const browserHistoryUnavailable = ledger?.historyError === "BROWSER_FULL_HISTORY_UNAVAILABLE";
+    const historyLabel = !wallet ? ledger?.historyError ? "同步失败" : "等待连接" : !ledger?.historyAvailable
+      ? browserHistoryUnavailable ? "历史未接入" : "同步失败"
+      : !historyReady ? "历史待补全" : "成本待核验";
+    const noClosedTrades = historyReady && realizedCount === 0;
+    const realizedLabel = noClosedTrades ? "暂无已平仓" : historyLabel;
 
-    setPerformanceMetric("realized-pnl", realizedAvailable ? `${realizedPnl > 0 ? "+" : ""}${money(realizedPnl)}` : "—", realizedAvailable);
+    setPerformanceMetric("realized-pnl", realizedAvailable ? `${realizedPnl > 0 ? "+" : ""}${money(realizedPnl)}` : historyLabel, realizedAvailable);
     byId("realized-source").textContent = historyReady
-      ? `完整成交历史 · ${realizedCount || 0} 笔`
-      : ledger?.historyAvailable ? "订单历史不完整" : "等待真实成交历史";
+      ? realizedCount == null ? "成交已同步 · 成本待核验" : `完整成交历史 · ${realizedCount} 笔已平仓`
+      : !wallet ? ledger?.historyError ? "钱包数据同步失败 · 可重试" : "等待真实成交历史" : ledger?.historyAvailable ? "订单历史不完整"
+      : browserHistoryUnavailable ? "浏览器钱包 · 完整成交历史未接入" : "成交历史同步失败 · 可重试";
     byId("realized-return").textContent = typeof summary.realizedReturnPct === "number"
       ? `${summary.realizedReturnPct >= 0 ? "+" : ""}${summary.realizedReturnPct.toFixed(2)}%`
       : historyReady && realizedCount === 0 ? "暂无已平仓" : "—";
 
-    setPerformanceMetric("unrealized-pnl", unrealizedAvailable ? `${unrealizedPnl > 0 ? "+" : ""}${money(unrealizedPnl)}` : "—", unrealizedAvailable);
+    setPerformanceMetric("unrealized-pnl", unrealizedAvailable ? `${unrealizedPnl > 0 ? "+" : ""}${money(unrealizedPnl)}` : historyLabel, unrealizedAvailable);
     const openPositions = Array.isArray(wallet?.bstockBalances)
       ? wallet.bstockBalances.filter((position) => Number(position.balance) > 0)
       : [];
-    byId("open-position-count").textContent = wallet ? `真实持仓 ${openPositions.length}` : "等待真实持仓";
+    byId("open-position-count").textContent = wallet ? `真实持仓 ${openPositions.length}` : ledger?.historyError ? "持仓同步失败" : "等待真实持仓";
     const costBySymbol = new Map((ledger?.positions || []).map((position) => [position.symbol, position.averageCostUsd]));
     const aggregateCost = openPositions.reduce((sum, position) => {
       const averageCost = costBySymbol.get(position.symbol);
@@ -960,16 +971,16 @@
     }, 0);
     byId("unrealized-return").textContent = unrealizedAvailable && aggregateCost > 0
       ? `${unrealizedPnl >= 0 ? "+" : ""}${(unrealizedPnl / aggregateCost * 100).toFixed(2)}%`
-      : historyReady && openPositions.length === 0 ? "暂无持仓" : "成本待完整重建";
+      : wallet && openPositions.length === 0 ? "暂无持仓" : !wallet ? "等待真实持仓" : "成本待完整重建";
 
     const winRateAvailable = typeof winRate === "number" && Number.isFinite(winRate);
-    setPerformanceMetric("win-rate", winRateAvailable ? `${winRate.toFixed(1)}%` : "—", winRateAvailable);
-    byId("closed-trade-count").textContent = realizedCount == null ? "等待成交历史" : `已平仓 ${realizedCount} 笔`;
+    setPerformanceMetric("win-rate", winRateAvailable ? `${winRate.toFixed(1)}%` : realizedLabel, winRateAvailable);
+    byId("closed-trade-count").textContent = realizedCount == null ? historyLabel : `已平仓 ${realizedCount} 笔`;
     byId("win-loss-count").textContent = wins == null || losses == null ? "—" : `${wins} 胜 / ${losses} 负`;
 
     const factorInfinite = summary.profitFactorInfinite === true;
     const factorAvailable = factorInfinite || (typeof profitFactor === "number" && Number.isFinite(profitFactor));
-    setPerformanceMetric("profit-factor", factorInfinite ? "∞" : factorAvailable ? profitFactor.toFixed(2) : "—", factorAvailable);
+    setPerformanceMetric("profit-factor", factorInfinite ? "∞" : factorAvailable ? profitFactor.toFixed(2) : realizedLabel, factorAvailable);
     if (wins != null && losses != null && realizedCount) {
       const averageWin = wins > 0 && typeof grossProfit === "number" ? grossProfit / wins : 0;
       const averageLoss = losses > 0 && typeof grossLoss === "number" ? grossLoss / losses : 0;
@@ -1028,6 +1039,7 @@
   function applyLiveSnapshot(payload) {
     const prior = liveSnapshot || {};
     const next = { ...payload };
+    if (payload.wallet) next.tradingLedger = resolveWalletSnapshotLedger(payload);
     for (const key of ["cmc", "wallet", "tradingLedger"]) {
       if (next[key] == null) delete next[key];
     }
@@ -1039,6 +1051,11 @@
       ...next,
       sources: { ...(prior.sources || {}), ...(payload.sources || {}) }
     };
+    // Public market cache may survive a transient error; private wallet values
+    // must not remain labelled LIVE or be reused as an execution balance.
+    if (payload.sources?.wallet?.status === "UNAVAILABLE") {
+      clearLiveWalletData(payload.sources.wallet.code || "WALLET_DATA_UNAVAILABLE");
+    }
 
     const cmc = liveSnapshot.cmc;
     if (cmc) {
@@ -1160,6 +1177,42 @@
     resumePendingOrderFromLedger();
   }
 
+  function resolveWalletSnapshotLedger(payload) {
+    const ledger = payload.tradingLedger;
+    if (ledger && payload.sources?.orders?.status !== "UNAVAILABLE") return ledger;
+    const noPositions = Array.isArray(payload.wallet?.bstockBalances)
+      && !payload.wallet.bstockBalances.some((position) => Number(position.balance) > 0);
+    // A new wallet balance cannot be paired with an older cost basis. Retain
+    // only order records explicitly included in this response, never prior PnL.
+    return {
+      historyAvailable: false,
+      historyComplete: false,
+      historyError: payload.sources?.orders?.code || ledger?.historyError || "ORDER_LEDGER_MISSING",
+      fetchedOrders: ledger?.fetchedOrders ?? 0,
+      totalOrders: ledger?.totalOrders ?? null,
+      orders: Array.isArray(ledger?.orders) ? ledger.orders : [],
+      positions: [],
+      realized: [],
+      summary: {
+        realizedState: "UNAVAILABLE",
+        unrealizedState: noPositions ? "NO_POSITIONS" : "UNAVAILABLE",
+        realizedPnlUsd: null,
+        unrealizedPnlUsd: noPositions ? 0 : null
+      }
+    };
+  }
+
+  function clearLiveWalletData(code) {
+    const unavailableLedger = { historyAvailable: false, historyComplete: false, historyError: code, summary: {} };
+    if (liveSnapshot) liveSnapshot = { ...liveSnapshot, wallet: null, tradingLedger: unavailableLedger };
+    resetTradeQuote();
+    renderWalletPositions(null, unavailableLedger);
+    renderOrderRecords(unavailableLedger);
+    renderRealizedLedger(unavailableLedger);
+    renderPerformanceMetrics(unavailableLedger, null);
+    byId("execution-state").innerHTML = '<i class="state-dot is-waiting"></i>BALANCE UNAVAILABLE';
+  }
+
   async function refreshMarketSnapshot({ silent = true } = {}) {
     marketSnapshotRequest?.abort();
     marketSnapshotRequest = new AbortController();
@@ -1228,6 +1281,9 @@
     } catch (error) {
       if (contextVersion !== walletContextVersion) return false;
       if (error instanceof DOMException && error.name === "AbortError") return false;
+      clearLiveWalletData("WALLET_SNAPSHOT_FAILED");
+      updateRiskState();
+      updateQualification();
       byId("wallet-risk").className = "pending";
       byId("wallet-risk").querySelector("strong").textContent = "真实余额同步失败";
       if (!silent) showToast(error instanceof Error ? error.message : "钱包数据同步失败", "error");
@@ -2100,11 +2156,23 @@
   function updateResearchApproval() {
     const selectedIndex = Number(document.querySelector('input[name="research-payment"]:checked')?.value || 0);
     if (researchPreview) researchPreview.selectedIndex = selectedIndex;
+    const option = researchPreview?.options?.find(entry => entry.index === selectedIndex);
+    const external = option?.signingMode === "external";
+    const needsPreview = external && !researchPreview?.externalReview;
+    const pending = external && researchPreview?.externalStep?.pending;
+    const approvalLabel = byId("research-approval-check").parentElement?.querySelector("span");
+    if (approvalLabel) approvalLabel.textContent = external && researchPreview?.externalStep?.kind === "APPROVAL"
+      ? "我已核对上方解析、风险、代币与有限授权额度；本次仅确认授权，不支付研报费用。"
+      : "我已核对金额、代币、网络、收款地址、签名解析与风险，并确认本次真实付费请求。";
+    byId("research-approval-check").disabled = Boolean(needsPreview || pending);
+    if (needsPreview) byId("confirm-paid-research").textContent = "预览授权 / 签名（不扣费）";
+    else if (pending) byId("confirm-paid-research").textContent = "查询已确认签名（不重签）";
+    else if (external) byId("confirm-paid-research").textContent = researchPreview.externalStep?.kind === "APPROVAL" ? "仅确认有限额度授权" : "确认外部签名并付费";
     byId("confirm-paid-research").disabled = !researchPreview?.intent
       || walletActionInFlight
       || researchPreview.contextVersion !== walletContextVersion
       || !selectedIndex
-      || !byId("research-approval-check").checked;
+      || (!needsPreview && !pending && !byId("research-approval-check").checked);
   }
 
   function renderPaymentOptions(options) {
@@ -2124,15 +2192,21 @@
         input.checked = true;
         selectedFirst = true;
       }
-      input.addEventListener("change", updateResearchApproval);
+      input.addEventListener("change", () => {
+        if (researchPreview) { researchPreview.externalReview = null; researchPreview.externalStep = null; }
+        byId("research-approval-check").checked = false;
+        byId("research-result").hidden = true;
+        byId("confirm-paid-research").textContent = "确认签名并付费";
+        updateResearchApproval();
+      });
       const detail = document.createElement("p");
       const title = document.createElement("strong");
       title.textContent = `${option.tokenSymbol || "TOKEN"} · ${option.networkLabel || option.network || "EVM"}`;
       const meta = document.createElement("small");
-      const payTo = option.payTo ? `${option.payTo.slice(0, 8)}…${option.payTo.slice(-6)}` : "收款地址待返回";
-      meta.textContent = ready
+      const payTo = option.payTo || "收款地址待返回";
+      meta.textContent = option.signingMode === "external" ? `${option.reasonText} · 合约 ${option.tokenAddress || "—"} · 收款 ${payTo}` : ready
         ? `${option.needApproveFirst ? `需一次性 Permit2 授权 · ${option.networkLabel || option.network || "EVM"}` : option.currentBalance == null ? "签名时由钱包复核余额" : `余额 ${option.currentBalance}`} · 收款 ${payTo}`
-        : `${option.reasons?.join(" / ") || "余额不足或当前不受支持"}`;
+        : `${option.reasonText || option.reasons?.join(" / ") || "余额不足或当前不受支持"}`;
       detail.append(title, meta);
       const amount = document.createElement("em");
       amount.textContent = option.amountUsd ? `$${option.amountUsd}` : `${option.amount || "—"} ${option.tokenSymbol || ""}`;
@@ -2629,9 +2703,11 @@
     byId("research-result").hidden = true;
     byId("research-result").textContent = "";
     byId("research-approval-check").checked = false;
+    byId("research-approval-check").disabled = false;
     byId("confirm-paid-research").disabled = true;
     byId("confirm-paid-research").textContent = "确认签名并付费";
     byId("confirm-paid-research").hidden = false;
+    byId("retry-research-preview").textContent = "重新获取付款预览（不扣费）";
     setResearchStatus("", "正在获取实时付款要求；此步骤不会签名或扣费。");
     dialog.showModal();
     const slowTimer = setTimeout(() => {
@@ -2664,11 +2740,15 @@
       updateResearchApproval();
       const readyCount = (payload.options || []).filter((option) => option.selectable).length;
       const approvalCount = (payload.options || []).filter((option) => option.selectable && option.needApproveFirst).length;
+      if (!readyCount) {
+        researchPreviewRetry = { providerName, asset: { ...asset }, contextVersion };
+        byId("retry-research-preview").hidden = false;
+      }
       setResearchStatus(readyCount ? "ready" : "error", readyCount
         ? payload.previousStudioFailure
           ? `上一任务 ${payload.previousStudioFailure.jobId} 已永久失败（${payload.previousStudioFailure.errorCode || "analysis_failed"}）。已找到 ${readyCount} 个可用付款方式；继续确认会创建新任务并再次付费。`
           : `已找到 ${readyCount} 个可用真实付款方式${approvalCount ? `，其中 ${approvalCount} 个会在确认后完成一次性 Permit2 授权` : ""}。`
-        : "当前付款方式余额不足或不受支持；未执行签名、授权或扣费。");
+        : payload.message || "当前付款方式余额不足或不受支持；未执行签名、授权或扣费。");
     } catch (error) {
       if (contextVersion !== walletContextVersion || requestVersion !== researchRequestVersion) return;
       const message = error?.name === "TimeoutError" || error?.name === "AbortError"
@@ -2694,8 +2774,49 @@
     return openPaidResearch(retry.providerName, retry.asset);
   }
 
+  async function previewExternalPaidResearch() {
+    const preview = researchPreview;
+    if (!preview?.intent || walletActionInFlight) return;
+    const contextVersion = preview.contextVersion;
+    walletActionInFlight = true;
+    byId("confirm-paid-research").disabled = true;
+    setResearchStatus("", "正在进行官方 Developer Mode 只读预览；未授权、未签名、未付款。");
+    try {
+      const response = await fetch("/api/bstock-alpha/research/external/preview", {
+        method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ intent: preview.intent, selectedIndex: preview.selectedIndex })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (contextVersion !== walletContextVersion || researchPreview !== preview) return;
+      if (!response.ok) throw new Error(payload.error || "外部签名预览失败，未付款。");
+      preview.externalReview = payload.externalReview;
+      preview.externalStep = payload;
+      byId("research-approval-check").checked = false;
+      const result = byId("research-result");
+      result.hidden = false;
+      // Text only: merchant/wallet fields must never be interpreted as HTML.
+      result.textContent = [payload.kind === "APPROVAL" ? "独立步骤：有限额度授权（不支付研报）" : "独立步骤：付款 EIP-712 签名",
+        payload.message, `网络：${payload.networkLabel} / ${payload.chainId}`, `金额：${payload.amount} ${payload.tokenSymbol}`,
+        `代币合约：${payload.tokenAddress}`, `收款人：${payload.payTo}`, `资源：${payload.resourceUrl}`,
+        `Permit2 授权合约：${payload.spender}`, `结算合约：${payload.settlementSpender}`,
+        "钱包解析：", JSON.stringify(payload.parsed || {}, null, 2), "风险与权限变化：",
+        JSON.stringify({ risks: payload.risks, authorityChanges: payload.authorityChanges, simulation: payload.simulation }, null, 2)
+      ].join("\n");
+      setResearchStatus("ready", payload.message);
+    } catch (error) {
+      if (contextVersion !== walletContextVersion) return;
+      setResearchStatus("error", error instanceof Error ? error.message : "外部签名预览失败，未付款。");
+    } finally {
+      walletActionInFlight = false;
+      updateResearchApproval();
+    }
+  }
+
   async function executePaidResearch() {
-    if (!researchPreview?.intent || !researchPreview.selectedIndex || walletActionInFlight || !byId("research-approval-check").checked) return;
+    if (!researchPreview?.intent || !researchPreview.selectedIndex || walletActionInFlight) return;
+    const option = researchPreview.options?.find(entry => entry.index === researchPreview.selectedIndex);
+    if (option?.signingMode === "external" && !researchPreview.externalReview) return previewExternalPaidResearch();
+    if (!researchPreview.externalStep?.pending && !byId("research-approval-check").checked) return;
     const preview = { ...researchPreview };
     const contextVersion = preview.contextVersion;
     researchPreview.intent = "";
@@ -2705,7 +2826,11 @@
     button.disabled = true;
     button.textContent = "正在签名 / 必要时授权…";
     result.hidden = false;
-    result.textContent = preview.walletMode === "browser"
+    result.textContent = preview.externalStep
+      ? preview.externalStep.pending ? "正在查询同一已确认签名任务，不会再次执行签名。"
+        : preview.externalStep.kind === "APPROVAL" ? "正在提交已独立确认的有限额度授权；本次不会支付研报费用。"
+          : "正在执行已独立确认的外部付款签名，并向已审阅的同一商户提交一次。"
+      : preview.walletMode === "browser"
       ? "浏览器钱包会切换到已审阅付款选项的 EVM 网络，并逐笔弹出必要授权与 x402 签名；确认后才会重放原始请求。"
       : "Agentic Wallet 正在签名；若所选代币需要 Permit2，将自动提交一次性授权、等待确认，再重放原始请求。";
     setResearchStatus("", "真实付费请求处理中；每个付款预览只使用一次，请勿重复点击。");
@@ -2729,6 +2854,8 @@
           } : {}),
           intent: preview.intent,
           selectedIndex: preview.selectedIndex,
+          ...(preview.externalReview ? { externalReview: preview.externalReview,
+            externalConfirmation: preview.externalStep?.pending ? "查询已确认签名" : preview.externalStep?.kind === "APPROVAL" ? "确认有限额度授权" : "确认外部付款签名" } : {}),
           confirmation: "确认付费研究",
           acknowledged: true
         })
@@ -2736,6 +2863,25 @@
       const payload = await response.json().catch(() => ({}));
       if (contextVersion !== walletContextVersion) return;
       if (!response.ok) throw new Error(payload.error || "真实付费研究请求失败");
+      if (["APPROVAL_REJECTED", "APPROVAL_FAILED", "APPROVAL_EXPIRED"].includes(payload.status)) {
+        throw new Error(payload.message || "有限额度授权未完成，未执行研报付款。");
+      }
+      if (payload.status === "SIGNATURE_PENDING") {
+        researchPreview = { ...preview, externalReview: payload.externalReview, externalStep: { ...preview.externalStep, pending: true } };
+        byId("research-approval-check").checked = false;
+        setResearchStatus("ready", payload.message);
+        result.textContent = payload.message;
+        return;
+      }
+      if (payload.status === "APPROVAL_SUBMITTED") {
+        researchPreviewRetry = { providerName: preview.provider, asset: { ...selected, ...preview.selectedAsset }, contextVersion };
+        byId("retry-research-preview").hidden = false;
+        byId("retry-research-preview").textContent = "授权确认后重新预览（不扣费）";
+        setResearchStatus("ready", payload.message);
+        result.textContent = `${payload.message}${payload.approveTxHash ? `\n授权交易：${payload.approveTxHash}` : ""}`;
+        button.textContent = "本次仅提交授权";
+        return;
+      }
       if (handleStudioExistingTask(payload, true)) return;
       if (payload.provider === "cmc" && payload.status === "SUCCEEDED") {
         const ticker = selected.ticker || tickerByBstock[selected.symbol];
@@ -2767,6 +2913,7 @@
       showToast(error instanceof Error ? error.message : "真实付费研究请求失败", "error");
     } finally {
       walletActionInFlight = false;
+      updateResearchApproval();
     }
   }
 
@@ -2994,7 +3141,7 @@
 
   function filterUniverse() {
     const query = byId("token-search").value.trim().toUpperCase();
-    const activeFilter = document.querySelector("[data-universe-filter].active")?.dataset.universeFilter || "all";
+    const activeFilter = document.querySelector("[data-universe-filter].active")?.dataset.universeFilter || "weekly";
     document.querySelector(".universe-panel")?.setAttribute("data-active-filter", activeFilter);
     byId("token-list")?.setAttribute("data-active-filter", activeFilter);
     selectors(".token-row").forEach((row) => {

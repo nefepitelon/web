@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { StmHuntTerminal } from "./stm-hunt-terminal";
+import { StmHuntRadar, type StmRadarFocus } from "./stm-hunt-radar";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Activity, ArrowRight, ArrowUpRight, Bell, Check, ChevronRight, Circle, CircleAlert, Clock3, Code2, Crosshair, Database, ExternalLink, FlaskConical, History, Layers3, LoaderCircle, Pause, Play, Radar, RefreshCw, Search, ShieldCheck, ShieldX, SlidersHorizontal, Terminal, Wallet, X } from "lucide-react";
 import type { StmCandidate, StmDashboard, StmMutation, StmSignal, StmSource, StmStrategy, StmStrategyId } from "@/lib/stm-hunt/types";
 
@@ -11,7 +13,6 @@ type InjectedWallet = { request: (input: { method: string; params?: unknown[] })
 type BscQuote = { quoteId: string; expiresAt: string | number; chainId: number; notionalUsd?: number; quotedOutput?: string; minimumOutput?: string; protectionMode?: string; approval: { token: string; spender: string; amount: string } | null; transaction: { to: string; data: string; value?: string; gas?: string }; risk?: unknown };
 const strategyNames: Record<StmStrategyId, string> = { S1: "趋势确认", S2: "持续建仓", S3: "链上先手", S4: "分歧退出", S5: "拥挤过滤" };
 const statusNames: Record<string, string> = { ready: "证据就绪", watch: "持续观察", blocked: "条件未满足", risk: "风险提示", ok: "可访问", stale: "数据陈旧", unavailable: "暂不可用", restricted: "需要授权", public: "公开持仓", private: "私密持仓", empty: "无公开持仓", truncated: "数据截断" };
-const sourceBoards = ["fomo", "hl", "pump", "binance", "lighter", "okx"];
 const money = (value: number | null | undefined, digits = 2) => value == null || !Number.isFinite(value) ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: digits }).format(value);
 const compact = (value: number | null | undefined) => value == null || !Number.isFinite(value) ? "—" : new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
 const numeric = (value: number | null | undefined, digits = 2) => value == null || !Number.isFinite(value) ? "—" : value.toLocaleString("en-US", { maximumFractionDigits: digits });
@@ -35,9 +36,62 @@ function PanelHeading({ eyebrow, title, children }: { eyebrow: string; title: st
 function SignalBadge({ signal }: { signal?: StmSignal }) { return <Badge tone={signal?.status === "ready" ? "green" : signal?.status === "risk" ? "pink" : "yellow"}>{signal ? `${signal.strategy} · ${statusNames[signal.status]}` : "等待证据"}</Badge>; }
 function SourceIndicator({ source }: { source: StmSource }) { return <div className="stm-source-row"><i className={`stm-dot stm-dot-${source.status}`} /><span>{source.name}</span><strong>{statusNames[source.status]}</strong></div>; }
 
+const sourceTime = (value: string | null | undefined) => value && Number.isFinite(Date.parse(value))
+  ? new Date(value).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }) : "未提供";
+
+export function StmSourceMarquee({ sources }: { sources: StmSource[] }) {
+  const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const viewportId = useId();
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(preference.matches);
+    update();
+    preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
+  }, []);
+  const items = (duplicate: boolean) => <div className="stm-source-ticker-group" role={duplicate ? undefined : "list"} aria-hidden={duplicate || undefined}>
+    {sources.map((source) => <div key={source.id} className={`stm-source-ticker-item stm-source-ticker-${source.status}`} role={duplicate ? undefined : "listitem"} title={source.message || undefined}>
+      <i className={`stm-dot stm-dot-${source.status}`} aria-hidden="true" /><strong>{source.name}</strong><span className="stm-source-ticker-status">{statusNames[source.status] ?? "状态未知"}</span>
+      <span className="stm-source-ticker-time">源 {sourceTime(source.updatedAt)}</span><span className="stm-source-ticker-time">{source.checkedAt ? "查" : "读"} {sourceTime(source.checkedAt ?? source.fetchedAt)}</span>
+    </div>)}
+  </div>;
+  return <section className="stm-source-ticker" aria-label="数据来源与可访问状态" data-paused={paused || reducedMotion}>
+    <div className="stm-source-ticker-label"><Database size={12} aria-hidden="true" /><span>来源状态</span></div>
+    <div id={viewportId} className="stm-source-ticker-viewport" tabIndex={sources.length ? 0 : undefined} role="region" aria-label="来源状态列表，悬停或聚焦暂停滚动；时间为北京时间" aria-live="off">
+      {sources.length ? <div className="stm-source-ticker-track" style={{ animationDuration: `${Math.max(35, sources.length * 12)}s` }}>{items(false)}{items(true)}</div> : <span className="stm-source-ticker-empty">等待首次检查 · 来源状态尚未读取</span>}
+    </div>
+    <button type="button" className="stm-source-ticker-toggle" aria-controls={viewportId} aria-pressed={paused || reducedMotion} disabled={reducedMotion || !sources.length} onClick={() => setPaused((value) => !value)} aria-label={reducedMotion ? "系统已减少动态效果，来源状态静止显示" : paused ? "继续来源状态滚动" : "暂停来源状态滚动"} title={reducedMotion ? "已遵循系统的减少动态效果设置" : "悬停或键盘聚焦列表也会暂停"}>
+      {paused || reducedMotion ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}<span>{reducedMotion ? "静止" : paused ? "继续" : "暂停"}</span>
+    </button>
+  </section>;
+}
+
+export function StmHuntHeader({ data, scanning, disabled, onScan }: { data: StmDashboard | null; scanning: boolean; disabled: boolean; onScan: () => void }) {
+  const sourceOk = data?.sources.filter((source) => source.status === "ok").length ?? 0;
+  const closedPaper = data?.state.paper.filter((position) => position.status === "closed").length ?? 0;
+  return <>
+    <div className="stm-topline"><span>SMART MONEY INTELLIGENCE</span><span>证据驱动 · 每笔交易都有理由 <span className="stm-version">STM / v1.6.0</span></span></div>
+    <header className="stm-hero">
+      <div className="stm-brand"><div className="stm-mascot" aria-hidden="true"><i /><i /></div><div><div className="stm-brand-line"><h1>STM <span>hunt</span></h1><Badge tone="purple">TERMINAL</Badge></div><p>发现聪明钱，验证 Alpha，掌控每一次执行。</p><div className="stm-hero-meta"><span><Database size={12} aria-hidden="true" />{data ? `${sourceOk}/${data.sources.length} 来源状态正常` : "来源状态待读取"}</span><span title="工作台聚合快照时间，不代表所有上游数据的更新时间"><Clock3 size={12} aria-hidden="true" />{data ? `快照 ${sourceTime(data.asOf)}` : "等待首次同步"}</span></div></div></div>
+      <div className="stm-hero-toolbar">
+        <dl className="stm-toolbar-metrics" aria-label="工作台统计">
+          <div title="分平台保留身份与统计口径"><dt><Radar size={12} aria-hidden="true" />追踪交易员</dt><dd>{data ? numeric(data.metrics.traders, 0) : "—"}</dd></div>
+          <div title="CEX 与链上资产分开验证"><dt><Crosshair size={12} aria-hidden="true" />候选资产</dt><dd>{data ? numeric(data.metrics.candidates, 0) : "—"}</dd></div>
+          <div title="通过策略证据检查的信号；缺少证据时不会放行"><dt><ShieldCheck size={12} aria-hidden="true" />就绪信号</dt><dd className="stm-green">{data ? numeric(data.metrics.ready, 0) : "—"}</dd></div>
+          <div title={`${closedPaper} 笔模拟平仓 · 含设定手续费与滑点；不计入实盘收益`}><dt><Activity size={12} aria-hidden="true" />模拟已实现盈亏</dt><dd className={(data?.metrics.paperPnlUsd ?? 0) < 0 ? "stm-pink" : "stm-cyan"}>{data ? money(data.metrics.paperPnlUsd) : "—"}</dd></div>
+        </dl>
+        <button type="button" className="stm-button stm-button-primary stm-scan-button" onClick={onScan} disabled={disabled} aria-busy={scanning}><RefreshCw size={15} aria-hidden="true" className={scanning ? "stm-spin" : ""} />{scanning ? "扫描中" : "扫描市场"}</button>
+      </div>
+    </header>
+    <StmSourceMarquee sources={data?.sources ?? []} />
+  </>;
+}
+
 export function StmHuntSurface() {
   const [data, setData] = useState<StmDashboard | null>(null);
   const [tab, setTab] = useState<Tab>("terminal");
+  const [radarFocus, setRadarFocus] = useState<StmRadarFocus | undefined>();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -46,7 +100,8 @@ export function StmHuntSurface() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [board, setBoard] = useState("all");
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [strategyId, setStrategyId] = useState<StmStrategyId>("S1");
   const [strategyDraft, setStrategyDraft] = useState<StmStrategy | null>(null);
   const [paperAmount, setPaperAmount] = useState("100");
@@ -54,33 +109,71 @@ export function StmHuntSurface() {
   const [slippageBps, setSlippageBps] = useState("30");
   const [watchInput, setWatchInput] = useState("");
   const mounted = useRef(true);
+  const flight = useRef<{ controller: AbortController; id: number; promise: Promise<boolean> } | null>(null);
+  const sequence = useRef(0);
+  const entityTag = useRef<string | null>(null);
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const result = await request<StmDashboard>("/api/stm-hunt", undefined, signal);
-      if (!signal?.aborted && mounted.current) { setData(result); setError(null); }
-    } catch (caught) {
-      if (!signal?.aborted && mounted.current) setError(caught instanceof Error ? caught.message : "工作台暂时无法加载");
-    } finally { if (mounted.current && !signal?.aborted) setLoading(false); }
+  const load = useCallback((force = false): Promise<boolean> => {
+    if (flight.current && !force) return flight.current.promise;
+    flight.current?.controller.abort();
+    const controller = new AbortController(), id = ++sequence.current;
+    if (mounted.current) setSyncing(true);
+    const promise = (async () => {
+      try {
+        const response = await fetch("/api/stm-hunt", {
+          cache: "no-store", signal: controller.signal,
+          headers: !force && entityTag.current ? { "If-None-Match": entityTag.current } : undefined,
+        });
+        if (controller.signal.aborted || !mounted.current || sequence.current !== id) return false;
+        if (response.status !== 304) {
+          const result = await response.json().catch(() => ({ error: `服务返回 ${response.status}` }));
+          if (!response.ok || result?.ok === false) throw new Error(result?.error || `请求失败 (${response.status})`);
+          if (controller.signal.aborted || !mounted.current || sequence.current !== id) return false;
+          setData(result as StmDashboard);
+          entityTag.current = response.headers.get("etag");
+        }
+        // A successful revalidation updates the check time only. It never extends evidence validity.
+        setLastSyncedAt(response.headers.get("x-stm-evaluated-at") || new Date().toISOString()); setError(null);
+        return true;
+      } catch (caught) {
+        if (!controller.signal.aborted && mounted.current && sequence.current === id) setError(caught instanceof Error ? caught.message : "工作台暂时无法加载，保留上次数据");
+        return false;
+      } finally {
+        if (sequence.current === id) {
+          flight.current = null;
+          if (mounted.current) { setLoading(false); setSyncing(false); }
+        }
+      }
+    })();
+    flight.current = { controller, id, promise };
+    return promise;
   }, []);
   useEffect(() => {
     mounted.current = true;
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => { mounted.current = false; controller.abort(); };
+    void load();
+    return () => { mounted.current = false; flight.current?.controller.abort(); flight.current = null; sequence.current++; };
   }, [load]);
   useEffect(() => {
     if (!autoRefresh) return;
-    const controller = new AbortController();
-    const interval = window.setInterval(() => { if (document.visibilityState === "visible") void load(controller.signal); }, 60_000);
-    return () => { window.clearInterval(interval); controller.abort(); };
+    const sync = () => { if (document.visibilityState === "visible" && navigator.onLine) void load(); };
+    const interval = window.setInterval(sync, 15_000);
+    document.addEventListener("visibilitychange", sync); window.addEventListener("online", sync); window.addEventListener("focus", sync);
+    return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", sync); window.removeEventListener("online", sync); window.removeEventListener("focus", sync); };
   }, [autoRefresh, load]);
   const mutate = async (body: StmMutation, message: string) => {
     setBusy(body.action); setError(null); setNotice(null);
-    try { await request("/api/stm-hunt", body); await load(); setNotice(message); }
+    try { await request("/api/stm-hunt", body); if (await load(true)) setNotice(message); }
     catch (caught) { setError(caught instanceof Error ? caught.message : "操作失败"); }
     finally { setBusy(null); }
   };
+  async function refreshResearch() {
+    setBusy("refresh"); setNotice(null); setError(null);
+    try {
+      if (data?.state.authenticated) await request("/api/stm-hunt", { action: "refresh" });
+      if (await load(true)) setNotice("已检查最新可用数据。");
+    } catch (caught) { if (mounted.current) setError(caught instanceof Error ? caught.message : "更新暂时失败，请稍后重试"); }
+    finally { if (mounted.current) setBusy(null); }
+  }
   const candidates = useMemo(() => (data?.candidates ?? []).filter((candidate) => {
     const needle = search.trim().toLowerCase();
     const match = !needle || `${candidate.symbol} ${candidate.name} ${candidate.address ?? ""}`.toLowerCase().includes(needle);
@@ -89,50 +182,22 @@ export function StmHuntSurface() {
   const selected = data?.candidates.find((candidate) => candidate.id === selectedId) ?? candidates[0] ?? null;
   const selectedSignals = data?.signals.filter((signal) => signal.candidateId === selected?.id) ?? [];
   const readySignals = data?.signals.filter((signal) => signal.actionable) ?? [];
-  const sourceOk = data?.sources.filter((source) => source.status === "ok").length ?? 0;
   const unread = data?.state.alerts.filter((alert) => !alert.read).length ?? 0;
   const strategy = data?.strategies.find((item) => item.id === strategyId);
   const draft = strategyDraft?.id === strategyId && strategyDraft.version === strategy?.version ? strategyDraft : strategy;
-  const traders = useMemo(() => (data?.traders ?? []).filter((trader) => (board === "all" || trader.source.toLowerCase().includes(board) || trader.venue.toLowerCase().includes(board)) && (!search || `${trader.name} ${trader.address ?? ""} ${trader.venue}`.toLowerCase().includes(search.toLowerCase()))), [data, board, search]);
   const openPaper = data?.state.paper.filter((position) => position.status === "open") ?? [];
-  const closedPaper = data?.state.paper.filter((position) => position.status === "closed") ?? [];
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [{ id: "terminal", label: "猎手终端", icon: <Crosshair size={16} /> }, { id: "strategies", label: "策略实验室", icon: <FlaskConical size={16} /> }, { id: "sources", label: "聪明钱雷达", icon: <Radar size={16} /> }, { id: "journal", label: "模拟 · 复盘", icon: <History size={16} /> }, { id: "execute", label: "交易执行", icon: <Wallet size={16} /> }];
+  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [{ id: "terminal", label: "猎手终端", icon: <Crosshair size={16} /> }, { id: "sources", label: "聪明钱雷达", icon: <Radar size={16} /> }, { id: "strategies", label: "策略实验室", icon: <FlaskConical size={16} /> }, { id: "journal", label: "模拟 · 复盘", icon: <History size={16} /> }, { id: "execute", label: "交易执行", icon: <Wallet size={16} /> }];
 
   return <main className="stm-page">
     <div className="stm-ambient" aria-hidden="true" />
-    <div className="stm-topline"><span><i className="stm-live-dot" /> SMART MONEY INTELLIGENCE</span><span>证据驱动 · 每笔交易都有理由 <span className="stm-version">STM / v1.2.0</span></span></div>
-    <header className="stm-hero">
-      <div className="stm-brand"><div className="stm-mascot" aria-hidden="true"><i /><i /></div><div><div className="stm-brand-line"><h1>STM <span>hunt</span></h1><Badge tone="purple">TERMINAL</Badge></div><p>发现聪明钱，验证 Alpha，掌控每一次执行。</p><div className="stm-hero-meta"><span><i className={`stm-dot stm-dot-${data ? "ok" : "unavailable"}`} />{data ? `${sourceOk}/${data.sources.length} 数据源可访问` : "正在连接数据源"}</span><span><Clock3 size={12} />{data ? date(data.asOf) : "等待首次同步"}</span></div></div></div>
-      <div className="stm-hero-actions"><Link href="/alpha-radar" className="stm-button stm-button-ghost"><ExternalLink size={14} />Alpha Radar</Link><button type="button" className="stm-button stm-button-primary" onClick={() => void mutate({ action: "refresh" }, "已完成新一轮扫描。各源更新频率以数据时间为准。")} disabled={!!busy || loading}><RefreshCw size={15} className={busy === "refresh" ? "stm-spin" : ""} />{busy === "refresh" ? "扫描中" : "扫描市场"}</button></div>
-    </header>
-    <section className="stm-metrics" aria-label="工作台统计">
-      <div><span><Radar size={14} />追踪交易员</span><strong>{data ? numeric(data.metrics.traders, 0) : "—"}<small>IDENTITIES</small></strong><p>分平台保留身份与统计口径</p></div>
-      <div><span><Crosshair size={14} />候选资产</span><strong>{data ? numeric(data.metrics.candidates, 0) : "—"}<small>ON RADAR</small></strong><p>CEX 与链上分开验证</p></div>
-      <div><span><ShieldCheck size={14} />就绪信号</span><strong className="stm-green">{data ? numeric(data.metrics.ready, 0) : "—"}<small>VERIFIED</small></strong><p>缺少证据时不会放行</p></div>
-      <div><span><Activity size={14} />模拟已实现盈亏</span><strong className={(data?.metrics.paperPnlUsd ?? 0) < 0 ? "stm-pink" : "stm-cyan"}>{data ? money(data.metrics.paperPnlUsd) : "—"}</strong><p>{closedPaper.length} 笔平仓 · 含设定手续费与滑点</p></div>
-    </section>
-    <nav className="stm-tabs" aria-label="STM hunt 功能区">{tabs.map((item) => <button key={item.id} type="button" aria-current={tab === item.id ? "page" : undefined} className={tab === item.id ? "is-active" : ""} onClick={() => { setTab(item.id); setSearch(""); }}>{item.icon}{item.label}{item.id === "journal" && unread > 0 ? <span className="stm-tab-count">{unread}</span> : null}</button>)}<button type="button" className="stm-auto-refresh" aria-pressed={autoRefresh} onClick={() => setAutoRefresh((value) => !value)} title="每分钟同步工作台，不改变上游快照频率">{autoRefresh ? <Pause size={12} /> : <Play size={12} />}{autoRefresh ? "自动同步" : "已暂停"}</button></nav>
+    <StmHuntHeader data={data} scanning={busy === "refresh"} disabled={!!busy || loading} onScan={() => void refreshResearch()} />
+    <nav className="stm-tabs" aria-label="STM hunt 功能区">{tabs.map((item) => <button key={item.id} type="button" aria-current={tab === item.id ? "page" : undefined} className={tab === item.id ? "is-active" : ""} onClick={() => { setTab(item.id); setSearch(""); }}>{item.icon}{item.label}{item.id === "journal" && unread > 0 ? <span className="stm-tab-count">{unread}</span> : null}</button>)}<button type="button" className="stm-auto-refresh" aria-pressed={autoRefresh} onClick={() => setAutoRefresh((value) => !value)} title="每15秒同步工作台；服务器每60秒检查上游，保留实际来源时间">{autoRefresh ? <Pause size={12} /> : <Play size={12} />}{autoRefresh ? "自动同步" : "已暂停"}</button></nav>
     {error ? <div className="stm-message stm-message-error" role="alert"><CircleAlert size={17} /><span>{error}</span><button type="button" onClick={() => setError(null)} aria-label="关闭错误提示"><X size={15} /></button></div> : null}
     {notice ? <div className="stm-message stm-message-success" role="status"><Check size={17} /><span>{notice}</span><button type="button" onClick={() => setNotice(null)} aria-label="关闭提示"><X size={15} /></button></div> : null}
     {loading ? <div className="stm-loading" role="status" aria-live="polite"><LoaderCircle className="stm-spin" size={25} /><strong>初始化猎手终端</strong><span>正在核对来源、快照与策略证据…</span></div> : !data ? <Empty title="暂时无法连接终端" detail="请检查网络或使用扫描市场重试。无法获取的数据不会显示为零收益或安全。" /> : <>
-      {tab === "terminal" ? <div className="stm-terminal-grid">
-        <aside className="stm-agents" aria-label="六阶段执行流水线"><div className="stm-section-label"><span>AGENT PIPELINE</span><span>06 MODULES</span></div>{[
-          { name: "SCANNER", label: "市场扫描", icon: <Radar />, color: "yellow", status: sourceOk ? `${data.metrics.candidates} 候选` : "等待来源", detail: "汇聚排行榜、市场与链上候选" },
-          { name: "RUG CHECK", label: "风险验证", icon: <ShieldCheck />, color: "pink", status: "逐资产检查", detail: "安全未知、流动性不足时阻止链上交易" },
-          { name: "SIZER", label: "仓位计算", icon: <SlidersHorizontal />, color: "purple", status: "按风险预算", detail: "先定止损，再估算仓位与交易成本" },
-          { name: "EXECUTOR", label: "受控执行", icon: <Crosshair />, color: "cyan", status: "等待确认", detail: "报价、人工确认、签署、成交对账" },
-          { name: "LOGGER", label: "决策审计", icon: <Code2 />, color: "orange", status: `${data.state.journal.length} 记录`, detail: "保存策略版本与每一次决策理由" },
-          { name: "EQUITY", label: "收益跟踪", icon: <Activity />, color: "blue", status: `${openPaper.length} 模拟持仓`, detail: "模拟与实盘分别记录，成交后更新" },
-        ].map((agent) => <div className={`stm-agent stm-tone-${agent.color}`} key={agent.name}><div className="stm-agent-icon">{agent.icon}</div><div className="stm-agent-name"><strong>{agent.name}</strong><span>{agent.label}</span></div><Badge tone={agent.color}>{agent.status}</Badge><p>{agent.detail}</p></div>)}<div className="stm-agent-note"><Terminal size={15} /><span>Observe → Verify → Execute<br /><strong>每笔交易都有理由。</strong></span></div></aside>
-        <div className="stm-terminal-main">
-          <section className="stm-panel stm-flow-panel"><div className="stm-flow-heading"><span className="stm-eyebrow">LIVE FLOW / 扫描 → 验证 → 风险 → 执行</span><Badge tone={readySignals.length ? "green" : "yellow"}>{readySignals.length ? "发现就绪信号" : "等待完整证据"}</Badge></div><div className="stm-flow-track"><div className="stm-flow-node stm-flow-yellow"><Radar size={24} /><strong>{data.metrics.candidates}</strong><span>扫描候选</span></div><div className="stm-flow-link"><span>规则匹配</span><i /><ArrowRight size={16} /></div><div className="stm-flow-node stm-flow-pink"><ShieldCheck size={24} /><strong>{readySignals.length}</strong><span>信号就绪</span></div><div className="stm-flow-link"><span>确认后执行</span><i /><ArrowRight size={16} /></div><div className="stm-flow-node stm-flow-cyan"><Wallet size={24} /><strong>USER</strong><span>人工确认</span></div></div><div className="stm-flow-footer"><span><i className="stm-live-dot" />{data.metrics.snapshots} 个历史快照已归档</span><button type="button" onClick={() => setTab("strategies")}>查看 S1–S5 规则 <ChevronRight size={13} /></button></div></section>
-          <section className="stm-panel stm-candidates"><PanelHeading eyebrow="OPPORTUNITY RADAR" title="猎手观察池"><span className="stm-counter">{candidates.length} ASSETS</span></PanelHeading><div className="stm-table-tools"><label className="stm-search"><Search size={15} /><input aria-label="搜索候选币种或合约" placeholder="搜索代币、名称或合约地址" value={search} onChange={(event) => setSearch(event.target.value)} /></label><select aria-label="候选资产筛选" value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">全部资产</option><option value="cex">CEX 市场</option><option value="onchain">链上资产</option><option value="ready">就绪信号</option><option value="watched">我的关注</option></select></div>{candidates.length ? <div className="stm-table-scroll"><table className="stm-table"><thead><tr><th>资产 / 市场</th><th>价格 / 24h</th><th>信号与证据</th><th>来源</th><th aria-label="选择资产" /></tr></thead><tbody>{candidates.slice(0, 60).map((candidate) => { const signal = data.signals.find((item) => item.candidateId === candidate.id && item.actionable) ?? data.signals.find((item) => item.candidateId === candidate.id); return <tr key={candidate.id} className={selected?.id === candidate.id ? "is-selected" : ""} onClick={() => setSelectedId(candidate.id)}><td><button type="button" className="stm-asset-button" aria-pressed={selected?.id === candidate.id} onClick={() => setSelectedId(candidate.id)}><span className={`stm-token-icon ${candidate.market === "onchain" ? "is-chain" : ""}`}>{candidate.symbol.slice(0, 2)}</span><span><strong>{candidate.symbol}</strong><small>{candidate.chain || "BINANCE"} · {candidate.market.toUpperCase()}</small></span></button></td><td><strong className="stm-mono">{price(candidate.price)}</strong><small className={(candidate.change24h ?? 0) < 0 ? "stm-pink" : candidate.change24h == null ? "" : "stm-green"}>{candidate.change24h == null ? "24h 未提供" : `${candidate.change24h > 0 ? "+" : ""}${numeric(candidate.change24h)}%`}</small></td><td><SignalBadge signal={signal} /><small>{signal ? `${signal.entities} 实体 · ${signal.missing.length} 项待验证` : candidate.reason}</small></td><td><div className="stm-source-tags">{candidate.sources.slice(0, 2).map((source) => <span key={source}>{source}</span>)}</div></td><td><ChevronRight size={15} /></td></tr>; })}</tbody></table></div> : <Empty title="观察池暂无匹配资产" detail="等待有效来源，或调整搜索与筛选条件。" />}</section>
-          <section className="stm-panel stm-log-panel"><PanelHeading eyebrow="$ tail -f stm-hunt.log" title="实时决策日志"><Badge>{data.state.journal.length} EVENTS</Badge></PanelHeading>{data.state.journal.length ? <div className="stm-log-list">{data.state.journal.slice(0, 7).map((item) => <div key={item.id}><time>{date(item.createdAt)}</time><Badge tone="cyan">{item.action}</Badge><span>{item.message}</span></div>)}</div> : <p className="stm-muted stm-padding">完成一次扫描、策略配置或模拟交易后，审计记录将在这里显示。</p>}</section>
-        </div>
-        <aside className="stm-detail-rail"><section className="stm-panel stm-detail"><PanelHeading eyebrow="ASSET INTELLIGENCE" title={selected ? selected.symbol : "资产证据"} />{selected ? <><div className="stm-detail-price">{price(selected.price)}<span className={(selected.change24h ?? 0) < 0 ? "stm-pink" : "stm-green"}>{selected.change24h == null ? "—" : `${selected.change24h > 0 ? "+" : ""}${numeric(selected.change24h)}%`}</span></div><p className="stm-detail-name">{selected.name} · {selected.chain || "CEX"}</p>{selected.address ? <code className="stm-contract" title={selected.address}>{selected.address}</code> : null}<div className="stm-detail-stats"><div><span>24h 成交量</span><strong>{money(selected.volumeUsd, 0)}</strong></div><div><span>池流动性</span><strong>{money(selected.liquidityUsd, 0)}</strong></div><div><span>来源持有人</span><strong>{selected.holders}</strong></div><div><span>安全状态</span><strong className={selected.risk === "pass" ? "stm-green" : "stm-yellow"}>{selected.risk === "pass" ? "通过检查" : selected.risk === "blocked" ? "已阻断" : "尚未验证"}</strong></div></div><div className="stm-evidence-list">{selectedSignals.map((signal) => <details key={signal.id} open={signal.actionable}><summary><span><b>{signal.strategy}</b> {strategyNames[signal.strategy]}</span><SignalBadge signal={signal} /></summary><p>{signal.reasons.join("；") || "尚未形成完整证据。"}</p>{signal.missing.length ? <ul>{signal.missing.map((missing) => <li key={missing}><Circle size={5} />{missing}</li>)}</ul> : null}<small>v{signal.strategyVersion} · 有效至 {date(signal.expiresAt)}</small></details>)}</div><div className="stm-detail-actions"><button type="button" className="stm-button stm-button-ghost" disabled={!!busy} onClick={() => void mutate({ action: "watch", id: selected.id, enabled: !data.state.watchlist.includes(selected.id) }, "关注列表已更新。")}><Bell size={14} />{data.state.watchlist.includes(selected.id) ? "取消关注" : "加入关注"}</button><button type="button" className="stm-button stm-button-primary" onClick={() => setTab("execute")}>交易预览 <ArrowUpRight size={14} /></button></div></> : <Empty title="选择一个资产" detail="点击观察池查看策略条件、来源与风险。" />}</section><section className="stm-panel stm-source-health"><PanelHeading eyebrow="SOURCE HEALTH" title="数据源状态"><Database size={17} /></PanelHeading>{data.sources.map((source) => <SourceIndicator key={source.id} source={source} />)}<button type="button" className="stm-text-button" onClick={() => setTab("sources")}>查看更新口径与数据明细 <ArrowRight size={13} /></button></section></aside>
-      </div> : null}
+      {tab === "terminal" ? <StmHuntTerminal data={data} selected={selected} busy={!!busy} autoRefresh={autoRefresh} onSelect={setSelectedId} onWatch={(id, enabled) => void mutate({ action: "watch", id, enabled }, "关注列表已更新。")} onExecute={() => setTab("execute")} onStrategies={() => setTab("strategies")} onSources={(focus) => { setRadarFocus(focus); setTab("sources"); }} onSimulate={() => setTab("journal")} onRefresh={() => void refreshResearch()} /> : null}
       {tab === "strategies" ? <div className="stm-lab-layout"><section className="stm-panel stm-strategy-list"><PanelHeading eyebrow="STRATEGY ENGINE" title="S1–S5 策略库" />{data.strategies.map((item) => <button type="button" key={item.id} className={`stm-strategy-item ${strategyId === item.id ? "is-active" : ""}`} onClick={() => { setStrategyId(item.id); setStrategyDraft(null); }}><span>{item.id}</span><div><strong>{item.name}</strong><small>{item.description}</small></div><Badge tone={item.enabled ? "green" : "muted"}>{item.enabled ? "启用" : "停用"} · v{item.version}</Badge><ChevronRight size={15} /></button>)}<p className="stm-lab-note"><ShieldCheck size={18} />策略只使用当时已知的证据。缺失数据、时间近似与私密持仓不会被解释为买入信号。</p></section><section className="stm-panel stm-strategy-editor"><PanelHeading eyebrow={`RULE CONFIGURATION / ${strategyId}`} title={draft?.name ?? "策略参数"}><Badge tone="purple">VERSION {draft?.version ?? "—"}</Badge></PanelHeading>{draft ? <form onSubmit={(event) => { event.preventDefault(); void mutate({ action: "strategy", strategy: { id: draft.id, enabled: draft.enabled, minEntities: draft.minEntities, windowMinutes: draft.windowMinutes, minVolumeRatio: draft.minVolumeRatio, minLiquidityUsd: draft.minLiquidityUsd } }, "策略新版本已保存，后续信号将使用新参数。"); }}><p className="stm-muted">{draft.description}</p><div className="stm-form-grid"><label>独立实体数下限<input type="number" min="3" max="100" required value={draft.minEntities} onChange={(event) => setStrategyDraft({ ...draft, minEntities: Number(event.target.value) })} /></label><label>证据窗口（分钟）<input type="number" min="5" max="1440" required value={draft.windowMinutes} onChange={(event) => setStrategyDraft({ ...draft, windowMinutes: Number(event.target.value) })} /></label><label>最低成交量倍数<input type="number" min="1" max="20" step="0.1" required value={draft.minVolumeRatio} onChange={(event) => setStrategyDraft({ ...draft, minVolumeRatio: Number(event.target.value) })} /></label><label>链上最低流动性（USD）<input type="number" min="10000" max="100000000" step="1000" required value={draft.minLiquidityUsd} onChange={(event) => setStrategyDraft({ ...draft, minLiquidityUsd: Number(event.target.value) })} /></label></div><label className="stm-checkbox"><input type="checkbox" checked={draft.enabled} onChange={(event) => setStrategyDraft({ ...draft, enabled: event.target.checked })} /><span>启用该策略，参与下一轮信号评估</span></label><div className="stm-rule-explainer"><span className="stm-eyebrow">EVIDENCE REQUIREMENTS</span><p>{strategyId === "S1" ? "已收盘 15m 突破 + 成交量确认 + 准确时间的独立交易员新开/加仓。平空不会计为新多。" : strategyId === "S2" ? "固定交易员集合至少 3 次可比快照，连续两个区间的资产数量增加。价格上涨、转账、截断与私密持仓均不能证明增持。" : strategyId === "S3" ? "可验证链上 Swap、独立地址簇、持续持有、安全检查、流动性与可执行报价必须同时满足。" : strategyId === "S4" ? "在原始持仓集合中确认减仓、平仓或实际净卖出，结合价格与热度背离提示退出；不会自动建立空单。" : "按历史分位归一化资金费率，以持仓数量而非美元估值判断 OI，识别资金费率、持仓量与价格共同上涨的拥挤风险；不可用指标只显示未知。"}</p></div><button type="submit" className="stm-button stm-button-primary" disabled={!!busy}><Layers3 size={15} />{busy === "strategy" ? "保存中…" : "保存为新版本"}</button></form> : null}<div className="stm-strategy-results"><h3>当前评估结果</h3>{data.signals.filter((signal) => signal.strategy === strategyId).length ? data.signals.filter((signal) => signal.strategy === strategyId).slice(0, 12).map((signal) => <div key={signal.id}><strong>{signal.symbol}</strong><SignalBadge signal={signal} /><span>{signal.missing[0] || signal.reasons[0]}</span></div>) : <p className="stm-muted">暂无可评估资产，先执行市场扫描。</p>}</div></section></div> : null}
-      {tab === "sources" ? <><section className="stm-board-grid">{sourceBoards.map((id) => { const source = data.sources.find((item) => item.id.toLowerCase().includes(id)); return <button type="button" key={id} className={`stm-panel stm-board-card ${board === id ? "is-active" : ""}`} onClick={() => setBoard(board === id ? "all" : id)}><span className="stm-eyebrow">WEB3 SMART MONEY</span><div><h2>{id === "hl" ? "HYPERLIQUID" : id.toUpperCase()}</h2><ArrowUpRight size={18} /></div><strong>{source ? source.count : "—"}<small>交易员 / 记录</small></strong><Badge tone={source?.status === "ok" ? "green" : "yellow"}>{source ? statusNames[source.status] : "等待来源"}</Badge><p>{source?.message || "数据源未连接，暂无可用快照。"}</p></button>; })}</section><section className="stm-panel stm-traders"><PanelHeading eyebrow="TRADER INTELLIGENCE" title="聪明钱身份与持仓"><Badge>{traders.length} IDENTITIES</Badge></PanelHeading><div className="stm-table-tools"><label className="stm-search"><Search size={15} /><input aria-label="搜索交易员" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索交易员、平台或钱包地址" /></label><select aria-label="数据源筛选" value={board} onChange={(event) => setBoard(event.target.value)}><option value="all">全部数据源</option>{sourceBoards.map((id) => <option key={id} value={id}>{id.toUpperCase()}</option>)}<option value="traderadar">Top Trader Radar</option></select></div>{traders.length ? <div className="stm-table-scroll"><table className="stm-table"><thead><tr><th>交易员 / 唯一身份</th><th>来源</th><th>盈亏 / 统计窗口</th><th>ROI / 胜率</th><th>持仓可见性</th><th>关注</th></tr></thead><tbody>{traders.slice(0, 100).map((trader) => <tr key={trader.id}><td><strong>{trader.name}</strong><small title={trader.address || trader.id}>{shortAddress(trader.address || trader.id)}</small></td><td><Badge tone="purple">{trader.venue}</Badge><small>{date(trader.updatedAt)}</small></td><td><strong className={trader.pnlUsd == null ? "" : trader.pnlUsd < 0 ? "stm-pink" : "stm-green"}>{money(trader.pnlUsd)}</strong><small>{trader.pnlWindow || "统计窗口未提供"}</small></td><td><strong>{trader.roi == null ? "—" : `${numeric(trader.roi)}%`}</strong><small>胜率 {trader.winRate == null ? "未知" : `${numeric(trader.winRate)}%`}</small></td><td><Badge tone={trader.visibility === "public" ? "cyan" : "yellow"}>{statusNames[trader.visibility]}</Badge><details className="stm-holdings"><summary>{trader.holdings.length} 条持仓记录</summary>{trader.holdings.slice(0, 12).map((holding, index) => <div key={`${holding.asset}-${index}`}><b>{holding.symbol}</b><span>{holding.side} · {holding.quantity == null ? "数量未知" : numeric(holding.quantity, 6)}</span><span>{money(holding.valueUsd)}</span></div>)}</details></td><td><button type="button" className={`stm-icon-button ${data.state.watchlist.includes(trader.id) ? "is-active" : ""}`} aria-label={`${data.state.watchlist.includes(trader.id) ? "取消关注" : "关注"}${trader.name}`} disabled={!!busy} onClick={() => void mutate({ action: "watch", id: trader.id, enabled: !data.state.watchlist.includes(trader.id) }, "交易员关注已更新。")}><Bell size={15} /></button></td></tr>)}</tbody></table>{traders.length > 100 ? <p className="stm-muted stm-padding">显示前 100 条，使用来源与名称筛选继续查找。</p> : null}</div> : <Empty title="该来源暂无可用身份" detail="数据访问受限或源快照不可用时，将保留状态说明。" />}</section><section className="stm-panel stm-source-details"><PanelHeading eyebrow="DATA PROVENANCE" title="来源、时效与数据口径" /><div className="stm-provenance-grid">{data.sources.map((source) => <article key={source.id}><div><h3>{source.name}</h3><Badge tone={source.status === "ok" ? "green" : "yellow"}>{statusNames[source.status]}</Badge></div><p>{source.message}</p><dl><dt>数据语义</dt><dd>{source.semantics === "snapshot" ? "持仓快照" : source.semantics === "events" ? "交易事件" : source.semantics === "market" ? "市场行情" : "上下文参考"}</dd><dt>数据时间</dt><dd>{date(source.updatedAt)}</dd><dt>获取时间</dt><dd>{date(source.fetchedAt)}</dd></dl><a href={source.url} target="_blank" rel="noreferrer">原始来源 <ExternalLink size={12} /></a></article>)}</div><div className="stm-capability-notes"><h3>接入能力与待补证据</h3>{data.capabilities.notes.map((note) => <p key={note}><CircleAlert size={13} />{note}</p>)}<p><Code2 size={13} />链上解码事件接收：<code>/api/stm-hunt/ingest</code>。仅接受已配置签名且通过链上交易核验的事件。</p></div><p className="stm-source-disclaimer">不同平台的收益窗口、公开范围与更新周期不同，不做跨平台收益排名。快照差值代表仓位变化，不等同于实时成交。TopTrader 受限事件仅在授权后使用。</p></section></> : null}
+      {tab === "sources" ? <StmHuntRadar data={data} initialFocus={radarFocus} busy={busy} onWatch={(id, enabled) => void mutate({ action: "watch", id, enabled }, "交易员关注已更新。")} onRefresh={() => void refreshResearch()} refreshing={syncing || busy === "refresh"} lastSyncedAt={lastSyncedAt} autoRefresh={autoRefresh} /> : null}
       {tab === "journal" ? <div className="stm-journal-layout"><div><section className="stm-panel stm-paper"><PanelHeading eyebrow="PAPER TRADING" title="模拟交易账本"><Badge tone="purple">独立模拟资金</Badge></PanelHeading><form className="stm-paper-form" onSubmit={(event) => { event.preventDefault(); if (selected) void mutate({ action: "paper-open", candidateId: selected.id, strategy: strategyId, notionalUsd: Number(paperAmount), feeBps: Number(feeBps), slippageBps: Number(slippageBps), idempotencyKey: crypto.randomUUID() }, "模拟订单已创建，手续费与滑点已计入。"); }}><label>候选资产<select value={selected?.id ?? ""} onChange={(event) => setSelectedId(event.target.value)} required><option value="" disabled>选择资产</option>{data.candidates.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.symbol} · {candidate.chain || "CEX"}</option>)}</select></label><label>策略<select value={strategyId} onChange={(event) => setStrategyId(event.target.value as StmStrategyId)}>{data.strategies.map((item) => <option key={item.id} value={item.id}>{item.id} {item.name}</option>)}</select></label><label>名义金额（USD）<input type="number" min="10" max="10000" value={paperAmount} required onChange={(event) => setPaperAmount(event.target.value)} /></label><label>手续费（bps）<input type="number" min="0" max="500" value={feeBps} required onChange={(event) => setFeeBps(event.target.value)} /></label><label>滑点（bps）<input type="number" min="0" max="500" value={slippageBps} required onChange={(event) => setSlippageBps(event.target.value)} /></label><button type="submit" className="stm-button stm-button-primary" disabled={!selected || !!busy}><FlaskConical size={14} />记录模拟开仓</button></form><div className="stm-table-scroll">{data.state.paper.length ? <table className="stm-table"><thead><tr><th>资产 / 策略</th><th>入场 / 出场</th><th>金额 / 数量</th><th>已实现盈亏</th><th>操作</th></tr></thead><tbody>{data.state.paper.map((position) => <tr key={position.id}><td><strong>{position.symbol}</strong><small>{position.strategy} · {position.status === "open" ? "持仓中" : "已平仓"}</small></td><td><strong>{price(position.entryPrice)}</strong><small>{position.exitPrice == null ? "等待平仓" : price(position.exitPrice)}</small></td><td><strong>{money(position.notionalUsd)}</strong><small>{numeric(position.quantity, 6)}</small></td><td className={(position.pnlUsd ?? 0) < 0 ? "stm-pink" : "stm-green"}>{money(position.pnlUsd)}</td><td>{position.status === "open" ? <button type="button" className="stm-button stm-button-small" disabled={!!busy} onClick={() => void mutate({ action: "paper-close", id: position.id }, "模拟仓位已按最新可用价格平仓。")}>平仓</button> : <span className="stm-muted">{date(position.closedAt)}</span>}</td></tr>)}</tbody></table> : <Empty title="还没有模拟交易" detail="从真实候选资产记录第一笔模拟仓位。这里的收益不会计入实盘。" />}</div></section><section className="stm-panel stm-replay"><PanelHeading eyebrow="POINT-IN-TIME REPLAY" title="历史证据复盘"><History size={17} /></PanelHeading><p className="stm-muted">按归档快照和当时的证据重放 S1–S5。没有完整成交与可执行历史价格时，不输出虚构回测收益。</p><button type="button" className="stm-button stm-button-ghost" disabled={!!busy || !data.metrics.snapshots} onClick={() => void mutate({ action: "replay", feeBps: Number(feeBps), slippageBps: Number(slippageBps) }, "历史证据重放已完成。")}>{busy === "replay" ? <LoaderCircle size={15} className="stm-spin" /> : <Play size={15} />}运行复盘</button>{data.state.replays.map((replay) => <article key={replay.id}><div><strong>{date(replay.createdAt)}</strong><Badge tone="cyan">{replay.snapshots} 快照</Badge><Badge>{replay.ready}/{replay.signals} 就绪</Badge></div><p>{replay.message}</p>{replay.performance ? <div className="stm-replay-metrics"><span>净收益 <strong className={replay.performance.netPnlUsd < 0 ? "stm-pink" : "stm-green"}>{money(replay.performance.netPnlUsd)} ({numeric(replay.returns)}%)</strong></span><span>模拟交易 <strong>{replay.performance.trades}</strong></span><span>胜率 <strong>{numeric(replay.performance.winRate)}%</strong></span><span>最大回撤 <strong>{numeric(replay.performance.maxDrawdownPct)}%</strong></span></div> : null}<small>{date(replay.start)} → {date(replay.end)} · 费率 {replay.feeBps} bps / 滑点 {replay.slippageBps} bps</small></article>)}</section></div><div><WalletGroups /><section className="stm-panel stm-watchlist"><PanelHeading eyebrow="MY WATCHLIST" title="关注与预警"><Bell size={17} /></PanelHeading><form onSubmit={(event) => { event.preventDefault(); if (watchInput.trim()) { void mutate({ action: "watch", id: watchInput.trim(), enabled: true }, "关注已添加。"); setWatchInput(""); } }}><label className="stm-search"><input aria-label="关注候选或交易员标识" value={watchInput} maxLength={200} onChange={(event) => setWatchInput(event.target.value)} placeholder="资产 / 交易员完整标识" /></label><button type="submit" className="stm-button stm-button-small" disabled={!!busy || !watchInput.trim()}>添加</button></form><div className="stm-watch-items">{data.state.watchlist.map((id) => <div key={id}><span title={id}>{data.candidates.find((candidate) => candidate.id === id)?.symbol || data.traders.find((trader) => trader.id === id)?.name || shortAddress(id)}</span><button type="button" aria-label={`取消关注 ${id}`} disabled={!!busy} onClick={() => void mutate({ action: "watch", id, enabled: false }, "已移除关注。")}><X size={13} /></button></div>)}</div>{!data.state.watchlist.length ? <p className="stm-muted">在资产与交易员旁点击铃铛，即可加入关注列表。</p> : null}<div className="stm-alerts">{data.state.alerts.length ? data.state.alerts.slice(0, 30).map((alert) => <button type="button" key={alert.id} className={alert.read ? "is-read" : ""} disabled={!!busy} onClick={() => void mutate({ action: "alert-read", id: alert.id }, "预警已标记为已读。")}><span><Badge tone="yellow">{alert.strategy}</Badge><strong>{alert.symbol}</strong>{!alert.read ? <i className="stm-live-dot" /> : null}</span><p>{alert.message}</p><time>{date(alert.createdAt)}</time></button>) : <Empty title="暂无预警" detail="关注资产出现符合条件的信号时，预警会留在这里。" />}</div></section><section className="stm-panel stm-audit"><PanelHeading eyebrow="AUDIT TRAIL" title="操作记录" /><div className="stm-audit-list">{data.state.journal.slice(0, 30).map((item) => <div key={item.id}><span><Badge>{item.action}</Badge><time>{date(item.createdAt)}</time></span><p>{item.message}</p></div>)}</div></section></div></div> : null}
       {tab === "execute" ? <ExecutionPanel selected={selected} candidates={data.candidates} onSelect={setSelectedId} /> : null}
       <div className="stm-delivery-bar"><span><Layers3 size={14} /> v1.0 数据研究 <i>→</i> v1.1 策略复盘 <i>→</i> v1.2 受控实盘</span><div><a className="stm-button stm-button-small stm-button-ghost" href="/api/stm-hunt/export?format=json" download>导出 JSON</a><a className="stm-button stm-button-small stm-button-ghost" href="/api/stm-hunt/export?format=csv" download>导出 CSV</a></div></div><footer className="stm-footer"><span><Terminal size={13} />STM hunt · 证据优先，执行可追溯。</span><span>{!data.state.authenticated ? "未登录，私人操作需登录" : data.state.persistent ? "持久化存储已连接" : "持久化不可用，写入功能将被阻止"} <i />行情与榜单遵循各来源更新周期</span></footer>

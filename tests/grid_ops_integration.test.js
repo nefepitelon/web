@@ -149,22 +149,20 @@ test("AI grid Ops route connects safely to the loopback-only trading console", (
   }
 });
 
-test("AI grid Ops publishes a standalone launcher and correct CMD guidance", () => {
+test("AI grid Ops publishes a standalone launcher with a concise connection screen", () => {
   const surface = read("components/grid-ops-surface.tsx");
   const launcher = read("public/downloads/启动AI网格交易Ops.bat");
   const launcherBytes = fs.readFileSync(path.join(root, "public/downloads/启动AI网格交易Ops.bat"));
   const rootLauncherBytes = fs.readFileSync(path.join(root, "启动AI网格交易Ops.bat"));
 
   assert.match(surface, /\/downloads\/启动AI网格交易Ops\.bat/);
-  assert.match(surface, /cd \/d.*welinkbtc-main.*npm run grid:start/);
-  assert.match(surface, /Win \+ R/);
-  assert.match(surface, /线上页面不能替你启动电脑上的交易程序/);
+  assert.match(surface, /下载并运行一键启动文件/);
+  assert.doesNotMatch(surface, /START_COMMAND|copyStartCommand|Win \+ R|ENOENT/);
   assert.match(surface, /线上服务器托管运行/);
   assert.match(surface, /grid-ops-hosted-console/);
   assert.match(surface, /AI网格交易Ops 与 AI对冲交易Ops 线上托管控制台/);
   assert.doesNotMatch(surface, /classic-grid-surface/);
   assert.match(surface, /RUN_MODE_STORAGE_KEY/);
-  assert.ok(surface.includes("C:\\Windows\\System32"));
   assert.match(launcher, /ai-grid-ops-engine\.zip/);
   assert.match(launcher, /%LOCALAPPDATA%\\welinkBTC\\AI-Grid-Ops/);
   assert.match(launcher, /npm --prefix "%ENGINE_DIR%" start/);

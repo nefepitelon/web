@@ -76,6 +76,7 @@ export type BstockTradingLedger = {
   source: "Binance Agentic Wallet market order history";
   historyAvailable: boolean;
   historyComplete: boolean;
+  historyError: string | null;
   fetchedOrders: number;
   totalOrders: number | null;
   positions: Array<{
@@ -98,6 +99,8 @@ export type BstockTradingLedger = {
     completedAt: string | null;
   }>;
   summary: {
+    realizedState: "READY" | "NO_CLOSED_TRADES" | "COST_UNKNOWN" | "PARTIAL_HISTORY" | "UNAVAILABLE";
+    unrealizedState: "READY" | "NO_POSITIONS" | "COST_UNKNOWN" | "PARTIAL_HISTORY" | "UNAVAILABLE";
     realizedPnlUsd: number | null;
     saleProceedsUsd: number | null;
     fifoCostUsd: number | null;
@@ -179,17 +182,21 @@ export function buildBstockTradingLedger(input: {
   assets: LedgerAsset[];
   walletPositions: WalletPosition[];
   historyAvailable?: boolean;
+  historyComplete?: boolean;
+  historyError?: string | null;
 }) : BstockTradingLedger {
   const assetByAddress = new Map(input.assets.map((asset) => [asset.contractAddress.toLowerCase(), asset]));
   const assetBySymbol = new Map(input.assets.map((asset) => [asset.symbol.toUpperCase(), asset]));
   const payByAddress = new Map(Object.entries(PAY_TOKEN_ADDRESSES).map(([symbol, address]) => [address.toLowerCase(), symbol]));
   const historyAvailable = input.historyAvailable !== false;
-  const historyComplete = historyAvailable && (input.totalOrders == null || input.totalOrders <= input.orders.length);
+  const historyComplete = historyAvailable && input.historyComplete !== false
+    && (input.totalOrders == null || input.totalOrders <= input.orders.length);
   const lotsBySymbol = new Map<string, Lot[]>();
   const incompleteSymbols = new Set<string>();
   const seenBuySymbols = new Set<string>();
   const records: BstockOrderRecord[] = [];
   const realized: BstockTradingLedger["realized"] = [];
+  let unresolvedSuccessfulSale = false;
 
   const parsed = input.orders.flatMap((order, index) => {
     const fromAddress = normalizedAddress(order.fromToken);
@@ -231,6 +238,7 @@ export function buildBstockTradingLedger(input: {
       if (!state.successful) return;
       if (!createdAt || shareAmount <= 0) {
         incompleteSymbols.add(asset.symbol);
+        if (tradeSide === "sell") unresolvedSuccessfulSale = true;
         return;
       }
       const lots = lotsBySymbol.get(asset.symbol) || [];
@@ -305,8 +313,10 @@ export function buildBstockTradingLedger(input: {
       };
     });
 
-  const realizedComplete = historyAvailable && historyComplete && realized.every((row) => row.realizedPnlUsd != null);
-  const positionPnlComplete = historyAvailable && historyComplete && positions.every((position) => position.unrealizedPnlUsd != null);
+  const realizedComplete = historyAvailable && historyComplete && !unresolvedSuccessfulSale
+    && realized.every((row) => row.realizedPnlUsd != null);
+  const positionPnlComplete = positions.length === 0 || historyAvailable && historyComplete
+    && positions.every((position) => position.unrealizedPnlUsd != null);
   const realizedPnlUsd = realizedComplete
     ? realized.reduce((sum, row) => sum + (row.realizedPnlUsd || 0), 0)
     : null;
@@ -336,11 +346,16 @@ export function buildBstockTradingLedger(input: {
     source: "Binance Agentic Wallet market order history",
     historyAvailable,
     historyComplete,
+    historyError: input.historyError ?? null,
     fetchedOrders: input.orders.length,
     totalOrders: input.totalOrders,
     positions,
     realized: realized.slice().sort((left, right) => Date.parse(right.completedAt || "") - Date.parse(left.completedAt || "")),
     summary: {
+      realizedState: !historyAvailable ? "UNAVAILABLE" : !historyComplete ? "PARTIAL_HISTORY"
+        : !realizedComplete ? "COST_UNKNOWN" : !realized.length ? "NO_CLOSED_TRADES" : "READY",
+      unrealizedState: !positions.length ? "NO_POSITIONS" : !historyAvailable ? "UNAVAILABLE"
+        : !historyComplete ? "PARTIAL_HISTORY" : !positionPnlComplete ? "COST_UNKNOWN" : "READY",
       realizedPnlUsd,
       saleProceedsUsd,
       fifoCostUsd,

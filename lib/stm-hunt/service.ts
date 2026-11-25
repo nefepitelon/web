@@ -6,6 +6,7 @@ import { captureStmSources, stmNumber, type StmSourceCapture } from "./sources";
 import { evaluateStmStrategies, STM_STRATEGIES } from "./engine";
 import { getFreshPublicCapture, getRecord, listRecords, putRecord, retainSnapshots, stmJson, stmPersistenceConfigured } from "./store";
 import { readStmHistory } from "./history";
+import { decodeCaptureCache, encodeCaptureCache } from "./capture-cache";
 import type { StmAlert, StmCandidate, StmChainEvent, StmDashboard, StmJournal, StmMutation, StmPaperPosition, StmReplay, StmState, StmStrategy, StmSignal } from "./types";
 import type { StmWalletProfile } from "./onchain";
 import type { StmScanStatus } from "./scanner";
@@ -13,14 +14,28 @@ import type { StmScanStatus } from "./scanner";
 type Capture = StmSourceCapture & { chainEvents: StmChainEvent[] };
 let flight: Promise<Capture> | null = null;
 let memoryCapture: Capture | null = null;
-const MIN_REFRESH_MS = 5 * 60000;
-const publicCaptureCache = getCache({ namespace: "welinkbtc-main:stm-public-capture:v1" });
-const freshCapture = (capture: Capture | null) => capture && Number.isFinite(Date.parse(capture.asOf))
-  && Date.parse(capture.asOf) <= Date.now() && Date.now() - Date.parse(capture.asOf) < MIN_REFRESH_MS;
+const MIN_REFRESH_MS = 60000;
+const MIN_MANUAL_REFRESH_MS = 15000;
+const SNAPSHOT_BUCKET_MS = 5 * 60000;
+const CAPTURE_CACHE_GRACE_MS = 5 * 60000;
+const publicCaptureCache = getCache({ namespace: "welinkbtc-main:stm-public-capture:v3" });
+const usableCapture = (capture: Capture | null): capture is Capture => Boolean(capture && capture.schemaVersion === 2
+  && Number.isFinite(Date.parse(capture.asOf)) && Date.parse(capture.asOf) <= Date.now()
+  && Array.isArray(capture.traders) && Array.isArray(capture.sources) && Array.isArray(capture.candidates)
+  && Array.isArray(capture.chainEvents));
+const freshCapture = (capture: Capture | null, maxAgeMs = MIN_REFRESH_MS) => usableCapture(capture)
+  && Date.now() - Date.parse(capture.asOf) < maxAgeMs;
 async function cacheCapture(capture: Capture) {
   memoryCapture = capture;
-  const ttl = Math.floor((Date.parse(capture.asOf) + MIN_REFRESH_MS - Date.now()) / 1000);
-  if (ttl > 0) await publicCaptureCache.set("latest", capture, { ttl }).catch(() => undefined);
+  // Physical retention outlasts freshness so lease competitors can reuse stale evidence.
+  // Runtime Cache accepts at most 2 MB per entry; public presentation data now exceeds it.
+  const ttl = Math.floor((Date.parse(capture.asOf) + MIN_REFRESH_MS + CAPTURE_CACHE_GRACE_MS - Date.now()) / 1000);
+  if (ttl <= 0) return;
+  const encoded = encodeCaptureCache(capture);
+  if (!encoded) { console.warn("stm_public_capture_cache_skipped", { reason: "encoding_limit" }); return; }
+  await publicCaptureCache.set("latest", encoded, { ttl }).catch(() => {
+    console.warn("stm_public_capture_cache_write_failed");
+  });
 }
 async function safeRead<T>(job: () => Promise<T>, fallback: T): Promise<T> { try { return await job(); } catch { return fallback; } }
 async function withLatestChain(capture:Capture):Promise<Capture> {
@@ -35,15 +50,18 @@ async function withLatestChain(capture:Capture):Promise<Capture> {
   const scannerSources:StmDashboard["sources"]=scanner?[{id:"bsc-scanner",name:"BSC 审核钱包扫描",url:"/api/stm-hunt/cron",semantics:"events",status:Date.now()-Date.parse(scanner.asOf)>15*60000?"stale":scanner.status==="ok"?"ok":scanner.status==="partial"?"stale":"unavailable",count:scanner.verified,updatedAt:scanner.asOf,fetchedAt:new Date().toISOString(),latencyMs:0,message:scanner.message}]:[];
   return {...capture,candidates,chainEvents,sources:[...capture.sources.filter(source=>!["verified-chain","bsc-scanner"].includes(source.id)),...scannerSources,{id:"verified-chain",name:"核验链上 Swap",url:"/api/stm-hunt/ingest",semantics:"events",status:recent.length?"ok":"unavailable",count:recent.length,fetchedAt:new Date().toISOString(),updatedAt:recent.map(row=>row.occurredAt).sort().at(-1)??null,latencyMs:0,message:recent.length?"签名接入、链上收据和真实池事件核验；十分钟有效":"等待签名数据提供商或已审核钱包的真实 Swap 事件"}]};
 }
-export async function refreshStmCapture(): Promise<Capture> {
-  if (freshCapture(memoryCapture)) return memoryCapture!;
+export async function refreshStmCapture(options: { force?: boolean } = {}): Promise<Capture> {
+  const maxAgeMs = options.force ? MIN_MANUAL_REFRESH_MS : MIN_REFRESH_MS;
+  if (freshCapture(memoryCapture, maxAgeMs)) return memoryCapture!;
   if (flight) return flight;
   flight = (async () => {
     // Only public source evidence is shared. Personal state and trading checks never enter this cache.
-    const cached = await publicCaptureCache.get("latest").catch(() => null) as Capture | null;
-    if (freshCapture(cached)) { memoryCapture = cached; return cached!; }
-    const prior = await safeRead(() => getFreshPublicCapture<Capture>(Date.now(), MIN_REFRESH_MS), memoryCapture);
-    if (freshCapture(prior)) { await cacheCapture(prior!); return prior!; }
+    const cached = decodeCaptureCache<Capture>(await publicCaptureCache.get("latest").catch(() => {
+      console.warn("stm_public_capture_cache_read_failed"); return null;
+    }));
+    if (freshCapture(cached, maxAgeMs)) { memoryCapture = cached; return cached!; }
+    const prior = await safeRead(() => getFreshPublicCapture<Capture>(Date.now(), maxAgeMs), memoryCapture);
+    if (freshCapture(prior, maxAgeMs)) { await cacheCapture(prior!); return prior!; }
     const lease=randomUUID();
     let locked=false;
     if(stmPersistenceConfigured()) {
@@ -54,10 +72,13 @@ export async function refreshStmCapture(): Promise<Capture> {
         locked=acquired.count>0;
       }
       if(!locked) {
-        // Only a competing collector needs stale fallback evidence. Normal expiry must
-        // not download the previous multi-megabyte capture before replacing it.
-        const fallback = prior ?? await safeRead(() => getRecord<Capture>("system", "capture", "latest"), memoryCapture);
-        if(fallback)return fallback;
+        // A loser must not download the same multi-megabyte capture while the winner
+        // is refreshing it. Retained evidence keeps its original asOf and is never recached as fresh.
+        const retained = [prior, memoryCapture, cached].filter(usableCapture)
+          .sort((left,right)=>Date.parse(right.asOf)-Date.parse(left.asOf))[0];
+        if(retained)return retained;
+        const fallback = await safeRead(() => getRecord<Capture>("system", "capture", "latest"), null);
+        if(usableCapture(fallback))return fallback;
         throw new Error("首次数据采集中，请稍后刷新");
       }
     }
@@ -80,9 +101,11 @@ export async function refreshStmCapture(): Promise<Capture> {
     if (stmPersistenceConfigured()) {
       // Never mutate an earlier capture: replay must see exactly what was known then.
       const assets=new Set(result.candidates.map(row=>row.id));
-      const compact={...result,sources:[],traders:result.traders.map(trader=>({...trader,holdings:trader.holdings.filter(holding=>assets.has(holding.asset))})).filter(trader=>trader.holdings.length>0 || trader.visibility==="private"),
+      // History needs quantities and identity evidence, never repeated avatars/social metadata.
+      const compact={...result,sources:[],sharedHoldings:[],traders:result.traders.map(trader=>({id:trader.id,address:trader.address,clusterId:trader.clusterId??null,updatedAt:trader.updatedAt,visibility:trader.visibility,qualified:trader.qualified,
+        holdings:trader.holdings.filter(holding=>assets.has(holding.asset)).map(holding=>({asset:holding.asset,quantity:holding.quantity,side:holding.side}))})).filter(trader=>trader.holdings.length>0 || trader.visibility==="private"),
         chainEvents:result.chainEvents.filter(event=>Date.parse(result.asOf)-Date.parse(event.occurredAt)<=10*60000)};
-      await prisma.stmHuntRecord.createMany({ data: [{ userId:"system",kind:"snapshot",key:String(Math.floor(Date.parse(result.asOf)/MIN_REFRESH_MS)),payload:stmJson(compact) }], skipDuplicates:true });
+      await prisma.stmHuntRecord.createMany({ data: [{ userId:"system",kind:"snapshot",key:String(Math.floor(Date.parse(result.asOf)/SNAPSHOT_BUCKET_MS)),payload:stmJson(compact) }], skipDuplicates:true });
       await putRecord("system", "capture", "latest", result);
       await retainSnapshots();
     }
@@ -135,10 +158,11 @@ export async function getStmDashboard(userId?: string): Promise<StmDashboard> {
     if (added) state.alerts=(await listRecords<StmAlert>(userId,"alert",100)).map(row=>row.payload);
   }
   const sources = capture.sources.map(source=>{
+    const observed={...source,sourceAgeSeconds:source.updatedAt?Math.max(0,Math.floor((Date.now()-Date.parse(source.updatedAt))/1000)):null};
     if (Date.now()-Date.parse(capture.asOf)>15*60000 && source.status==="ok") return {...source,status:"stale" as const,message:"本地采集已过期；仅保留历史观察"};
-    return source;
+    return observed;
   });
-  return {asOf:capture.asOf,sources,traders:capture.traders,candidates:capture.candidates,signals,strategies,
+  return {asOf:capture.asOf,sources,traders:capture.traders,candidates:capture.candidates,sharedHoldings:capture.sharedHoldings??[],signals,strategies,
     metrics:{traders:capture.traders.length,candidates:capture.candidates.length,ready:signals.filter(row=>row.actionable).length,watched:state.watchlist.length,snapshots:history.count,paperPnlUsd:state.paper.reduce((sum,row)=>sum+(row.pnlUsd??0),0)},state,
     capabilities:{persistence:persistent,exactTraderEvents:capture.events.some(row=>row.exact),onchainEvents:capture.chainEvents.some(row=>row.verified && Date.now()-Date.parse(row.occurredAt)<=10*60000),liveExecution:true,
       notes:["榜单、仓位差分与社交热度不等于真实成交。","S1/S3 只在已授权精确事件和链上核验齐备时放行。","实盘需独立确认、账户风控、报价有效期与成交对账。",...(!persistent?["存储不可用：私人状态及交易写入已关闭。"]:[])]}};
@@ -191,7 +215,7 @@ export async function stmPaperMark(candidate: StmCandidate): Promise<number> {
 
 export async function mutateStm(userId:string,input:StmMutation):Promise<unknown> {
   if(!stmPersistenceConfigured()) throw new Error("持久化数据库不可用，无法保存操作");
-  if(input.action==="refresh") return getStmDashboard(userId);
+  if(input.action==="refresh") { await refreshStmCapture({force:true}); return getStmDashboard(userId); }
   if(input.action==="watch") {
     const current=await listRecords(userId,"watch",301);
     if(input.enabled && current.length>=300 && !current.some(row=>row.key===input.id)) throw new Error("关注上限为 300 个实体");

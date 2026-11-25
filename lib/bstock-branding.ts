@@ -109,13 +109,28 @@ export const BSTOCK_OFFICIAL_BRAND_DOMAINS: Readonly<Record<string, string>> = O
   UVXYB: "proshares.com",
   VSTB: "vistracorp.com",
   WENB: "wendys.com",
-  ZMB: "zoom.com"
+  ZMB: "zoom.com",
+  BSPB: "bendingspoons.com",
+  SKDDB: "graniteshares.com",
+  SKUUB: "graniteshares.com",
+  GEVB: "gevernova.com",
+  APPB: "applovin.com",
+  EWZSB: "ishares.com",
+  NUB: "nubank.com.br",
+  MELIB: "mercadolibre.com",
+  EWTB: "ishares.com",
+  EWJB: "ishares.com",
+  IWMB: "ishares.com",
+  EWZB: "ishares.com",
+  ANTB: "anthropic.com"
 });
 
 const OFFICIAL_DOMAIN_FIRST = new Set([
   "AAOIB", "ARMB", "BABAB", "BEB", "CBRSB", "COINB", "PLTRB", "QNTB", "SKHYB", "SPCXB",
   "AGPUB", "BNCB", "BOTB", "CYPHB", "FWDIB", "SECZB", "SHAZB", "USDEB", "BRKBB"
 ]);
+// Private-company tickers can collide with unrelated public-market symbols.
+const OFFICIAL_DOMAIN_ONLY = new Set(["BSPB", "ANTB"]);
 
 const tickerByBstock: ReadonlyMap<string, string> = new Map<string, string>(
   [...BSTOCK_REGISTRY_BASELINE_ASSETS.map(([ticker, symbol]) => [symbol, ticker] as const),
@@ -123,7 +138,7 @@ const tickerByBstock: ReadonlyMap<string, string> = new Map<string, string>(
 );
 
 export function bstockBrandIconPath(symbol: string) {
-  return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(symbol.toUpperCase())}&v=20261024`;
+  return `/api/bstock-alpha/brand-icon?symbol=${encodeURIComponent(symbol.toUpperCase())}&v=20261124`;
 }
 
 export function bstockBrandIconSources(symbol: string) {
@@ -132,11 +147,18 @@ export function bstockBrandIconSources(symbol: string) {
   if (!ticker) return [];
   const fmpLogo = `${FMP_LOGO_BASE_URL}/${encodeURIComponent(ticker)}.png`;
   const domain = BSTOCK_OFFICIAL_BRAND_DOMAINS[normalized];
-  if (!domain) return [fmpLogo];
+  const officialIcon = (localization.officialIcons as Record<string, string>)[normalized];
+  // Only audited Binance image paths are accepted; never turn catalog metadata
+  // into an arbitrary URL-fetching proxy.
+  const officialSources = officialIcon && /^\/images\/web3-data\/public\/token\/logos\/[a-f0-9]{32}\.png$/.test(officialIcon)
+    ? [`https://bin.bnbstatic.com${officialIcon}`]
+    : [];
+  if (!domain) return [...officialSources, fmpLogo];
   const officialDomainFavicon = `${GOOGLE_FAVICON_BASE_URL}?domain=${encodeURIComponent(domain)}&sz=128`;
+  if (OFFICIAL_DOMAIN_ONLY.has(normalized)) return [...officialSources, officialDomainFavicon];
   return OFFICIAL_DOMAIN_FIRST.has(normalized)
-    ? [officialDomainFavicon, fmpLogo]
-    : [fmpLogo, officialDomainFavicon];
+    ? [...officialSources, officialDomainFavicon, fmpLogo]
+    : [...officialSources, fmpLogo, officialDomainFavicon];
 }
 
 export function bstockBrandFallbackSvg(symbol: string) {

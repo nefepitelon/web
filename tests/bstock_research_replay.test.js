@@ -34,7 +34,7 @@ function payment() {
     } } };
 }
 function fixture(options = {}) {
-  const calls = { sign: 0, fetch: [], jobs: [], logs: [] };
+  const calls = { sign: 0, external: 0, fetch: [], jobs: [], logs: [], claims: [] };
   const state = { walletAddress: payer };
   class AgenticWalletRequestError extends Error {}
   const logger = Object.fromEntries(['info', 'warn', 'error'].map(level => [level, (...args) => calls.logs.push(args.join(' '))]));
@@ -50,13 +50,21 @@ function fixture(options = {}) {
       } }; } },
     '@/lib/bstock-alpha-live': { decodeResearchIntent: () => ({ agentKey: 'session-key', createdAt: Date.now(), provider: 'studio',
       symbol: 'AAOIB', ticker: 'AAOI', contractAddress: requirement.asset, paymentId: 'preview-id', requestId: 'request-id',
-      resourceUrl: merchantUrl, allowedIndices: [1], allowedOptions: [{ index: 1, binanceChainId: '56', requirement }] }),
+      resourceUrl: merchantUrl, allowedIndices: [1], allowedOptions: [{ index: 1, binanceChainId: '56', requirement, signingMode: options.external ? 'external' : 'native' }] }),
       fetchOfficialBstockMarket: async () => ({ assets: [{ symbol: 'AAOIB', ticker: 'AAOI', contractAddress: requirement.asset, campaignEligibility: 'CONFIRMED' }] }) },
     '@/lib/bstock-agent-studio': { resolveResearchOwner: async () => ({ state, ownerKey: 'owner:fixture' }),
       findRecentOwnedStudioJob: async () => null, isStudioReportComplete: () => false, isStudioJobPending: () => false, isStudioJobTerminalFailure: () => false },
     '@/lib/prisma': { prisma: { bstockResearchJob: { upsert: async input => { calls.jobs.push(input); return {}; } } } },
     '@/lib/bstock-evm': { evmNetworkLabel: () => 'BNB Smart Chain' },
     '@/lib/bstock-agentic-wallet-x402': agent,
+    '@/lib/bstock-research-claim': { claimResearchOperation: async (key, id, step) => {
+      if (calls.claims.includes(step)) throw new Error('already submitted');
+      calls.claims.push(step);
+    } },
+    '@/lib/bstock-agent-x402-external': {
+      decodeBoundExternalReview: () => ({ kind: 'APPROVAL' }),
+      executeExternalResearch: async () => { calls.external++; return { state, body: { status: 'APPROVAL_SUBMITTED' } }; }
+    },
     '@/lib/bstock-research-payment-response': rejection
   };
   const route = load('app/api/bstock-alpha/research/execute/route.ts', imports, { console: logger,
@@ -66,7 +74,7 @@ function fixture(options = {}) {
         status: options.status || 202, headers: options.headers || {}
       });
     } });
-  return { calls, run: () => route.POST({ json: async () => ({ intent: 'i'.repeat(30), selectedIndex: 1, confirmation: '确认付费研究', acknowledged: true }) }) };
+  return { calls, run: (input = {}) => route.POST({ json: async () => ({ intent: 'i'.repeat(30), selectedIndex: 1, confirmation: '确认付费研究', acknowledged: true, ...input }) }) };
 }
 test('Agent Studio forwards the exact reviewed merchant requirement and canonical wire, preserving authorization values', async () => {
   const app = fixture();
@@ -95,6 +103,26 @@ test('Agent Studio forwards the exact reviewed merchant requirement and canonica
   assert.equal(result.jobId, 'job-fixture');
   assert.ok(!JSON.stringify(result).includes('private-fixture-token'));
   assert.ok(!app.calls.logs.join('').includes(payment().payload.signature));
+});
+test('a repeated Agent payment intent cannot sign or submit twice', async () => {
+  const app = fixture();
+  assert.equal((await app.run()).status, 202);
+  assert.equal((await app.run()).status, 502);
+  assert.equal(app.calls.sign, 1);
+  assert.equal(app.calls.fetch.length, 1);
+  assert.deepEqual(app.calls.claims, ['signature', 'merchant_replay']);
+});
+test('external approval cannot use ordinary payment confirmation or bypass its separate reviewed step', async () => {
+  for (const input of [{}, { externalReview: 'r'.repeat(30) }, { externalReview: 'r'.repeat(30), externalConfirmation: '确认外部付款签名' }]) {
+    const app = fixture({ external: true });
+    assert.equal((await app.run(input)).status, 409);
+    assert.equal(app.calls.external, 0); assert.equal(app.calls.sign, 0); assert.equal(app.calls.fetch.length, 0);
+  }
+  const app = fixture({ external: true });
+  const response = await app.run({ externalReview: 'r'.repeat(30), externalConfirmation: '确认有限额度授权' });
+  assert.equal(response.status, 202);
+  assert.equal((await response.json()).status, 'APPROVAL_SUBMITTED');
+  assert.equal(app.calls.external, 1); assert.equal(app.calls.sign, 0); assert.equal(app.calls.fetch.length, 0);
 });
 test('Studio errorCode payment_rejected reaches the UI without another sign or replay', async () => {
   const app = fixture({ status: 402, body: { errorCode: 'payment_rejected' } });

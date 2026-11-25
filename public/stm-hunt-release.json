@@ -1,9 +1,26 @@
 {
   "name": "STM hunt",
-  "version": "1.2.0",
-  "releaseDate": "2026-11-19",
+  "version": "1.6.0",
+  "releaseDate": "2026-11-25",
   "path": "/stm-hunt",
-  "modules": ["research-terminal", "web3smartmoney-six-venues", "toptrader", "alpha-radar", "S1", "S2", "S3", "S4", "S5", "wallet-groups", "paper", "captured-replay", "export", "bsc-watchlist-scanner", "cex-execution", "bsc-wallet-execution"],
+  "modules": [
+    "research-terminal",
+    "web3smartmoney-six-venues",
+    "toptrader",
+    "alpha-radar",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "wallet-groups",
+    "paper",
+    "captured-replay",
+    "export",
+    "bsc-watchlist-scanner",
+    "cex-execution",
+    "bsc-wallet-execution"
+  ],
   "execution": {
     "binanceUsdtFutures": "requires-ready-signal-and-account-unlock",
     "cexSpot": "paper-only",
@@ -11,5 +28,42 @@
     "solana": "research-only",
     "onchainStops": "manual-wallet-exit"
   },
-  "sourcePolicy": "Missing, private, stale or unverified evidence cannot authorize an entry."
+  "terminal": [
+    "identity-orb",
+    "live-public-spot-chart",
+    "source-flow",
+    "evidence-verdicts",
+    "reduced-motion",
+    "compact-header-metrics",
+    "source-accessibility-marquee",
+    "radar-linked-live-watch",
+    "trader-wallet-holding-focus",
+    "portfolio-inspector",
+    "exact-identity-cross-navigation"
+  ],
+  "radar": [
+    "trader-profiles",
+    "disclosed-chain-holdings",
+    "exact-contract-shared-holdings",
+    "source-timestamps",
+    "conditional-polling",
+    "venue-brand-icons",
+    "fomo-period-leaderboards",
+    "public-provider-manual-refresh",
+    "wallet-addresses",
+    "provider-trade-activity",
+    "fomo-top100-total-default",
+    "preloaded-public-holdings",
+    "flat-leaderboards",
+    "chain-distribution"
+  ],
+  "refresh": {
+    "dashboardSeconds": 15,
+    "upstreamCheckSeconds": 60,
+    "publicMarketSeconds": 5,
+    "manualCooldownSeconds": 15,
+    "hyperliquidLeaderboardCheckSeconds": 90,
+    "hyperliquidManualCooldownSeconds": 60
+  },
+  "sourcePolicy": "Missing, private, stale or unverified evidence cannot authorize an entry. A successful check never changes the upstream data timestamp."
 }

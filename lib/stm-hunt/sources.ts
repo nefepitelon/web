@@ -1,6 +1,6 @@
 import "server-only";
 import { buildAlphaScanSnapshot } from "../../api/alpha-scan.js";
-import type { StmCandidate, StmHolding, StmMarketEvidence, StmSource, StmTradeEvent, StmTrader } from "./types";
+import type { StmCandidate, StmHolding, StmMarketEvidence, StmSharedHolding, StmSource, StmTradeEvent, StmTrader } from "./types";
 
 type Obj = Record<string, any>;
 const WSM = "https://web3smartmoney.com";
@@ -9,7 +9,7 @@ const obj = (value: unknown): Obj => value && typeof value === "object" && !Arra
 const rows = (value: unknown): Obj[] => Array.isArray(value) ? value.filter(row => row && typeof row === "object" && !Array.isArray(row)) : [];
 const str = (value: unknown, fallback = "") => typeof value === "string" ? value.slice(0, 256) : fallback;
 export function stmNumber(value: unknown): number | null {
-  if ((typeof value !== "number" && typeof value !== "string") || value === "" || value === null || typeof value === "boolean") return null;
+  if ((typeof value !== "number" && typeof value !== "string") || (typeof value === "string" && !value.trim())) return null;
   const number = Number(value); return Number.isFinite(number) ? number : null;
 }
 function alphaPrice(value: unknown): number | null {
@@ -35,9 +35,28 @@ export function stmTimestamp(value: unknown): string | null {
   return Number.isFinite(milliseconds) && milliseconds > 0 ? new Date(milliseconds).toISOString() : null;
 }
 export function stmAsset(chain: string, address: string) { return `${chain}:${/^0x/i.test(address) ? address.toLowerCase() : address}`; }
+export function stmPublicUrl(value: unknown, base?: string): string | null {
+  if (typeof value !== "string" || !value.trim() || value.length > 2048) return null;
+  try {
+    const url = base ? new URL(value, base) : new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
+const text = (...values: unknown[]) => values.map(value => str(value).trim()).find(Boolean) || null;
+const nonnegative = (value: unknown) => { const number=stmNumber(value);return number!==null && number>=0 ? number : null; };
+function explorer(chain: string | null, address: string | null): string | null {
+  if (!chain || !address) return null;
+  if (chain === "solana" && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) return `https://solscan.io/account/${address}`;
+  const hosts:Record<string,string>={bsc:"bscscan.com",ethereum:"etherscan.io",base:"basescan.org",arbitrum:"arbiscan.io"};
+  return hosts[chain] && /^0x[0-9a-fA-F]{40}$/.test(address) ? `https://${hosts[chain]}/address/${address}` : null;
+}
 async function json(url: string, token?: string): Promise<unknown> {
-  const response = await fetch(url, { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10000),
-    headers: { Accept: "application/json", "User-Agent": "STM-hunt/1.0", ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+  // Fixed public feed URLs only. A minute bucket avoids stale intermediary objects
+  // without generating a new unbounded URL for every browser polling request.
+  const target = new URL(url);
+  if (target.origin === WSM) target.searchParams.set("stm_check", String(Math.floor(Date.now()/60000)));
+  const response = await fetch(target.href, { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10000),
+    headers: { Accept: "application/json", "User-Agent": "STM-hunt/1.0", "Cache-Control":"no-cache", Pragma:"no-cache", ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const body = await response.text();
   if (body.length > 12_000_000) throw new Error("Snapshot exceeds size limit");
@@ -46,6 +65,35 @@ async function json(url: string, token?: string): Promise<unknown> {
 export interface StmSourceCapture {
   asOf: string; sources: StmSource[]; traders: StmTrader[]; candidates: StmCandidate[];
   events: StmTradeEvent[]; markets: StmMarketEvidence[];
+  schemaVersion?: number;
+  sharedHoldings?: StmSharedHolding[];
+}
+
+export function normalizeStmSharedHoldings(raw: unknown, sourceUpdatedAt: string | null): StmSharedHolding[] {
+  const found=new Map<string,StmSharedHolding>();
+  for(const token of rows(obj(raw).shared_tokens).slice(0,100)) {
+    const chain=str(token.chain).trim().toLowerCase(),rawAddress=str(token.address).trim();
+    if(!/^[a-z0-9-]{1,40}$/.test(chain) || !(chain==="solana"?/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(rawAddress):/^0x[0-9a-fA-F]{40}$/.test(rawAddress)))continue;
+    const address=/^0x/i.test(rawAddress)?rawAddress.toLowerCase():rawAddress,id=stmAsset(chain,address),info=obj(token.info);
+    const holders=new Map<string,StmSharedHolding["holders"][number]>();
+    for(const holder of rows(token.holders).slice(0,1000)) {
+      const reference=text(holder.id);if(!reference)continue;
+      const rawWallet=text(holder.wallet,holder.address),wallet=rawWallet && (/^0x[0-9a-fA-F]{40}$/.test(rawWallet)||/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(rawWallet))?(/^0x/i.test(rawWallet)?rawWallet.toLowerCase():rawWallet):null;
+      const holderId=`wsm:fomo:${reference}`;
+      holders.set(holderId,{id:holderId,name:text(holder.name),valueUsd:nonnegative(holder.usd),wallet});
+    }
+    const links=new Map<string,{label:string;url:string}>();
+    for(const link of [...rows(info.websites),{label:"X",url:info.twitter},{label:"Telegram",url:info.telegram},{label:"DEX",url:info.dex_url}]) {
+      const url=stmPublicUrl(link.url);if(url)links.set(url,{label:text(link.label)??"Website",url});
+    }
+    const reported=[...holders.values()];
+    found.set(id,{id,chain,address,symbol:str(token.symbol),name:text(token.name,token.symbol)??address,
+      logoUrl:stmPublicUrl(token.logo),priceUsd:nonnegative(token.price),totalValueUsd:nonnegative(token.total_usd),
+      holdersCount:reported.length,holderIds:reported.map(holder=>holder.id),holders:reported,wallets:[...new Set(reported.map(holder=>holder.wallet).filter((wallet):wallet is string=>!!wallet))],
+      socialLinks:[...links.values()].slice(0,12),description:typeof info.description==="string"?info.description.slice(0,1600):null,
+      sourceId:"wsm-fomo",sourceUpdatedAt:stmTimestamp(sourceUpdatedAt),reported:true,scope:"source-reported"});
+  }
+  return [...found.values()];
 }
 
 function normalizeHolding(row: Obj, board: string, defaultChain: string | null): StmHolding | null {
@@ -55,10 +103,13 @@ function normalizeHolding(row: Obj, board: string, defaultChain: string | null):
   const address = str(row.mint ?? row.address ?? row.tokenAddress) || null;
   const side = row.side === "short" ? "short" : row.side === "long" ? "long" : ["hl", "lighter", "binance"].includes(board) ? "long" : "spot";
   return { asset: side === "spot" ? (chain && address ? stmAsset(chain, address) : `unknown:${board}:${chain}:${symbol}`) : `cex:${symbol}`,
-    symbol, chain, address, side, quantity: stmNumber(row.size ?? row.held ?? row.quantity), valueUsd: stmNumber(row.valueUsd ?? row.usd ?? row.notional) };
+    symbol, chain, address, side, quantity: stmNumber(row.size ?? row.held ?? row.quantity), valueUsd: stmNumber(row.valueUsd ?? row.usd ?? row.notional),
+    name: text(row.name), logoUrl: stmPublicUrl(row.logo ?? row.image, `${WSM}/${board}/`),
+    priceUsd: nonnegative(row.priceUsd ?? row.price), pnlUsd: stmNumber(row.pnlUsd ?? row.uPnl),
+    weightPct: null, explorerUrl: stmPublicUrl(row.tokenUrl) ?? explorer(chain,address) };
 }
 
-export function normalizeStmRoster(board: string, raw: unknown, holdingsRaw: unknown, updatedHint: string | null): StmTrader[] {
+export function normalizeStmRoster(board: string, raw: unknown, holdingsRaw: unknown, updatedHint: string | null, fetchedAt = new Date().toISOString()): StmTrader[] {
   const data = obj(raw), details = obj(holdingsRaw), holdings = obj(details.holdings ?? details);
   const roster = rows(board === "fomo" ? data.data : data.traders);
   return roster.map((row): StmTrader => {
@@ -74,15 +125,41 @@ export function normalizeStmRoster(board: string, raw: unknown, holdingsRaw: unk
     const updatedAt = stmTimestamp(row.holdings_updated_at ?? row.lastRefreshedAtMs ?? data.fetchedAt ?? data.sourceUpdatedAtUnix ?? details.captured_at);
     const pnlUsd = stmNumber(row.pnlUsd ?? row.official_pnl_usd ?? row.bestNetPnl);
     const winRate = stmNumber(row.winRate);
+    const rawHandle=text(row.handle,row.xUsername,row.twitter),handle=rawHandle && /^@?[A-Za-z0-9_]{1,15}$/.test(rawHandle) ? rawHandle.replace(/^@/,"") : null;
+    const xUrl=stmPublicUrl(row.xUrl ?? row.twitterUrl) ?? (handle?`https://x.com/${handle}`:null);
+    const fomoTotal=nonnegative(row.total_usd);
+    // Several FOMO rows are an uncollected empty placeholder, not observed zero balances.
+    const totalValueUsd=board==="fomo"?(fomoTotal===0 && (stmNumber(row.evm_usd)??0)===0 && (stmNumber(row.sol_usd)??0)===0 && !updatedAt && !normalized.length && !rows(row.chains).length ? null : fomoTotal):board==="hl"?nonnegative(hl.accountValue):["binance","lighter"].includes(board)?nonnegative(row.assetsUsd):null;
+    const visible=hidden?[]:normalized;
+    const knownTotal=visible.reduce((sum,holding)=>sum+(holding.valueUsd??0),0);
+    for(const holding of visible)holding.weightPct=holding.valueUsd!==null && knownTotal>0 ? holding.valueUsd/knownTotal*100 : null;
+    const reportedChains=rows(row.chains).filter(chain=>text(chain.chain)).map(chain=>({chain:str(chain.chain),valueUsd:nonnegative(chain.usd),holdingsCount:visible.filter(holding=>holding.chain===chain.chain).length}));
+    const disclosedChains=[...new Set(visible.map(holding=>holding.chain).filter((chain):chain is string=>!!chain))].map(chain=>{
+      const holdings=visible.filter(holding=>holding.chain===chain),values=holdings.map(holding=>holding.valueUsd).filter((value):value is number=>value!==null);
+      return {chain,valueUsd:values.length?values.reduce((sum,value)=>sum+value,0):null,holdingsCount:holdings.length};
+    });
+    const wallets:NonNullable<StmTrader["wallets"]>=[];
+    if(board==="fomo") {
+      if(/^0x[0-9a-fA-F]{40}$/.test(str(row.evm)))wallets.push({chain:"evm",address:str(row.evm).toLowerCase(),explorerUrl:null});
+      if(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(str(row.sol)))wallets.push({chain:"solana",address:str(row.sol),explorerUrl:explorer("solana",str(row.sol))});
+    } else if(address) {const chain=board==="pump"||board==="okx"?"solana":board==="hl"?"hyperliquid":board==="lighter"?"lighter":"unknown";wallets.push({chain,address,explorerUrl:explorer(chain,address)});}
     return { id: `wsm:${board}:${reference || address}`, source: `wsm-${board}`, venue: board,
-      name: str(row.name ?? row.displayName ?? row.username ?? row.label, address ?? reference), address,
+      name: text(row.name,row.displayName,row.username,row.label) ?? address ?? reference, address,
       pnlUsd, roi: stmNumber(row.roi ?? row.pnlPercent), winRate: winRate !== null && board === "binance" ? winRate * 100 : winRate,
-      pnlWindow: board === "pump" ? "2026-07-01 起，已实现+未实现" : board === "okx" ? "3M" : board === "fomo" ? "来源未说明" : "All time，跨平台不可比",
-      updatedAt, holdings: hidden ? [] : normalized,
+      pnlWindow: board === "pump" ? "2026-07-01 起，已实现+未实现" : board === "okx" ? "3M" : board === "fomo" ? "All time（WSM 来源快照）" : "All time，跨平台不可比",
+      updatedAt, holdings: visible,
       visibility: hidden ? "private" : truncated ? "truncated" : normalized.length ? "public" : "empty",
       tags: [...(Array.isArray(row.labels) ? row.labels.map((tag: unknown) => str(tag)) : []), ...(row.tag ? [str(row.tag)] : [])].slice(0, 12),
       // A public leaderboard or a KOL tag alone does not establish execution quality.
-      qualified: false };
+      qualified: false,
+      avatarUrl: stmPublicUrl(row.avatar ?? row.profileImage, `${WSM}/${board}/`),handle,profileUrl:stmPublicUrl(row.profileUrl),
+      socialLinks:xUrl?[{label:"X",url:xUrl}]:[],rank:nonnegative(row.rank ?? row.official_rank ?? obj(row.ranks).overall),
+      totalValueUsd,totalValueLabel:["fomo","pump","okx"].includes(board)?"来源钱包资产":"来源账户权益",valueBasis:["fomo","pump","okx"].includes(board)?"wallet":"account-equity",
+      holdingsCount:nonnegative(board==="hl"?hl.legCount:board==="pump"?detail.quality:row.openCount ?? row.positionsCount),
+      chains:hidden?[]:reportedChains.length?reportedChains:disclosedChains,chainsScope:reportedChains.length?"reported":"disclosed",
+      sourceUpdatedAt:updatedAt??updatedHint,fetchedAt,wallets,bio:text(row.introduction),
+      fomoUid:board==="fomo" && typeof row.fomo_id==="string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.fomo_id)?row.fomo_id.toLowerCase():null,
+      fomoHandle:board==="fomo" && typeof row.fomo_api_handle==="string" && /^[A-Za-z0-9_]{1,64}$/.test(row.fomo_api_handle)?row.fomo_api_handle:null };
   });
 }
 
@@ -104,13 +181,14 @@ export async function captureStmSources(): Promise<StmSourceCapture> {
     try {
       const value = await job.load(); values[job.id] = value;
       const data = obj(value);
-      const updatedAt = stmTimestamp(data.fetchedAt ?? data.scannedAt ?? data.sourceUpdatedAtUnix ?? data.builtAt ?? data.captured_at);
-      sources.push({ id: job.id, name: job.name, url: job.url, status: "ok", fetchedAt: asOf, updatedAt,
+      const updatedAt = stmTimestamp(data.fetchedAt ?? data.scannedAt ?? data.sourceUpdatedAtUnix ?? data.dataUpdatedAt ?? data.builtAt ?? data.captured_at);
+      const checkedAt=new Date().toISOString();
+      sources.push({ id: job.id, name: job.name, url: job.url, status: "ok", fetchedAt: checkedAt, checkedAt, checkIntervalSeconds:60, timestampBasis:updatedAt?"source":"unknown", updatedAt,
         count: rows(data.traders ?? data.data ?? data.items ?? data.activity ?? data.signals).length, latencyMs: Date.now() - start,
         semantics: job.semantics, message: job.semantics === "snapshot" ? "快照观察；不冒充逐笔交易" : job.semantics === "context" ? "研究背景；不用于精确成交触发" : "已连接" });
     } catch (error) {
       const restricted = error instanceof Error && /HTTP 40[13]/.test(error.message);
-      sources.push({ id: job.id, name: job.name, url: job.url, status: restricted ? "restricted" : "unavailable", fetchedAt: asOf, updatedAt: null,
+      sources.push({ id: job.id, name: job.name, url: job.url, status: restricted ? "restricted" : "unavailable", fetchedAt: new Date().toISOString(), checkedAt:new Date().toISOString(),checkIntervalSeconds:60,timestampBasis:"unknown", updatedAt: null,
         count: 0, latencyMs: Date.now() - start, semantics: job.semantics, message: restricted ? "需数据源授权；未绕过访问限制" : "上游暂不可用；不填充模拟数据" });
     }
   }));
@@ -119,16 +197,17 @@ export async function captureStmSources(): Promise<StmSourceCapture> {
     const source=sources.find(row=>row.id===`holdings-${board}`)!;
     const raw=obj(values[`holdings-${board}`]);
     source.count=Object.keys(obj(raw.holdings??raw)).length;
-    if(source.status==="ok" && !source.updatedAt) {source.status="stale";source.message="公开持仓已读取；源快照时间无时区或未知，仅供观察";}
+    if(source.status==="ok" && !source.updatedAt) {source.updatedAt=stmTimestamp(version[board]);source.timestampBasis=source.updatedAt?"version":"unknown";source.message="公开持仓已检查；仓位时间无时区或未知，关联版本时间仅供研究";}
   }
   for (const board of ["fomo", "hl", "pump", "binance", "lighter", "okx"]) {
-    const normalized = normalizeStmRoster(board, values[`wsm-${board}`], values[`holdings-${board}`], stmTimestamp(version[board]));
+    const normalized = normalizeStmRoster(board, values[`wsm-${board}`], values[`holdings-${board}`], stmTimestamp(version[board]),sources.find(row=>row.id===`wsm-${board}`)?.fetchedAt??asOf);
     traders.push(...normalized);
     const status = sources.find(row => row.id === `wsm-${board}`)!;
     if (status.status === "ok") {
       const times = normalized.map(row => row.updatedAt).filter((value): value is string => !!value).sort();
-      status.updatedAt = times.at(-1) ?? null; status.count = normalized.length;
-      if (!status.updatedAt || Date.parse(asOf) - Date.parse(status.updatedAt) > 3 * 3600_000) { status.status = "stale"; status.message = "源时间未知或超过三小时，仅供历史研究"; }
+      status.updatedAt = times.at(-1) ?? stmTimestamp(version[board]); status.count = normalized.length;
+      status.timestampBasis=times.length?"source":status.updatedAt?"version":"unknown";
+      if (!status.updatedAt || Date.parse(asOf) - Date.parse(status.updatedAt) > 3 * 3600_000) { status.status = "stale"; status.message = status.updatedAt?"已重新检查公开源；上游尚未更新，数据超过三小时，仅供历史研究":"源时间未知，仅供历史研究"; }
       if (board === "binance") status.message += "；私密仓位不解释为零仓";
     }
   }
@@ -141,7 +220,8 @@ export async function captureStmSources(): Promise<StmSourceCapture> {
     const mdd = stmNumber(row.mdd), score = stmNumber(row.score), firstSeen = stmTimestamp(row.first_seen);
     traders.push({ id, source: "top-ranking", venue: str(row.exchange), name: str(row.nickname, str(row.uid)), address: /^0x[0-9a-fA-F]{40}$/.test(str(row.uid)) ? str(row.uid).toLowerCase() : null,
       pnlUsd: stmNumber(row.pnl), roi: stmNumber(row.roi), winRate, pnlWindow: "来源窗口不统一", updatedAt: stmTimestamp(row.updated_at), holdings: [], visibility: "private", tags: [str(row.sub_exchange)],
-      qualified: winRate !== null && winRate >= 50 && mdd !== null && mdd > 0 && mdd <= 40 && score !== null && score >= 60 && firstSeen !== null && Date.parse(asOf) - Date.parse(firstSeen) >= 30 * 86400_000 });
+      qualified: winRate !== null && winRate >= 50 && mdd !== null && mdd > 0 && mdd <= 40 && score !== null && score >= 60 && firstSeen !== null && Date.parse(asOf) - Date.parse(firstSeen) >= 30 * 86400_000,
+      avatarUrl:stmPublicUrl(row.avatar_url ?? row.avatar),handle:null,profileUrl:stmPublicUrl(row.profile_url),socialLinks:[],rank:null,totalValueUsd:null,holdingsCount:null,chains:[],sourceUpdatedAt:stmTimestamp(row.updated_at),fetchedAt:asOf });
   }
   for (const row of rows(obj(values["top-events"]).items ?? obj(values["top-events"]).signals)) {
     const traderId = `radar:${str(row.exchange)}:${str(row.sub_exchange)}:${str(row.uid ?? row.trader_uid)}`;
@@ -164,10 +244,10 @@ export async function captureStmSources(): Promise<StmSourceCapture> {
       reason: `${candidate.reason}${context?`；24h 共振背景 ${stmNumber(context.trader_count)??0} 人（不计作精确成交）`:""}` });
   }
   const tokenMap = new Map<string, StmCandidate>();
-  for (const token of rows(obj(values["wsm-fomo"]).shared_tokens)) {
-    const chain = str(token.chain), address = str(token.address); if (!chain || !address) continue;
-    tokenMap.set(stmAsset(chain, address), { id: stmAsset(chain,address), symbol: str(token.symbol), name: str(token.name, str(token.symbol)), address, chain,
-      market: "onchain", sources: ["wsm-fomo"], price: stmNumber(token.price), change24h: null, volumeUsd: null, liquidityUsd: null, score: 0, bias: "observe", reason: "FOMO 共同持有快照；非新买入", updatedAt: stmTimestamp(version.fomo), risk: "unknown", holders: rows(token.holders).length });
+  const sharedHoldings=normalizeStmSharedHoldings(values["wsm-fomo"],stmTimestamp(version.fomo));
+  for (const token of sharedHoldings) {
+    tokenMap.set(token.id, { id:token.id, symbol:token.symbol, name:token.name, address:token.address, chain:token.chain,
+      market: "onchain", sources: ["wsm-fomo"], price:token.priceUsd, change24h: null, volumeUsd: null, liquidityUsd: null, score: 0, bias: "observe", reason: "FOMO 共同持有快照；非新买入", updatedAt:token.sourceUpdatedAt, risk: "unknown", holders:token.holdersCount });
   }
   for (const trader of traders.filter(row => ["pump", "okx"].includes(row.venue))) for (const holding of trader.holdings) {
     if (!holding.address || !holding.chain || holding.quantity === null || holding.quantity <= 0) continue;
@@ -183,7 +263,14 @@ export async function captureStmSources(): Promise<StmSourceCapture> {
     updatedAt: markets.map(row => row.asOf).sort().at(-1) ?? null, count: markets.length, latencyMs: 0, status: markets.length ? "ok" : "unavailable", message: "排除未闭合 K 线；OI 使用数量；真实强平数据未接入" });
   // Capture time is the completed observation time; no included source can be
   // considered available at the start of a slower multi-source collection.
-  return { asOf:new Date().toISOString(), sources: sources.sort((a,b) => jobs.findIndex(row => row.id === a.id)-jobs.findIndex(row => row.id === b.id)), traders, candidates, events, markets };
+  const completedAt=new Date().toISOString();
+  for(const source of sources) {
+    source.sourceAgeSeconds=source.updatedAt?Math.max(0,Math.floor((Date.parse(completedAt)-Date.parse(source.updatedAt))/1000)):null;
+    if(source.status==="ok" && source.url.startsWith(WSM) && (!source.updatedAt || (source.sourceAgeSeconds??0)>3*3600)) {
+      source.status="stale";source.message=source.updatedAt?"已重新检查公开源；上游尚未更新，数据超过三小时，仅供历史研究":"上游未提供可靠更新时间，仅供观察";
+    }
+  }
+  return { asOf:completedAt, schemaVersion:2, sharedHoldings, sources: sources.sort((a,b) => jobs.findIndex(row => row.id === a.id)-jobs.findIndex(row => row.id === b.id)), traders, candidates, events, markets };
 }
 
 export async function loadStmMarket(symbol: string, now = Date.now()): Promise<StmMarketEvidence> {

@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="bstock-alpha.css?v=20260826-ledger-reports-v3" />
     <link rel="stylesheet" href="bstock-alpha-ui.css?v=20260904-ui-system-v1" />
-    <link rel="stylesheet" href="bstock-autotrade.css?v=20261024-hot-grid-v2" />
+    <link rel="stylesheet" href="bstock-autotrade.css?v=20261124-hidden-panel-v1" />
     <link rel="stylesheet" href="bstock-equity-panel.css?v=20260904-equity-panel-v2" />
   </head>
   <body data-theme="dark">
@@ -120,8 +120,8 @@
           </header>
           <label class="token-search"><span aria-hidden="true"></span><input id="token-search" type="search" placeholder="搜索 bStock" /></label>
           <div class="universe-tabs" role="tablist">
-            <button class="active" data-universe-filter="all" type="button">全部 <em>—</em></button>
-            <button data-universe-filter="weekly" type="button">热门 <em>—</em></button>
+            <button class="active" data-universe-filter="weekly" type="button">热门 <em>—</em></button>
+            <button data-universe-filter="all" type="button">全部 <em>—</em></button>
             <button data-universe-filter="stock" type="button">个股 <em>—</em></button>
             <button data-universe-filter="etf" type="button">ETF <em>—</em></button>
             <button data-universe-filter="watchlist" type="button">自选 <em>0</em></button>
@@ -210,7 +210,7 @@
         </aside>
       </section>
 
-      <section class="autotrade-panel panel" id="bstock-autotrade" aria-labelledby="autotrade-title" translate="no">
+      <section class="autotrade-panel panel" id="bstock-autotrade" aria-labelledby="autotrade-title" translate="no" hidden inert>
         <header class="autotrade-head">
           <div class="autotrade-identity"><span class="autotrade-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 3 7-10M15 5h5v5M4 6v3M2.5 7.5h3" /></svg></span><div><span class="panel-kicker">AUTOMATED EXECUTION</span><h2 id="autotrade-title">自动交易</h2><p data-auto-text="subtitle">从 bStock 机会池筛选标的，按策略与预算持续执行。</p></div></div>
           <div class="autotrade-master"><span class="autotrade-status" id="autotrade-status" data-state="syncing" role="status">同步中</span><button class="autotrade-switch" id="autotrade-toggle" type="button" role="switch" aria-checked="false" aria-label="开启自动交易" aria-controls="autotrade-settings" disabled><span aria-hidden="true"></span></button></div>
@@ -451,8 +451,8 @@
     <div class="toast" id="toast" role="status" aria-live="polite"><i></i><span></span></div>
   <script src="ui-translations.js?v=20261024-bstock-catalog-v3"></script>
   <script src="bstock-alpha-storage.js?v=20260902-dual-wallet-v4"></script>
-  <script src="bstock-alpha.js?v=20261024-grid-research-v3"></script>
+  <script src="bstock-alpha.js?v=20261124-catalog-wallet-v1"></script>
   <script src="bstock-equity-panel.js?v=20260904-equity-panel-v2"></script>
-  <script src="bstock-autotrade.js?v=20261024-hot-grid-v2"></script>
+  <script src="bstock-autotrade.js?v=20261124-hidden-panel-v1"></script>
   </body>
 </html>

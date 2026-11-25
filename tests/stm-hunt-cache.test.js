@@ -16,12 +16,12 @@ function load(file, imports, clock = FixedDate) {
   }).outputText;
   const module = { exports: {} };
   vm.runInNewContext(code, {
-    module, exports: module.exports, Date: clock, Error, Map, Set, Number, Array,
+    module, exports: module.exports, Date: clock, Error, Map, Set, Number, Array, Buffer,
     Math, JSON, Promise, AbortSignal, Response, URL, setTimeout, clearTimeout,
     process: { env: {} },
     require(name) {
       if (name === 'server-only') return {};
-      if (name === 'node:crypto') return require(name);
+      if (['node:crypto','node:zlib'].includes(name)) return require(name);
       if (name in imports) return imports[name];
       throw Error(`Unmocked ${name}`);
     },
@@ -29,14 +29,16 @@ function load(file, imports, clock = FixedDate) {
   return module.exports;
 }
 const plain = value => JSON.parse(JSON.stringify(value));
-function capture(offsetMs = -60_000) {
-  return { asOf: new Date(now + offsetMs).toISOString(), sources: [], traders: [],
+const captureCodec = load('lib/stm-hunt/capture-cache.ts', {});
+const cachedCapture = value => captureCodec.decodeCaptureCache(value);
+function capture(offsetMs = -30_000) {
+  return { asOf: new Date(now + offsetMs).toISOString(), schemaVersion:2, sources: [], traders: [],
     candidates: [], events: [], chainEvents: [], markets: [] };
 }
 function harness(options = {}) {
-  const counts = { cacheGets: 0, captureReads: 0, freshCaptureReads: 0, sourceCaptures: 0, historyReads: 0, personalReads: 0 };
+  const counts = { cacheGets: 0, captureReads: 0, fallbackReads: 0, freshCaptureReads: 0, sourceCaptures: 0, historyReads: 0, personalReads: 0 };
   const shared = options.shared ?? new Map();
-  const cacheWrites = [], recordWrites = [], namespaces = [];
+  const cacheWrites = [], recordWrites = [], namespaces = [], createBatches=[];
   const cache = {
     async get(key) {
       counts.cacheGets++;
@@ -46,6 +48,7 @@ function harness(options = {}) {
     async set(key, value, settings) {
       cacheWrites.push({ key, value: plain(value), settings: plain(settings) });
       if (options.cacheSetError) throw Error('runtime cache unavailable');
+      if (Buffer.byteLength(JSON.stringify(value)) > 2_000_000) throw Error('Runtime Cache item exceeds 2 MB');
       shared.set(key, plain(value));
     },
   };
@@ -55,6 +58,7 @@ function harness(options = {}) {
     async getRecord(userId, kind, key) {
       if (userId === 'system' && kind === 'capture' && key === 'latest') {
         counts.captureReads++;
+        counts.fallbackReads++;
         return options.readCapture ? options.readCapture() : options.persisted ?? null;
       }
       return null;
@@ -78,8 +82,8 @@ function harness(options = {}) {
   };
   const prisma = { stmHuntRecord: {
     async findMany() { return options.subscriptions ?? []; },
-    async createMany() { return { count: 1 }; },
-    async updateMany() { return { count: 1 }; },
+    async createMany(args) { createBatches.push(plain(args));return { count: options.lockBusy && args.data?.[0]?.kind === 'capture-lease' ? 0 : 1 }; },
+    async updateMany() { return { count: options.lockBusy ? 0 : 1 }; },
   } };
   const service = load('lib/stm-hunt/service.ts', {
     '@vercel/functions': { getCache(settings) { namespaces.push(plain(settings)); return cache; } },
@@ -94,8 +98,9 @@ function harness(options = {}) {
       counts.historyReads++;
       return options.readHistory ? options.readHistory(...args) : { snapshots: [], count: 0 };
     } },
+    './capture-cache': captureCodec,
   }, options.clock ?? FixedDate);
-  return { service, counts, shared, cacheWrites, recordWrites, namespaces };
+  return { service, counts, shared, cacheWrites, recordWrites, namespaces,createBatches };
 }
 
 test('fresh capture stays in instance memory after a single database read', async () => {
@@ -109,7 +114,7 @@ test('fresh capture stays in instance memory after a single database read', asyn
   assert.equal(h.counts.sourceCaptures, 0);
   assert.equal(h.cacheWrites.length, 1);
   assert.equal(h.cacheWrites[0].key, 'latest');
-  assert.equal(h.cacheWrites[0].settings.ttl, 240);
+  assert.equal(h.cacheWrites[0].settings.ttl, 330);
 });
 
 test('concurrent first capture requests share one in-flight cache and database lookup', async () => {
@@ -128,6 +133,20 @@ test('concurrent first capture requests share one in-flight cache and database l
   assert.equal(h.counts.sourceCaptures, 0);
 });
 
+test('manual capture refresh bypasses the one-minute cache while preserving a fifteen-second shared cooldown', async () => {
+  const persisted = capture(-30_000), h = harness({ persisted, fresh: capture(0) });
+  await h.service.refreshStmCapture();
+  assert.equal(h.counts.sourceCaptures, 0);
+  const updated = await h.service.refreshStmCapture({ force: true });
+  assert.equal(updated.asOf, capture(0).asOf);
+  assert.equal(h.counts.sourceCaptures, 1);
+  await h.service.refreshStmCapture({ force: true });
+  assert.equal(h.counts.sourceCaptures, 1);
+  const other = harness({ shared: h.shared, persisted });
+  await other.service.refreshStmCapture({ force: true });
+  assert.equal(other.counts.sourceCaptures, 0, 'other instance must honor the successful shared manual refresh');
+});
+
 test('a separate module instance reuses shared public capture without querying the database', async () => {
   const shared = new Map();
   const first = harness({ shared, persisted: capture() });
@@ -138,21 +157,22 @@ test('a separate module instance reuses shared public capture without querying t
   assert.equal(second.counts.captureReads, 0);
   assert.equal(second.counts.sourceCaptures, 0);
   assert.equal(second.cacheWrites.length, 0);
-  assert.deepEqual(second.namespaces, [{ namespace: 'welinkbtc-main:stm-public-capture:v1' }]);
+  assert.deepEqual(second.namespaces, [{ namespace: 'welinkbtc-main:stm-public-capture:v3' }]);
 });
 
 for (const [description, value] of [
-  ['expired', capture(-5 * 60_000)],
+  ['expired at the one-minute boundary', capture(-60_000)],
+  ['obsolete presentation schema', { ...capture(), schemaVersion:1 }],
   ['future-dated', capture(60_000)],
   ['invalid timestamp', { ...capture(), asOf: 'invalid' }],
 ]) {
   test(`${description} shared capture falls back to fresh persisted evidence`, async () => {
     const persisted = capture();
-    const h = harness({ shared: new Map([['latest', value]]), persisted });
+    const h = harness({ shared: new Map([['latest', captureCodec.encodeCaptureCache(value)]]), persisted });
     assert.equal(await h.service.refreshStmCapture(), persisted);
     assert.equal(h.counts.captureReads, 1);
     assert.equal(h.counts.sourceCaptures, 0);
-    assert.deepEqual(h.shared.get('latest'), plain(persisted));
+    assert.deepEqual(plain(cachedCapture(h.shared.get('latest'))), plain(persisted));
   });
 }
 
@@ -167,7 +187,7 @@ test('unavailable runtime cache falls back to the database and never caches pers
   assert.equal(h.counts.sourceCaptures, 0);
   assert.equal(h.counts.personalReads, 12, 'each user state and strategy is read independently');
   assert.equal(h.cacheWrites.length, 1);
-  assert.deepEqual(h.cacheWrites[0].value, plain(persisted));
+  assert.deepEqual(plain(cachedCapture(h.cacheWrites[0].value)), plain(persisted));
   assert.ok(!JSON.stringify(h.cacheWrites).includes('private-watch'));
   assert.ok(!JSON.stringify(h.cacheWrites).includes('alice'));
   assert.ok(!JSON.stringify(h.cacheWrites).includes('bob'));
@@ -181,7 +201,19 @@ test('expired persisted evidence triggers a fresh source capture when no usable 
   assert.equal(h.counts.sourceCaptures, 1);
   await h.service.refreshStmCapture();
   assert.equal(h.counts.sourceCaptures, 1);
-  assert.deepEqual(h.shared.get('latest'), fresh);
+  assert.deepEqual(plain(cachedCapture(h.shared.get('latest'))), fresh);
+});
+
+test('one-minute public refresh keeps five-minute immutable snapshot buckets and omits profile display payloads from history',async()=>{
+  const fresh={...capture(0),candidates:[{id:'cex:BTC'}],traders:[{id:'wsm:hl:wallet',address:null,clusterId:null,updatedAt:new Date(now).toISOString(),visibility:'public',qualified:true,
+    name:'Display Name',avatarUrl:'https://example.com/avatar.webp',socialLinks:[{label:'X',url:'https://x.com/test'}],
+    holdings:[{asset:'cex:BTC',quantity:3,side:'long',symbol:'BTC',valueUsd:10,logoUrl:'https://example.com/token.webp'}]}]};
+  const h=harness({persisted:capture(-61_000),fresh,persistent:true});await h.service.refreshStmCapture();
+  const snapshot=h.createBatches.flatMap(batch=>batch.data).find(row=>row.kind==='snapshot');
+  assert.equal(snapshot.key,String(Math.floor(now/(5*60_000))));
+  assert.deepEqual(snapshot.payload.traders[0].holdings,[{asset:'cex:BTC',quantity:3,side:'long'}]);
+  assert.equal(snapshot.payload.traders[0].avatarUrl,undefined);assert.equal(snapshot.payload.traders[0].name,undefined);
+  assert.equal(cachedCapture(h.shared.get('latest')).traders[0].name,'Display Name','rich public response stays separate from minimal history');
 });
 
 test('alert sweep with no watch subscriptions does not load historical snapshots', async () => {
@@ -293,4 +325,44 @@ test('normal capture expiry uses the freshness-filtered database read without do
   assert.equal(h.counts.freshCaptureReads, 1);
   assert.equal(h.counts.captureReads, 1, 'uncontended collection must not fetch the expired full capture');
   assert.equal(h.counts.sourceCaptures, 1);
+});
+
+test('multi-megabyte public capture survives the actual cache entry limit across isolated instances', async () => {
+  const large = {...capture(), traders:Array.from({length:4000},(_,index)=>({id:`public:${index}`,name:`Trader ${index}`,avatar:'https://public.example/avatar/'+index,
+    holdings:Array.from({length:6},(_,asset)=>({asset:`cex:ASSET${asset}`,quantity:index+asset,side:'long',evidence:'公開來源 '.repeat(18)}))}))};
+  assert.ok(Buffer.byteLength(JSON.stringify(large)) > 2_000_000);
+  const shared = new Map(), first = harness({shared,persisted:large});
+  await first.service.refreshStmCapture();
+  assert.ok(shared.has('latest'), 'an oversized raw capture must still populate Runtime Cache');
+  assert.ok(Buffer.byteLength(JSON.stringify(shared.get('latest'))) < 1_900_000);
+  const second = harness({shared,readCapture:()=>{throw Error('a shared hit must not download the full database JSON');}});
+  assert.deepEqual(plain(await second.service.refreshStmCapture()),large);
+  assert.equal(second.counts.captureReads,0);
+  assert.equal(second.counts.sourceCaptures,0);
+});
+
+test('lease competitors use retained shared evidence with its original timestamp without a database fallback', async () => {
+  const stale = capture(-90_000), shared = new Map([['latest',captureCodec.encodeCaptureCache(stale)]]);
+  const h = harness({shared,persistent:true,lockBusy:true,persisted:stale});
+  assert.deepEqual(plain(await h.service.refreshStmCapture()),stale);
+  assert.equal(h.counts.freshCaptureReads,1);
+  assert.equal(h.counts.fallbackReads,0);
+  assert.equal(h.counts.sourceCaptures,0);
+  assert.equal(h.cacheWrites.length,0,'stale evidence must not be rewritten as fresh');
+});
+
+test('retained shared evidence never postpones an uncontended automatic source refresh', async () => {
+  const stale = capture(-90_000), fresh = capture(0);
+  const h = harness({shared:new Map([['latest',captureCodec.encodeCaptureCache(stale)]]),persistent:true,persisted:stale,fresh});
+  assert.deepEqual(plain(await h.service.refreshStmCapture()),fresh);
+  assert.equal(h.counts.sourceCaptures,1);
+  assert.equal(h.counts.fallbackReads,0);
+  assert.deepEqual(plain(cachedCapture(h.shared.get('latest'))),fresh);
+});
+
+test('a corrupt shared envelope safely falls back to fresh persisted public evidence', async () => {
+  const persisted=capture();
+  const h=harness({shared:new Map([['latest',{encoding:'gzip-base64',data:'not valid'}]]),persisted});
+  assert.deepEqual(plain(await h.service.refreshStmCapture()),persisted);
+  assert.equal(h.counts.freshCaptureReads,1);
 });

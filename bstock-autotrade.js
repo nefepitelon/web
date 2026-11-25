@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const root = document.getElementById("bstock-autotrade");
-  if (!root) return;
+  if (!root || root.hidden) return;
   const byId = (id) => document.getElementById(`autotrade-${id}`);
   const endpoint = "/api/bstock-alpha/automation";
   const form = byId("settings");

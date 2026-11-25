@@ -9,12 +9,11 @@ import {
   AgenticWalletRequestError,
   agentSessionKey,
   agentWalletOwnerKey,
-  agentWalletRequest,
   connectedAgentSession,
   persistAgentSession
 } from "@/lib/bstock-agentic-wallet-client";
 import { fetchAgentWalletData, walletSnapshotDto } from "@/lib/bstock-agentic-wallet-data";
-import { normalizeAgenticWalletMarketOrders } from "@/lib/bstock-agentic-wallet-order-status";
+import { fetchAgentWalletOrderHistory } from "@/lib/bstock-agentic-wallet-history";
 import {
   agentStudioRatingScore,
   extractAgentStudioReportSummary,
@@ -155,27 +154,26 @@ export async function POST(request: NextRequest) {
         take: 100
       }).catch(() => []);
       try {
-        const historyResult = await agentWalletRequest<unknown>(
-          responseState,
-          "/bapi/defi/v1/public/wallet-direct/web-dex/agent/batch-query-market-orders",
-          { body: { binanceChainId: "56", page: 1, pageSize: 100, sort: "DESC" }, timeoutMs: 15_000 }
-        );
-        responseState = historyResult.state;
-        const history = normalizeAgenticWalletMarketOrders(historyResult.data);
-        const totalOrders = history.total ?? (history.rows.length < 100 ? history.rows.length : 101);
+        const history = await fetchAgentWalletOrderHistory(responseState, { deadline: Math.min(startedAt + 26_000, Date.now() + 15_000) });
+        responseState = history.state;
+        const totalOrders = history.total;
         tradingLedger = buildBstockTradingLedger({
           orders: history.rows,
           totalOrders,
           assets: market.assets,
           walletPositions: walletDto.bstockBalances,
-          historyAvailable: true
+          historyAvailable: history.available,
+          historyComplete: history.complete,
+          historyError: history.code
         });
         tradingLedger.orders = mergeBstockOrderRecords(tradingLedger.orders, databaseRecords);
         orderSource = {
-          status: tradingLedger.historyComplete ? "LIVE" : "PARTIAL",
+          status: !history.available ? "UNAVAILABLE" : tradingLedger.historyComplete ? "LIVE" : "PARTIAL",
           source: tradingLedger.source,
           fetchedOrders: history.rows.length,
-          totalOrders
+          totalOrders,
+          pages: history.pages,
+          ...(history.code ? { code: history.code } : {})
         };
       } catch (error) {
         if (error instanceof AgenticWalletRequestError && error.terminal) throw error;
@@ -184,7 +182,8 @@ export async function POST(request: NextRequest) {
           totalOrders: null,
           assets: market.assets,
           walletPositions: walletDto.bstockBalances,
-          historyAvailable: false
+          historyAvailable: false,
+          historyError: error instanceof AgenticWalletRequestError ? error.code : "ORDER_HISTORY_LOOKUP_FAILED"
         });
         tradingLedger.orders = mergeBstockOrderRecords([], databaseRecords);
         orderSource = {

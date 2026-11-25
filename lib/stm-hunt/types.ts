@@ -4,10 +4,15 @@ export interface StmSource {
   id: string; name: string; url: string; status: StmSourceStatus; fetchedAt: string;
   updatedAt: string | null; count: number; latencyMs: number; message: string;
   semantics: "snapshot" | "market" | "events" | "context";
+  checkedAt?: string; sourceAgeSeconds?: number | null; checkIntervalSeconds?: number;
+  timestampBasis?: "source" | "version" | "unknown";
 }
 export interface StmHolding {
   asset: string; symbol: string; chain: string | null; address: string | null;
   quantity: number | null; valueUsd: number | null; side: "long" | "short" | "spot";
+  name?: string | null; logoUrl?: string | null; priceUsd?: number | null; pnlUsd?: number | null;
+  weightPct?: number | null; explorerUrl?: string | null;
+  sourceId?: string; sourceUpdatedAt?: string | null;
 }
 export interface StmTrader {
   id: string; source: string; venue: string; name: string; address: string | null;
@@ -15,6 +20,16 @@ export interface StmTrader {
   pnlWindow: string; updatedAt: string | null; holdings: StmHolding[];
   visibility: "public" | "private" | "empty" | "truncated";
   tags: string[]; qualified: boolean; clusterId?: string | null;
+  avatarUrl?: string | null; handle?: string | null; profileUrl?: string | null;
+  socialLinks?: Array<{ label: string; url: string }>; rank?: number | null;
+  totalValueUsd?: number | null; totalValueLabel?: string; valueBasis?: "wallet" | "account-equity" | "notional";
+  holdingsCount?: number | null; chains?: Array<{ chain: string; valueUsd: number | null; holdingsCount: number }>;
+  chainsScope?: "reported" | "disclosed"; sourceUpdatedAt?: string | null; fetchedAt?: string;
+  wallets?: Array<{ chain: string; address: string; explorerUrl: string | null; sourceId?: string; sourceUpdatedAt?: string | null }>;
+  bio?: string | null;
+  fomoUid?: string | null;
+  /** Explicit provider FOMO handle, distinct from the X handle. */
+  fomoHandle?: string | null;
 }
 export interface StmCandidate {
   id: string; symbol: string; name: string; address: string | null; chain: string | null;
@@ -22,6 +37,15 @@ export interface StmCandidate {
   change24h: number | null; volumeUsd: number | null; liquidityUsd: number | null;
   score: number; bias: string; reason: string; updatedAt: string | null;
   risk: "unknown" | "pass" | "blocked"; holders: number;
+}
+/** A provider's tracked-wallet aggregation, never a fresh trade or chain-wide holder census. */
+export interface StmSharedHolding {
+  id: string; chain: string; address: string; symbol: string; name: string;
+  logoUrl: string | null; priceUsd: number | null; totalValueUsd: number | null;
+  holdersCount: number; holderIds: string[];
+  holders: Array<{ id: string; name: string | null; valueUsd: number | null; wallet: string | null }>;
+  wallets: string[]; socialLinks: Array<{ label: string; url: string }>; description: string | null;
+  sourceId: string; sourceUpdatedAt: string | null; reported: true; scope: "source-reported";
 }
 export interface StmTradeEvent {
   id: string; traderId: string; asset: string; symbol: string; side: "long" | "short" | "spot";
@@ -75,6 +99,7 @@ export interface StmState {
 export interface StmDashboard {
   asOf: string; sources: StmSource[]; traders: StmTrader[]; candidates: StmCandidate[];
   signals: StmSignal[]; strategies: StmStrategy[];
+  sharedHoldings?: StmSharedHolding[];
   metrics: { traders: number; candidates: number; ready: number; watched: number; snapshots: number; paperPnlUsd: number };
   state: StmState;
   capabilities: { persistence: boolean; exactTraderEvents: boolean; onchainEvents: boolean; liveExecution: boolean; notes: string[] };
@@ -87,3 +112,37 @@ export type StmMutation =
   | { action: "paper-close"; id: string }
   | { action: "replay"; feeBps?: number; slippageBps?: number }
   | { action: "alert-read"; id: string };
+
+// Public research adapters are deliberately separate from strategy evidence.
+export type StmRadarVenue = "fomo" | "hl" | "pump" | "binance" | "lighter" | "okx";
+export type StmRadarPeriod = "24h" | "7d" | "30d" | "all";
+export interface StmRadarTrader extends StmTrader {
+  followers?: number | null; tradeCount?: number | null; volumeUsd?: number | null;
+  statsScope?: "period" | "profile" | "unknown";
+  sourceTraderIds?: string[];
+  detailReference?: string;
+  /** Timestamps apply only to these fields; a new read does not refresh source data. */
+  fieldSources?: Partial<Record<"rank" | "pnl" | "profile" | "wallets" | "holdings" | "assets" | "chains", { sourceId: string; updatedAt: string | null }>>;
+}
+export interface StmRadarBoard {
+  venue: StmRadarVenue; period: StmRadarPeriod; traders: StmRadarTrader[];
+  source: StmSource; checkedAt: string; limitations: string[]; refreshAfterSeconds: number;
+  researchOnly: true;
+}
+export interface StmResearchActivity {
+  id: string; action: "buy" | "sell" | "open" | "add" | "reduce" | "close";
+  symbol: string; chain: string | null; address: string | null;
+  side: "long" | "short" | "spot"; quantity: number | null; valueUsd: number | null;
+  priceUsd: number | null; occurredAt: string | null; transactionHash: string | null; transactionUrl: string | null;
+  basis: "provider-trade"; verified: false; sourceId: string;
+}
+export interface StmTraderResearch {
+  venue: StmRadarVenue; reference: string; trader: StmRadarTrader | null; source: StmSource;
+  sources?: StmSource[];
+  activities: StmResearchActivity[];
+  // Historical PnL positions are not presented as current wallet balances.
+  pnlPositions: Array<{symbol: string; name: string; chain: string | null; address: string | null; logoUrl: string | null;
+    pnlUsd: number | null; realizedPnlUsd: number | null; unrealizedPnlUsd: number | null; closedAt: string | null}>;
+  componentUpdatedAt: { profile: string | null; wallets: string | null; holdings: string | null; activities: string | null; pnl: string | null };
+  checkedAt: string; limitations: string[]; refreshAfterSeconds: number; researchOnly: true;
+}

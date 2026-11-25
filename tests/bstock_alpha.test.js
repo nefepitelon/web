@@ -83,7 +83,7 @@ test("bStock opportunity pool exposes complete persistent Chinese names", () => 
   const symbols = [...snapshot.matchAll(/^\s+\["[A-Z0-9]+",\s*"([A-Z0-9]+B)",/gm)].map((match) => match[1]);
 
   assert.equal(symbols.length, 67);
-  assert.equal(Object.keys(localization.names).length, 100);
+  assert.equal(Object.keys(localization.names).length, 113);
   assert.deepEqual([...Object.keys(localization.names)].sort(), [...symbols, ...Object.keys(localization.instruments)].sort());
   for (const name of Object.values(localization.names)) assert.match(name, /[\u3400-\u9fff]/);
   assert.match(live, /nameZh: BSTOCK_CHINESE_NAMES\[item\.symbol\] \|\| null/);
@@ -93,7 +93,7 @@ test("bStock opportunity pool exposes complete persistent Chinese names", () => 
   assert.match(css, /\.token-name-zh/);
   assert.match(html, /ui-translations\.js\?v=20261024-bstock-catalog-v3/);
   assert.match(html, /bstock-alpha-storage\.js\?v=20260902-dual-wallet-v4/);
-  assert.match(html, /bstock-alpha\.js\?v=20261024-grid-research-v3/);
+  assert.match(html, /bstock-alpha\.js\?v=20261124-catalog-wallet-v1/);
 });
 
 test("bStock opportunity pool renders controlled company and ETF brand icons", () => {
@@ -109,7 +109,7 @@ test("bStock opportunity pool renders controlled company and ETF brand icons", (
   const brandedSymbols = [...branding.matchAll(/^\s{2}([A-Z0-9]+B):\s*"/gm)].map((match) => match[1]);
 
   assert.equal(symbols.length, 67);
-  assert.equal(brandedSymbols.length, 100);
+  assert.equal(brandedSymbols.length, 113);
   assert.deepEqual([...brandedSymbols].sort(), [...symbols, ...Object.keys(localization.instruments)].sort());
   assert.match(branding, /financialmodelingprep\.com\/image-stock/);
   assert.match(branding, /google\.com\/s2\/favicons/);
@@ -211,7 +211,7 @@ test("bStockAlpha automatically requests a safe Agentic Wallet QR login", () => 
   assert.match(qrRoute, /allowedHosts = new Set\(\["app\.binance\.com", "web3\.binance\.com"\]\)/);
   assert.match(qrRoute, /Cache-Control": "no-store/);
   assert.match(html, /后台每 2 秒自动完成 Agent 端确认/);
-  assert.match(html, /bstock-alpha\.js\?v=20261024-grid-research-v3/);
+  assert.match(html, /bstock-alpha\.js\?v=20261124-catalog-wallet-v1/);
   assert.match(legacyRoute, /\["\.html", "\.js"\]\.includes\(extension\)[\s\S]*no-store, max-age=0/);
 });
 
@@ -645,7 +645,7 @@ test("bStockAlpha exposes a safe latest-report appreciation dialog", () => {
   assert.match(css, /\.report-reader-dialog \{[^}]*width: min\(900px/);
   assert.match(css, /\.ai-live-action\.appreciation \{[^}]*linear-gradient/);
   assert.match(html, /bstock-alpha\.css\?v=20260826-ledger-reports-v3/);
-  assert.match(html, /bstock-alpha\.js\?v=20261024-grid-research-v3/);
+  assert.match(html, /bstock-alpha\.js\?v=20261124-catalog-wallet-v1/);
 });
 
 test("bStockAlpha localizes report readings and creates sanitized branded share snapshots", () => {
@@ -802,7 +802,8 @@ test("bStockAlpha persists buy and sell intents and exposes a durable order-reco
   assert.match(execute, /status: "SUBMITTING"/);
   assert.match(execute, /submittedAt: new Date\(\)/);
   assert.match(status, /bstockTradeRecord\.updateMany/);
-  assert.match(snapshot, /pageSize: 100, sort: "DESC"/);
+  assert.match(snapshot, /fetchAgentWalletOrderHistory\(responseState/);
+  assert.match(read("lib/bstock-agentic-wallet-history.ts"), /pageSize: 100, sort: "DESC"/);
   assert.match(snapshot, /buildBstockTradingLedger/);
   assert.match(snapshot, /mergeBstockOrderRecords/);
 });
@@ -923,5 +924,5 @@ test("bStock live snapshot refresh preserves the active Agentic Wallet trade quo
   assert.match(script, /tradeQuoteIntent = payload\.intent;[\s\S]*updateTradeApprovalButton\(\);[\s\S]*refreshLiveSnapshot\(\{ silent: true \}\);/);
   assert.match(script, /byId\("approval-check"\)\.addEventListener\("change", updateTradeApprovalButton\)/);
   assert.match(script, /byId\("eligibility-approval-check"\)\.addEventListener\("change", updateTradeApprovalButton\)/);
-  assert.match(html, /bstock-alpha\.js\?v=20261024-grid-research-v3/);
+  assert.match(html, /bstock-alpha\.js\?v=20261124-catalog-wallet-v1/);
 });

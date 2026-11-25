@@ -31,6 +31,7 @@ export function isInternalWorkflowPath(pathname: string) {
 }
 
 const PUBLIC_MARKET_DATA_PATHS = new Set([
+  "/api/home-market",
   "/api/hedge-ops/perpdex-box",
   "/api/hedge-ops/cex-hub",
   "/api/alpha-scan",

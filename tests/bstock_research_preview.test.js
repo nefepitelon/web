@@ -114,6 +114,9 @@ function routeFixture(mode, options = {}) {
       }
     },
     "@/lib/bstock-agentic-wallet-x402": { agentX402RequirementSchema: z.object({ network: z.string() }).passthrough() },
+    "@/lib/bstock-agent-x402-options": load("lib/bstock-agent-x402-options.ts", {
+      "./bstock-agentic-wallet-x402": { agentX402RequirementSchema: z.object({ network: z.string() }).passthrough() }
+    }),
     "@/lib/bstock-x402": { sameX402Requirement: (left, right) => JSON.stringify(left) === JSON.stringify(right) },
     "@/lib/bstock-agent-studio": {
       STUDIO_REPORT_REUSE_MS: 1800000, resolveResearchOwner: async () => ({ state }),

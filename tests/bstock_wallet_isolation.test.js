@@ -34,7 +34,7 @@ function researchContext(mode = "agent") {
       if (!nodes.has(id)) nodes.set(id, { checked: true, disabled: false, hidden: true, textContent: "" });
       return nodes.get(id);
     },
-    setResearchStatus() {}, showToast() {}, handleStudioExistingTask: () => true,
+    setResearchStatus() {}, showToast() {}, updateResearchApproval() {}, handleStudioExistingTask: () => true,
     signBrowserX402: async () => { signCount++; return { paymentProtocolVersion: "test", paymentHeaderName: "PAYMENT-SIGNATURE", paymentHeaderValue: "signed" }; },
     fetch: async (url, options) => { requests.push({ url, body: JSON.parse(options.body) }); return { ok: true, json: async () => ({ provider: "studio", status: "REUSED" }) }; }
   });
